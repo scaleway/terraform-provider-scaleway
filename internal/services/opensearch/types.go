@@ -51,7 +51,10 @@ func publicDashboardURLFromEndpoints(endpoints []*searchdbapi.Endpoint) string {
 		}
 
 		for _, svc := range ep.Services {
-			if svc.Name == "dashboard" || svc.Name == "dashboards" {
+			// API historically used "dashboard"/"dashboards"; current SearchDB
+			// responses use "ui-dashboard".
+			switch svc.Name {
+			case "dashboard", "dashboards", "ui-dashboard":
 				return svc.URL
 			}
 		}

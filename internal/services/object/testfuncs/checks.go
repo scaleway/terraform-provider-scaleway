@@ -91,6 +91,42 @@ func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	}
 }
 
+func IsBucketDestroyedFromProject(tt *acctest.TestTools, projectId string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		ctx := context.Background()
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway" {
+				continue
+			}
+
+			regionalID := regional.ExpandID(rs.Primary.ID)
+			bucketRegion := regionalID.Region.String()
+
+			s3Client, err := object.NewS3ClientFromMetaWithProjectID(ctx, tt.Meta, bucketRegion, projectId)
+			if err != nil {
+				return err
+			}
+
+			_, err = s3Client.ListObjects(ctx, &s3.ListObjectsInput{
+				Bucket: new(regionalID.ID),
+			})
+			if err != nil {
+				if errors.As(err, new(*types.NoSuchBucket)) {
+					// Bucket doesn't exist
+					continue
+				}
+
+				return fmt.Errorf("couldn't get bucket to verify if it still exists: %w", err)
+			}
+
+			return errors.New("bucket should be deleted")
+		}
+
+		return nil
+	}
+}
+
 func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()

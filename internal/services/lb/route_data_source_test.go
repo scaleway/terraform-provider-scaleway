@@ -16,7 +16,7 @@ func TestAccDataSourceRoute_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			lbchecks.IsIPDestroyed(tt),
-			isLbDestroyed(tt),
+			lbchecks.IsLbDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{

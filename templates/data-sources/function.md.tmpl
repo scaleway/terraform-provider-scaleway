@@ -42,7 +42,7 @@ This section lists the arguments that you can provide to the `scaleway_function`
 
 - `function_id` - (Optional) The unique identifier of the function. Only one of `name` and `function_id` should be specified.
 
-- `region` - (Defaults to the region specified in the [provider configuration](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container exists.
+- `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container exists.
 
 - `project_id` - (Optional) The unique identifier of the project with which the function is associated.
 

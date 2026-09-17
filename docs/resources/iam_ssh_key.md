@@ -23,7 +23,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the SSH key.
 - `public_key` - (Required) The public SSH key to be added.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the SSH key is
   associated with.
 - `disabled` - (Optional) The SSH key status.
 
@@ -36,6 +36,7 @@ In addition to all arguments above, the following attributes are exported:
 - `organization_id` - The ID of the organization the SSH key is associated with.
 - `created_at` - The date and time of the creation of the SSH key.
 - `updated_at` - The date and time of the last update of the SSH key.
+- `srn` - The Scaleway Resource Name (SRN) of the SSH key.
 
 ## Import
 

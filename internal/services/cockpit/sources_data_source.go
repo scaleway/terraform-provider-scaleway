@@ -75,7 +75,9 @@ func dataSourceCockpitSourcesRead(ctx context.Context, d *schema.ResourceData, m
 		req.Origin = cockpit.DataSourceOrigin(v.(string))
 	}
 
-	res, err := api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
+	res, err := retryOn403Value(ctx, func() (*cockpit.ListDataSourcesResponse, error) {
+		return api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

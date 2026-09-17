@@ -147,6 +147,11 @@ func publicGatewaySchema() map[string]*schema.Schema {
 			Description: "Put a Public Gateway in IPAM mode, so that it can be used with the Public Gateways API v2",
 			Deprecated:  "All gateways now use IPAM. This field is no longer needed",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the public gateway",
+		},
 	}
 }
 
@@ -249,6 +254,7 @@ func setPublicGatewayState(d *schema.ResourceData, gateway *vpcgw.Gateway) diag.
 	_ = d.Set("enable_smtp", gateway.SMTPEnabled)
 	_ = d.Set("bandwidth", int(gateway.Bandwidth))
 	_ = d.Set("upstream_dns_servers", nil)
+	_ = d.Set("srn", gateway.Srn)
 
 	if gateway.IPv4 != nil {
 		_ = d.Set("ip_id", zonal.NewID(gateway.IPv4.Zone, gateway.IPv4.ID).String())

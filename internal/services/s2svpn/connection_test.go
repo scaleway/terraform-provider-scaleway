@@ -3,6 +3,7 @@ package s2svpn_test
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -107,6 +108,7 @@ func TestAccConnection_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "esp_ciphers.0.encryption", "aes256"),
 					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "esp_ciphers.0.integrity", "sha256"),
 					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "esp_ciphers.0.dh_group", "modp2048"),
+					resource.TestMatchResourceAttr("scaleway_s2s_vpn_connection.main", "srn", regexp.MustCompile(`^srn://s2s-vpn\..+/regions/.+/connections/.+$`)),
 				),
 			},
 			{

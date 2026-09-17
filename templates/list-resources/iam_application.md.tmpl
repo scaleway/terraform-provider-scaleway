@@ -1,0 +1,46 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "IAM"
+description: |-
+  Lists Scaleway IAM Applications.
+---
+
+# Resource: {{ .Name }}
+
+Lists Scaleway IAM Applications.
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/iam/concepts/).
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+{{ end -}}
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `organization_id` - (Optional) Organization ID to filter for. If not specified, the provider default organization is used.
+- `name` - (Optional) Name of the application to filter for.
+- `tag` - (Optional) Tag to filter for.
+- `editable` - (Optional) Filter by editable status.
+- `application_ids` - (Optional) Filter applications by application IDs.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each Application:
+
+- `id` - The ID of the application.
+- `name` - The name of the application.
+- `description` - The description of the application.
+- `created_at` - The date and time of the creation of the application.
+- `updated_at` - The date and time of the last update of the application.
+- `organization_id` - The organization ID the application belongs to.
+- `tags` - The tags associated with the application.
+- `editable` - Defines whether or not the application is editable.
+- `deletable` - Defines whether or not the application is deletable.
+- `managed` - Defines whether or not the application is managed.
+- `nb_api_keys` - Number of API keys attributed to the application.

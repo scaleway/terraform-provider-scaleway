@@ -1,0 +1,41 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Billing"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# Resource: {{ .Name }}
+
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+- `organization_id` - (Optional) The organization ID. If not provided, the default organization configured in the provider is used.
+- `consumption_limit` - (Required) Cost limit for the budget in cents.
+- `enabled` - (Optional) Whether the budget is enabled or not. Defaults to `true`.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the budget
+- `created_at` - The date and time of budget creation
+- `updated_at` - The date and time when the budget was last updated
+
+## Import
+
+Budget can be imported using the budget ID.
+
+```bash
+terraform import scaleway_billing_budget.main 11111111-1111-1111-1111-111111111111
+```

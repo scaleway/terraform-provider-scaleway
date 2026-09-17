@@ -2,7 +2,6 @@ package secret
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,8 +10,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -22,6 +23,7 @@ func ResourceVersion() *schema.Resource {
 		ReadContext:   ResourceVersionRead,
 		UpdateContext: ResourceVersionUpdate,
 		DeleteContext: ResourceVersionDelete,
+		Identity:      secretVersionIdentity(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -96,7 +98,28 @@ func versionSchema() map[string]*schema.Schema {
 			Description: "Date and time of secret version's creation (RFC 3339 format)",
 		},
 		"region": regional.Schema(),
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the secret version",
+		},
 	}
+}
+
+func secretVersionIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region": identity.DefaultRegionAttribute(),
+		"secret_id": {
+			Type:              schema.TypeString,
+			Description:       "The secret ID",
+			RequiredForImport: true,
+		},
+		"revision": {
+			Type:              schema.TypeString,
+			Description:       "The revision of the secret version",
+			RequiredForImport: true,
+		},
+	})
 }
 
 func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -125,7 +148,15 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		Description: types.ExpandStringPtr(d.Get("description")),
 	}
 
-	secretResponse, err := api.CreateSecretVersion(secretCreateVersionRequest, scw.WithContext(ctx))
+	var secretResponse *secret.SecretVersion
+
+	err = transport.RetryOn403(ctx, func() error {
+		var err error
+
+		secretResponse, err = api.CreateSecretVersion(secretCreateVersionRequest, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -138,7 +169,14 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		_ = d.Set("data", Base64Encoded(payloadSecretRaw))
 	}
 
-	d.SetId(regional.NewIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"region":    region.String(),
+		"secret_id": secretResponse.SecretID,
+		"revision":  strconv.FormatUint(uint64(secretResponse.Revision), 10),
+	}, "region", "secret_id", "revision")
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVersionRead(ctx, d, m)
 }
@@ -149,11 +187,14 @@ func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	secretResponse, err := api.GetSecretVersion(&secret.GetSecretVersionRequest{
-		Region:   region,
-		SecretID: id,
-		Revision: revision,
-	}, scw.WithContext(ctx))
+	// Retry on 404 to handle eventual consistency issues
+	secretResponse, err := transport.RetryOn404(ctx, func(ctx context.Context) (*secret.SecretVersion, error) {
+		return api.GetSecretVersion(&secret.GetSecretVersionRequest{
+			Region:   region,
+			SecretID: id,
+			Revision: revision,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -164,14 +205,16 @@ func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	revisionStr := strconv.Itoa(int(secretResponse.Revision))
-	_ = d.Set("revision", revisionStr)
-	_ = d.Set("secret_id", regional.NewIDString(region, id))
-	_ = d.Set("description", types.FlattenStringPtr(secretResponse.Description))
-	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
-	_ = d.Set("status", secretResponse.Status.String())
-	_ = d.Set("region", string(region))
+	setVersionState(d, secretResponse)
+
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"region":    region.String(),
+		"secret_id": id,
+		"revision":  revision,
+	}, "region", "secret_id", "revision")
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -211,11 +254,13 @@ func ResourceVersionDelete(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteSecretVersion(&secret.DeleteSecretVersionRequest{
-		Region:   region,
-		SecretID: id,
-		Revision: revision,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOn403(ctx, func() error {
+		return api.DeleteSecretVersion(&secret.DeleteSecretVersionRequest{
+			Region:   region,
+			SecretID: id,
+			Revision: revision,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}

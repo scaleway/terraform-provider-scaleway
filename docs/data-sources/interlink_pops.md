@@ -40,7 +40,7 @@ data "scaleway_interlink_pops" "dedicated" {
 - `partner_id` - (Optional) Filter for PoPs hosting an available shared connection from this partner.
 - `link_bandwidth_mbps` - (Optional) Filter for PoPs with a shared connection allowing this bandwidth size.
 - `dedicated_available` - (Optional) Filter for PoPs with a dedicated connection available for self-hosted links.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) to list PoPs from.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) to list PoPs from.
 
 ## Attributes Reference
 

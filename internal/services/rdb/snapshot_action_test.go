@@ -11,6 +11,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccActionRDBInstanceSnapshot_Basic(t *testing.T) {
@@ -23,6 +25,9 @@ func TestAccActionRDBInstanceSnapshot_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			rdbchecks.IsInstanceDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -75,11 +80,19 @@ func isSnapshotCreated(tt *acctest.TestTools, instanceResourceName, snapshotName
 
 		api := rdbSDK.NewAPI(tt.Meta.ScwClient())
 
-		snapshots, err := api.ListSnapshots(&rdbSDK.ListSnapshotsRequest{
-			Region:     region,
-			InstanceID: new(id),
-			Name:       new(snapshotName),
-		}, scw.WithContext(context.Background()))
+		var snapshots *rdbSDK.ListSnapshotsResponse
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			snapshots, err = api.ListSnapshots(&rdbSDK.ListSnapshotsRequest{
+				Region:     region,
+				InstanceID: new(id),
+				Name:       new(snapshotName),
+			}, scw.WithContext(context.Background()))
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list snapshots: %w", err)
 		}

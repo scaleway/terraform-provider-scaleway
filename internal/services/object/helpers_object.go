@@ -92,6 +92,26 @@ func NewS3ClientFromMeta(ctx context.Context, meta *meta.Meta, region string) (*
 	return newS3Client(ctx, region, accessKey, secretKey, meta.HTTPClient())
 }
 
+func NewS3ClientFromMetaWithProjectID(ctx context.Context, meta *meta.Meta, region, projectID string) (*s3.Client, error) {
+	accessKey, _ := meta.ScwClient().GetAccessKey()
+	secretKey, _ := meta.ScwClient().GetSecretKey()
+
+	if projectID == "" {
+		projectID, _ = meta.ScwClient().GetDefaultProjectID()
+	}
+
+	if projectID != "" {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
+
+	if region == "" {
+		defaultRegion, _ := meta.ScwClient().GetDefaultRegion()
+		region = defaultRegion.String()
+	}
+
+	return newS3Client(ctx, region, accessKey, secretKey, meta.HTTPClient())
+}
+
 func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -585,6 +605,30 @@ func transitionHash(v any) int {
 	return types.StringHashcode(buf.String())
 }
 
+func noncurrentVersionTransitionHash(v any) int {
+	var buf bytes.Buffer
+
+	m, ok := v.(map[string]any)
+
+	if !ok {
+		return 0
+	}
+
+	if v, ok := m["noncurrent_days"]; ok {
+		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
+	}
+
+	if v, ok := m["newer_noncurrent_versions"]; ok {
+		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
+	}
+
+	if v, ok := m["storage_class"]; ok {
+		buf.WriteString(v.(string) + "-")
+	}
+
+	return types.StringHashcode(buf.String())
+}
+
 const (
 	// TransitionStorageClassStandard is a TransitionStorageClass enum value
 	TransitionStorageClassStandard = "STANDARD"
@@ -738,6 +782,33 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 	}
 }
 
+func setProjectIDFromACL(
+	ctx context.Context,
+	s3Client *s3.Client,
+	d *schema.ResourceData,
+	bucketName string,
+	diags diag.Diagnostics,
+) (
+	diag.Diagnostics, bool,
+) {
+	if s3Client == nil || d == nil || bucketName == "" {
+		return diags, false
+	}
+
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
+			return diags, false
+		}
+	} else if acl != nil && acl.Owner != nil {
+		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
+	}
+
+	return diags, true
+}
+
 func findServerSideEncryptionConfiguration(ctx context.Context, conn *s3.Client, bucketName string) (*s3Types.ServerSideEncryptionConfiguration, error) {
 	input := s3.GetBucketEncryptionInput{
 		Bucket: aws.String(bucketName),
@@ -778,6 +849,10 @@ func expandServerSideEncryptionByDefault(l []any) *s3Types.ServerSideEncryptionB
 		sse.SSEAlgorithm = s3Types.ServerSideEncryption(v)
 	}
 
+	if v, ok := tfMap["kms_master_key_id"].(string); ok && v != "" {
+		sse.KMSMasterKeyID = new(v)
+	}
+
 	return sse
 }
 
@@ -796,6 +871,10 @@ func expandServerSideEncryptionRules(l []any) []s3Types.ServerSideEncryptionRule
 			rule.ApplyServerSideEncryptionByDefault = expandServerSideEncryptionByDefault(v)
 		}
 
+		if v, ok := tfMap["bucket_key_enabled"].(bool); ok && v {
+			rule.BucketKeyEnabled = aws.Bool(v)
+		}
+
 		rules = append(rules, rule)
 	}
 
@@ -812,10 +891,8 @@ func flattenServerSideEncryptionRules(rules []s3Types.ServerSideEncryptionRule) 
 			m["apply_server_side_encryption_by_default"] = flattenServerSideEncryptionByDefault(rule.ApplyServerSideEncryptionByDefault)
 		}
 
-		if rule.BlockedEncryptionTypes != nil {
-			if flattened := flattenBlockedEncryptionTypes(rule.BlockedEncryptionTypes); flattened != nil {
-				m["blocked_encryption_types"] = flattened
-			}
+		if rule.BucketKeyEnabled != nil {
+			m["bucket_key_enabled"] = rule.BucketKeyEnabled
 		}
 
 		results = append(results, m)
@@ -830,21 +907,9 @@ func flattenServerSideEncryptionByDefault(sse *s3Types.ServerSideEncryptionByDef
 	}
 
 	m := map[string]any{
-		"sse_algorithm": sse.SSEAlgorithm,
+		"kms_master_key_id": sse.KMSMasterKeyID,
+		"sse_algorithm":     sse.SSEAlgorithm,
 	}
 
 	return []any{m}
-}
-
-func flattenBlockedEncryptionTypes(bet *s3Types.BlockedEncryptionTypes) []any {
-	if bet == nil || len(bet.EncryptionType) == 0 {
-		return nil
-	}
-
-	var result []any
-	for _, et := range bet.EncryptionType {
-		result = append(result, string(et))
-	}
-
-	return result
 }

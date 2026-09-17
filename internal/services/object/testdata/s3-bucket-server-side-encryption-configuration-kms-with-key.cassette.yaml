@@ -1,0 +1,1600 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 254
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"my-kms-key-tf-test","usage":{"asymmetric_encryption":"rsa_oaep_4096_sha256"},"description":"This key is used to encrypt bucket objects","tags":null,"unprotected":true,"origin":"unknown_origin"}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 574
+        uncompressed: false
+        body: '{"created_at":"2026-08-17T09:47:11.266225Z","deletion_requested_at":null,"description":"This key is used to encrypt bucket objects","id":"15a0b327-bad7-49c9-a965-bd006a1aeb3f","locked":false,"name":"my-kms-key-tf-test","origin":"scaleway_kms","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"protection_level":"software","region":"fr-par","rotated_at":"2026-08-17T09:47:12.710420Z","rotation_count":1,"rotation_policy":null,"state":"enabled","tags":[],"updated_at":"2026-08-17T09:47:12.710420Z","usage":{"asymmetric_encryption":"rsa_oaep_4096_sha256"}}'
+        headers:
+            Content-Length:
+                - "574"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Mon, 17 Aug 2026 09:47:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 9d8cbfa9-1fce-4e82-8399-9c3a5fdeee65
+        status: 200 OK
+        code: 200
+        duration: 1.63941387s
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/15a0b327-bad7-49c9-a965-bd006a1aeb3f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 574
+        uncompressed: false
+        body: '{"created_at":"2026-08-17T09:47:11.266225Z","deletion_requested_at":null,"description":"This key is used to encrypt bucket objects","id":"15a0b327-bad7-49c9-a965-bd006a1aeb3f","locked":false,"name":"my-kms-key-tf-test","origin":"scaleway_kms","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"protection_level":"software","region":"fr-par","rotated_at":"2026-08-17T09:47:12.710420Z","rotation_count":1,"rotation_policy":null,"state":"enabled","tags":[],"updated_at":"2026-08-17T09:47:12.710420Z","usage":{"asymmetric_encryption":"rsa_oaep_4096_sha256"}}'
+        headers:
+            Content-Length:
+                - "574"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Mon, 17 Aug 2026 09:47:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - fe06ac43-1d45-45cd-8c8a-f4d903e8a5b3
+        status: 200 OK
+        code: 200
+        duration: 105.37107ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 9fc3717e-39bb-422a-89d8-37664744dd3e
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094711Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/
+        method: PUT
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Length:
+                - "0"
+            Date:
+                - Mon, 17 Aug 2026 09:47:11 GMT
+            Location:
+                - /tf-test-sse-config-6416369524229866375
+            X-Amz-Id-2:
+                - txgb3e18e304574484fb42d-006a82d89f
+            X-Amz-Request-Id:
+                - txgb3e18e304574484fb42d-006a82d89f
+        status: 200 OK
+        code: 200
+        duration: 4.906465898s
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 70731829-e4f0-4add-be32-71c76202e790
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,Z,e
+            X-Amz-Acl:
+                - private
+            X-Amz-Checksum-Crc32:
+                - AAAAAA==
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094716Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?acl=
+        method: PUT
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Length:
+                - "0"
+            Date:
+                - Mon, 17 Aug 2026 09:47:16 GMT
+            X-Amz-Id-2:
+                - txg909ecaa19715451698f9-006a82d8a4
+            X-Amz-Request-Id:
+                - txg909ecaa19715451698f9-006a82d8a4
+        status: 200 OK
+        code: 200
+        duration: 254.606401ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 3df5f053-c33e-423d-9393-3c2dc928a8cc
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094716Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?acl=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 698
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><DisplayName>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</DisplayName><ID>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</ID></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</ID><DisplayName>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+        headers:
+            Content-Length:
+                - "698"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:16 GMT
+            X-Amz-Id-2:
+                - txgf0a0ffb6931b4320b307-006a82d8a4
+            X-Amz-Request-Id:
+                - txgf0a0ffb6931b4320b307-006a82d8a4
+        status: 200 OK
+        code: 200
+        duration: 146.128128ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 3bed989e-ee89-43b1-ad1b-4f94d5ebabd9
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094716Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?object-lock=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 307
+        uncompressed: false
+        body: <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>txg617806b589584136a3df-006a82d8a4</RequestId><HostId>txg617806b589584136a3df-006a82d8a4</HostId><Resource>/tf-test-sse-config-6416369524229866375</Resource></Error>
+        headers:
+            Content-Length:
+                - "307"
+            Content-Type:
+                - application/xml
+            Date:
+                - Mon, 17 Aug 2026 09:47:16 GMT
+            X-Amz-Id-2:
+                - txg617806b589584136a3df-006a82d8a4
+            X-Amz-Request-Id:
+                - txg617806b589584136a3df-006a82d8a4
+        status: 404 Not Found
+        code: 404
+        duration: 119.59029ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - d7a3126f-907f-4cda-a221-5284a0e09141
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094716Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 264
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>tf-test-sse-config-6416369524229866375</Name><Prefix></Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+        headers:
+            Content-Length:
+                - "264"
+            Content-Type:
+                - application/xml
+            Date:
+                - Mon, 17 Aug 2026 09:47:16 GMT
+            X-Amz-Id-2:
+                - txg1ef47891a1e04e4c92aa-006a82d8a4
+            X-Amz-Request-Id:
+                - txg1ef47891a1e04e4c92aa-006a82d8a4
+        status: 200 OK
+        code: 200
+        duration: 192.71566ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 6f4839a1-13ed-4d1f-9358-8d39d2f8053d
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094716Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?tagging=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 315
+        uncompressed: false
+        body: <Error><Code>NoSuchTagSet</Code><Message>The TagSet does not exist</Message><RequestId>txg3afc0c1284e241238dd9-006a82d8a4</RequestId><HostId>txg3afc0c1284e241238dd9-006a82d8a4</HostId><Resource>/tf-test-sse-config-6416369524229866375</Resource><BucketName>tf-test-sse-config-6416369524229866375</BucketName></Error>
+        headers:
+            Content-Length:
+                - "315"
+            Content-Type:
+                - application/xml
+            Date:
+                - Mon, 17 Aug 2026 09:47:16 GMT
+            X-Amz-Id-2:
+                - txg3afc0c1284e241238dd9-006a82d8a4
+            X-Amz-Request-Id:
+                - txg3afc0c1284e241238dd9-006a82d8a4
+        status: 404 Not Found
+        code: 404
+        duration: 54.071005ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 89f349e1-0734-4007-96a7-61954d0a5c45
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094716Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?cors=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 275
+        uncompressed: false
+        body: <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txg51f1ef0bca42495f8ce7-006a82d8a4</RequestId><HostId>txg51f1ef0bca42495f8ce7-006a82d8a4</HostId><Resource>/tf-test-sse-config-6416369524229866375</Resource></Error>
+        headers:
+            Content-Length:
+                - "275"
+            Content-Type:
+                - application/xml
+            Date:
+                - Mon, 17 Aug 2026 09:47:16 GMT
+            X-Amz-Id-2:
+                - txg51f1ef0bca42495f8ce7-006a82d8a4
+            X-Amz-Request-Id:
+                - txg51f1ef0bca42495f8ce7-006a82d8a4
+        status: 404 Not Found
+        code: 404
+        duration: 101.614566ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 074202ba-81fc-404f-b359-6b23f7f72bf2
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094716Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?versioning=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 107
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <VersioningConfiguration><Status></Status></VersioningConfiguration>
+        headers:
+            Content-Length:
+                - "107"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:16 GMT
+            X-Amz-Id-2:
+                - txg5dfc76d100c8477e8feb-006a82d8a4
+            X-Amz-Request-Id:
+                - txg5dfc76d100c8477e8feb-006a82d8a4
+        status: 200 OK
+        code: 200
+        duration: 190.395015ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 719ddaa7-a874-4ba1-bd43-b441b2c5b672
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094716Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?lifecycle=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 348
+        uncompressed: false
+        body: <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist</Message><RequestId>txg40264165b3004200b28e-006a82d8a5</RequestId><HostId>txg40264165b3004200b28e-006a82d8a5</HostId><Resource>/tf-test-sse-config-6416369524229866375</Resource><BucketName>tf-test-sse-config-6416369524229866375</BucketName></Error>
+        headers:
+            Content-Length:
+                - "348"
+            Content-Type:
+                - application/xml
+            Date:
+                - Mon, 17 Aug 2026 09:47:17 GMT
+            X-Amz-Id-2:
+                - txg40264165b3004200b28e-006a82d8a5
+            X-Amz-Request-Id:
+                - txg40264165b3004200b28e-006a82d8a5
+        status: 404 Not Found
+        code: 404
+        duration: 26.226751ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 333
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: <ServerSideEncryptionConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Rule><ApplyServerSideEncryptionByDefault><KMSMasterKeyID>my-kms-key-tf-test</KMSMasterKeyID><SSEAlgorithm>aws:kms</SSEAlgorithm></ApplyServerSideEncryptionByDefault><BucketKeyEnabled>true</BucketKeyEnabled></Rule></ServerSideEncryptionConfiguration>
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - fa4f46e7-3bc6-413f-a889-c17207463fe9
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            Content-Type:
+                - application/xml
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,Z,e
+            X-Amz-Checksum-Crc32:
+                - Dsnpvg==
+            X-Amz-Content-Sha256:
+                - c8601d21d2f7d1343a002c48d359ee52d679b61b1e3517b16acc4a4a9f206ab3
+            X-Amz-Date:
+                - 20260817T094717Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?encryption=
+        method: PUT
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Length:
+                - "0"
+            Date:
+                - Mon, 17 Aug 2026 09:47:17 GMT
+            X-Amz-Id-2:
+                - txgbd9be4fde98349cf8dca-006a82d8a5
+            X-Amz-Request-Id:
+                - txgbd9be4fde98349cf8dca-006a82d8a5
+        status: 200 OK
+        code: 200
+        duration: 520.985612ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 5ea699d1-9fb8-4a0e-a993-3d8f78ff2c44
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094717Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?encryption=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 324
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ServerSideEncryptionConfiguration><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>aws:kms</SSEAlgorithm><KMSMasterKeyID>my-kms-key-tf-test</KMSMasterKeyID></ApplyServerSideEncryptionByDefault><BucketKeyEnabled>true</BucketKeyEnabled></Rule></ServerSideEncryptionConfiguration>
+        headers:
+            Content-Length:
+                - "324"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:17 GMT
+            X-Amz-Id-2:
+                - txgb7af6aa2eb294d4abae8-006a82d8a5
+            X-Amz-Request-Id:
+                - txgb7af6aa2eb294d4abae8-006a82d8a5
+        status: 200 OK
+        code: 200
+        duration: 117.984ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 8f9fa340-b3b9-44ac-8d57-f62f246833bd
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094717Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?encryption=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 324
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ServerSideEncryptionConfiguration><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>aws:kms</SSEAlgorithm><KMSMasterKeyID>my-kms-key-tf-test</KMSMasterKeyID></ApplyServerSideEncryptionByDefault><BucketKeyEnabled>true</BucketKeyEnabled></Rule></ServerSideEncryptionConfiguration>
+        headers:
+            Content-Length:
+                - "324"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:17 GMT
+            X-Amz-Id-2:
+                - txgac96a0b117644c8bb47a-006a82d8a5
+            X-Amz-Request-Id:
+                - txgac96a0b117644c8bb47a-006a82d8a5
+        status: 200 OK
+        code: 200
+        duration: 207.95582ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - eaa48a75-2763-4f75-85cc-d6aa457d9c2f
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094717Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?acl=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 698
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><DisplayName>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</DisplayName><ID>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</ID></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</ID><DisplayName>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+        headers:
+            Content-Length:
+                - "698"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:18 GMT
+            X-Amz-Id-2:
+                - txg730c2ad3073c41768cbc-006a82d8a6
+            X-Amz-Request-Id:
+                - txg730c2ad3073c41768cbc-006a82d8a6
+        status: 200 OK
+        code: 200
+        duration: 237.049925ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 1dc348c3-3770-46a3-8239-bdb896b3a5d1
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094718Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?encryption=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 324
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ServerSideEncryptionConfiguration><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>aws:kms</SSEAlgorithm><KMSMasterKeyID>my-kms-key-tf-test</KMSMasterKeyID></ApplyServerSideEncryptionByDefault><BucketKeyEnabled>true</BucketKeyEnabled></Rule></ServerSideEncryptionConfiguration>
+        headers:
+            Content-Length:
+                - "324"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:18 GMT
+            X-Amz-Id-2:
+                - txg5b5075e00c7e4243821b-006a82d8a6
+            X-Amz-Request-Id:
+                - txg5b5075e00c7e4243821b-006a82d8a6
+        status: 200 OK
+        code: 200
+        duration: 167.795836ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/15a0b327-bad7-49c9-a965-bd006a1aeb3f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 574
+        uncompressed: false
+        body: '{"created_at":"2026-08-17T09:47:11.266225Z","deletion_requested_at":null,"description":"This key is used to encrypt bucket objects","id":"15a0b327-bad7-49c9-a965-bd006a1aeb3f","locked":false,"name":"my-kms-key-tf-test","origin":"scaleway_kms","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protected":false,"protection_level":"software","region":"fr-par","rotated_at":"2026-08-17T09:47:12.710420Z","rotation_count":1,"rotation_policy":null,"state":"enabled","tags":[],"updated_at":"2026-08-17T09:47:12.710420Z","usage":{"asymmetric_encryption":"rsa_oaep_4096_sha256"}}'
+        headers:
+            Content-Length:
+                - "574"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Mon, 17 Aug 2026 09:47:18 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 36ead61a-4f26-401d-89c2-7b98155882d1
+        status: 200 OK
+        code: 200
+        duration: 115.276288ms
+    - id: 17
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 398fc9c6-41a6-4d6e-9021-542cada245dc
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094718Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?acl=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 698
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><DisplayName>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</DisplayName><ID>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</ID></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</ID><DisplayName>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+        headers:
+            Content-Length:
+                - "698"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:18 GMT
+            X-Amz-Id-2:
+                - txgd4086375535148b6a756-006a82d8a6
+            X-Amz-Request-Id:
+                - txgd4086375535148b6a756-006a82d8a6
+        status: 200 OK
+        code: 200
+        duration: 179.67712ms
+    - id: 18
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 0c0783ef-ddb1-4345-8973-4a5dfda52d2c
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094718Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?object-lock=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 307
+        uncompressed: false
+        body: <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>txgc6cd03b3a23b4bcc8432-006a82d8a7</RequestId><HostId>txgc6cd03b3a23b4bcc8432-006a82d8a7</HostId><Resource>/tf-test-sse-config-6416369524229866375</Resource></Error>
+        headers:
+            Content-Length:
+                - "307"
+            Content-Type:
+                - application/xml
+            Date:
+                - Mon, 17 Aug 2026 09:47:19 GMT
+            X-Amz-Id-2:
+                - txgc6cd03b3a23b4bcc8432-006a82d8a7
+            X-Amz-Request-Id:
+                - txgc6cd03b3a23b4bcc8432-006a82d8a7
+        status: 404 Not Found
+        code: 404
+        duration: 172.03092ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - b48ef4fb-ae1e-45fa-b7bc-4682c2949fc3
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094719Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 264
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>tf-test-sse-config-6416369524229866375</Name><Prefix></Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+        headers:
+            Content-Length:
+                - "264"
+            Content-Type:
+                - application/xml
+            Date:
+                - Mon, 17 Aug 2026 09:47:19 GMT
+            X-Amz-Id-2:
+                - txg90c8bb3f56884530bd2c-006a82d8a7
+            X-Amz-Request-Id:
+                - txg90c8bb3f56884530bd2c-006a82d8a7
+        status: 200 OK
+        code: 200
+        duration: 284.239759ms
+    - id: 20
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 44655860-971b-4177-bce9-37e39e4a0bfa
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094719Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?tagging=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 315
+        uncompressed: false
+        body: <Error><Code>NoSuchTagSet</Code><Message>The TagSet does not exist</Message><RequestId>txg92111cdd07424ee082e6-006a82d8a7</RequestId><HostId>txg92111cdd07424ee082e6-006a82d8a7</HostId><Resource>/tf-test-sse-config-6416369524229866375</Resource><BucketName>tf-test-sse-config-6416369524229866375</BucketName></Error>
+        headers:
+            Content-Length:
+                - "315"
+            Content-Type:
+                - application/xml
+            Date:
+                - Mon, 17 Aug 2026 09:47:19 GMT
+            X-Amz-Id-2:
+                - txg92111cdd07424ee082e6-006a82d8a7
+            X-Amz-Request-Id:
+                - txg92111cdd07424ee082e6-006a82d8a7
+        status: 404 Not Found
+        code: 404
+        duration: 190.866953ms
+    - id: 21
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - ce5c956d-c07c-4e5d-a3c8-ae0621b9b136
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094719Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?cors=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 275
+        uncompressed: false
+        body: <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txg9440738b2928476c8455-006a82d8a7</RequestId><HostId>txg9440738b2928476c8455-006a82d8a7</HostId><Resource>/tf-test-sse-config-6416369524229866375</Resource></Error>
+        headers:
+            Content-Length:
+                - "275"
+            Content-Type:
+                - application/xml
+            Date:
+                - Mon, 17 Aug 2026 09:47:19 GMT
+            X-Amz-Id-2:
+                - txg9440738b2928476c8455-006a82d8a7
+            X-Amz-Request-Id:
+                - txg9440738b2928476c8455-006a82d8a7
+        status: 404 Not Found
+        code: 404
+        duration: 239.462982ms
+    - id: 22
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - a860e407-8b40-4226-8f1d-569e033917a2
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094719Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?versioning=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 107
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <VersioningConfiguration><Status></Status></VersioningConfiguration>
+        headers:
+            Content-Length:
+                - "107"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:19 GMT
+            X-Amz-Id-2:
+                - txgd0f1c5598ade48439c4d-006a82d8a7
+            X-Amz-Request-Id:
+                - txgd0f1c5598ade48439c4d-006a82d8a7
+        status: 200 OK
+        code: 200
+        duration: 274.189619ms
+    - id: 23
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 88380710-bfa0-4527-9511-72efb901ce11
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094719Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?lifecycle=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 348
+        uncompressed: false
+        body: <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist</Message><RequestId>txgd0817781e0ba4545a921-006a82d8a8</RequestId><HostId>txgd0817781e0ba4545a921-006a82d8a8</HostId><Resource>/tf-test-sse-config-6416369524229866375</Resource><BucketName>tf-test-sse-config-6416369524229866375</BucketName></Error>
+        headers:
+            Content-Length:
+                - "348"
+            Content-Type:
+                - application/xml
+            Date:
+                - Mon, 17 Aug 2026 09:47:20 GMT
+            X-Amz-Id-2:
+                - txgd0817781e0ba4545a921-006a82d8a8
+            X-Amz-Request-Id:
+                - txgd0817781e0ba4545a921-006a82d8a8
+        status: 404 Not Found
+        code: 404
+        duration: 98.041797ms
+    - id: 24
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 279fec95-fc88-4188-b435-12b13ba26432
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094720Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?encryption=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 324
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ServerSideEncryptionConfiguration><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>aws:kms</SSEAlgorithm><KMSMasterKeyID>my-kms-key-tf-test</KMSMasterKeyID></ApplyServerSideEncryptionByDefault><BucketKeyEnabled>true</BucketKeyEnabled></Rule></ServerSideEncryptionConfiguration>
+        headers:
+            Content-Length:
+                - "324"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:20 GMT
+            X-Amz-Id-2:
+                - txg5358a9d79ec045dbac96-006a82d8a8
+            X-Amz-Request-Id:
+                - txg5358a9d79ec045dbac96-006a82d8a8
+        status: 200 OK
+        code: 200
+        duration: 109.100243ms
+    - id: 25
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - b26e1eb4-18e9-49b0-93e3-e6f9bc889570
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094720Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?acl=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 698
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><DisplayName>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</DisplayName><ID>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</ID></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</ID><DisplayName>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+        headers:
+            Content-Length:
+                - "698"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:20 GMT
+            X-Amz-Id-2:
+                - txg2560d632daee4bbb9ae3-006a82d8a8
+            X-Amz-Request-Id:
+                - txg2560d632daee4bbb9ae3-006a82d8a8
+        status: 200 OK
+        code: 200
+        duration: 216.009426ms
+    - id: 26
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 75ad1e6f-2970-46bb-a07e-b7c5d9a4a991
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094720Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?encryption=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 324
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ServerSideEncryptionConfiguration><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>aws:kms</SSEAlgorithm><KMSMasterKeyID>my-kms-key-tf-test</KMSMasterKeyID></ApplyServerSideEncryptionByDefault><BucketKeyEnabled>true</BucketKeyEnabled></Rule></ServerSideEncryptionConfiguration>
+        headers:
+            Content-Length:
+                - "324"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:20 GMT
+            X-Amz-Id-2:
+                - txg36cc52a1f1074516bf51-006a82d8a8
+            X-Amz-Request-Id:
+                - txg36cc52a1f1074516bf51-006a82d8a8
+        status: 200 OK
+        code: 200
+        duration: 136.69106ms
+    - id: 27
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 13b8a07f-a224-4a66-86cc-298c86660867
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094720Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?acl=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 698
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><DisplayName>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</DisplayName><ID>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</ID></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</ID><DisplayName>105bdce1-64c0-48ab-899d-868455867ecf:105bdce1-64c0-48ab-899d-868455867ecf</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+        headers:
+            Content-Length:
+                - "698"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Mon, 17 Aug 2026 09:47:21 GMT
+            X-Amz-Id-2:
+                - txg4ebf4ee6bb014ed3b492-006a82d8a9
+            X-Amz-Request-Id:
+                - txg4ebf4ee6bb014ed3b492-006a82d8a9
+        status: 200 OK
+        code: 200
+        duration: 99.586672ms
+    - id: 28
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 2b40419f-51c3-448f-b547-2d152fa2278f
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094721Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/?encryption=
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Date:
+                - Mon, 17 Aug 2026 09:47:21 GMT
+            X-Amz-Id-2:
+                - txg40092b8dd78f4348916e-006a82d8a9
+            X-Amz-Request-Id:
+                - txg40092b8dd78f4348916e-006a82d8a9
+        status: 204 No Content
+        code: 204
+        duration: 154.842145ms
+    - id: 29
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/15a0b327-bad7-49c9-a965-bd006a1aeb3f
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Mon, 17 Aug 2026 09:47:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 839cc1a3-55ab-48dd-b5b4-fa15b1259aa9
+        status: 204 No Content
+        code: 204
+        duration: 186.911645ms
+    - id: 30
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - fddc6b5d-66bf-46ef-89d4-b87ce6fd7bee
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.43.4 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.107.0 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260817T094721Z
+        url: https://tf-test-sse-config-6416369524229866375.s3.nl-ams.scw.cloud/
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Date:
+                - Mon, 17 Aug 2026 09:47:21 GMT
+            X-Amz-Id-2:
+                - txg53d29bde153243a7966a-006a82d8a9
+            X-Amz-Request-Id:
+                - txg53d29bde153243a7966a-006a82d8a9
+        status: 204 No Content
+        code: 204
+        duration: 559.299505ms

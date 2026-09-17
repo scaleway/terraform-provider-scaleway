@@ -132,7 +132,7 @@ When executing the test, the following steps are taken for each `TestStep`:
    For example, to test the `scaleway_instance_server` resource, a valid configuration with the requisite fields is required.
    This results in configuration which looks like this:
 
-    ```hcl
+    ```terraform
     resource "scaleway_instance_server" "server01" {
         type  = "DEV1-S"
         image = "f974feac-abae-4365-b988-8ec7d1cec10d"

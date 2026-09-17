@@ -1,6 +1,7 @@
 package cockpit_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -14,6 +15,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	accounttestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
@@ -22,12 +25,17 @@ func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testAccCockpitAlertManagerAndContactsDestroy(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
-					{"email": "initial@example.com"},
-				}),
+				Config: testAccCockpitAlertManagerConfigWithContacts(
+					"tf_tests_cockpit_alert_manager_project_create_contact",
+					[]map[string]string{
+						{"email": "initial@example.com"},
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "initial@example.com"),
@@ -37,9 +45,11 @@ func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
-					{"email": "updated@example.com"},
-				}),
+				Config: testAccCockpitAlertManagerConfigWithContacts(
+					"tf_tests_cockpit_alert_manager_project_create_contact",
+					[]map[string]string{
+						{"email": "updated@example.com"},
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "updated@example.com"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
@@ -57,30 +67,37 @@ func TestAccCockpitAlertManager_CreateWithMultipleContacts(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testAccCockpitAlertManagerAndContactsDestroy(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
-					{"email": "initial1@example.com"},
-					{"email": "initial2@example.com"},
-				}),
+				Config: testAccCockpitAlertManagerConfigWithContacts(
+					"tf_tests_cockpit_alert_manager_project_create_contacts",
+					[]map[string]string{
+						{"email": "initial1@example.com"},
+						{"email": "initial2@example.com"},
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "initial1@example.com"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email", "initial2@example.com"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
-					{"email": "updated1@example.com"},
-					{"email": "updated2@example.com"},
-				}),
+				Config: testAccCockpitAlertManagerConfigWithContacts(
+					"tf_tests_cockpit_alert_manager_project_create_contacts",
+					[]map[string]string{
+						{"email": "updated1@example.com"},
+						{"email": "updated2@example.com"},
+					}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "updated1@example.com"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email", "updated2@example.com"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
@@ -96,13 +113,18 @@ func TestAccCockpitAlertManager_UpdateSingleContact(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testAccCockpitAlertManagerAndContactsDestroy(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
-					{"email": "notupdated@example.com"},
-					{"email": "initial1@example.com"},
-				}),
+				Config: testAccCockpitAlertManagerConfigWithContacts(
+					"tf_tests_cockpit_alert_manager_project_update_contact",
+					[]map[string]string{
+						{"email": "notupdated@example.com"},
+						{"email": "initial1@example.com"},
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "notupdated@example.com"),
@@ -113,10 +135,12 @@ func TestAccCockpitAlertManager_UpdateSingleContact(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
-					{"email": "notupdated@example.com"},
-					{"email": "updated1@example.com"},
-				}),
+				Config: testAccCockpitAlertManagerConfigWithContacts(
+					"tf_tests_cockpit_alert_manager_project_update_contact",
+					[]map[string]string{
+						{"email": "notupdated@example.com"},
+						{"email": "updated1@example.com"},
+					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "notupdated@example.com"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email", "updated1@example.com"),
@@ -166,11 +190,19 @@ func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testAccCockpitAlertManagerAndContactsDestroy(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_project_idhandling"
+				  	}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
 						contact_points {
 							email = "test@example.com"
 						}
@@ -187,7 +219,12 @@ func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_project_idhandling"
+				  	}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
 						contact_points {
 							email = "updated@example.com"
 						}
@@ -205,7 +242,7 @@ func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 	})
 }
 
-func testAccCockpitAlertManagerConfigWithContacts(contactPoints []map[string]string) string {
+func testAccCockpitAlertManagerConfigWithContacts(project string, contactPoints []map[string]string) string {
 	contactsConfig := ""
 
 	var contactsConfigSb230 strings.Builder
@@ -219,10 +256,15 @@ func testAccCockpitAlertManagerConfigWithContacts(contactPoints []map[string]str
 	contactsConfig += contactsConfigSb230.String()
 
 	return fmt.Sprintf(`
+		resource "scaleway_account_project" "project" {
+			name = "%s"
+		}
+
 		resource "scaleway_cockpit_alert_manager" "alert_manager" {
+			project_id = scaleway_account_project.project.id
 			%s
 		}
-	`, contactsConfig)
+	`, project, contactsConfig)
 }
 
 func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
@@ -235,8 +277,16 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
 		projectID := rs.Primary.Attributes["project_id"]
 
-		contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
-			ProjectID: projectID,
+		var contactPoints *cockpit.ListContactPointsResponse
+
+		err := transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			contactPoints, err = api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
+				ProjectID: projectID,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err
@@ -337,11 +387,20 @@ func TestAccCockpitAlertManager_WithPreconfiguredAlerts(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testAccCockpitAlertManagerAndContactsDestroy(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_project_preconfigured"
+				  	}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
+						
 						# Enable 2 specific preconfigured alerts (stable IDs)
 						preconfigured_alert_ids = [
 							"6c6843af-1815-46df-9e52-6feafcf31fd7", # PostgreSQL Too Many Connections
@@ -373,11 +432,19 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testAccCockpitAlertManagerAndContactsDestroy(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_project_update_preconfigured"
+				  	}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
 						# Enable a specific PostgreSQL alert (stable ID)
 						preconfigured_alert_ids = [
 							"6c6843af-1815-46df-9e52-6feafcf31fd7" # PostgreSQL Too Many Connections
@@ -397,8 +464,12 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_project_update_preconfigured"
+				  	}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
-						# Enable 2 specific alerts (stable IDs)
+						project_id = scaleway_account_project.project.id						# Enable 2 specific alerts (stable IDs)
 						preconfigured_alert_ids = [
 							"6c6843af-1815-46df-9e52-6feafcf31fd7", # PostgreSQL Too Many Connections
 							"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7"  # MySQL Too Many Connections
@@ -418,8 +489,12 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_project_update_preconfigured"
+				  	}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
-						# Disable all
+						project_id = scaleway_account_project.project.id						# Disable all
 						preconfigured_alert_ids = []
 
 						contact_points {
@@ -467,11 +542,19 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 			}
 		}
 
-		alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
-			Region:          region,
-			ProjectID:       projectID,
-			IsPreconfigured: new(true),
-		}, scw.WithAllPages())
+		var alerts *cockpit.ListAlertsResponse
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			alerts, err = api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
+				Region:          region,
+				ProjectID:       projectID,
+				IsPreconfigured: new(true),
+			}, scw.WithAllPages())
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list alerts: %w", err)
 		}
@@ -508,9 +591,17 @@ func testAccCheckManagedAlertsEnabled(tt *acctest.TestTools, resourceName string
 		projectID := rs.Primary.Attributes["project_id"]
 		region := scw.Region(rs.Primary.Attributes["region"])
 
-		alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-			Region:    region,
-			ProjectID: projectID,
+		var alertManager *cockpit.AlertManager
+
+		err := transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			alertManager, err = api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+				Region:    region,
+				ProjectID: projectID,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

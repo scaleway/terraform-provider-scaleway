@@ -419,6 +419,79 @@ func TestAccJobDefinition_WrongSecretReference(t *testing.T) {
 	})
 }
 
+func TestAccJobDefinition_RetryPolicy(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-retry-policy"
+						cpu_limit = 120
+						memory_limit = 256
+						local_storage_capacity = 5120
+						image_uri = "docker.io/alpine:latest"
+
+						retry_policy {
+							max_retries = 5
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-retry-policy"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "retry_policy.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "retry_policy.0.max_retries", "5"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-retry-policy"
+						cpu_limit = 120
+						memory_limit = 256
+						local_storage_capacity = 5120
+						image_uri = "docker.io/alpine:latest"
+
+						retry_policy {
+							max_retries = 0
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-retry-policy"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "retry_policy.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "retry_policy.0.max_retries", "0"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-retry-policy"
+						cpu_limit = 120
+						memory_limit = 256
+						local_storage_capacity = 5120
+						image_uri = "docker.io/alpine:latest"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-retry-policy"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "retry_policy.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckJobDefinitionExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

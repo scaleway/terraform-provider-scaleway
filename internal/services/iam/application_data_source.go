@@ -74,14 +74,14 @@ func DataSourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	diags := resourceIamApplicationRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read iam application state")...)
+	app, err := api.GetApplication(&iam.GetApplicationRequest{
+		ApplicationID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("iam application (%s) not found", appID)
-	}
+	setApplicationState(d, app)
 
 	return nil
 }

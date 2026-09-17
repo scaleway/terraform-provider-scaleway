@@ -31,7 +31,7 @@ data "scaleway_interlink_partner" "by_name" {
 
 - `partner_id` - (Optional) The ID of the partner. Can be a plain UUID or a regional ID. Conflicts with `name`.
 - `name` - (Optional) The name of the partner to filter for. Conflicts with `partner_id`.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the partner operates.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the partner operates.
 
 ## Attributes Reference
 

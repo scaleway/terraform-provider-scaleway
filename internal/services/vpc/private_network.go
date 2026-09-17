@@ -92,6 +92,11 @@ func privateNetworkSchema() map[string]*schema.Schema {
 						Computed:    true,
 						Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
 					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the subnet",
+					},
 				},
 			},
 		},
@@ -140,6 +145,11 @@ func privateNetworkSchema() map[string]*schema.Schema {
 						Type:        schema.TypeInt,
 						Computed:    true,
 						Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
+					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the subnet",
 					},
 				},
 			},
@@ -193,6 +203,11 @@ func privateNetworkSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date and time of the last update of the private network",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the private network",
 		},
 	}
 }
@@ -262,7 +277,7 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	diags := setPrivateNetworkState(d, m, pn, region)
+	diags := setPrivateNetworkState(d, m, pn)
 
 	err = identity.SetRegionalIdentity(d, region, ID)
 	if err != nil {
@@ -272,23 +287,24 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func setPrivateNetworkState(d *schema.ResourceData, m any, pn *vpc.PrivateNetwork, region scw.Region) diag.Diagnostics {
+func setPrivateNetworkState(d *schema.ResourceData, m any, pn *vpc.PrivateNetwork) diag.Diagnostics {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", pn.Name)
-	_ = d.Set("vpc_id", regional.NewIDString(region, pn.VpcID))
+	_ = d.Set("vpc_id", regional.NewIDString(pn.Region, pn.VpcID))
 	_ = d.Set("organization_id", pn.OrganizationID)
 	_ = d.Set("project_id", pn.ProjectID)
 	_ = d.Set("created_at", types.FlattenTime(pn.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(pn.UpdatedAt))
 	_ = d.Set("tags", pn.Tags)
 	_ = d.Set("enable_default_route_propagation", pn.DefaultRoutePropagationEnabled)
-	_ = d.Set("region", region)
+	_ = d.Set("region", pn.Region.String())
 	_ = d.Set("is_regional", true)
 	_ = d.Set("zone", zone)
+	_ = d.Set("srn", pn.Srn)
 
 	ipv4Subnet, ipv6Subnets := FlattenAndSortSubnets(pn.Subnets)
 	_ = d.Set("ipv4_subnet", ipv4Subnet)

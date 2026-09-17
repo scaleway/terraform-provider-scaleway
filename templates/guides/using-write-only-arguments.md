@@ -1,6 +1,7 @@
 ---
 page_title: "Using Write-Only Arguments Guide"
 ---
+
 # Using Write-Only Arguments with the Terraform Scaleway Provider
 
 Write-only arguments in Terraform allow you to handle sensitive data that should not be stored in the Terraform state file. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. This guide explains how to use write-only arguments in the Scaleway Terraform Provider.
@@ -23,6 +24,10 @@ The Scaleway Terraform Provider supports write-only arguments in several resourc
 ### Secret Manager Resources
 
 - [**`scaleway_secret_version`**: `data_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/secret_version#data_wo-1)
+
+### Key Manager Resources
+
+- [**`scaleway_key_manager_key_material`**: `key_material_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/key_manager_key_material#key_material_wo) and [`salt_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/key_manager_key_material#salt_wo)
 
 ### Database Resources
 
@@ -57,7 +62,7 @@ When creating a resource with a write-only argument, you need to provide both th
 ```terraform
 resource "scaleway_secret_version" "sensitive_data" {
   secret_id       = scaleway_secret.main.id
-  data_wo         = "my-super-secret-value"  # This will NOT be stored in state
+  data_wo         = "my-super-secret-value" # This will NOT be stored in state
   data_wo_version = 1
   description     = "Sensitive secret using write-only mode"
 }
@@ -76,10 +81,10 @@ To update a write-only attribute, you must:
 
 ```terraform
 resource "scaleway_secret_version" "sensitive_data" {
-  secret_id      = scaleway_secret.main.id
-  data_wo        = "my-new-super-secret-value"  # Updated secret
-  data_wo_version = 2  # Version incremented from 1 to 2
-  description    = "Updated sensitive secret"
+  secret_id       = scaleway_secret.main.id
+  data_wo         = "my-new-super-secret-value" # Updated secret
+  data_wo_version = 2                           # Version incremented from 1 to 2
+  description     = "Updated sensitive secret"
 }
 ```
 
@@ -137,9 +142,9 @@ Regular attributes' values persist in the state and can be referenced by other r
 
 ```terraform
 resource "scaleway_secret_version" "sensitive_data" {
-  secret_id     = scaleway_secret.main.id
-  data          = "MyNonCriticalS3cr3tP@ssw0rd!"  # Stored in state
-  description   = "Sensitive secret using the regular data argument"
+  secret_id   = scaleway_secret.main.id
+  data        = "MyNonCriticalS3cr3tP@ssw0rd!" # Stored in state
+  description = "Sensitive secret using the regular data argument"
 }
 ```
 
@@ -149,9 +154,9 @@ Write-only attributes' values are never stored in Terraform state nor visible in
 
 ```terraform
 resource "scaleway_secret_version" "sensitive_data" {
-  secret_id         = scaleway_secret.main.id
-  data_wo           = "MyS3cr3tP@ssw0rd!"  # NOT stored in state
-  data_wo_version   = 1
-  description       = "Sensitive secret using the write-only argument"
+  secret_id       = scaleway_secret.main.id
+  data_wo         = "MyS3cr3tP@ssw0rd!" # NOT stored in state
+  data_wo_version = 1
+  description     = "Sensitive secret using the write-only argument"
 }
 ```

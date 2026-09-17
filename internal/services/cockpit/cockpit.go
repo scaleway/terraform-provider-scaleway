@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -101,17 +102,12 @@ func cockpitSchema() map[string]*schema.Schema {
 }
 
 func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	projectID := d.Get("project_id").(string)
-	if projectID == "" {
-		var err error
-
-		projectID, err = getDefaultProjectID(ctx, m)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_ = d.Set("project_id", projectID)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
+
+	_ = d.Set("project_id", projectID)
 
 	if err := setCockpitProjectIdentity(d, projectID); err != nil {
 		return diag.FromErr(err)
@@ -131,12 +127,9 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
-	if projectID == "" {
-		projectID, err = getDefaultProjectID(ctx, m)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	diags := diag.Diagnostics{
@@ -150,11 +143,13 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("plan", d.Get("plan"))
 	_ = d.Set("plan_id", "")
 
-	dataSourcesRes, err := regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
-		Region:    region,
-		ProjectID: projectID,
-		Origin:    "custom",
-	}, scw.WithContext(ctx), scw.WithAllPages())
+	dataSourcesRes, err := retryOn403Value(ctx, func() (*cockpit.ListDataSourcesResponse, error) {
+		return regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
+			Region:    region,
+			ProjectID: projectID,
+			Origin:    "custom",
+		}, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -164,9 +159,11 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
+	grafana, err := retryOn403Value(ctx, func() (*cockpit.Grafana, error) {
+		return api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
+			ProjectID: projectID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -175,8 +172,10 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		grafana.GrafanaURL = createGrafanaURL(projectID, region)
 	}
 
-	alertManager, err := regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-		ProjectID: projectID,
+	alertManager, err := retryOn403Value(ctx, func() (*cockpit.AlertManager, error) {
+		return regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+			ProjectID: projectID,
+		})
 	})
 	if err != nil {
 		return diag.FromErr(err)

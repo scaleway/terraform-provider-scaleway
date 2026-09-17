@@ -64,41 +64,48 @@ func TestAccDataSourceIPs_WithType(t *testing.T) {
 				Config: `
 					resource "scaleway_lb_ip" "ip1" {
 					  zone = "nl-ams-1"
-					}					
+					  tags = ["test-ips-type"]
+					}
 				`,
 			},
 			{
 				Config: `
 					resource "scaleway_lb_ip" "ip1" {
 					  zone = "nl-ams-1"
+					  tags = ["test-ips-type"]
 					}
 
 					resource "scaleway_lb_ip" "ip2" {
 					  is_ipv6 = true
 					  zone    = "nl-ams-1"
-					}					
+					  tags    = ["test-ips-type"]
+					}
 				`,
 			},
 			{
 				Config: `
 					resource "scaleway_lb_ip" "ip1" {
 					  zone = "nl-ams-1"
+					  tags = ["test-ips-type"]
 					}
-					
+
 					resource "scaleway_lb_ip" "ip2" {
 					  is_ipv6 = true
 					  zone    = "nl-ams-1"
+					  tags    = ["test-ips-type"]
 					}
-					
+
 					resource "scaleway_lb_ip" "ip3" {
 					  zone = "nl-ams-1"
+					  tags = ["test-ips-type"]
 					}
-					
+
 					data "scaleway_lb_ips" "ips_by_type" {
 					  ip_type    = "ipv4"
 					  zone       = "nl-ams-1"
+					  tags       = ["test-ips-type"]
 					  depends_on = [scaleway_lb_ip.ip1, scaleway_lb_ip.ip2, scaleway_lb_ip.ip3]
-					}					
+					}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.scaleway_lb_ips.ips_by_type", "ips.#", "2"),
@@ -123,34 +130,34 @@ func TestAccDataSourceIPs_WithTags(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_lb_ip ip1 {
-					  tags = [ "ipv4", "ip" ]
+					  tags = [ "test-ips-tags", "ipv4" ]
 					}
 				`,
 			},
 			{
 				Config: `
 					resource scaleway_lb_ip ip1 {
-					  tags = [ "ipv4", "ip" ]
+					  tags = [ "test-ips-tags", "ipv4" ]
 					}
 					resource scaleway_lb_ip ip2 {
-					  tags = [ "ipv4", "ip" ]
+					  tags = [ "test-ips-tags", "ipv4" ]
 					}
 				`,
 			},
 			{
 				Config: `
 					resource scaleway_lb_ip ip1 {
-					  tags = [ "ipv4", "ip" ]
+					  tags = [ "test-ips-tags", "ipv4" ]
 					}
 					resource scaleway_lb_ip ip2 {
-					  tags = [ "ipv4", "ip" ]
+					  tags = [ "test-ips-tags", "ipv4" ]
 					}
 					resource scaleway_lb_ip ip3 {
-					  tags = [ "other", "tags" ]
+					  tags = [ "test-ips-tags-other", "tags" ]
 					}
 
 					data "scaleway_lb_ips" "ips_by_tags" {
-					    tags = [ "ipv4", "ip" ]
+					    tags = [ "test-ips-tags", "ipv4" ]
 						depends_on = [scaleway_lb_ip.ip1, scaleway_lb_ip.ip2, scaleway_lb_ip.ip3]
 					}
 					`,

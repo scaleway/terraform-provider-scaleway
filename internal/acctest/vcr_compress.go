@@ -7,8 +7,9 @@ import (
 
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
-	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
-	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
+	datalabapi "github.com/scaleway/scaleway-sdk-go/api/datalab/v1beta1"
 	datawarehouseapi "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
@@ -16,6 +17,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	kafkaapi "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
+	messageqapi "github.com/scaleway/scaleway-sdk-go/api/messageq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
@@ -44,9 +46,11 @@ var transientStates = map[string]bool{
 	block.VolumeStatusResizing.String():     true,
 	block.VolumeStatusSnapshotting.String(): true,
 
-	container.ContainerStatusCreating.String(): true,
-	container.ContainerStatusDeleting.String(): true,
-	container.ContainerStatusPending.String():  true,
+	container.ContainerStatusCreating.String():  true,
+	container.ContainerStatusDeleting.String():  true,
+	container.ContainerStatusLocking.String():   true,
+	container.ContainerStatusUpdating.String():  true,
+	container.ContainerStatusUpgrading.String(): true,
 
 	datawarehouseapi.DeploymentStatusCreating.String():    true,
 	datawarehouseapi.DeploymentStatusConfiguring.String(): true,
@@ -56,6 +60,10 @@ var transientStates = map[string]bool{
 	datawarehouseapi.DeploymentStatusUnlocking.String():   true,
 	datawarehouseapi.DeploymentStatusStopping.String():    true,
 	datawarehouseapi.DeploymentStatusStarting.String():    true,
+
+	datalabapi.DatalabStatusCreating.String(): true,
+	datalabapi.DatalabStatusUpdating.String(): true,
+	datalabapi.DatalabStatusDeleting.String(): true,
 
 	domain.DNSZoneStatusPending.String(): true,
 
@@ -106,6 +114,13 @@ var transientStates = map[string]bool{
 	searchdbapi.DeploymentStatusCreating.String():  true,
 	searchdbapi.DeploymentStatusDeleting.String():  true,
 	searchdbapi.DeploymentStatusUpgrading.String(): true,
+
+	messageqapi.DeploymentStatusCreating.String():     true,
+	messageqapi.DeploymentStatusInitializing.String(): true,
+	messageqapi.DeploymentStatusUpgrading.String():    true,
+	messageqapi.DeploymentStatusDeleting.String():     true,
+	messageqapi.DeploymentStatusLocking.String():      true,
+	messageqapi.DeploymentStatusUnlocking.String():    true,
 
 	tem.DomainStatusPending.String(): true,
 }

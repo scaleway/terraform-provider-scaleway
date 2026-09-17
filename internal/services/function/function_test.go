@@ -30,7 +30,7 @@ func TestAccFunction_Basic(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 						tags = ["tag1", "tag2"]
@@ -39,7 +39,7 @@ func TestAccFunction_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionExists(tt, "scaleway_function.main"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "name", "foobar"),
-					resource.TestCheckResourceAttr("scaleway_function.main", "runtime", "node22"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "runtime", "node26"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "privacy", "private"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "handler", "handler.handle"),
 					resource.TestCheckResourceAttrSet("scaleway_function.main", "namespace_id"),
@@ -68,7 +68,7 @@ func TestAccFunction_Timeout(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 						timeout = 10
@@ -77,7 +77,7 @@ func TestAccFunction_Timeout(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionExists(tt, "scaleway_function.main"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "name", "foobar"),
-					resource.TestCheckResourceAttr("scaleway_function.main", "runtime", "node22"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "runtime", "node26"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "privacy", "private"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "handler", "handler.handle"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "timeout", "10"),
@@ -101,7 +101,7 @@ func TestAccFunction_NoName(t *testing.T) {
 
 					resource scaleway_function main {
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -130,7 +130,7 @@ func TestAccFunction_EnvironmentVariables(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 						environment_variables = {
@@ -155,7 +155,7 @@ func TestAccFunction_EnvironmentVariables(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 						environment_variables = {
@@ -192,7 +192,7 @@ func TestAccFunction_Upload(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "go122"
+						runtime = "go126"
 						privacy = "private"
 						handler = "Handle"
 						zip_file = "testfixture/gofunction.zip"
@@ -221,7 +221,7 @@ func TestAccFunction_Deploy(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "go122"
+						runtime = "go126"
 						privacy = "private"
 						handler = "Handle"
 						zip_file = "testfixture/gofunction.zip"
@@ -239,7 +239,7 @@ func TestAccFunction_Deploy(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "go122"
+						runtime = "go126"
 						privacy = "private"
 						handler = "Handle"
 						zip_file = "testfixture/gofunction.zip"
@@ -270,7 +270,7 @@ func TestAccFunction_HTTPOption(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 						http_option = "enabled"
@@ -288,7 +288,7 @@ func TestAccFunction_HTTPOption(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 						http_option = "redirected"
@@ -306,7 +306,7 @@ func TestAccFunction_HTTPOption(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -335,7 +335,7 @@ func TestAccFunction_Sandbox(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -352,7 +352,7 @@ func TestAccFunction_Sandbox(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 						sandbox = "v2"
@@ -370,7 +370,7 @@ func TestAccFunction_Sandbox(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 						sandbox = "v1"
@@ -388,7 +388,7 @@ func TestAccFunction_Sandbox(t *testing.T) {
 					resource scaleway_function main {
 						name = "foobar"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 						sandbox = "v2"
@@ -431,15 +431,13 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_function_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_function_namespace main {}
 
 					resource scaleway_function f00 {
 						name = "test-acc-function-pn-00"
 						namespace_id = scaleway_function_namespace.main.id
 						privacy = "private"
-						runtime = "go123"
+						runtime = "go126"
 						handler = "Handle"
 						sandbox = "v1"
 						private_network_id = scaleway_vpc_private_network.pn00.id
@@ -447,7 +445,6 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionExists(tt, "scaleway_function.f00"),
-					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "activate_vpc_integration", "true"),
 					resource.TestCheckResourceAttr("scaleway_function.f00", "sandbox", "v1"),
 					resource.TestCheckResourceAttrPair("scaleway_function.f00", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
 				),
@@ -468,15 +465,13 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_function_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_function_namespace main {}
 
 					resource scaleway_function f00 {
 						name = "test-acc-function-pn-f00"
 						namespace_id = scaleway_function_namespace.main.id
 						privacy = "private"
-						runtime = "go123"
+						runtime = "go126"
 						handler = "Handle"
 						sandbox = "v1"
 						private_network_id = scaleway_vpc_private_network.pn00.id
@@ -486,7 +481,7 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 						name = "test-acc-function-pn-f01"
 						namespace_id = scaleway_function_namespace.main.id
 						privacy = "private"
-						runtime = "go123"
+						runtime = "go126"
 						handler = "Handle"
 						sandbox = "v1"
 						private_network_id = scaleway_vpc_private_network.pn00.id
@@ -496,7 +491,7 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 						name = "test-acc-function-pn-f02"
 						namespace_id = scaleway_function_namespace.main.id
 						privacy = "private"
-						runtime = "go123"
+						runtime = "go126"
 						handler = "Handle"
 						sandbox = "v1"
 						private_network_id = scaleway_vpc_private_network.pn00.id
@@ -530,15 +525,13 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_function_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_function_namespace main {}
 
 					resource scaleway_function f00 {
 						name = "test-acc-function-pn-f00"
 						namespace_id = scaleway_function_namespace.main.id
 						privacy = "private"
-						runtime = "go123"
+						runtime = "go126"
 						handler = "Handle"
 						sandbox = "v1"
 					}
@@ -547,7 +540,7 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 						name = "test-acc-function-pn-f01"
 						namespace_id = scaleway_function_namespace.main.id
 						privacy = "private"
-						runtime = "go123"
+						runtime = "go126"
 						handler = "Handle"
 						sandbox = "v1"
 						private_network_id = scaleway_vpc_private_network.pn01.id
@@ -557,7 +550,7 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 						name = "test-acc-function-pn-02"
 						namespace_id = scaleway_function_namespace.main.id
 						privacy = "private"
-						runtime = "go123"
+						runtime = "go126"
 						handler = "Handle"
 						sandbox = "v1"
 						private_network_id = scaleway_vpc_private_network.pn00.id

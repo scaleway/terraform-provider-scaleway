@@ -2,9 +2,10 @@
 subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit"
 ---
+
 # scaleway_cockpit
 
-~> **Important:**  The data source `scaleway_cockpit` has been deprecated and will no longer be supported. Instead, use resource `scaleway_cockpit`.
+~> **Important:** The data source `scaleway_cockpit` has been deprecated and will no longer be supported. Instead, use resource `scaleway_cockpit`.
 
 -> **Note:**
 As of April 2024, Cockpit has introduced [regionalization](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#region) to offer more flexibility and resilience.
@@ -21,12 +22,12 @@ The following commands allow you to:
 - get information on the Cockpit associated with your Scaleway default Project
 - get information on the Cockpit associated with a specific Scaleway Project
 
-```hcl
+```terraform
 // Get the default Project's Cockpit
 data "scaleway_cockpit" "main" {}
 ```
 
-```hcl
+```terraform
 // Get a specific Project's Cockpit
 data "scaleway_cockpit" "main" {
   project_id = "11111111-1111-1111-1111-111111111111"
@@ -37,7 +38,7 @@ data "scaleway_cockpit" "main" {
 
 This section lists the arguments that you can provide to the `scaleway_cockpit` data source to filter and retrieve the desired Cockpit.
 
-- `project_id` - Specifies the ID of the Scaleway Project that the Cockpit is associated with. If not specified, it defaults to the Project ID specified in the [provider configuration](../index.md#project_id).
+- `project_id` - Specifies the ID of the Scaleway Project that the Cockpit is associated with. If not specified, it defaults to the Project ID specified in the [provider configuration](../index.md#arguments-reference).
 
 - `plan` - (Optional) Specifies the name or ID of the pricing plan to use.
 

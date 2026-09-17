@@ -7,6 +7,44 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+func expandPrefixFilters(raw any) ([]scw.IPNet, error) {
+	if raw == nil {
+		return nil, nil
+	}
+
+	rawList, ok := raw.([]any)
+	if !ok || len(rawList) == 0 {
+		return nil, nil
+	}
+
+	prefixes := make([]scw.IPNet, 0, len(rawList))
+	for _, v := range rawList {
+		ipNet, err := types.ExpandIPNet(v.(string))
+		if err != nil {
+			return nil, err
+		}
+
+		prefixes = append(prefixes, ipNet)
+	}
+
+	return prefixes, nil
+}
+
+func flattenPrefixFilters(prefixes []scw.IPNet) ([]string, error) {
+	res := make([]string, 0, len(prefixes))
+
+	for _, p := range prefixes {
+		flattened, err := types.FlattenIPNet(p)
+		if err != nil {
+			return nil, err
+		}
+
+		res = append(res, flattened)
+	}
+
+	return res, nil
+}
+
 func flattenPartners(region scw.Region, partners []*interlink.Partner) []map[string]any {
 	result := make([]map[string]any, len(partners))
 
@@ -23,6 +61,30 @@ func flattenPartners(region scw.Region, partners []*interlink.Partner) []map[str
 	}
 
 	return result
+}
+
+func flattenBgpConfig(config *interlink.BgpConfig) (any, error) {
+	if config == nil {
+		return nil, nil
+	}
+
+	ipv4, err := types.FlattenIPNet(config.IPv4)
+	if err != nil {
+		return nil, err
+	}
+
+	ipv6, err := types.FlattenIPNet(config.IPv6)
+	if err != nil {
+		return nil, err
+	}
+
+	return []map[string]any{
+		{
+			"asn":  int(config.Asn),
+			"ipv4": ipv4,
+			"ipv6": ipv6,
+		},
+	}, nil
 }
 
 func flattenPops(pops []*interlink.Pop) []map[string]any {

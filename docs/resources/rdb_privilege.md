@@ -53,7 +53,7 @@ The following arguments are supported:
 
 - `permission` - (Required) Desired permission level. Valid values are `readonly`, `readwrite`, `all`, `custom` and `none`.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
 
 ## Attributes Reference
 
@@ -81,7 +81,7 @@ resource "scaleway_rdb_privilege" "app" {
   user_name     = "app_user"
   database_name = "mydb"
   permission    = "readwrite"
-  
+
   # Later, after new objects are created externally:
   # effective_permission = "custom"  (computed)
   # permission_status    = "drifted" (computed)
@@ -98,7 +98,7 @@ terraform apply
 
 The plan will typically show:
 
-```diff
+```text
 ~ resource "scaleway_rdb_privilege" "app" {
     ~ permission = "custom" -> "readwrite"
 }

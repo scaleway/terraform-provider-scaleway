@@ -60,10 +60,21 @@ func deploymentSchema() map[string]*schema.Schema {
 			Description: "OpenSearch version to use",
 		},
 		"node_amount": {
-			Type:        schema.TypeInt,
-			Required:    true,
-			ForceNew:    true,
-			Description: "Number of nodes",
+			Type:          schema.TypeInt,
+			Optional:      true,
+			ForceNew:      true,
+			Deprecated:    "Please use node_count instead",
+			ConflictsWith: []string{"node_count"},
+			ExactlyOneOf:  []string{"node_count"},
+			Description:   "Number of nodes",
+		},
+		"node_count": {
+			Type:          schema.TypeInt,
+			Optional:      true,
+			ForceNew:      true,
+			ConflictsWith: []string{"node_amount"},
+			ExactlyOneOf:  []string{"node_amount"},
+			Description:   "Number of nodes",
 		},
 		"node_type": {
 			Type:        schema.TypeString,
@@ -87,7 +98,6 @@ func deploymentSchema() map[string]*schema.Schema {
 		"private_network": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			ForceNew:    true,
 			MaxItems:    1,
 			Description: "Private network configuration",
 			Elem: &schema.Resource{
@@ -201,13 +211,15 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	nodeCount := uint32(deploymentNodeCountFromConfig(d))
+
 	req := &searchdbapi.CreateDeploymentRequest{
-		Region:     region,
-		ProjectID:  d.Get("project_id").(string),
-		Name:       types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
-		Version:    d.Get("version").(string),
-		NodeAmount: uint32(d.Get("node_amount").(int)),
-		NodeType:   d.Get("node_type").(string),
+		Region:    region,
+		ProjectID: d.Get("project_id").(string),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
+		Version:   d.Get("version").(string),
+		NodeCount: &nodeCount,
+		NodeType:  d.Get("node_type").(string),
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
@@ -229,17 +241,17 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 			sizeGB := uint64(volumeMap["size_in_gb"].(int))
 			req.Volume = &searchdbapi.Volume{
 				Type:      searchdbapi.VolumeType(volumeMap["type"].(string)),
-				SizeBytes: scw.Size(sizeGB * 1000 * 1000 * 1000), // Convert GB to bytes
+				SizeBytes: scw.Size(sizeGB * 1000 * 1000 * 1000),
 			}
 		}
 	}
 
-	// Handle endpoint configuration
 	if v, ok := d.GetOk("private_network"); ok {
 		pnList := v.([]any)
 		if len(pnList) > 0 {
 			pnMap := pnList[0].(map[string]any)
 			pnID := locality.ExpandID(pnMap["private_network_id"].(string))
+
 			req.Endpoints = []*searchdbapi.EndpointSpec{
 				{
 					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
@@ -249,7 +261,6 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 	} else {
-		// Create public endpoint by default
 		req.Endpoints = []*searchdbapi.EndpointSpec{
 			{
 				Public: &searchdbapi.EndpointSpecPublicDetails{},
@@ -308,7 +319,7 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 	_ = d.Set("name", deployment.Name)
 	_ = d.Set("tags", types.FlattenSliceString(deployment.Tags))
 	_ = d.Set("version", deployment.Version)
-	_ = d.Set("node_amount", int(deployment.NodeAmount))
+	setDeploymentNodeCountState(d, deployment)
 	_ = d.Set("node_type", deployment.NodeType)
 	_ = d.Set("status", string(deployment.Status))
 
@@ -330,8 +341,51 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 		})
 	}
 
-	_ = d.Set("endpoints", flattenEndpoints(deployment.Endpoints))
-	_ = d.Set("public_dashboard_url", publicDashboardURLFromEndpoints(deployment.Endpoints))
+	// API may briefly return both public and private endpoints during a switch.
+	// In state, keep only the endpoint matching Terraform config.
+	allEndpoints := deployment.Endpoints
+	filteredEndpoints := allEndpoints
+
+	if pnRaw, ok := d.GetOk("private_network"); ok {
+		pnList := pnRaw.([]any)
+		if len(pnList) > 0 {
+			pnMap := pnList[0].(map[string]any)
+			desiredPNID := locality.ExpandID(pnMap["private_network_id"].(string))
+
+			filteredEndpoints = nil
+
+			for _, ep := range allEndpoints {
+				if ep == nil || ep.PrivateNetwork == nil {
+					continue
+				}
+
+				if ep.PrivateNetwork.PrivateNetworkID == desiredPNID {
+					filteredEndpoints = append(filteredEndpoints, ep)
+				}
+			}
+
+			if len(filteredEndpoints) == 0 {
+				filteredEndpoints = allEndpoints
+			}
+		}
+	} else {
+		filteredEndpoints = nil
+
+		for _, ep := range allEndpoints {
+			if ep == nil || ep.Public == nil || ep.PrivateNetwork != nil {
+				continue
+			}
+
+			filteredEndpoints = append(filteredEndpoints, ep)
+		}
+
+		if len(filteredEndpoints) == 0 {
+			filteredEndpoints = allEndpoints
+		}
+	}
+
+	_ = d.Set("endpoints", flattenEndpoints(filteredEndpoints))
+	_ = d.Set("public_dashboard_url", publicDashboardURLFromEndpoints(allEndpoints))
 
 	return nil
 }
@@ -366,6 +420,108 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 		if changed {
 			_, err := api.UpdateDeployment(req, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if d.HasChange("private_network") {
+		deployment, err := waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// Determine the desired endpoint state from the Terraform config.
+		desiredPrivate := false
+
+		var pnID string
+
+		if v, ok := d.GetOk("private_network"); ok {
+			pnList := v.([]any)
+			if len(pnList) > 0 {
+				desiredPrivate = true
+				pnMap := pnList[0].(map[string]any)
+				pnID = locality.ExpandID(pnMap["private_network_id"].(string))
+			}
+		}
+
+		// SearchDB keeps a public dashboard endpoint alongside private API endpoints.
+		// Never delete public endpoints when managing private_network: the API ignores
+		// (or never completes) those deletes, which would hang waitForEndpointsDeleted.
+		// Only reconcile private endpoints relative to the desired private_network_id.
+		var deletedEndpointIDs []string
+
+		hasDesiredEndpoint := false
+
+		for _, endpoint := range deployment.Endpoints {
+			if endpoint == nil {
+				continue
+			}
+
+			if endpoint.Public != nil && endpoint.PrivateNetwork == nil {
+				if !desiredPrivate {
+					hasDesiredEndpoint = true
+				}
+
+				continue
+			}
+
+			if endpoint.PrivateNetwork == nil {
+				continue
+			}
+
+			if desiredPrivate && endpoint.PrivateNetwork.PrivateNetworkID == pnID {
+				hasDesiredEndpoint = true
+
+				continue
+			}
+
+			if err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
+				Region:     region,
+				EndpointID: endpoint.ID,
+			}, scw.WithContext(ctx)); err != nil {
+				return diag.FromErr(err)
+			}
+
+			deletedEndpointIDs = append(deletedEndpointIDs, endpoint.ID)
+		}
+
+		// DeleteEndpoint returns 204 immediately but the removal is asynchronous.
+		// waitForDeployment only checks the deployment's top-level status, which stays
+		// "ready" during endpoint operations, so we must poll GetDeployment until the
+		// deleted endpoints are actually gone before creating new ones.
+		if len(deletedEndpointIDs) > 0 {
+			if err := waitForEndpointsDeleted(ctx, api, region, id, deletedEndpointIDs, d.Timeout(schema.TimeoutUpdate)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		// Create the desired endpoint only if it doesn't already exist.
+		if !hasDesiredEndpoint {
+			var spec *searchdbapi.EndpointSpec
+			if desiredPrivate {
+				spec = &searchdbapi.EndpointSpec{
+					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
+						PrivateNetworkID: pnID,
+					},
+				}
+			} else {
+				spec = &searchdbapi.EndpointSpec{
+					Public: &searchdbapi.EndpointSpecPublicDetails{},
+				}
+			}
+
+			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
+				Region:       region,
+				DeploymentID: id,
+				EndpointSpec: spec,
+			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
 			}

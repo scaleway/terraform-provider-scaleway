@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -40,7 +41,7 @@ func backendStageSchema() map[string]*schema.Schema {
 		"s3_backend_config": {
 			Type:          schema.TypeList,
 			Optional:      true,
-			ConflictsWith: []string{"lb_backend_config"},
+			ConflictsWith: []string{"lb_backend_config", "container_backend_config", "function_backend_config"},
 			MaxItems:      1,
 			Description:   "The Scaleway Object Storage origin bucket (S3) linked to the backend stage",
 			Elem: &schema.Resource{
@@ -66,7 +67,7 @@ func backendStageSchema() map[string]*schema.Schema {
 		"lb_backend_config": {
 			Type:          schema.TypeList,
 			Optional:      true,
-			ConflictsWith: []string{"s3_backend_config"},
+			ConflictsWith: []string{"s3_backend_config", "container_backend_config", "function_backend_config"},
 			Description:   "The Scaleway Load Balancer origin linked to the backend stage",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -111,6 +112,42 @@ func backendStageSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"container_backend_config": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			MaxItems:      1,
+			ConflictsWith: []string{"s3_backend_config", "lb_backend_config", "function_backend_config"},
+			Description:   "The Scaleway Serverless Container backend linked to the backend stage",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"container_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      "ID of the Serverless Container",
+						DiffSuppressFunc: dsf.Locality,
+					},
+					"region": regional.Schema(),
+				},
+			},
+		},
+		"function_backend_config": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			MaxItems:      1,
+			ConflictsWith: []string{"s3_backend_config", "lb_backend_config", "container_backend_config"},
+			Description:   "The Scaleway Serverless Function backend linked to the backend stage",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"function_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      "ID of the Serverless Function",
+						DiffSuppressFunc: dsf.Locality,
+					},
+					"region": regional.Schema(),
+				},
+			},
+		},
 		"created_at": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -126,7 +163,7 @@ func backendStageSchema() map[string]*schema.Schema {
 }
 
 func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := edgeServicesAPIWithZone(d, m)
+	api, zone, region, err := edgeServicesAPIWithZoneAndRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -143,6 +180,14 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 		req.ScalewayLB = expandLBBackendConfig(d, zone, lbConfig)
 	}
 
+	if containerConfig, ok := d.GetOk("container_backend_config"); ok {
+		req.ScalewayServerlessContainer = expandContainerBackendConfig(containerConfig, region)
+	}
+
+	if functionConfig, ok := d.GetOk("function_backend_config"); ok {
+		req.ScalewayServerlessFunction = expandFunctionBackendConfig(functionConfig, region)
+	}
+
 	backendStage, err := api.CreateBackendStage(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -156,7 +201,7 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 }
 
 func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := edgeServicesAPIWithZone(d, m)
+	api, zone, _, err := edgeServicesAPIWithZoneAndRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -197,11 +242,19 @@ func setBackendStageState(d *schema.ResourceData, backendStage *edgeservices.Bac
 		_ = d.Set("lb_backend_config", flattenLBBackendConfig(zone, backendStage.ScalewayLB))
 	}
 
+	if backendStage.ScalewayServerlessContainer != nil {
+		_ = d.Set("container_backend_config", flattenContainerBackendConfig(backendStage.ScalewayServerlessContainer))
+	}
+
+	if backendStage.ScalewayServerlessFunction != nil {
+		_ = d.Set("function_backend_config", flattenFunctionBackendConfig(backendStage.ScalewayServerlessFunction))
+	}
+
 	return nil
 }
 
 func ResourceBackendStageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := edgeServicesAPIWithZone(d, m)
+	api, zone, region, err := edgeServicesAPIWithZoneAndRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -219,6 +272,16 @@ func ResourceBackendStageUpdate(ctx context.Context, d *schema.ResourceData, m a
 
 	if d.HasChange("lb_backend_config") {
 		updateRequest.ScalewayLB = expandLBBackendConfig(d, zone, d.Get("lb_backend_config"))
+		hasChanged = true
+	}
+
+	if d.HasChange("container_backend_config") {
+		updateRequest.ScalewayServerlessContainer = expandContainerBackendConfig(d.Get("container_backend_config"), region)
+		hasChanged = true
+	}
+
+	if d.HasChange("function_backend_config") {
+		updateRequest.ScalewayServerlessFunction = expandFunctionBackendConfig(d.Get("function_backend_config"), region)
 		hasChanged = true
 	}
 

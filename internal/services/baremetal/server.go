@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -446,7 +447,10 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		if file != "" {
 			todecode, _ := file.(string)
 
-			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
+			decoder := json.NewDecoder(strings.NewReader(todecode))
+			decoder.DisallowUnknownFields()
+
+			err = decoder.Decode(&partitioningSchema)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -820,6 +824,21 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		ServicePassword: types.ExpandStringPtr(servicePassword),
 	}
 
+	if file, ok := d.GetOk("partitioning"); ok {
+		partitioningSchema := baremetal.Schema{}
+
+		if file != "" {
+			todecode, _ := file.(string)
+
+			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			installReq.PartitioningSchema = &partitioningSchema
+		}
+	}
+
 	if d.HasChange("os") {
 		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 			return diags
@@ -838,7 +857,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	var diags diag.Diagnostics
 
-	if d.HasChanges("ssh_key_ids", "user", "password", "password_wo_version", "service_password", "service_password_wo_version", "reinstall_on_config_changes") {
+	if d.HasChanges("ssh_key_ids", "user", "password", "password_wo_version", "service_password", "service_password_wo_version", "partition", "reinstall_on_config_changes") {
 		if !d.Get("reinstall_on_config_changes").(bool) && !d.HasChange("os") {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,

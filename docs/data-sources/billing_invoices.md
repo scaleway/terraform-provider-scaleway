@@ -9,7 +9,7 @@ Gets information about your Scaleway invoices.
 
 ## Example Usage
 
-```hcl
+```terraform
 # List invoices starting after a certain date
 data "scaleway_billing_invoices" "my-invoices" {
   started_after = "2023-10-01T00:00:00Z"
@@ -29,7 +29,7 @@ data "scaleway_billing_invoices" "my-invoices" {
 
 - `invoice_type` - (Optional) Invoices with the given type are listed. Valid values are `periodic` and `purchase`.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the invoice list is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the organization the invoice list is associated with.
 
 ## Attributes Reference
 

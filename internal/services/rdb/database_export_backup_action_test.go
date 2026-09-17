@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccActionRDBDatabaseBackupExport_Basic(t *testing.T) {
@@ -86,10 +87,18 @@ func isBackupExported(tt *acctest.TestTools, resourceName string) resource.TestC
 
 		api := rdbSDK.NewAPI(tt.Meta.ScwClient())
 
-		backup, err := api.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
-			Region:           region,
-			DatabaseBackupID: id,
-		}, scw.WithContext(context.Background()))
+		var backup *rdbSDK.DatabaseBackup
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			backup, err = api.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
+				Region:           region,
+				DatabaseBackupID: id,
+			}, scw.WithContext(context.Background()))
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to get backup: %w", err)
 		}

@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -54,6 +55,7 @@ func ResourceCluster() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    clusterSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: customdiff.All(
 			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 				autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
@@ -297,6 +299,12 @@ func clusterSchema() map[string]*schema.Schema {
 			Description:  "The IP used for the DNS Service.",
 			ValidateFunc: validation.IsIPAddress,
 		},
+		"upgrade_pools": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.",
+		},
 		"region":          regional.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -360,6 +368,11 @@ func clusterSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The status of the cluster",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the cluster",
 		},
 	}
 }
@@ -452,6 +465,12 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	autoscalerReq.MaxGracefulTerminationSec = new(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+
+	autoscalerReq.SkipNodesWithLocalStorage = new(d.Get("autoscaler_config.0.skip_nodes_with_local_storage").(bool))
+
+	if logLevel, ok := d.GetOk("autoscaler_config.0.log_level"); ok {
+		autoscalerReq.LogLevel = new(int32(logLevel.(int)))
+	}
 
 	req.AutoscalerConfig = autoscalerReq
 
@@ -571,7 +590,10 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 		return append(diag.FromErr(err), diags...)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if strings.Contains(clusterType.(string), "multicloud") {
 		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
@@ -621,7 +643,21 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("region", string(region))
+	diagnostics := setClusterState(ctx, d, cluster, k8sAPI)
+	if diagnostics.HasError() {
+		return diagnostics
+	}
+
+	err = identity.SetRegionalIdentity(d, cluster.Region, cluster.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func setClusterState(ctx context.Context, d *schema.ResourceData, cluster *k8s.Cluster, k8sAPI *k8s.API) diag.Diagnostics {
+	_ = d.Set("region", cluster.Region)
 	_ = d.Set("name", cluster.Name)
 	_ = d.Set("type", cluster.Type)
 	_ = d.Set("organization_id", cluster.OrganizationID)
@@ -641,6 +677,8 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	// if autoupgrade is enabled, we only set the minor k8s version (x.y)
 	version := cluster.Version
+
+	var err error
 	if cluster.AutoUpgrade != nil && cluster.AutoUpgrade.Enabled {
 		version, err = GetMinorVersionFromFull(version)
 		if err != nil {
@@ -662,19 +700,22 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("pod_cidr", cluster.PodCidr.String())
 	_ = d.Set("service_cidr", cluster.ServiceCidr.String())
 	_ = d.Set("service_dns_ip", cluster.ServiceDNSIP.String())
+	_ = d.Set("srn", cluster.Srn)
 
 	////
 	// Read kubeconfig
 	////
-	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, region, clusterID)
+	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, cluster.Region, cluster.ID)
 	if err != nil {
 		if httperrors.Is403(err) {
-			return diag.Diagnostics{diag.Diagnostic{
-				Severity:      diag.Warning,
-				Summary:       "Cannot read kubeconfig: unauthorized",
-				Detail:        "Got 403 while reading kubeconfig, please check your permissions",
-				AttributePath: cty.GetAttrPath("kubeconfig"),
-			}}
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "Cannot read kubeconfig: unauthorized",
+					Detail:        "Got 403 while reading kubeconfig, please check your permissions",
+					AttributePath: cty.GetAttrPath("kubeconfig"),
+				},
+			}
 		}
 
 		return diag.FromErr(err)
@@ -860,6 +901,16 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 		autoscalerReq.MaxGracefulTerminationSec = new(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
 	}
 
+	// Changes for "autoscaler_config.0.skip_nodes_with_local_storage" are not properly picked up by Terraform since the attribute is a bool nested in an Optional/Computed block
+	skipNodesWithLocalStorage, skipNodesWithLocalStorageSet := meta.GetRawConfigForKey(d, "autoscaler_config.0.skip_nodes_with_local_storage", cty.Bool)
+	if skipNodesWithLocalStorageSet {
+		autoscalerReq.SkipNodesWithLocalStorage = new(skipNodesWithLocalStorage.(bool))
+	}
+
+	if d.HasChange("autoscaler_config.0.log_level") {
+		autoscalerReq.LogLevel = new(int32(d.Get("autoscaler_config.0.log_level").(int)))
+	}
+
 	updateRequest.AutoscalerConfig = autoscalerReq
 
 	////
@@ -924,12 +975,14 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	////
 	// Upgrade if needed
 	////
+	upgradePools := d.Get("upgrade_pools").(bool)
+
 	if canUpgrade {
 		upgradeRequest := &k8s.UpgradeClusterRequest{
 			Region:       region,
 			ClusterID:    clusterID,
 			Version:      version,
-			UpgradePools: true,
+			UpgradePools: upgradePools,
 		}
 
 		_, err = k8sAPI.UpgradeCluster(upgradeRequest)
@@ -967,7 +1020,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 		}
 	}
 
-	return append(ResourceK8SClusterRead(ctx, d, m), diags...)
+	return append(diags, ResourceK8SClusterRead(ctx, d, m)...)
 }
 
 func ResourceK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -1066,6 +1119,18 @@ func autoscalerConfigSchema() *schema.Resource {
 				Optional:    true,
 				Default:     600,
 				Description: "Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node",
+			},
+			"skip_nodes_with_local_storage": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "If true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath.",
+			},
+			"log_level": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Autoscaler logging level expressed from 0 to 4 (4 being the more verbose).",
 			},
 		},
 	}

@@ -6,22 +6,24 @@ This action exports a block snapshot to a specified bucket in Scaleway Object St
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_block_snapshot" "example" {
   name      = "example-snapshot"
   volume_id = scaleway_block_volume.example.id
 }
 
 resource "scaleway_object_bucket" "example" {
-  name = "example-bucket"
+  name   = "example-bucket"
   region = "fr-par"
 }
 
-resource "scaleway_block_export_snapshot" "example" {
-  snapshot_id = scaleway_block_snapshot.example.id
-  bucket      = scaleway_object_bucket.example.name
-  key         = "snapshots/example-snapshot.qcow2"
-  wait        = true
+action "scaleway_block_export_snapshot" "example" {
+  config {
+    snapshot_id = scaleway_block_snapshot.example.id
+    bucket      = scaleway_object_bucket.example.name
+    key         = "snapshots/example-snapshot.qcow2"
+    wait        = true
+  }
 }
 ```
 

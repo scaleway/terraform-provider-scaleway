@@ -57,7 +57,9 @@ func testSweepCockpitToken(_ string) error {
 					continue
 				}
 
-				return fmt.Errorf("failed to list tokens: %w", err)
+				logging.L.Warningf("failed to list tokens: %s", err)
+
+				continue
 			}
 
 			for _, token := range listTokens.Tokens {
@@ -66,7 +68,7 @@ func testSweepCockpitToken(_ string) error {
 				})
 				if err != nil {
 					if !httperrors.Is404(err) {
-						return fmt.Errorf("failed to delete token: %w", err)
+						logging.L.Warningf("failed to delete token: %s", err)
 					}
 				}
 			}
@@ -99,7 +101,9 @@ func testSweepCockpitGrafanaUser(_ string) error {
 					continue
 				}
 
-				return fmt.Errorf("failed to list grafana users: %w", err)
+				logging.L.Warningf("failed to list grafana users: %s", err)
+
+				continue
 			}
 
 			for _, grafanaUser := range listGrafanaUsers.GrafanaUsers {
@@ -109,7 +113,7 @@ func testSweepCockpitGrafanaUser(_ string) error {
 				})
 				if err != nil {
 					if !httperrors.Is404(err) {
-						return fmt.Errorf("failed to delete grafana user: %w", err)
+						logging.L.Warningf("failed to delete grafana user: %s", err)
 					}
 				}
 			}
@@ -151,7 +155,9 @@ func testSweepCockpitDataSource(_ string) error {
 			}, scw.WithAllPages())
 			if err != nil {
 				if !httperrors.Is404(err) {
-					return fmt.Errorf("failed to list sources: %w", err)
+					logging.L.Warningf("failed to list sources: %s", err)
+
+					continue
 				}
 			} else {
 				for _, datasource := range listDatasources.DataSources {
@@ -183,7 +189,7 @@ func testSweepCockpitDataSource(_ string) error {
 				})
 				if err != nil {
 					if !httperrors.Is404(err) {
-						logging.L.Warningf("sweeper: failed to delete cockpit source: %w", err)
+						logging.L.Warningf("sweeper: failed to delete cockpit source: %s", err)
 
 						continue
 					}
@@ -215,7 +221,7 @@ func testSweepCockpitAlertManager(_ string) error {
 			})
 			if err != nil {
 				if !httperrors.Is404(err) {
-					logging.L.Warningf("failed to disable alert manager on project %s: %w", project.ID, err)
+					logging.L.Warningf("failed to disable alert manager on project %s: %s", project.ID, err)
 				}
 			}
 		}

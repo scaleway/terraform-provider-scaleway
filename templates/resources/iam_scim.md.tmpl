@@ -1,0 +1,37 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "IAM"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# Resource: {{ .Name }}
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+- `organization_id` - (Optional) The organization ID. If not provided, the default organization configured in the provider is used.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the SCIM configuration.
+- `created_at` - The date and time of SCIM configuration creation.
+
+## Import
+
+SCIM can be imported using the organization ID:
+
+```bash
+terraform import scaleway_iam_scim.main 11111111-1111-1111-1111-111111111111
+```
