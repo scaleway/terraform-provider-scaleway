@@ -51,5 +51,5 @@ func dataSourceRegistrationRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("project_id", task.ProjectID)
 	_ = d.Set("domain_names", SplitDomains(task.Domain))
 
-	return resourceRegistrationsRead(ctx, d, m)
+	return readRegistrationIntoState(ctx, d, m)
 }

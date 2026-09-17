@@ -81,6 +81,11 @@ func routingPolicySchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the TLS stage",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the routing policy",
+		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 		"organization_id": {
@@ -181,6 +186,7 @@ func setRoutingPolicyState(d *schema.ResourceData, policy *s2s_vpn.RoutingPolicy
 	_ = d.Set("is_ipv6", policy.IsIPv6)
 	_ = d.Set("prefix_filter_in", prefixFilterIn)
 	_ = d.Set("prefix_filter_out", prefixFilterOut)
+	_ = d.Set("srn", policy.Srn)
 
 	return nil
 }

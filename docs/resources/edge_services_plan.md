@@ -20,7 +20,7 @@ resource "scaleway_edge_services_plan" "main" {
 ## Argument Reference
 
 - `name` - (Optional) The name of the plan.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the plan is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the plan is associated with.
 
 ## Attributes Reference
 

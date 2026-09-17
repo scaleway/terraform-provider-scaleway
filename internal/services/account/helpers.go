@@ -34,8 +34,7 @@ func isProjectNotUsableError(err error) bool {
 		return false
 	}
 
-	responseError := &scw.PreconditionFailedError{}
-	if errors.As(err, &responseError) && responseError.Precondition == "resource_not_usable" {
+	if responseError, ok := errors.AsType[*scw.PreconditionFailedError](err); ok && responseError.Precondition == "resource_not_usable" {
 		return true
 	}
 

@@ -163,19 +163,26 @@ func (m Meta) OrganizationIDSource() string {
 // HasMultipleVariableSources return an informative message during the Provider initialization
 // if there are multiple sources of configuration that could confuse the user
 //
-// Variable			AvailableSources									Using
-// SCW_ACCESS_KEY	Active Profile in config.yaml, Environment variable	Environment variable
-// SCW_SECRET_KEY	Active Profile in config.yaml, Environment variable	Environment variable
+// Variable           Available sources	                                      Currently using
+// SCW_ACCESS_KEY     Active Profile in config.yaml, Environment variable     Environment variable
+// SCW_SECRET_KEY     Active Profile in config.yaml, Environment variable     Environment variable
 func (m Meta) HasMultipleVariableSources() (bool, string, error) {
 	multiple := false
 
-	variables := []string{scw.ScwAccessKeyEnv, scw.ScwSecretKeyEnv, scw.ScwDefaultProjectIDEnv, scw.ScwDefaultOrganizationIDEnv, scw.ScwDefaultRegionEnv, scw.ScwDefaultZoneEnv}
+	variables := []string{
+		scw.ScwAccessKeyEnv,
+		scw.ScwSecretKeyEnv,
+		scw.ScwDefaultProjectIDEnv,
+		scw.ScwDefaultOrganizationIDEnv,
+		scw.ScwDefaultRegionEnv,
+		scw.ScwDefaultZoneEnv,
+	}
 
 	w := new(tabwriter.Writer)
 	buf := &bytes.Buffer{}
-	w.Init(buf, 0, 8, 0, '\t', 0)
+	w.Init(buf, 1, 8, 5, ' ', 0)
 
-	_, err := fmt.Fprintln(w, "Variable\tAvailableSources\tUsing")
+	_, err := fmt.Fprintln(w, "Variable\tAvailable sources\tCurrently using")
 	if err != nil {
 		return false, "", err
 	}
@@ -236,8 +243,7 @@ type FrameworkProviderConfig struct {
 func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {
 	scwConfig, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
-	var configFileNotFoundError *scw.ConfigFileNotFoundError
-	if errors.As(err, &configFileNotFoundError) {
+	if _, ok := errors.AsType[*scw.ConfigFileNotFoundError](err); ok {
 		scwConfig = &scw.Config{}
 	} else if err != nil {
 		return nil, nil, err
@@ -317,8 +323,7 @@ func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProvid
 func LoadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *CredentialsSource, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
-	var configFileNotFoundError *scw.ConfigFileNotFoundError
-	if errors.As(err, &configFileNotFoundError) {
+	if _, ok := errors.AsType[*scw.ConfigFileNotFoundError](err); ok {
 		config = &scw.Config{}
 	} else if err != nil {
 		return nil, nil, err

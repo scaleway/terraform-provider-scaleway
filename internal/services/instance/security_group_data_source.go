@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -41,6 +42,8 @@ func DataSourceInstanceSecurityGroupRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	var securityGroup *instance.SecurityGroup
+
 	securityGroupID, ok := d.GetOk("security_group_id")
 	if !ok {
 		sgName := d.Get("name").(string)
@@ -63,12 +66,28 @@ func DataSourceInstanceSecurityGroupRead(ctx context.Context, d *schema.Resource
 			return diag.FromErr(err)
 		}
 
+		securityGroup = foundSG
 		securityGroupID = foundSG.ID
+	} else {
+		id, err := locality.ExtractUUID(securityGroupID.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		res, err := instanceAPI.GetSecurityGroup(&instance.GetSecurityGroupRequest{
+			Zone:            zone,
+			SecurityGroupID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		securityGroup = res.SecurityGroup
 	}
 
 	zonedID := datasource.NewZonedID(securityGroupID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("security_group_id", zonedID)
 
-	return ResourceInstanceSecurityGroupRead(ctx, d, m)
+	return setSecurityGroupState(ctx, instanceAPI, d, securityGroup)
 }

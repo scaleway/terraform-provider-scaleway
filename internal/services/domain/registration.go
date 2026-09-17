@@ -7,11 +7,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -34,7 +34,19 @@ func ResourceRegistration() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    registrationSchema,
+		Identity:      registrationIdentity(),
 	}
+}
+
+func registrationIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"project_id": identity.DefaultProjectIDAttribute(),
+		"task_id": {
+			Type:              schema.TypeString,
+			Description:       "The ID of the registration task",
+			RequiredForImport: true,
+		},
+	})
 }
 
 func registrationSchema() map[string]*schema.Schema {
@@ -59,8 +71,7 @@ func registrationSchema() map[string]*schema.Schema {
 				"owner_contact_id",
 				"owner_contact",
 			},
-			ValidateFunc: validation.IsUUID,
-			Description:  "ID of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+			Description: "ID of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
 		},
 		"owner_contact": {
 			Type:     schema.TypeList,
@@ -82,7 +93,7 @@ func registrationSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: contactSchema(),
 			},
-			Description: "Details of the administrative contact.",
+			Description: "Details of the administrative contact (read-only, set by the API).",
 		},
 		"technical_contact": {
 			Type:     schema.TypeList,
@@ -90,7 +101,7 @@ func registrationSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: contactSchema(),
 			},
-			Description: "Details of the technical contact.",
+			Description: "Details of the technical contact (read-only, set by the API).",
 		},
 		"auto_renew": {
 			Type:        schema.TypeBool,
@@ -256,12 +267,14 @@ func contactSchema() map[string]*schema.Schema {
 		},
 		"vat_identification_code": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
+			Computed:    true,
 			Description: "VAT identification code of the contact, if applicable.",
 		},
 		"company_identification_code": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
+			Computed:    true,
 			Description: "Company identification code (e.g., SIREN/SIRET in France) for the contact.",
 		},
 		"lang": {
@@ -489,12 +502,36 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 		apiProjectID = projectID
 	}
 
-	d.SetId(apiProjectID + "/" + resp.TaskID)
+	if err := setRegistrationIdentity(d, apiProjectID, resp.TaskID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceRegistrationsRead(ctx, d, m)
 }
 
 func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readRegistrationIntoState(ctx, d, m)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	projectID := d.Get("project_id").(string)
+	taskID := d.Get("task_id").(string)
+
+	if err := setRegistrationIdentity(d, projectID, taskID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+// readRegistrationIntoState fetches the registration and sets state without calling setRegistrationIdentity.
+// Use this for data sources which do not have Identity schema.
+func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
@@ -660,6 +697,18 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m a
 		}
 	}
 
+	if d.HasChanges("owner_contact_id", "owner_contact") {
+		// Changing the registrant (owner) requires a domain trade, which is a sensitive
+		// ownership-transfer operation that may involve payment or legal validation.
+		// This must be done via the Scaleway console or API, then followed by
+		// `terraform apply -refresh-only` to sync the state.
+		return diag.Diagnostics{{
+			Severity: diag.Error,
+			Summary:  "owner_contact cannot be changed via Terraform",
+			Detail:   "Changing the registrant contact requires a domain trade (TradeDomain). Please update the owner contact via the Scaleway console or API, then run `terraform apply -refresh-only` to sync the Terraform state.",
+		}}
+	}
+
 	return resourceRegistrationsRead(ctx, d, m)
 }
 
@@ -698,4 +747,11 @@ func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m a
 	d.SetId("")
 
 	return nil
+}
+
+func setRegistrationIdentity(d *schema.ResourceData, projectID, taskID string) error {
+	return identity.SetMultiPartIdentity(d, map[string]string{
+		"project_id": projectID,
+		"task_id":    taskID,
+	}, "project_id", "task_id")
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	edgeservicestestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices/testfuncs"
+	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
 func TestAccEdgeServicesBackend_Basic(t *testing.T) {
@@ -14,20 +15,35 @@ func TestAccEdgeServicesBackend_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesBackendDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			edgeservicestestfuncs.CheckEdgeServicesBackendDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_backend-basic"
+					}
+
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "my-edge_services-pipeline"
 					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-basic-es"
+					  name = "test-acc-scaleway-object-bucket-basic-edgeservices"
 					  tags = {
 						foo = "bar"
 					  }
+					  project_id = scaleway_account_project.main.id
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {
@@ -69,28 +85,40 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_lb_ip" "lb_ip" {}
-					
-					resource "scaleway_lb" "lb01" {
-					  name  = "lb_name"
-					  ip_id = scaleway_lb_ip.lb_ip.id
-					  type  = "LB-S"
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_backend-lb"
 					}
-					
+
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_lb_ip" "lb_ip" {
+					  project_id = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_lb" "lb01" {
+					  name       = "lb_name"
+					  ip_id      = scaleway_lb_ip.lb_ip.id
+					  type       = "LB-S"
+					  project_id = scaleway_account_project.main.id
+					}
+
 					resource "scaleway_lb_backend" "bck01" {
 					  lb_id            = scaleway_lb.lb01.id
 					  name             = "backend"
 					  forward_protocol = "http"
 					  forward_port     = 80
 					  ssl_bridging     = true
-					
+
 					  health_check_http {
 						uri    = "/healthcheck"
 						method = "GET"
 						code   = 200
 					  }
 					}
-					
+
 					resource "scaleway_lb_frontend" "frt01" {
 					  lb_id        = scaleway_lb.lb01.id
 					  backend_id   = scaleway_lb_backend.bck01.id
@@ -100,7 +128,7 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 						scaleway_lb_certificate.cert01.id,
 					  ]
 					}
-					
+
 					resource "scaleway_lb_certificate" "cert01" {
 					  lb_id = scaleway_lb.lb01.id
 					  name  = "test-cert"
@@ -112,6 +140,8 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "my-edge_services-pipeline"
 					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {
@@ -145,28 +175,40 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 			},
 			{
 				Config: `
-					resource "scaleway_lb_ip" "lb_ip" {}
-					
-					resource "scaleway_lb" "lb01" {
-					  name  = "lb_name"
-					  ip_id = scaleway_lb_ip.lb_ip.id
-					  type  = "LB-S"
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_backend-lb"
 					}
-					
+
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_lb_ip" "lb_ip" {
+					  project_id = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_lb" "lb01" {
+					  name       = "lb_name"
+					  ip_id      = scaleway_lb_ip.lb_ip.id
+					  type       = "LB-S"
+					  project_id = scaleway_account_project.main.id
+					}
+
 					resource "scaleway_lb_backend" "bck01" {
 					  lb_id            = scaleway_lb.lb01.id
 					  name             = "backend"
 					  forward_protocol = "http"
 					  forward_port     = 80
 					  ssl_bridging     = true
-					
+
 					  health_check_http {
 						uri    = "/healthcheck"
 						method = "GET"
 						code   = 200
 					  }
 					}
-					
+
 					resource "scaleway_lb_frontend" "frt01" {
 					  lb_id        = scaleway_lb.lb01.id
 					  backend_id   = scaleway_lb_backend.bck01.id
@@ -176,7 +218,7 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 						scaleway_lb_certificate.cert01.id,
 					  ]
 					}
-					
+
 					resource "scaleway_lb_certificate" "cert01" {
 					  lb_id = scaleway_lb.lb01.id
 					  name  = "test-cert"
@@ -188,6 +230,8 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "my-edge_services-pipeline"
 					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {
@@ -197,7 +241,7 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 						  id            = scaleway_lb.lb01.id
 						  frontend_id   = scaleway_lb_frontend.frt01.id
 						  is_ssl        = true
-						  has_websocket = true	
+						  has_websocket = true
 					    }
 					  }
 					}
@@ -219,6 +263,141 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "updated_at"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccEdgeServicesBackend_Container(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesBackendDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_backend-container"
+					}
+
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_container_namespace" "main" {
+					  name       = "tf-tests-es-backend-container"
+					  project_id = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_container" "main" {
+					  namespace_id = scaleway_container_namespace.main.id
+					  name         = "tf-tests-es-backend-container"
+					  image        = "nginx:1.29.4-alpine"
+					  port         = 80
+					}
+
+					resource "scaleway_edge_services_pipeline" "main" {
+					  name        = "my-edge_services-pipeline"
+					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_edge_services_backend_stage" "main" {
+					  pipeline_id = scaleway_edge_services_pipeline.main.id
+					  container_backend_config {
+					    container_id = scaleway_container.main.id
+					  }
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					edgeservicestestfuncs.CheckEdgeServicesBackendExists(tt, "scaleway_edge_services_backend_stage.main"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_pipeline.main", "id",
+						"scaleway_edge_services_backend_stage.main", "pipeline_id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_backend_stage.main", "container_backend_config.0.container_id",
+						"scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_backend_stage.main", "container_backend_config.0.region", "fr-par"),
+					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "updated_at"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_edge_services_backend_stage.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccEdgeServicesBackend_Function(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesBackendDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_backend-function"
+					}
+
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_function_namespace" "main" {
+					  name       = "tf-tests-es-backend-function"
+					  project_id = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_function" "main" {
+					  namespace_id = scaleway_function_namespace.main.id
+					  name         = "tf-tests-es-backend-function"
+					  runtime      = "node22"
+					  privacy      = "private"
+					  handler      = "handler.handle"
+					}
+
+					resource "scaleway_edge_services_pipeline" "main" {
+					  name        = "my-edge_services-pipeline"
+					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_edge_services_backend_stage" "main" {
+					  pipeline_id = scaleway_edge_services_pipeline.main.id
+					  function_backend_config {
+					    function_id = scaleway_function.main.id
+					  }
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					edgeservicestestfuncs.CheckEdgeServicesBackendExists(tt, "scaleway_edge_services_backend_stage.main"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_pipeline.main", "id",
+						"scaleway_edge_services_backend_stage.main", "pipeline_id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_backend_stage.main", "function_backend_config.0.function_id",
+						"scaleway_function.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_backend_stage.main", "function_backend_config.0.region", "fr-par"),
+					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "updated_at"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_edge_services_backend_stage.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

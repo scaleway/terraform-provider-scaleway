@@ -1014,7 +1014,7 @@ func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFu
 			listDNSZones, err := domainAPI.ListDNSZoneRecords(&domainSDK.ListDNSZoneRecordsRequest{
 				DNSZone: rs.Primary.Attributes["dns_zone"],
 			})
-			if httperrors.Is403(err) { // forbidden: subdomain not found
+			if httperrors.Is404(err) || httperrors.Is403(err) {
 				return nil
 			}
 

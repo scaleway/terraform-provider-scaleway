@@ -73,7 +73,6 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	emails := []string{d.Get("email").(string)}
-	reason := d.Get("reason").(string)
 	typeBlockedList := d.Get("type").(string)
 
 	resp, err := api.BulkCreateBlocklists(&tem.BulkCreateBlocklistsRequest{
@@ -81,7 +80,7 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m an
 		Region:   region,
 		DomainID: domainID,
 		Type:     tem.BlocklistType(typeBlockedList),
-		Reason:   &reason,
+		Reason:   new(d.Get("reason").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

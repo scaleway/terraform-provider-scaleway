@@ -1,8 +1,6 @@
 package iottestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	iotSDK "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -25,9 +23,9 @@ func testSweepHub(_ string) error {
 
 		listHubs, err := iotAPI.ListHubs(&iotSDK.ListHubsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			logging.L.Debugf("sweeper: destroying the iot hub in (%s)", region)
+			logging.L.Warningf("error listing hubs in (%s) in sweeper: %s", region, err)
 
-			return fmt.Errorf("error listing hubs in (%s) in sweeper: %w", region, err)
+			return nil
 		}
 
 		deleteDevices := true
@@ -38,7 +36,7 @@ func testSweepHub(_ string) error {
 				DeleteDevices: &deleteDevices,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting hub in sweeper: %w", err)
+				logging.L.Warningf("error deleting hub in sweeper: %s", err)
 			}
 		}
 

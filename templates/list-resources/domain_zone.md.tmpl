@@ -1,0 +1,39 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "Domains and DNS"
+description: |-
+  Lists Scaleway DNS zones across projects and domains.
+---
+
+# Resource: {{ .Name }}
+
+{{ .Description }}
+
+For more information, see the [product documentation](https://www.scaleway.com/en/docs/domains-and-dns/).
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects. If omitted, the provider default project is used.
+- `domains` - (Required) Domain apex names to list DNS zones for. Use `["*"]` to list zones across all domains. Must contain at least one value.
+- `dns_zones` - (Optional) Filter by DNS zone FQDNs (for example `subdomain.example.com` or `example.com` for a root zone).
+- `created_after` - (Optional) Only list DNS zones created after this date (RFC3339).
+- `created_before` - (Optional) Only list DNS zones created before this date (RFC3339).
+- `updated_after` - (Optional) Only list DNS zones updated after this date (RFC3339).
+- `updated_before` - (Optional) Only list DNS zones updated before this date (RFC3339).
+
+## Attributes Reference
+
+Each result corresponds to one DNS zone and exposes the same attributes as the [`scaleway_domain_zone` resource](../resources/domain_zone.md).

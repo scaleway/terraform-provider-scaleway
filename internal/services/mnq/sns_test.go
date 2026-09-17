@@ -52,17 +52,20 @@ func isSNSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		sns, err := api.GetSnsInfo(&mnqSDK.SnsAPIGetSnsInfoRequest{
-			ProjectID: id,
-			Region:    region,
+		var snsInfo *mnqSDK.SnsInfo
+
+		snsInfo, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.SnsInfo, error) {
+			return api.GetSnsInfo(&mnqSDK.SnsAPIGetSnsInfoRequest{
+				ProjectID: id,
+				Region:    region,
+			})
 		})
-
-		if sns.Status != mnqSDK.SnsInfoStatusEnabled {
-			return fmt.Errorf("sns status should be enabled, got: %s", sns.Status)
-		}
-
 		if err != nil {
 			return err
+		}
+
+		if snsInfo.Status != mnqSDK.SnsInfoStatusEnabled {
+			return fmt.Errorf("sns status should be enabled, got: %s", snsInfo.Status)
 		}
 
 		return nil

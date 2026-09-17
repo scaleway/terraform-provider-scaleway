@@ -48,6 +48,11 @@ func databaseSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Size of the database (in GB).",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the database",
+		},
 	}
 }
 
@@ -118,6 +123,7 @@ func resourceDatabaseRead(ctx context.Context, d *schema.ResourceData, meta any)
 	_ = d.Set("deployment_id", deploymentID)
 	_ = d.Set("name", found.Name)
 	_ = d.Set("size", int(found.Size))
+	_ = d.Set("srn", found.Srn)
 
 	return nil
 }

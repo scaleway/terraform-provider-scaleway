@@ -13,8 +13,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
@@ -30,6 +30,7 @@ var UpdateCassettes = flag.Bool("cassettes", os.Getenv(env.UpdateCassettes) == "
 // QueryMatcherIgnore contains the list of query value that should be ignored when matching requests with cassettes
 var QueryMatcherIgnore = []string{
 	"organization_id",
+	"access_keys",
 }
 
 // BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes
@@ -224,9 +225,17 @@ func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 		return nil
 	}
 
-	for key, value := range SensitiveFields {
-		if _, ok := jsonBody[key]; ok {
-			jsonBody[key] = value
+	namespace := i.Request.URL
+
+	for key, placeholder := range SensitiveFields {
+		if !FieldApplies(key, namespace) {
+			continue
+		}
+
+		if val, ok := jsonBody[key]; ok {
+			if s, ok := val.(string); ok && s != "" && s != placeholder {
+				jsonBody[key] = placeholder
+			}
 		}
 	}
 
@@ -294,7 +303,7 @@ func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.C
 
 	retryOptions := transport.RetryableTransportOptions{}
 	if !*UpdateCassettes {
-		retryOptions.RetryWaitMax = scw.TimeDurationPtr(0)
+		retryOptions.RetryWaitMax = new(time.Duration(0))
 	}
 
 	return &http.Client{Transport: transport.NewRetryableTransportWithOptions(r, retryOptions)}, func() {

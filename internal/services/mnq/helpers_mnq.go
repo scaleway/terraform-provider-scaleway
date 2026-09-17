@@ -366,8 +366,7 @@ func awsAttributesToResourceData(attributes map[string]string, resourceSchemas m
 }
 
 func IsAWSErrorCode(err error, code string) bool {
-	var apiErr *smithy.GenericAPIError
-	if errors.As(err, &apiErr) && apiErr.Code == code {
+	if apiErr, ok := errors.AsType[*smithy.GenericAPIError](err); ok && apiErr.Code == code {
 		return true
 	}
 

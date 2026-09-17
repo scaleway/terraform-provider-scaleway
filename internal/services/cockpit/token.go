@@ -173,12 +173,14 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m a
 
 	logging.L.Debugf("Creating token %+v", scopes)
 
-	res, err := api.CreateToken(&cockpit.RegionalAPICreateTokenRequest{
-		Name:        name,
-		TokenScopes: scopes,
-		ProjectID:   projectID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	res, err := retryOn403Value(ctx, func() (*cockpit.Token, error) {
+		return api.CreateToken(&cockpit.RegionalAPICreateTokenRequest{
+			Name:        name,
+			TokenScopes: scopes,
+			ProjectID:   projectID,
+			Region:      region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -198,10 +200,12 @@ func ResourceCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	res, err := api.GetToken(&cockpit.RegionalAPIGetTokenRequest{
-		Region:  region,
-		TokenID: id,
-	}, scw.WithContext(ctx))
+	res, err := retryOn403Value(ctx, func() (*cockpit.Token, error) {
+		return api.GetToken(&cockpit.RegionalAPIGetTokenRequest{
+			Region:  region,
+			TokenID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -232,10 +236,12 @@ func ResourceCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
-		Region:  region,
-		TokenID: id,
-	}, scw.WithContext(ctx))
+	err = retryOn403(ctx, func() error {
+		return api.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
+			Region:  region,
+			TokenID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -10,7 +10,7 @@ When you connect to a VM, it doesn't need a public IP address, client software, 
 
 ## Prerequisites
 
-*	You have created a virtual machine (Instance) in a VPC Private Network. Check our example below.
+- You have created a virtual machine (Instance) in a VPC Private Network. Check our example below.
 
 1. When you deploy Bastion, the values are pulled from the Private Network in which your VM resides.
    1. This VM doesn't become a part of the Bastion deployment itself, but you do connect to it later in the exercise.
@@ -19,33 +19,33 @@ When you connect to a VM, it doesn't need a public IP address, client software, 
 
 3. Detach any VMs that are attached to a `scaleway_instance_ip`.
 
-  **Note**: Your VMs and Private Network should be in the same Availability Zone. e.g. `fr-par-1`
+   **Note**: Your VMs and Private Network should be in the same Availability Zone. e.g. `fr-par-1`
 
-```hcl
+```terraform
 provider "scaleway" {
   zone = "fr-par-1"
 }
 ```
 
-```hcl
+```terraform
 variable "machine_count" {
   description = "Number of virtual machines in private network"
   default     = 3
 }
 
 # SCALEWAY VPC PRIVATE NETWORK
-resource scaleway_vpc "main" {
+resource "scaleway_vpc" "main" {
   region = "fr-par"
 }
 
-resource scaleway_vpc_private_network "pn" {
-  name = "myprivatenetwork"
-  zone = "fr-par-1"
+resource "scaleway_vpc_private_network" "pn" {
+  name   = "myprivatenetwork"
+  zone   = "fr-par-1"
   vpc_id = scaleway_vpc.main.id
 }
 
 # SCALEWAY VPC VIRTUAL MACHINES
-resource scaleway_instance_server "servers" {
+resource "scaleway_instance_server" "servers" {
   count = var.machine_count
   name  = "machine${count.index}"
   image = "ubuntu_focal"
@@ -53,7 +53,7 @@ resource scaleway_instance_server "servers" {
 }
 
 # SCALEWAY INSTANCES PRIVATE NETWORK CONNECTION
-resource scaleway_instance_private_nic "nic" {
+resource "scaleway_instance_private_nic" "nic" {
   count              = length(scaleway_instance_server.servers)
   private_network_id = scaleway_vpc_private_network.pn.id
   server_id          = scaleway_instance_server.servers[count.index].id
@@ -66,9 +66,9 @@ Reserve your public IP, allowing it to reach the public Internet, as well as to 
 
 This IP is a static IPv4 address designed for dynamic cloud computing.
 
-```hcl
+```terraform
 # SCALEWAY PUBLIC GATEWAY IP
-resource scaleway_vpc_public_gateway_ip "pgw_ip" {
+resource "scaleway_vpc_public_gateway_ip" "pgw_ip" {
 }
 ```
 
@@ -85,8 +85,8 @@ scw vpc-gw gateway-type list
 
 Example:
 
-```hcl
-resource scaleway_vpc_public_gateway "pgw" {
+```terraform
+resource "scaleway_vpc_public_gateway" "pgw" {
   type            = "VPC-GW-S"
   bastion_enabled = true
   ip_id           = scaleway_vpc_public_gateway_ip.pgw_ip.id
@@ -105,8 +105,8 @@ In order to resolve the Instances using your Bastion you should set the `dns_loc
 
 Please check our API [documentation](https://www.scaleway.com/en/developers/api/public-gateway/#path-dhcp-create-a-dhcp-configuration) for more details.
 
-```hcl
-resource scaleway_vpc_public_gateway_dhcp "dhcp" {
+```terraform
+resource "scaleway_vpc_public_gateway_dhcp" "dhcp" {
   subnet         = "192.168.1.0/24"
   dns_local_name = scaleway_vpc_private_network.pn.name
 }
@@ -117,8 +117,8 @@ resource scaleway_vpc_public_gateway_dhcp "dhcp" {
 To enable DHCP on this Private Network you must set `enable_dhcp` and `dhcp_id`.
 Do not set the `address` attribute.
 
-```hcl
-resource scaleway_vpc_gateway_network "gn" {
+```terraform
+resource "scaleway_vpc_gateway_network" "gn" {
   gateway_id         = scaleway_vpc_public_gateway.pgw.id
   private_network_id = scaleway_vpc_private_network.pn.id
   dhcp_id            = scaleway_vpc_public_gateway_dhcp.dhcp.id

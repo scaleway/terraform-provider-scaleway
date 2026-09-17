@@ -7,6 +7,10 @@ on:
   pull_request:
   merge_group:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   terraform:
     strategy:
@@ -14,14 +18,17 @@ jobs:
       matrix:
         products:
           - account
+          - annotations
           - applesilicon
           - audittrail
+          - autoscaling
           - az
           - baremetal
           - billing
           - block
           - cockpit
           - container
+          - datalab
           - datawarehouse
           - domain
           - edgeservices
@@ -31,19 +38,25 @@ jobs:
           - iam
           - inference
           - instance
+          - interlink
           - iot
           - ipam
           - jobs
+          - kafka
           - k8s
           - keymanager
           - lb
           - marketplace
+          - messageq
           - mnq
           - mongodb
           - object
+          - opensearch
+          - partner
           - rdb
           - redis
           - registry
+          - s2svpn
           - sdb
           - secret
           - tem
@@ -54,11 +67,11 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
       - name: Install Go
-        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       # This CI supports skipping flaky or broken tests via GitHub repository variables.
@@ -143,7 +156,13 @@ jobs:
           SCW_DEBUG: 0
           SCW_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
           SCW_SECRET_KEY: "11111111-1111-1111-1111-111111111111"
+          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          SCW_PARTNER_ORGANIZATION_ID: ${{ secrets.SCW_PARTNER_ORGANIZATION_ID }}
+          SCW_PARTNER_ACCESS_KEY: ${{ secrets.SCW_PARTNER_ACCESS_KEY }}
+          SCW_PARTNER_SECRET_KEY: ${{ secrets.SCW_PARTNER_SECRET_KEY }}
           SCW_ENABLE_BETA: true
+          AWS_DISABLE_CLOCK_SKEW_CORRECTION: true
   test-scwconfig:
     strategy:
       fail-fast: false
@@ -151,13 +170,13 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install Go
-        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
       - name: Run scwconfig tests
         run: go tool gotestsum --format github-actions -- ./internal/services/scwconfig -timeout=2m
         env:
@@ -174,14 +193,17 @@ jobs:
       matrix:
         products:
           - account
+          - annotations
           - applesilicon
           - audittrail
+          - autoscaling
           - az
           - baremetal
           - billing
           - block
           - cockpit
           - container
+          - datalab
           - datawarehouse
           - domain
           - edgeservices
@@ -191,19 +213,25 @@ jobs:
           - iam
           - inference
           - instance
+          - interlink
           - iot
           - ipam
           - jobs
+          - kafka
           - k8s
           - keymanager
           - lb
           - marketplace
+          - messageq
           - mnq
           - mongodb
           - object
+          - opensearch
+          - partner
           - rdb
           - redis
           - registry
+          - s2svpn
           - sdb
           - secret
           - tem
@@ -214,13 +242,13 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install OpenTofu
-        uses: opentofu/setup-opentofu@9d84900f3238fab8cd84ce47d658d25dd008be2f # v1.0.8
+        uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
         with:
-          tofu_version: '1.11.0-beta1'
+          tofu_version: '1.11.5'
       - name: Install Go
-        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       # This CI supports skipping flaky or broken tests via GitHub repository variables.
@@ -310,3 +338,5 @@ jobs:
           SCW_ENABLE_BETA: true
           TF_ACC_LOG: trace
           TF_ACC_OPENTOFU: true
+          AWS_DISABLE_CLOCK_SKEW_CORRECTION: true
+

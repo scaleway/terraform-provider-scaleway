@@ -13,6 +13,8 @@ import (
 )
 
 func TestAccInstanceGroup_Basic(t *testing.T) {
+	t.Skip("autoscaling /instance-templates endpoint deprecated, skip until v1alpha2")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

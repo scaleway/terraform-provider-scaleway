@@ -1,8 +1,6 @@
 package testfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	datawarehouseSDK "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -27,7 +25,9 @@ func testSweepDatawarehouseDeployment(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing datawarehouse deployments in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing datawarehouse deployments in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, deployment := range listDeployments.Deployments {
@@ -36,9 +36,7 @@ func testSweepDatawarehouseDeployment(_ string) error {
 				DeploymentID: deployment.ID,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error deleting datawarehouse deployment %s in (%s): %s", deployment.ID, region, err)
-
-				continue
+				logging.L.Warningf("error deleting datawarehouse deployment %s in (%s): %s", deployment.ID, region, err)
 			}
 		}
 

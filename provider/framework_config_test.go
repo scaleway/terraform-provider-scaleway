@@ -1,12 +1,15 @@
 package provider_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
+	providerFramework "github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 )
 
 const configContent = `
@@ -24,13 +27,21 @@ active_profile: test-profile
 // can properly load credentials from different sources in the correct priority order:
 // config file < provider config < environment variables
 
+func unsetEnv(unsetConfig bool) {
+	_ = os.Unsetenv(scw.ScwAccessKeyEnv)
+	_ = os.Unsetenv(scw.ScwSecretKeyEnv)
+	_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
+	_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
+	_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
+
+	if unsetConfig {
+		_ = os.Unsetenv("SCW_CONFIG_PATH")
+	}
+}
+
 func TestFrameworkProviderConfigSources_ActiveProfile(t *testing.T) {
 	t.Run("Test config file loading", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
+		unsetEnv(false)
 
 		tempDir := t.TempDir()
 		configFile := tempDir + "/config.yaml"
@@ -43,7 +54,7 @@ func TestFrameworkProviderConfigSources_ActiveProfile(t *testing.T) {
 
 		// Test with an empty provider config
 		profile, credentialsSource, err := meta.LoadProfileFromFrameworkConfig(
-			context.Background(),
+			t.Context(),
 			&meta.FrameworkProviderConfig{},
 		)
 		if err != nil {
@@ -78,11 +89,7 @@ func TestFrameworkProviderConfigSources_ActiveProfile(t *testing.T) {
 
 func TestFrameworkProviderConfigSources_ProviderConfig(t *testing.T) {
 	t.Run("Test provider config overrides config file", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
+		unsetEnv(false)
 
 		tempDir := t.TempDir()
 		configFile := tempDir + "/config.yaml"
@@ -95,7 +102,7 @@ func TestFrameworkProviderConfigSources_ProviderConfig(t *testing.T) {
 
 		// Test with provider config that should override config file
 		profile, credentialsSource, err := meta.LoadProfileFromFrameworkConfig(
-			context.Background(),
+			t.Context(),
 			&meta.FrameworkProviderConfig{
 				AccessKey: "override-access-key",
 				SecretKey: "override-secret-key",
@@ -153,7 +160,7 @@ func TestFrameworkProviderConfigSources_EnvConfig(t *testing.T) {
 
 		// Test with provider config and config file, but env vars should take precedence
 		profile, credentialsSource, err := meta.LoadProfileFromFrameworkConfig(
-			context.Background(),
+			t.Context(),
 			&meta.FrameworkProviderConfig{
 				AccessKey: "config-access-key",
 				SecretKey: "config-secret-key",
@@ -194,16 +201,11 @@ func TestFrameworkProviderConfigSources_EnvConfig(t *testing.T) {
 
 func TestFrameworkProviderConfigSources_NoConfig(t *testing.T) {
 	t.Run("Test defaults when no config provided", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
-		_ = os.Unsetenv("SCW_CONFIG_PATH")
+		unsetEnv(true)
 
 		// Test with no config - should get defaults
 		profile, _, err := meta.LoadProfileFromFrameworkConfig(
-			context.Background(),
+			t.Context(),
 			&meta.FrameworkProviderConfig{},
 		)
 		if err != nil {
@@ -228,6 +230,106 @@ func TestFrameworkProviderConfigSources_NoConfig(t *testing.T) {
 
 		if profile.DefaultProjectID != nil {
 			t.Errorf("Expected project ID to be nil, got: %v", profile.DefaultProjectID)
+		}
+	})
+}
+
+func TestFrameworkProviderMetaInitialization(t *testing.T) {
+	t.Run("Test that meta is properly initialized", func(t *testing.T) {
+		unsetEnv(true)
+
+		frameworkConfig := &meta.FrameworkProviderConfig{}
+
+		m, err := meta.NewMetaFromFrameworkConfig(t.Context(), frameworkConfig, "1.0.0")
+		if err != nil {
+			t.Fatalf("NewMetaFromFrameworkConfig failed: %v", err)
+		}
+
+		if m == nil {
+			t.Fatal("meta is nil - NewMetaFromFrameworkConfig returned nil")
+		}
+
+		if m.ScwClient() == nil {
+			t.Fatal("meta.ScwClient() is nil")
+		}
+
+		if m.HTTPClient() == nil {
+			t.Fatal("meta.HTTPClient() is nil")
+		}
+	})
+}
+
+func TestFrameworkProviderConfigure(t *testing.T) {
+	t.Run("Test Configure properly assigns meta", func(t *testing.T) {
+		unsetEnv(true)
+
+		p := provider.NewFrameworkProvider(nil)()
+
+		configValue := tfsdk.Config{
+			Schema: schema.Schema{
+				Attributes: map[string]schema.Attribute{
+					"access_key": schema.StringAttribute{
+						Optional: true,
+					},
+					"secret_key": schema.StringAttribute{
+						Optional: true,
+					},
+					"profile": schema.StringAttribute{
+						Optional: true,
+					},
+					"project_id": schema.StringAttribute{
+						Optional: true,
+					},
+					"organization_id": schema.StringAttribute{
+						Optional: true,
+					},
+					"api_url": schema.StringAttribute{
+						Optional: true,
+					},
+					"region": schema.StringAttribute{
+						Optional: true,
+					},
+					"zone": schema.StringAttribute{
+						Optional: true,
+					},
+				},
+			},
+		}
+
+		req := providerFramework.ConfigureRequest{
+			Config: configValue,
+		}
+
+		var resp providerFramework.ConfigureResponse
+		p.Configure(t.Context(), req, &resp)
+
+		if resp.Diagnostics.HasError() {
+			for _, diag := range resp.Diagnostics {
+				t.Logf("Diagnostic: %s: %s", diag.Severity(), diag.Detail())
+			}
+
+			t.Fatalf("Configure failed")
+		}
+
+		if resp.ResourceData == nil {
+			t.Fatal("resp.ResourceData is nil - meta was not properly assigned.")
+		}
+
+		if resp.DataSourceData == nil {
+			t.Fatal("resp.DataSourceData is nil - meta was not properly assigned")
+		}
+
+		metaObj, ok := resp.ResourceData.(*meta.Meta)
+		if !ok {
+			t.Fatalf("ResourceData is not of type *meta.Meta, got: %T", resp.ResourceData)
+		}
+
+		if metaObj.ScwClient() == nil {
+			t.Fatal("meta.ScwClient() is nil")
+		}
+
+		if metaObj.HTTPClient() == nil {
+			t.Fatal("meta.HTTPClient() is nil")
 		}
 	})
 }

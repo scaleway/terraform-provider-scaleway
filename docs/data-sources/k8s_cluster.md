@@ -36,7 +36,7 @@ data "scaleway_k8s_cluster" "my_key" {
 
 - `cluster_id` - (Optional) The cluster ID. Only one of `name` and `cluster_id` should be specified.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster exists.
 
 - `project_id` - (Optional) The ID of the project the cluster is associated with.
 
@@ -47,6 +47,8 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The ID of the cluster.
 
 ~> **Important:** Kubernetes clusters' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
+- `srn` - The Scaleway Resource Name (SRN) of the cluster.
 
 - `created_at` - The creation date of the cluster.
 

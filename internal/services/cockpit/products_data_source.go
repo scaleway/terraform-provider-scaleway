@@ -56,10 +56,12 @@ func dataSourceCockpitProductsRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	resp, err := api.ListProducts(&cockpit.RegionalAPIListProductsRequest{
-		Region:  region,
-		OrderBy: cockpit.ListProductsRequestOrderByDisplayNameAsc,
-	}, scw.WithContext(ctx))
+	resp, err := retryOn403Value(ctx, func() (*cockpit.ListProductsResponse, error) {
+		return api.ListProducts(&cockpit.RegionalAPIListProductsRequest{
+			Region:  region,
+			OrderBy: cockpit.ListProductsRequestOrderByDisplayNameAsc,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

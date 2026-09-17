@@ -2,6 +2,7 @@ package k8s_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -43,7 +44,7 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 						delete_additional_resources = false
 						private_network_id = scaleway_vpc_private_network.main.id
 					}
-					
+
 					resource "scaleway_k8s_pool" "default" {
 						cluster_id = "${scaleway_k8s_cluster.main.id}"
 						name = "%s"
@@ -77,12 +78,12 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 						size = 1
 						tags = [ "terraform-test", "data_scaleway_k8s_pool", "basic" ]
 					}
-					
+
 					data "scaleway_k8s_pool" "prod" {
 					  	name = "${scaleway_k8s_pool.default.name}"
 						cluster_id = "${scaleway_k8s_cluster.main.id}"
 					}
-					
+
 					data "scaleway_k8s_pool" "stg" {
 					  	pool_id = "${scaleway_k8s_pool.default.id}"
 					}`, clusterName, version, poolName),
@@ -92,6 +93,8 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 					testAccCheckK8SPoolExists(tt, "data.scaleway_k8s_pool.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.stg", "name", poolName),
 					resource.TestCheckResourceAttrSet("data.scaleway_k8s_pool.stg", "nodes.0.public_ip"), // Deprecated attributes
+					resource.TestMatchResourceAttr("data.scaleway_k8s_pool.prod", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/pools/.+$`)),
+					resource.TestMatchResourceAttr("data.scaleway_k8s_pool.stg", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/pools/.+$`)),
 				),
 			},
 		},

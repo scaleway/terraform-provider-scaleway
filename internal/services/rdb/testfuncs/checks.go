@@ -3,6 +3,7 @@ package rdbtestfuncs
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -15,6 +16,58 @@ import (
 )
 
 var DestroyWaitTimeout = 3 * time.Minute
+
+// testAccRDBListVCRProjectID is the default project ID in RDB list VCR cassettes.
+const testAccRDBListVCRProjectID = "105bdce1-64c0-48ab-899d-868455867ecf"
+
+// ListProjectID returns project_id for RDB list acceptance tests: SDK default when set,
+// otherwise the VCR placeholder so replay matches committed cassettes.
+func ListProjectID(tt *acctest.TestTools) string {
+	pid, ok := tt.Meta.ScwClient().GetDefaultProjectID()
+	if ok {
+		if s := strings.TrimSpace(pid); s != "" {
+			return s
+		}
+	}
+
+	return testAccRDBListVCRProjectID
+}
+
+func HasNoPublicEndpoint(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource %s not found in state", resourceName)
+		}
+
+		api, region, id, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		instance, err := api.GetInstance(&rdbSDK.GetInstanceRequest{
+			Region:     region,
+			InstanceID: id,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to get instance %s: %w", rs.Primary.ID, err)
+		}
+
+		for _, endpoint := range instance.Endpoints {
+			if endpoint.LoadBalancer != nil {
+				return fmt.Errorf(
+					"instance %s has unexpected public endpoint %s (ip=%v, port=%d)",
+					resourceName,
+					endpoint.ID,
+					endpoint.IP,
+					endpoint.Port,
+				)
+			}
+		}
+
+		return nil
+	}
+}
 
 func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {

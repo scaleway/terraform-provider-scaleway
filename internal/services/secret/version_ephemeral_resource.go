@@ -89,7 +89,7 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 				Computed:    true,
 				Description: "The ID of the secret associated with the version. Either secret_id or secret_name must be specified.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 					stringvalidator.ExactlyOneOf(
 						path.MatchRoot("secret_id"),
 						path.MatchRoot("secret_name"),
@@ -98,7 +98,7 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 			},
 			"secret_name": schema.StringAttribute{
 				Optional:    true,
-				Description: "The name of the secret.  Either secret_id or secret_name must be specified.",
+				Description: "The name of the secret. Either secret_id or secret_name must be specified.",
 				Validators: []validator.String{
 					stringvalidator.ExactlyOneOf(
 						path.MatchRoot("secret_id"),
@@ -214,15 +214,15 @@ func (r *VersionEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 		var organizationID *string
 
 		if !data.OrganizationID.IsNull() && !data.OrganizationID.IsUnknown() {
-			orgID := data.OrganizationID.ValueString()
-			organizationID = &orgID
+			organizationID = new(data.OrganizationID.ValueString())
 		}
 
 		var projectID *string
 
 		if !data.ProjectID.IsNull() && !data.ProjectID.IsUnknown() {
-			projID := data.ProjectID.ValueString()
-			projectID = &projID
+			projectID = new(data.ProjectID.ValueString())
+		} else if defaultProjectID, exists := r.meta.ScwClient().GetDefaultProjectID(); exists {
+			projectID = &defaultProjectID
 		}
 
 		secrets, err := r.secretAPI.ListSecrets(&secret.ListSecretsRequest{

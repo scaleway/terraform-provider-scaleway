@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -31,7 +32,19 @@ func ResourceCockpitGrafanaUser() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: cockpitGrafanaUserSchema,
+		Identity:   cockpitGrafanaUserIdentity(),
 	}
+}
+
+func cockpitGrafanaUserIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"project_id": identity.DefaultProjectIDAttribute(),
+		"id": {
+			Type:              schema.TypeString,
+			Description:       "The ID of the Grafana user",
+			RequiredForImport: true,
+		},
+	})
 }
 
 func cockpitGrafanaUserSchema() map[string]*schema.Schema {
@@ -75,17 +88,21 @@ func ResourceCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceDat
 	login := d.Get("login").(string)
 	role := cockpit.GrafanaUserRole(d.Get("role").(string))
 
-	grafanaUser, err := api.CreateGrafanaUser(&cockpit.GlobalAPICreateGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
-		ProjectID: projectID,
-		Login:     login,
-		Role:      role,
-	}, scw.WithContext(ctx))
+	grafanaUser, err := retryOn403Value(ctx, func() (*cockpit.GrafanaUser, error) {
+		return api.CreateGrafanaUser(&cockpit.GlobalAPICreateGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
+			ProjectID: projectID,
+			Login:     login,
+			Role:      role,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("password", grafanaUser.Password)
-	d.SetId(cockpitIDWithProjectID(projectID, strconv.FormatUint(uint64(grafanaUser.ID), 10)))
+	if err := setCockpitGrafanaUserIdentity(d, projectID, strconv.FormatUint(uint64(grafanaUser.ID), 10)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCockpitGrafanaUserRead(ctx, d, m)
 }
@@ -96,9 +113,11 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	res, err := api.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
-		ProjectID: projectID,
-	}, scw.WithContext(ctx), scw.WithAllPages())
+	res, err := retryOn403Value(ctx, func() (*cockpit.ListGrafanaUsersResponse, error) {
+		return api.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
+			ProjectID: projectID,
+		}, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -125,9 +144,11 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 		return nil
 	}
 
-	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
+	grafana, err := retryOn403Value(ctx, func() (*cockpit.Grafana, error) {
+		return api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
+			ProjectID: projectID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -143,6 +164,10 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("project_id", projectID)
 	_ = d.Set("grafana_url", grafana.GrafanaURL)
 
+	if err := setCockpitGrafanaUserIdentity(d, projectID, strconv.FormatUint(uint64(grafanaUser.ID), 10)); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
@@ -152,10 +177,12 @@ func ResourceCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteGrafanaUser(&cockpit.GlobalAPIDeleteGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
-		ProjectID:     projectID,
-		GrafanaUserID: grafanaUserID,
-	}, scw.WithContext(ctx))
+	err = retryOn403(ctx, func() error {
+		return api.DeleteGrafanaUser(&cockpit.GlobalAPIDeleteGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
+			ProjectID:     projectID,
+			GrafanaUserID: grafanaUserID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			return nil
@@ -163,6 +190,25 @@ func ResourceCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceDat
 
 		return diag.FromErr(err)
 	}
+
+	return nil
+}
+
+func setCockpitGrafanaUserIdentity(d *schema.ResourceData, projectID, grafanaUserID string) error {
+	resourceIdentity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	if err := resourceIdentity.Set("project_id", projectID); err != nil {
+		return err
+	}
+
+	if err := resourceIdentity.Set("id", grafanaUserID); err != nil {
+		return err
+	}
+
+	d.SetId(cockpitIDWithProjectID(projectID, grafanaUserID))
 
 	return nil
 }

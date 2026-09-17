@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -64,7 +66,10 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	var secretVersionIDStr string
+	var (
+		secretVersionIDStr string
+		res                *secret.AccessSecretVersionResponse
+	)
 
 	var payloadSecretRaw []byte
 
@@ -89,7 +94,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 			return diag.FromErr(err)
 		}
 
-		res, err := api.AccessSecretVersion(&secret.AccessSecretVersionRequest{
+		res, err = api.AccessSecretVersion(&secret.AccessSecretVersionRequest{
 			Region:   region,
 			SecretID: foundSecret.ID,
 			Revision: d.Get("revision").(string),
@@ -108,7 +113,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 			Revision: d.Get("revision").(string),
 		}
 
-		res, err := api.AccessSecretVersion(request, scw.WithContext(ctx))
+		res, err = api.AccessSecretVersion(request, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -124,14 +129,22 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceVersionRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read secret version")...)
+	secretResponse, err := api.GetSecretVersion(&secret.GetSecretVersionRequest{
+		Region:   region,
+		SecretID: res.SecretID,
+		Revision: strconv.Itoa(int(res.Revision)),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("secret version (%s) not found", secretVersionIDStr)
-	}
+	setVersionState(d, secretResponse)
 
 	return nil
 }

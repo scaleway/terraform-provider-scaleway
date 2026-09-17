@@ -45,10 +45,12 @@ func fetchExporterByID(ctx context.Context, d *schema.ResourceData, meta any) di
 		return diag.FromErr(err)
 	}
 
-	res, err := api.GetExporter(&cockpit.RegionalAPIGetExporterRequest{
-		Region:     region,
-		ExporterID: id,
-	}, scw.WithContext(ctx))
+	res, err := retryOn403Value(ctx, func() (*cockpit.Exporter, error) {
+		return api.GetExporter(&cockpit.RegionalAPIGetExporterRequest{
+			Region:     region,
+			ExporterID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,7 +76,9 @@ func fetchExporterByFilters(ctx context.Context, d *schema.ResourceData, m any) 
 		ProjectID: projectID,
 	}
 
-	res, err := api.ListExporters(req, scw.WithContext(ctx), scw.WithAllPages())
+	res, err := retryOn403Value(ctx, func() (*cockpit.ListExportersResponse, error) {
+		return api.ListExporters(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -111,10 +115,12 @@ func flattenExporterWithProjectID(ctx context.Context, d *schema.ResourceData, a
 	_ = d.Set("updated_at", types.FlattenTime(exp.UpdatedAt))
 	_ = d.Set("exported_products", types.FlattenSliceString(exp.ExportedProducts))
 
-	ds, err := api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
-		Region:       region,
-		DataSourceID: exp.DatasourceID,
-	}, scw.WithContext(ctx))
+	ds, err := retryOn403Value(ctx, func() (*cockpit.DataSource, error) {
+		return api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
+			Region:       region,
+			DataSourceID: exp.DatasourceID,
+		}, scw.WithContext(ctx))
+	})
 	if err == nil {
 		_ = d.Set("project_id", ds.ProjectID)
 	}

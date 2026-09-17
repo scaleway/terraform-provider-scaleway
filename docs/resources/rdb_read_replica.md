@@ -24,7 +24,7 @@ resource "scaleway_rdb_instance" "instance" {
   tags           = ["terraform-test", "scaleway_rdb_read_replica", "minimal"]
 }
 
-resource scaleway_rdb_read_replica "replica" {
+resource "scaleway_rdb_read_replica" "replica" {
   instance_id = scaleway_rdb_instance.instance.id
   direct_access {}
 }
@@ -98,7 +98,7 @@ The following arguments are supported:
 
 - `same_zone` - (Defaults to `true`) Defines whether to create the replica in the same availability zone as the main instance nodes or not.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions)
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the Read Replica should be created.
 
 ## Attributes Reference

@@ -78,8 +78,7 @@ func expandPolicyMetric(raw any) *autoscaling.Metric {
 	var managedPtr *autoscaling.MetricManagedMetric
 
 	if s := rawMap["managed_metric"].(string); s != "" {
-		m := autoscaling.MetricManagedMetric(s)
-		managedPtr = &m
+		managedPtr = new(autoscaling.MetricManagedMetric(s))
 	}
 
 	return &autoscaling.Metric{
@@ -103,8 +102,7 @@ func expandUpdatePolicyMetric(raw any) *autoscaling.UpdateInstancePolicyRequestM
 	var managedPtr *autoscaling.UpdateInstancePolicyRequestMetricManagedMetric
 
 	if s := rawMap["managed_metric"].(string); s != "" {
-		m := autoscaling.UpdateInstancePolicyRequestMetricManagedMetric(s)
-		managedPtr = &m
+		managedPtr = new(autoscaling.UpdateInstancePolicyRequestMetricManagedMetric(s))
 	}
 
 	return &autoscaling.UpdateInstancePolicyRequestMetric{

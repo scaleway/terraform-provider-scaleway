@@ -10,7 +10,7 @@ For more information refer to the [IAM API documentation](https://developers.sca
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by user id
 data "scaleway_iam_user" "find_by_id" {
   user_id = "11111111-1111-1111-1111-111111111111"
@@ -25,10 +25,8 @@ data "scaleway_iam_user" "find_by_email" {
 
 - `email` - (Optional) The email address of the IAM user.
 - `user_id` - (Optional) The ID of the IAM user.
-
   -> **Note** You must specify at least one: `email` and/or `user_id`.
-
-- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the
+- `organization_id` - (Optional. Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the
   organization the user is associated with.
 
 ## Attributes Reference

@@ -78,7 +78,7 @@ func (r *SignEphemeralResource) Schema(ctx context.Context, req ephemeral.Schema
 				Required:    true,
 				Description: "ID of the key to use for signing. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"digest": schema.StringAttribute{

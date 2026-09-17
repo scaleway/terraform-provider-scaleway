@@ -16,7 +16,7 @@ Refer to the Account [documentation](https://www.scaleway.com/en/docs/console/ac
 
 The following command allow you to retrieve a the AZs of a Region.
 
-```hcl
+```terraform
 # Get info by Region key
 data "scaleway_availability_zones" "main" {
   region = "nl-ams"

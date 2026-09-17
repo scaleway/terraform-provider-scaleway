@@ -15,7 +15,7 @@ Use the navigation to the left to read about the available resources.
 
 For Terraform 0.13 and later, please also include this:
 
-```hcl
+```terraform
 terraform {
   required_providers {
     scaleway = {
@@ -38,7 +38,7 @@ You can test this config by creating a `test.tf` and run terraform commands from
 - Generate and show the execution plan: `terraform plan`
 - Build the infrastructure: `terraform apply`
 
-```hcl
+```terraform
 variable "project_id" {
   type        = string
   description = "Your project ID."
@@ -139,7 +139,7 @@ You can provide your credentials via the `SCW_ACCESS_KEY`, `SCW_SECRET_KEY` envi
 
 Example:
 
-```hcl
+```terraform
 provider "scaleway" {}
 ```
 
@@ -159,7 +159,7 @@ Static credentials can be provided by adding `access_key` and `secret_key` attri
 
 Example:
 
-```hcl
+```terraform
 provider "scaleway" {
   access_key = "my-access-key"
   secret_key = "my-secret-key"
@@ -197,7 +197,7 @@ profiles:
 
 You can invoke and use this profile in the provider declaration:
 
-```hcl
+```terraform
 provider "scaleway" {
   alias   = "p2"
   profile = "myProfile"
@@ -217,7 +217,7 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 | `access_key`      | `SCW_ACCESS_KEY`                                | [Scaleway access key](https://console.scaleway.com/project/credentials)                                                                         | ✅        |
 | `secret_key`      | `SCW_SECRET_KEY`                                | [Scaleway secret key](https://console.scaleway.com/project/credentials)                                                                         | ✅        |
 | `project_id`      | `SCW_DEFAULT_PROJECT_ID`                        | The [project ID](https://console.scaleway.com/project/settings) that will be used as default value for project-scoped resources.                | ✅        |
-| `organization_id` | `SCW_DEFAULT_ORGANIZATION_ID`                   | The [organization ID](https://console.scaleway.com/organization/settings) that will be used as default value for organization-scoped resources. |           |
+| `organization_id` | `SCW_DEFAULT_ORGANIZATION_ID`                   | The [organization ID](https://console.scaleway.com/organization/settings) that will be used as default value for organization-scoped resources. | ✅        |
 | `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. (`fr-par` if none specified)         |           |
 | `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. (`fr-par-1` if none specified)            |           |
 

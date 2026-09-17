@@ -14,6 +14,54 @@ Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-s
 
 ```terraform
 resource "scaleway_object_bucket" "test" {
+  name   = "my-bucket"
+  region = "fr-par"
+}
+
+resource "scaleway_key_manager_key" "mykey" {
+  name        = "my-kms-key"
+  description = "This key is used to encrypt bucket objects"
+  usage       = "asymmetric_encryption"
+  algorithm   = "rsa_oaep_4096_sha256"
+  unprotected = "true"
+}
+
+resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
+  bucket = scaleway_object_bucket.test.name
+  region = "fr-par"
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = scaleway_key_manager_key.mykey.name
+      sse_algorithm     = "aws:kms"
+    }
+    bucket_key_enabled = true
+  }
+}
+```
+
+```terraform
+resource "scaleway_object_bucket" "test" {
+  name   = "my-bucket"
+  region = "fr-par"
+}
+
+resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
+  bucket = scaleway_object_bucket.test.name
+  region = "fr-par"
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = "my-key-id"
+      sse_algorithm     = "aws:kms"
+    }
+    bucket_key_enabled = true
+  }
+}
+```
+
+```terraform
+resource "scaleway_object_bucket" "test" {
   name   = "my-unique-bucket-name"
   region = "fr-par"
 }
@@ -57,9 +105,16 @@ The following arguments are supported:
 
 * `rule` - (Required) Set of server-side encryption configuration rules. The `rule` object supports the following:
     * `apply_server_side_encryption_by_default` - (Optional) Single object for setting server-side encryption by default. The `apply_server_side_encryption_by_default` object supports the following:
-        * `sse_algorithm` - (Required) Server-side encryption algorithm to use. Valid values are `AES256`.
+        * `sse_algorithm` - (Required) Server-side encryption algorithm to use. Valid values are `AES256`, `aws:kms`.
+        * `kms_master_key_id` - (Optional) Scaleway KMS master key ID used for the SSE-KMS encryption.
+          This can only be used when you set the value of sse_algorithm as `aws:kms`. Will return an error
+          if this element is absent while the sse_algorithm is `aws:kms`.
+    * `bucket_key_enabled` - (Optional) Whether or not to use Scaleway Object Bucket Keys for SSE-KMS.
 
-* `region` - (Optional) The [region](https://www.scaleway.com/en/developers/api/#region-definition) in which the bucket is located.
+* `region` - (Optional, Computed) The [region](https://www.scaleway.com/en/developers/api/#region-definition) in which the bucket is located.
+
+* `project_id` - (Defaults to [provider's `project_id`][1]) The ID of the
+project the bucket is associated with.
 
 ## Attributes Reference
 
@@ -85,3 +140,7 @@ If you are using a project different from the default one, you have to specify t
 ```bash
 terraform import scaleway_object_bucket_server_side_encryption_configuration.test fr-par/my-bucket-name@11111111-1111-1111-1111-111111111111
 ```
+
+<!--- Links, invisible in the final document --->
+
+[1]: ../index.md#arguments-reference

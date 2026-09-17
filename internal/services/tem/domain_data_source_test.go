@@ -49,7 +49,7 @@ func TestAccDataSourceDomain_Reputation(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "test-reputation"
+	subDomainName := "tf-test-tem-reputation"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -60,6 +60,7 @@ func TestAccDataSourceDomain_Reputation(t *testing.T) {
 					resource "scaleway_domain_zone" "test" {
 						domain    = "%s"
 						subdomain = "%s"
+						project_id = "%s"
 					}
 
 					resource "scaleway_tem_domain" "main" {
@@ -77,7 +78,7 @@ func TestAccDataSourceDomain_Reputation(t *testing.T) {
 					data "scaleway_tem_domain" "test" {
 						name = scaleway_tem_domain.main.name
 					}
-				`, domainNameValidation, subDomainName),
+				`, domainNameValidation, subDomainName, testAccTEMProjectID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
 					isDomainPresent(tt, "data.scaleway_tem_domain.test"),

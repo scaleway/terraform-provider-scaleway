@@ -176,6 +176,11 @@ func ipSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the IP",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the IP",
+		},
 		"zone": zonal.ComputedSchema(),
 	}
 }
@@ -309,6 +314,7 @@ func setIPAMIPState(d *schema.ResourceData, ip *ipam.IP, privateNetworkID string
 	_ = d.Set("updated_at", types.FlattenTime(ip.UpdatedAt))
 	_ = d.Set("is_ipv6", ip.IsIPv6)
 	_ = d.Set("region", ip.Region)
+	_ = d.Set("srn", ip.Srn)
 
 	if ip.Zone != nil {
 		_ = d.Set("zone", ip.Zone.String())

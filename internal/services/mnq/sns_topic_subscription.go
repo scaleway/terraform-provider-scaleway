@@ -116,12 +116,16 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	snsInfo, err := api.GetSnsInfo(&mnq.SnsAPIGetSnsInfoRequest{
-		Region:    region,
-		ProjectID: projectID,
+	err = retryMNQNamespaceRead(ctx, func() error {
+		_, e := api.GetSnsInfo(&mnq.SnsAPIGetSnsInfoRequest{
+			Region:    region,
+			ProjectID: projectID,
+		})
+
+		return e
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("expected sns to be enabled for given project, go %q", snsInfo.Status))
+		return diag.FromErr(fmt.Errorf("expected sns to be enabled for given project: %w", err))
 	}
 
 	snsClient, _, err := SNSClientWithRegion(ctx, m, d)

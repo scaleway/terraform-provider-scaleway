@@ -376,11 +376,10 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 		}
 
 		dnsZone = tab[0]
-		recordID := tab[1]
 
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
-			ID:      &recordID,
+			ID:      new(tab[1]),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			if httperrors.Is404(err) || httperrors.Is403(err) {
@@ -408,14 +407,13 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 			return diag.FromErr(errors.New("record type unknow"))
 		}
 
-		idRecord := locality.ExpandID(d.Id())
 		recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
 			Name:    recordName,
 			Type:    recordType,
-			ID:      &idRecord,
+			ID:      new(locality.ExpandID(d.Id())),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			if httperrors.Is404(err) || httperrors.Is403(err) {
@@ -536,14 +534,12 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
-	recordID := locality.ExpandID(d.Id())
-
 	_, err := domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
 		DNSZone: d.Get("dns_zone").(string),
 		Changes: []*domain.RecordChange{
 			{
 				Delete: &domain.RecordChangeDelete{
-					ID: &recordID,
+					ID: new(locality.ExpandID(d.Id())),
 				},
 			},
 		},

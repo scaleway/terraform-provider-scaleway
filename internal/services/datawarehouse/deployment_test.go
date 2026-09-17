@@ -3,6 +3,7 @@ package datawarehouse_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -34,6 +35,8 @@ resource "scaleway_datawarehouse_deployment" "main" {
   cpu_max        = 4
   ram_per_cpu    = 4
   password       = "password@1234567"
+
+  public_network {}
 }
 `, latestVersion),
 				Check: resource.ComposeTestCheckFunc(
@@ -44,6 +47,7 @@ resource "scaleway_datawarehouse_deployment" "main" {
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "cpu_min", "2"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "cpu_max", "4"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "ram_per_cpu", "4"),
+					resource.TestMatchResourceAttr("scaleway_datawarehouse_deployment.main", "srn", regexp.MustCompile(`^srn://datawarehouse\..+/regions/.+/deployments/.+$`)),
 
 					// Public endpoint is present
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "public_network.#", "1"),
@@ -62,6 +66,8 @@ resource "scaleway_datawarehouse_deployment" "main" {
   ram_per_cpu    = 4
   tags           = ["tag1", "tag2"]
   password       = "password@1234567"
+
+  public_network {}
 }
 `, latestVersion),
 				Check: resource.ComposeTestCheckFunc(
@@ -72,6 +78,98 @@ resource "scaleway_datawarehouse_deployment" "main" {
 
 					// Public network still present
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "public_network.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDeployment_ShardCount(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestClickHouseVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name          = "tf-test-deploy-shard-count"
+  version       = "%s"
+  replica_count = 1
+  shard_count   = 2
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "password@1234567"
+
+  public_network {}
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "shard_count", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDeployment_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestClickHouseVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name                = "tf-test-deploy-password-wo"
+  version             = "%s"
+  replica_count       = 1
+  cpu_min             = 2
+  cpu_max             = 4
+  ram_per_cpu         = 4
+  password_wo         = "thiZ_is_v&ry_s3cret_WO"
+  password_wo_version = 1
+  tags                = ["terraform-test", "scaleway_datawarehouse_deployment", "password_wo"]
+
+  public_network {}
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "password_wo_version", "1"),
+					resource.TestCheckNoResourceAttr("scaleway_datawarehouse_deployment.main", "password_wo"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name                = "tf-test-deploy-password-wo"
+  version             = "%s"
+  replica_count       = 1
+  cpu_min             = 2
+  cpu_max             = 4
+  ram_per_cpu         = 4
+  password_wo         = "thiZ_is_@n0th3r_s3cret_WO"
+  password_wo_version = 2
+  tags                = ["terraform-test", "scaleway_datawarehouse_deployment", "password_wo"]
+
+  public_network {}
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "password_wo_version", "2"),
+					resource.TestCheckNoResourceAttr("scaleway_datawarehouse_deployment.main", "password_wo"),
 				),
 			},
 		},
@@ -110,6 +208,8 @@ resource "scaleway_datawarehouse_deployment" "main" {
   ram_per_cpu    = 4
   password       = "password@1234567"
 
+  public_network {}
+
   private_network {
     pn_id = scaleway_vpc_private_network.pn01.id
   }
@@ -125,6 +225,134 @@ resource "scaleway_datawarehouse_deployment" "main" {
 
 					// Public endpoint is still present
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "public_network.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDeployment_WithoutPublicNetwork(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestClickHouseVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				// No public_network block is defined: the deployment must be
+				// created without any public endpoint.
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  region = "fr-par"
+  name   = "TestAccDeployment_WithoutPublicNetwork"
+}
+
+resource "scaleway_vpc_private_network" "pn01" {
+  name   = "my_private_network"
+  region = "fr-par"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_datawarehouse_deployment" "main" {
+  name           = "tf-test-deploy-without-public"
+  version        = "%s"
+  replica_count  = 1
+  cpu_min        = 2
+  cpu_max        = 4
+  ram_per_cpu    = 4
+  password       = "password@1234567"
+
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn01.id
+  }
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "name", "tf-test-deploy-without-public"),
+
+					// No public endpoint is created when the block is omitted
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "public_network.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDeployment_StartStop(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestClickHouseVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name           = "tf-test-deploy-start-stop"
+  version        = "%s"
+  replica_count  = 1
+  cpu_min        = 2
+  cpu_max        = 4
+  ram_per_cpu    = 4
+  password       = "password@1234567"
+  started        = true
+
+  public_network {}
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "started", "true"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "status", "ready"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name           = "tf-test-deploy-start-stop"
+  version        = "%s"
+  replica_count  = 1
+  cpu_min        = 2
+  cpu_max        = 4
+  ram_per_cpu    = 4
+  password       = "password@1234567"
+  started        = false
+
+  public_network {}
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "started", "false"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "status", "stopped"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name           = "tf-test-deploy-start-stop"
+  version        = "%s"
+  replica_count  = 1
+  cpu_min        = 2
+  cpu_max        = 4
+  ram_per_cpu    = 4
+  password       = "password@1234567"
+  started        = true
+
+  public_network {}
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "started", "true"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "status", "ready"),
 				),
 			},
 		},

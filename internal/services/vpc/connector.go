@@ -62,8 +62,12 @@ func connectorSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "The ID of the target VPC to connect to",
 		},
-		"project_id": account.ProjectIDSchema(),
-		"region":     regional.Schema(),
+		"project_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Project the VPC connector belongs to",
+		},
+		"region": regional.Schema(),
 		// Computed elements
 		"organization_id": account.OrganizationIDSchema(),
 		"status": {
@@ -80,6 +84,11 @@ func connectorSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date and time of the last update of the vpc connector",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the vpc connector",
 		},
 	}
 }
@@ -150,6 +159,7 @@ func setConnectorState(d *schema.ResourceData, connector *vpc.VPCConnector) diag
 	_ = d.Set("status", connector.Status.String())
 	_ = d.Set("region", connector.Region)
 	_ = d.Set("tags", connector.Tags)
+	_ = d.Set("srn", connector.Srn)
 
 	return nil
 }

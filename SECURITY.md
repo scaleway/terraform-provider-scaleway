@@ -3,7 +3,7 @@
 ## Reporting a Vulnerability
 
 At Scaleway we take security seriously. If you have any issue regarding security,
-please notify us by sending an email to security@scaleway.com.
+please notify us by sending an email to [security@scaleway.com](mailto:security@scaleway.com)..
 
 Please, DO NOT create a GitHub issue.
 

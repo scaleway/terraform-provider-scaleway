@@ -9,7 +9,7 @@ Gets information about an IOT Device.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name 
 data "scaleway_iot_device" "my_device" {
   name = "foobar"

@@ -88,5 +88,5 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	return setPrivateNetworkState(d, m, pn, region)
+	return setPrivateNetworkState(d, m, pn)
 }
