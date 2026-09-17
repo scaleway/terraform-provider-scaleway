@@ -165,7 +165,8 @@ func ensureCockpitGrafanaProvisioned(tt *acctest.TestTools, projectResource stri
 		if err != nil {
 			return fmt.Errorf("access grafana for project %s: %w", projectID, err)
 		}
-		defer resp.Body.Close()
+
+		defer func() { _ = resp.Body.Close() }()
 
 		_, _ = io.Copy(io.Discard, resp.Body)
 
