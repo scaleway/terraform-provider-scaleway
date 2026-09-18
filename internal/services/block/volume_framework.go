@@ -292,6 +292,9 @@ func (r *VolumeResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	newState := flattenVolume(ctx, volume, req, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(resp.Identity.Set(
+		ctx, framework.SetZonalIdentity(volume.Zone, volume.ID),
+	)...)
 }
 
 func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
