@@ -137,7 +137,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_autoscaling_instance_template":                      autoscaling.ResourceInstanceTemplate(),
 				"scaleway_baremetal_server":                                   baremetal.ResourceServer(),
 				"scaleway_block_snapshot":                                     block.ResourceSnapshot(),
-				"scaleway_block_volume":                                       block.ResourceVolume(),
 				"scaleway_cockpit":                                            cockpit.ResourceCockpit(),
 				"scaleway_cockpit_source":                                     cockpit.ResourceCockpitSource(),
 				"scaleway_cockpit_grafana_user":                               cockpit.ResourceCockpitGrafanaUser(),
