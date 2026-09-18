@@ -2,297 +2,469 @@ package block
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func ResourceVolume() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: ResourceBlockVolumeCreate,
-		ReadContext:   ResourceBlockVolumeRead,
-		UpdateContext: ResourceBlockVolumeUpdate,
-		DeleteContext: ResourceBlockVolumeDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Identity: identity.DefaultZonal(),
-		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultBlockTimeout),
-			Read:    schema.DefaultTimeout(defaultBlockTimeout),
-			Delete:  schema.DefaultTimeout(defaultBlockTimeout),
-			Default: schema.DefaultTimeout(defaultBlockTimeout),
-		},
-		SchemaVersion: 0,
-		SchemaFunc:    volumeSchema,
-		CustomizeDiff: customdiff.All(
-			customDiffSnapshot("snapshot_id"),
-			customDiffCannotShrink("size_in_gb"),
-		),
-	}
+var (
+	_ resource.Resource                = (*VolumeResource)(nil)
+	_ resource.ResourceWithConfigure   = (*VolumeResource)(nil)
+	_ resource.ResourceWithImportState = (*VolumeResource)(nil)
+	_ resource.ResourceWithIdentity    = (*VolumeResource)(nil)
+)
+
+func NewVolumeResource() resource.Resource {
+	return &VolumeResource{}
 }
 
-func volumeSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Optional:    true,
-			Description: "The volume name",
-		},
-		"iops": {
-			Type:        schema.TypeInt,
-			Required:    true,
-			Description: "The maximum IO/s expected, must match available options",
-		},
-		"size_in_gb": {
-			Type:        schema.TypeInt,
-			Optional:    true,
-			Computed:    true,
-			Description: "The volume size in GB",
-		},
-		"snapshot_id": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Description:      "The snapshot to create the volume from",
-			DiffSuppressFunc: dsf.Locality,
-		},
-		"instance_volume_id": {
-			Type:          schema.TypeString,
-			Computed:      true,
-			Optional:      true,
-			Description:   "The instance volume to create the block volume from",
-			ForceNew:      true,
-			ConflictsWith: []string{"snapshot_id"},
-		},
-		"tags": {
-			Type: schema.TypeList,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
+type VolumeResource struct {
+	api  *block.API
+	meta *meta.Meta
+}
+
+type volumeResourceModel struct {
+	Tags             types.List   `tfsdk:"tags"`
+	ID               types.String `tfsdk:"id"`
+	InstanceVolumeID types.String `tfsdk:"instance_volume_id"`
+	Name             types.String `tfsdk:"name"`
+	ProjectID        types.String `tfsdk:"project_id"`
+	SRN              types.String `tfsdk:"srn"`
+	SnapshotID       types.String `tfsdk:"snapshot_id"`
+	Zone             types.String `tfsdk:"zone"`
+	Iops             types.Int64  `tfsdk:"iops"`
+	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
+}
+
+func (r *VolumeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_block_volume"
+}
+
+func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: "Manages a Scaleway Block Volume.",
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The ID of the volume, in the `{zone}/{uuid} format.`",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-			Optional:    true,
-			Description: "The tags associated with the volume",
+			"name": schema.StringAttribute{
+				Computed:    true,
+				Optional:    true,
+				Description: "The volume name",
+			},
+			"iops": schema.Int64Attribute{
+				Required:    true,
+				Description: "The maximum IO/s expected, must match available options",
+			},
+			"size_in_gb": schema.Int64Attribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The volume size in GB",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.RequiresReplaceIf(
+						func(_ context.Context, req planmodifier.Int64Request, resp *int64planmodifier.RequiresReplaceIfFuncResponse) {
+							if req.StateValue.IsNull() || req.PlanValue.IsNull() {
+								return
+							}
+
+							if req.StateValue.ValueInt64() > req.PlanValue.ValueInt64() {
+								resp.RequiresReplace = true
+							}
+						},
+						"Force replacement when size_in_gb shrinks.",
+						"Force replacement when size_in_gb shrinks.",
+					),
+				},
+			},
+			"snapshot_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "The snapshot to create the volume from",
+				PlanModifiers: []planmodifier.String{
+					zonal.LocalityPlanModifier(),
+				},
+			},
+			"instance_volume_id": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The instance volume to create the block volume from",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("snapshot_id")),
+				},
+			},
+			"tags": schema.ListAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Description: "The tags associated with the volume",
+			},
+			"srn": schema.StringAttribute{
+				Computed:    true,
+				Description: "The Scaleway Resource Name (SRN) of the volume",
+			},
+			"zone": zonal.SchemaAttributeComputed(
+				"The zone you want to attach the resource to",
+			),
+			"project_id": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "The project ID the volume belongs to. Defaults to the provider's project ID.",
+				Validators: []validator.String{
+					verify.IsStringUUID(),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
-		"srn": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The Scaleway Resource Name (SRN) of the volume",
-		},
-		"zone":       zonal.Schema(),
-		"project_id": account.ProjectIDSchema(),
 	}
 }
 
-func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := instancehelpers.InstanceAndBlockAPIWithZone(d, m)
+func (r *VolumeResource) IdentitySchema(
+	_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse,
+) {
+	resp.IdentitySchema = framework.DefaultZonal()
+}
+
+func (r *VolumeResource) Configure(
+	_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse,
+) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf(
+				"Expected *meta.Meta, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
+		)
+
+		return
+	}
+
+	r.meta = m
+	r.api = block.NewAPI(r.meta.ScwClient())
+}
+
+func (r *VolumeResource) Create(
+	ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse,
+) {
+	var data volumeResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	zone, err := meta.ExtractFrameworkZone(data.Zone, r.meta.ScwClient())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to resolve zone", err.Error())
+
+		return
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(data.ProjectID, r.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
+
+		return
 	}
 
 	var volume *block.Volume
 
-	instanceVolumeID, migrateVolume := d.GetOk("instance_volume_id")
-	if migrateVolume {
-		volume, err = migrateInstanceToBlockVolume(ctx, api, zone, locality.ExpandID(instanceVolumeID.(string)), d.Timeout(schema.TimeoutCreate))
+	if !data.InstanceVolumeID.IsNull() && data.InstanceVolumeID.ValueString() != "" {
+		// Volume is from an instance volume, import
+		instanceAPI := instancehelpers.NewBlockAndInstanceAPI(r.meta.ScwClient())
+
+		volume, err = migrateInstanceToBlockVolume(
+			ctx, instanceAPI, zone, locality.ExpandID(data.InstanceVolumeID.ValueString()), defaultBlockTimeout,
+		)
 		if err != nil {
-			return diag.FromErr(err)
+			resp.Diagnostics.AddError("Failed to migrate Block Volume", err.Error())
+
+			return
 		}
 	} else {
-		req := &block.CreateVolumeRequest{
+		// Volume is new, create
+		createReq := &block.CreateVolumeRequest{
 			Zone:      zone,
-			Name:      types.ExpandOrGenerateString(d.Get("name").(string), "volume"),
-			ProjectID: d.Get("project_id").(string),
-			Tags:      types.ExpandStrings(d.Get("tags")),
-			PerfIops:  types.ExpandUint32Ptr(d.Get("iops")),
+			Name:      scwtypes.ExpandOrGenerateString(data.Name.ValueString(), "volume"),
+			ProjectID: projectID,
+			PerfIops:  new(uint32(data.Iops.ValueInt64())),
 		}
 
-		if iops, ok := d.GetOk("iops"); ok {
-			req.PerfIops = types.ExpandUint32Ptr(iops)
+		createReq.Tags = scwtypes.ExpandUpdatedStringList(ctx, data.Tags, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
 		}
 
-		snapshotID, hasSnapshot := d.GetOk("snapshot_id")
-		if hasSnapshot {
-			req.FromSnapshot = &block.CreateVolumeRequestFromSnapshot{
-				SnapshotID: locality.ExpandID(snapshotID.(string)),
+		if !data.SnapshotID.IsNull() && data.SnapshotID.ValueString() != "" {
+			createReq.FromSnapshot = &block.CreateVolumeRequestFromSnapshot{
+				SnapshotID: locality.ExpandID(data.SnapshotID.ValueString()),
 			}
 		}
 
-		if size, ok := d.GetOk("size_in_gb"); ok {
-			volumeSizeInBytes := scw.Size(size.(int)) * scw.GB
-			if hasSnapshot {
-				req.FromSnapshot.Size = &volumeSizeInBytes
+		if !data.SizeInGB.IsNull() && !data.SizeInGB.IsUnknown() {
+			volumeSizeInBytes := scw.Size(data.SizeInGB.ValueInt64()) * scw.GB
+			if createReq.FromSnapshot != nil {
+				createReq.FromSnapshot.Size = &volumeSizeInBytes
 			} else {
-				req.FromEmpty = &block.CreateVolumeRequestFromEmpty{
+				createReq.FromEmpty = &block.CreateVolumeRequestFromEmpty{
 					Size: volumeSizeInBytes,
 				}
 			}
 		}
 
-		volume, err = api.BlockAPI.CreateVolume(req, scw.WithContext(ctx))
+		volume, err = r.api.CreateVolume(createReq, scw.WithContext(ctx))
 		if err != nil {
-			return diag.FromErr(err)
+			resp.Diagnostics.AddError("Failed to create Block Volume", err.Error())
+
+			return
 		}
 	}
 
-	err = identity.SetZonalIdentity(d, zone, volume.ID)
+	volume, err = waitForBlockVolume(ctx, r.api, zone, volume.ID, defaultBlockTimeout)
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to wait for block volume during Create", err.Error())
+
+		return
 	}
 
-	_, err = waitForBlockVolume(ctx, api.BlockAPI, zone, volume.ID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return ResourceBlockVolumeRead(ctx, d, m)
+	state := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.Identity.Set(
+		ctx, framework.SetZonalIdentity(volume.Zone, volume.ID),
+	)...)
 }
 
-func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func (r *VolumeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state volumeResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	volume, err := waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutRead))
+	zone, id, err := zonal.ParseID(state.ID.ValueString())
 	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
+		resp.Diagnostics.AddError("failed to parse block volume id", err.Error())
 
-			return nil
-		}
-
-		return diag.FromErr(err)
+		return
 	}
 
-	setVolumeState(api, d, volume)
-
-	err = identity.SetZonalIdentity(d, volume.Zone, id)
+	volume, err := waitForBlockVolume(ctx, r.api, zone, id, defaultBlockTimeout)
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("failed to wait for block volume during read", err.Error())
+
+		return
 	}
 
-	return nil
+	newState := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(resp.Identity.Set(
+		ctx, framework.SetZonalIdentity(volume.Zone, volume.ID),
+	)...)
 }
 
-func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var (
+		plan  volumeResourceModel
+		state volumeResourceModel
+	)
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	volume, err := waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
+	zone, id, err := zonal.ParseID(state.ID.ValueString())
 	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
+		resp.Diagnostics.AddError("failed to parse block volume id", err.Error())
 
-			return nil
+		return
+	}
+
+	updateReq := &block.UpdateVolumeRequest{
+		Zone:     zone,
+		VolumeID: id,
+	}
+	hasChanges := false
+
+	if !plan.Name.Equal(state.Name) {
+		updateReq.Name = new(plan.Name.ValueString())
+		hasChanges = true
+	}
+
+	if !plan.SizeInGB.Equal(state.SizeInGB) {
+		updateReq.Size = new(scw.Size(uint64(plan.SizeInGB.ValueInt64()) * gb))
+		hasChanges = true
+	}
+
+	if !plan.Tags.Equal(state.Tags) {
+		updateReq.Tags = new(scwtypes.ExpandUpdatedStringList(
+			ctx, plan.Tags, &resp.Diagnostics,
+		))
+		if resp.Diagnostics.HasError() {
+			return
 		}
 
-		return diag.FromErr(err)
+		hasChanges = true
 	}
 
-	req := &block.UpdateVolumeRequest{
-		Zone:     volume.Zone,
-		VolumeID: volume.ID,
-		Name:     types.ExpandUpdatedStringPtr(volume.Name),
+	if !plan.Iops.Equal(state.Iops) {
+		iops, diag := plan.Iops.ToInt64Value(ctx)
+		resp.Diagnostics.Append(diag...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		updateReq.PerfIops = new(uint32(iops.ValueInt64()))
+		hasChanges = true
 	}
 
-	if d.HasChange("name") {
-		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
+	if !hasChanges {
+		return
 	}
 
-	if d.HasChange("size_in_gb") {
-		req.Size = new(scw.Size(uint64(d.Get("size_in_gb").(int)) * gb))
+	volume, err := r.api.UpdateVolume(updateReq, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError("failed to update block volume", err.Error())
+
+		return
 	}
 
-	if d.HasChange("tags") {
-		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	volume, err = waitForBlockVolume(ctx, r.api, zone, volume.ID, defaultBlockTimeout)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to wait for block volume during update", err.Error())
+
+		return
 	}
 
-	if d.HasChange("iops") {
-		req.PerfIops = types.ExpandUint32Ptr(d.Get("iops"))
-	}
-
-	if _, err := api.UpdateVolume(req, scw.WithContext(ctx)); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return ResourceBlockVolumeRead(ctx, d, m)
+	newState := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(resp.Identity.Set(
+		ctx, framework.SetZonalIdentity(volume.Zone, volume.ID),
+	)...)
 }
 
-func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func (r *VolumeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state volumeResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	volume, err := waitForBlockVolumeToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	zone, id, err := zonal.ParseID(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("failed to parse block volume id during delete", err.Error())
+
+		return
+	}
+
+	volume, err := waitForBlockVolumeToBeAvailable(ctx, r.api, zone, id, defaultBlockTimeout)
 	if err != nil {
 		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
+			return
 		}
 
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("failed to wait for block volume to be available", err.Error())
+
+		return
 	}
 
-	err = api.DeleteVolume(&block.DeleteVolumeRequest{
+	err = r.api.DeleteVolume(&block.DeleteVolumeRequest{
 		Zone:     volume.Zone,
 		VolumeID: volume.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(err)
-	}
+		if httperrors.Is404(err) {
+			return
+		}
 
-	_, err = waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
+		resp.Diagnostics.AddError("failed to delete block volume", err.Error())
 
-	return nil
+		return
+	}
 }
 
-func setVolumeState(api *block.API, resourceData *schema.ResourceData, volume *block.Volume) {
-	if volume == nil {
+func (r *VolumeResource) ImportState(
+	ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse,
+) {
+	zone, id, err := zonal.ParseID(req.ID)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"failed to parse import id", "expected format: {zone}/{uuid}. "+err.Error(),
+		)
+
 		return
 	}
 
-	_ = resourceData.Set("name", volume.Name)
-	_ = resourceData.Set("project_id", volume.ProjectID)
-	_ = resourceData.Set("tags", volume.Tags)
-	_ = resourceData.Set("size_in_gb", int(volume.Size/scw.GB))
-	_ = resourceData.Set("zone", volume.Zone)
+	resp.Diagnostics.Append(
+		resp.State.SetAttribute(ctx, path.Root("id"), zonal.NewIDString(zone, id))...,
+	)
+}
 
-	var snapshotID string
+func flattenVolume(ctx context.Context, volume *block.Volume, reference any, diags *diag.Diagnostics) volumeResourceModel {
+	model := volumeResourceModel{
+		ID:        types.StringValue(zonal.NewIDString(volume.Zone, volume.ID)),
+		Name:      types.StringValue(volume.Name),
+		SizeInGB:  types.Int64Value(int64(volume.Size / scw.GB)),
+		ProjectID: types.StringValue(volume.ProjectID),
+		Zone:      types.StringValue(volume.Zone.String()),
+		SRN:       types.StringValue(volume.Srn),
+	}
+
+	tagsList, d := scwtypes.FlattenStringList(ctx, "tags", volume.Tags, reference)
+	diags.Append(d...)
+
+	model.Tags = tagsList
+
+	if volume.Specs != nil && volume.Specs.PerfIops != nil {
+		model.Iops = types.Int64Value(int64(*volume.Specs.PerfIops))
+	} else {
+		model.Iops = types.Int64Value(0)
+	}
 
 	if volume.ParentSnapshotID != nil {
-		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
-			SnapshotID: *volume.ParentSnapshotID,
-			Zone:       volume.Zone,
-		})
-
-		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
-			snapshotID = zonal.NewIDString(volume.Zone, *volume.ParentSnapshotID)
-		}
+		model.SnapshotID = types.StringValue(zonal.NewIDString(volume.Zone, *volume.ParentSnapshotID))
+	} else {
+		model.SnapshotID = types.StringNull()
 	}
 
-	_ = resourceData.Set("snapshot_id", snapshotID)
-
-	if volume.Specs != nil {
-		_ = resourceData.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
-	}
-
-	_ = resourceData.Set("srn", volume.Srn)
+	return model
 }
