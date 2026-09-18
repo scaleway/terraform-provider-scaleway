@@ -263,7 +263,7 @@ func (r *DomainResource) Read(ctx context.Context, req resource.ReadRequest, res
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(domain.ID))...)
 }
 
-func (r *DomainResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *DomainResource) Update(_ context.Context, _ resource.UpdateRequest, resp *resource.UpdateResponse) {
 	resp.Diagnostics.AddError(
 		"Update not supported",
 		"Mailbox domains cannot be updated. Changes to name or project_id require resource replacement.",

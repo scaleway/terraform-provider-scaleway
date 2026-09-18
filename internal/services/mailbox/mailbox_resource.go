@@ -131,7 +131,10 @@ func (r *MailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Required:            true,
 				MarkdownDescription: "Billing subscription period: monthly or yearly",
 				Validators: []validator.String{
-					verify.FrameworkValidateEnum[mailboxsdk.MailboxSubscriptionPeriod](),
+					stringvalidator.OneOf(
+						string(mailboxsdk.MailboxSubscriptionPeriodMonthly),
+						string(mailboxsdk.MailboxSubscriptionPeriodYearly),
+					),
 				},
 			},
 			"email": schema.StringAttribute{
@@ -355,11 +358,24 @@ func (r *MailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 
 			return
 		}
+
+		mb, err := waitForMailbox(ctx, r.api, plan.ID.ValueString(), defaultMailboxTimeout)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed waiting for mailbox after update", err.Error())
+
+			return
+		}
+
+		newState := convertMailboxToState(mb, plan)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+		resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(mb.ID))...)
+
+		return
 	}
 
-	mb, err := waitForMailbox(ctx, r.api, plan.ID.ValueString(), defaultMailboxTimeout)
+	mb, err := r.api.GetMailbox(&mailboxsdk.GetMailboxRequest{MailboxID: plan.ID.ValueString()}, scw.WithContext(ctx))
 	if err != nil {
-		resp.Diagnostics.AddError("Failed waiting for mailbox after update", err.Error())
+		resp.Diagnostics.AddError("Failed to get mailbox after update", err.Error())
 
 		return
 	}

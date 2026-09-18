@@ -64,18 +64,24 @@ func (d *MailboxDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 			},
 			"mailbox_id": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "UUID of the mailbox. Conflicts with email.",
+				MarkdownDescription: "UUID of the mailbox. Exactly one of `mailbox_id` or `email` must be specified.",
 				Validators: []validator.String{
 					verify.IsStringUUID(),
-					stringvalidator.ConflictsWith(path.MatchRoot("email")),
+					stringvalidator.ExactlyOneOf(
+						path.MatchRoot("mailbox_id"),
+						path.MatchRoot("email"),
+					),
 				},
 			},
 			"email": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "Full email address of the mailbox. Conflicts with mailbox_id.",
+				MarkdownDescription: "Full email address of the mailbox. Exactly one of `mailbox_id` or `email` must be specified.",
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.MatchRoot("mailbox_id")),
+					stringvalidator.ExactlyOneOf(
+						path.MatchRoot("mailbox_id"),
+						path.MatchRoot("email"),
+					),
 				},
 			},
 			"domain_id": schema.StringAttribute{
@@ -153,20 +159,12 @@ func (d *MailboxDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	hasID := !config.MailboxID.IsNull() && !config.MailboxID.IsUnknown() && config.MailboxID.ValueString() != ""
 	hasEmail := !config.Email.IsNull() && !config.Email.IsUnknown() && config.Email.ValueString() != ""
 
-	if !hasID && !hasEmail {
-		resp.Diagnostics.AddError(
-			"Missing lookup key",
-			"One of mailbox_id or email must be provided",
-		)
-
-		return
-	}
-
 	var mailboxID string
 
-	if hasID {
+	switch {
+	case hasID:
 		mailboxID = config.MailboxID.ValueString()
-	} else {
+	case hasEmail:
 		email := config.Email.ValueString()
 
 		listResp, err := d.api.ListMailboxes(&mailboxsdk.ListMailboxesRequest{
@@ -203,6 +201,13 @@ func (d *MailboxDataSource) Read(ctx context.Context, req datasource.ReadRequest
 
 			return
 		}
+	default:
+		resp.Diagnostics.AddError(
+			"Missing lookup key",
+			"One of mailbox_id or email must be provided",
+		)
+
+		return
 	}
 
 	mb, err := d.api.GetMailbox(&mailboxsdk.GetMailboxRequest{MailboxID: mailboxID}, scw.WithContext(ctx))

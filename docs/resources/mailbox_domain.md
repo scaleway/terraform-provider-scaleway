@@ -65,7 +65,9 @@ resource "scaleway_mailbox_domain" "project_domain" {
 ## Argument Reference
 
 - `name` - (Required, Forces new resource) Fully qualified domain name (e.g. `mail.example.com`).
-- `project_id` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the domain is associated with.
+- `project_id` - (Optional, Computed, Forces new resource, Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the domain is associated with. Changing this forces a new domain.
+
+~> **Note** Mailbox domains cannot be updated in place. Changes to `name` or `project_id` force resource replacement.
 
 ## Attributes Reference
 

@@ -30,8 +30,8 @@ data "scaleway_mailbox_mailbox" "by_email" {
 
 ## Argument Reference
 
-- `mailbox_id` - (Optional) UUID of the mailbox. Conflicts with `email`.
-- `email` - (Optional) Full email address of the mailbox (`local_part@domain`). Conflicts with `mailbox_id`.
+- `mailbox_id` - (Optional) UUID of the mailbox. Exactly one of `mailbox_id` or `email` must be specified.
+- `email` - (Optional) Full email address of the mailbox (`local_part@domain`). Exactly one of `mailbox_id` or `email` must be specified.
 
 -> **Note** You must specify exactly one of `mailbox_id` or `email`.
 
