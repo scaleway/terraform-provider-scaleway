@@ -3,8 +3,8 @@ package account
 import (
 	"context"
 	_ "embed"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"

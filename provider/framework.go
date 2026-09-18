@@ -29,11 +29,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/messageq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/partner"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
@@ -224,6 +227,9 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		instance.NewTemplateResource,
 		autoscaling.NewAutoScalingGroupResource,
 		keymanager.NewKeyMaterialResource,
+		messageq.NewDeploymentResource,
+		messageq.NewUserResource,
+		partner.NewPartnerOrganizationResource,
 	}
 }
 
@@ -253,6 +259,11 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
 		iam.NewScimTokenDataSource,
+		kafka.NewVersionDataSource,
+		messageq.NewCertificateAuthorityDataSource,
+		messageq.NewDeploymentDataSource,
+		messageq.NewNodeTypeDataSource,
+		messageq.NewVersionDataSource,
 	}
 }
 
@@ -307,6 +318,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		mongodb.NewInstanceListResource,
 		object.NewBucketListResource,
 		opensearch.NewDeploymentListResource,
+		partner.NewPartnerOrganizationListResource,
 		rdb.NewDatabaseBackupListResource,
 		rdb.NewDatabaseListResource,
 		rdb.NewInstanceListResource,
