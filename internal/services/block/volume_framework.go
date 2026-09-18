@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -82,6 +83,22 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Optional:    true,
 				Computed:    true,
 				Description: "The volume size in GB",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.RequiresReplaceIf(
+						func(_ context.Context, req planmodifier.Int64Request, resp *int64planmodifier.RequiresReplaceIfFuncResponse) {
+							if req.StateValue.IsNull() || req.PlanValue.IsNull() {
+								return
+							}
+
+							if req.StateValue.ValueInt64() > req.PlanValue.ValueInt64() {
+								resp.RequiresReplace = true
+							}
+						},
+						"Force replacement when size_in_gb shrinks.",
+						"Force replacement when size_in_gb shrinks.",
+					),
+				},
 			},
 			"snapshot_id": schema.StringAttribute{
 				Optional:    true,
