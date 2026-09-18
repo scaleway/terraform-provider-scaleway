@@ -2,7 +2,6 @@ package vpc
 
 import (
 	"context"
-	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,12 +25,12 @@ func ResourceVPC() *schema.Resource {
 		SchemaFunc:    vpcSchema,
 		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
-			before, after := diff.GetChange("enable_routing")
-			if before != nil && before.(bool) && after != nil && !after.(bool) {
-				return errors.New("routing cannot be disabled on this VPC")
+			err := customDiffCheckFeatureNotDisabled(diff, "enable_routing", "routing cannot be disabled on this VPC")
+			if err != nil {
+				return err
 			}
 
-			return nil
+			return customDiffCheckFeatureNotDisabled(diff, "enable_custom_routes_propagation", "custom routes propagation cannot be disabled on this VPC")
 		},
 	}
 }
@@ -57,12 +56,14 @@ func vpcSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Description: "Enable routing between Private Networks in the VPC",
+			Deprecated:  "Routing is always enabled on newly created VPCs and cannot be disabled, this argument is ignored and will be removed in a future major version",
 		},
 		"enable_custom_routes_propagation": {
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Computed:    true,
 			Description: "Defines whether the VPC advertises custom routes between its Private Networks",
+			Deprecated:  "Custom routes propagation is always enabled on newly created VPCs and cannot be disabled, this argument is ignored and will be removed in a future major version",
 		},
 		"enable_transitivity": {
 			Type:        schema.TypeBool,
