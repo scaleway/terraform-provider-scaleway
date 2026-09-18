@@ -436,7 +436,6 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Persist_NoRecreate
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("access_key"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("secret_key"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("description_identifier"), knownvalue.StringExact(descriptionIdentifier)),
 				},
 			},
@@ -816,7 +815,6 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Persist_NoRecreate
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("access_key"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("secret_key"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("annotation_identifier"), knownvalue.StringExact(description)),
 				},
 			},

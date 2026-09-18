@@ -95,7 +95,7 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 		Attributes: map[string]schema.Attribute{
 			"description": schema.StringAttribute{
 				Optional:    true,
-				Description: "The description of the iam api key. Conflicts with `annotation_identifier` and `description_identifier`.",
+				Description: "The description of the iam api key. Conflicts with `description_identifier`.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("description_identifier")),
 				},
@@ -118,7 +118,7 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 			},
 			"secret_key": schema.StringAttribute{
 				Computed:    true,
-				Description: "The secret Key of the iam api key",
+				Description: "The secret key of the iam api key. Only returned when the key is created and is null when an existing key is reused.",
 				Sensitive:   true,
 			},
 			"application_id": schema.StringAttribute{

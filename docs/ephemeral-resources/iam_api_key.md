@@ -43,7 +43,7 @@ For more information, see [our guide to using Ephemeral Resources](https://regis
 - `annotation_identifier` (String) String value used as identifier. Must be a unique string (e.g., UUID v7) to identify the resource. This value is stored as an annotation with key 'iam_terraform_identifier'. Conflicts with `description_identifier`.
 - `application_id` (String) ID of the application attached to the api key
 - `default_project_id` (String) Default Project ID to use with Object Storage.
-- `description` (String) The description of the iam api key. Conflicts with `annotation_identifier` and `description_identifier`.
+- `description` (String) The description of the iam api key. Conflicts with `description_identifier`.
 - `description_identifier` (String) Unique description used as identifier. Must be a unique string (e.g., UUID v7) to identify the resource. Conflicts with `description` and `annotation_identifier`.
 - `ephemeral_lifecycle` (String) Controls the lifecycle behavior of the ephemeral API key. `persist` (default): the API key and its annotations are not deleted when the ephemeral resource is closed, and are not recreated on subsequent applies. `delete`: the API key and its annotations are deleted when the ephemeral resource is closed. `replace`: any existing API key with the same identifier is deleted and a new one is created. Requires either `annotation_identifier` or `description_identifier` to be set.
 - `expires_at` (String) The date and time (UTC) of the expiration of the iam api key. Cannot be changed afterwards
@@ -54,7 +54,7 @@ For more information, see [our guide to using Ephemeral Resources](https://regis
 - `access_key` (String) The access key of the iam api key
 - `created_at` (String) The date and time of the creation of the iam api key
 - `creation_ip` (String) The IPv4 Address of the device which created the API key
-- `secret_key` (String, Sensitive) The secret Key of the iam api key
+- `secret_key` (String, Sensitive) The secret key of the iam api key. Only returned when the key is created and is null when an existing key is reused.
 - `updated_at` (String) The date and time of the last update of the iam api key
 
 
