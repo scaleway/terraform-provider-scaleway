@@ -20,13 +20,8 @@ func CreateTestDomain(tt *acctest.TestTools, name string) string {
 
 	api := mailboxsdk.NewAPI(tt.Meta.ScwClient())
 
-	projectID, ok := tt.Meta.ScwClient().GetDefaultProjectID()
-	if !ok {
-		tt.T.Skip("No default project ID found, skipping test")
-	}
-
 	domain, err := api.CreateDomain(&mailboxsdk.CreateDomainRequest{
-		ProjectID: projectID,
+		ProjectID: TestProjectID(tt),
 		Name:      name,
 	}, scw.WithContext(tt.T.Context()))
 	if err != nil {
