@@ -9,6 +9,26 @@ import (
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 )
 
+func TestAccDataSourceSnapshot_ConflictIDAndName(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					data scaleway_block_snapshot main {
+						snapshot_id = "11111111-1111-1111-1111-111111111111"
+						name = "some-name"
+					}
+				`,
+				ExpectError: regexp.MustCompile(`"snapshot_id" cannot be specified when "name" is specified`),
+			},
+		},
+	})
+}
+
 func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

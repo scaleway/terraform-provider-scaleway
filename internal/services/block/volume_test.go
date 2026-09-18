@@ -176,6 +176,29 @@ func TestAccVolume_FromSnapshotWithSize(t *testing.T) {
 	})
 }
 
+func TestAccVolume_ConflictSnapshotAndInstanceVolume(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						iops = 5000
+						size_in_gb = 20
+						snapshot_id = "11111111-1111-1111-1111-111111111111"
+						instance_volume_id = "22222222-2222-2222-2222-222222222222"
+					}
+				`,
+				ExpectError: regexp.MustCompile(`"snapshot_id" cannot be specified when "instance_volume_id" is`),
+			},
+		},
+	})
+}
+
 func TestAccVolume_UpdateIops(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

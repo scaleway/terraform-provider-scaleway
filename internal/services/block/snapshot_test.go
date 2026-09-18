@@ -12,6 +12,31 @@ import (
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
+func TestAccSnapshot_ConflictVolumeAndImport(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_snapshot main {
+						name = "test-block-snapshot-conflict"
+						volume_id = "11111111-1111-1111-1111-111111111111"
+						import {
+							bucket = "some-bucket"
+							key = "some-key"
+						}
+					}
+				`,
+				ExpectError: regexp.MustCompile(`"import" cannot be specified when "volume_id" is specified`),
+			},
+		},
+	})
+}
+
 func TestAccSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -71,7 +96,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 					resource "scaleway_block_snapshot" "qcow-block-snapshot" {
 					  name = "test-acc-block-snapshot-qcow2"
 					  import {
-					    bucket = scaleway_object.qcow-object.bucket
+					    bucket = scaleway_object_bucket.snapshot-bucket.name
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
@@ -120,7 +145,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					  name = "test-acc-export-block-snapshot-qcow2"
 					  volume_id = scaleway_block_volume.main.id
 					  export {
-					    bucket = scaleway_object.qcow-object.bucket
+					    bucket = scaleway_object_bucket.snapshot-bucket.name
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
@@ -153,7 +178,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					  name = "test-acc-export-block-snapshot-qcow2"
 					  volume_id = scaleway_block_volume.main.id
 					  export {
-					    bucket = scaleway_object.qcow-object.bucket
+					    bucket = scaleway_object_bucket.snapshot-bucket.name
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
@@ -161,7 +186,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					resource "scaleway_block_snapshot" "qcow-block-import-snapshot" {
 					  name = "test-acc-block-snapshot-qcow2"
 					  import {
-					    bucket = scaleway_object.qcow-object.bucket
+					    bucket = scaleway_object_bucket.snapshot-bucket.name
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
