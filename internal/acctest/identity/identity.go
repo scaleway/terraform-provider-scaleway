@@ -2,7 +2,6 @@ package identity
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"maps"
@@ -66,7 +65,10 @@ func (v *identity) Checks() func() map[string]knownvalue.Check {
 				switch v := val.(type) {
 				case string:
 					checks[k] = knownvalue.StringExact(v)
-				case json.Number:
+				case interface {
+					Int64() (int64, error)
+					String() string
+				}:
 					if i, err := v.Int64(); err == nil {
 						checks[k] = knownvalue.Int64Exact(i)
 					} else {

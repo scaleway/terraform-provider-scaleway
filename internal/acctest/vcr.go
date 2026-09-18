@@ -1,7 +1,7 @@
 package acctest
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"encoding/xml"
 	"flag"
 	"fmt"
@@ -125,7 +125,7 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 		return true
 	}
 
-	if !json.Valid(requestBody) {
+	if !jsonValid(requestBody) {
 		requestValues, err := url.ParseQuery(string(requestBody))
 		if err != nil {
 			logging.L.Errorf("cassette body matcher: failed to parse body as url values: %v", err)
