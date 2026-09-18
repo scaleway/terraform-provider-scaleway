@@ -41,16 +41,16 @@ type VolumeResource struct {
 }
 
 type volumeResourceModel struct {
+	Tags             types.List   `tfsdk:"tags"`
 	ID               types.String `tfsdk:"id"`
 	InstanceVolumeID types.String `tfsdk:"instance_volume_id"`
-	Iops             types.Int64  `tfsdk:"iops"`
 	Name             types.String `tfsdk:"name"`
 	ProjectID        types.String `tfsdk:"project_id"`
 	SRN              types.String `tfsdk:"srn"`
-	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
 	SnapshotID       types.String `tfsdk:"snapshot_id"`
-	Tags             types.List   `tfsdk:"tags"`
 	Zone             types.String `tfsdk:"zone"`
+	Iops             types.Int64  `tfsdk:"iops"`
+	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
 }
 
 func (r *VolumeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -135,7 +135,9 @@ func (r *VolumeResource) IdentitySchema(
 	resp.IdentitySchema = framework.DefaultZonal()
 }
 
-func (r *VolumeResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *VolumeResource) Configure(
+	_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse,
+) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -144,7 +146,10 @@ func (r *VolumeResource) Configure(_ context.Context, req resource.ConfigureRequ
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf(
+				"Expected *meta.Meta, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
 		)
 
 		return
@@ -154,7 +159,9 @@ func (r *VolumeResource) Configure(_ context.Context, req resource.ConfigureRequ
 	r.api = block.NewAPI(r.meta.ScwClient())
 }
 
-func (r *VolumeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *VolumeResource) Create(
+	ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse,
+) {
 	var data volumeResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -185,6 +192,11 @@ func (r *VolumeResource) Create(ctx context.Context, req resource.CreateRequest,
 		volume, err = migrateInstanceToBlockVolume(
 			ctx, instanceAPI, zone, locality.ExpandID(data.InstanceVolumeID.ValueString()), defaultBlockTimeout,
 		)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to migrate Block Volume", err.Error())
+
+			return
+		}
 	} else {
 		// Volume is new, create
 		createReq := &block.CreateVolumeRequest{
@@ -218,7 +230,7 @@ func (r *VolumeResource) Create(ctx context.Context, req resource.CreateRequest,
 
 		volume, err = r.api.CreateVolume(createReq, scw.WithContext(ctx))
 		if err != nil {
-			resp.Diagnostics.AddError("Failed to create block volume", err.Error())
+			resp.Diagnostics.AddError("Failed to create Block Volume", err.Error())
 
 			return
 		}
@@ -242,6 +254,84 @@ func (r *VolumeResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var (
+		plan  volumeResourceModel
+		state volumeResourceModel
+	)
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	zone, id, err := zonal.ParseID(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("failed to parse block volume id", err.Error())
+
+		return
+	}
+
+	updateReq := &block.UpdateVolumeRequest{
+		Zone:     zone,
+		VolumeID: id,
+	}
+	hasChanges := false
+
+	if !plan.Name.Equal(state.Name) {
+		updateReq.Name = new(plan.Name.ValueString())
+		hasChanges = true
+	}
+
+	if !plan.SizeInGB.Equal(state.SizeInGB) {
+		updateReq.Size = new(scw.Size(uint64(plan.SizeInGB.ValueInt64()) * gb))
+		hasChanges = true
+	}
+
+	if !plan.Tags.Equal(state.Tags) {
+		updateReq.Tags = new(scwtypes.ExpandUpdatedStringList(
+			ctx, plan.Tags, &resp.Diagnostics,
+		))
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		hasChanges = true
+	}
+
+	if !plan.Iops.Equal(state.Iops) {
+		iops, diag := plan.Iops.ToInt64Value(ctx)
+		resp.Diagnostics.Append(diag...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		updateReq.PerfIops = new(uint32(iops.ValueInt64()))
+		hasChanges = true
+	}
+
+	if !hasChanges {
+		return
+	}
+
+	volume, err := r.api.UpdateVolume(updateReq, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError("failed to update block volume", err.Error())
+
+		return
+	}
+
+	volume, err = waitForBlockVolume(ctx, r.api, zone, volume.ID, defaultBlockTimeout)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to wait for block volume during update", err.Error())
+
+		return
+	}
+
+	newState := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
 func (r *VolumeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
