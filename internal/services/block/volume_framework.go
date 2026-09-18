@@ -399,7 +399,21 @@ func (r *VolumeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
-func (r *VolumeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *VolumeResource) ImportState(
+	ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse,
+) {
+	zone, id, err := zonal.ParseID(req.ID)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"failed to parse import id", "expected format: {zone}/{uuid}. "+err.Error(),
+		)
+
+		return
+	}
+
+	resp.Diagnostics.Append(
+		resp.State.SetAttribute(ctx, path.Root("id"), zonal.NewIDString(zone, id))...,
+	)
 }
 
 func flattenVolume(ctx context.Context, volume *block.Volume, reference any, diags *diag.Diagnostics) volumeResourceModel {
