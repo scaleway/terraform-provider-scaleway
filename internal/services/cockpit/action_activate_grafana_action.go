@@ -3,9 +3,11 @@ package cockpit
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
@@ -152,28 +154,49 @@ func activateGrafanaViaIAM(ctx context.Context, m *meta.Meta, api *cockpit.Globa
 
 	secretKey, hasSecretKey := m.ScwClient().GetSecretKey()
 	if !hasSecretKey || secretKey == "" {
-		return fmt.Errorf("missing secret key to activate grafana via IAM")
+		return errors.New("missing secret key to activate grafana via IAM")
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, grafana.GrafanaURL+"/api/org", nil)
-	if err != nil {
-		return err
+	const (
+		maxAttempts = 5
+		retryWait   = 5 * time.Second
+	)
+
+	var lastStatus string
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, grafana.GrafanaURL+"/api/org", nil)
+		if err != nil {
+			return err
+		}
+
+		req.Header.Set("X-Auth-Token", secretKey)
+
+		httpResp, err := m.HTTPClient().Do(req)
+		if err != nil {
+			return fmt.Errorf("access grafana: %w", err)
+		}
+
+		_, _ = io.Copy(io.Discard, httpResp.Body)
+		_ = httpResp.Body.Close()
+
+		if httpResp.StatusCode == http.StatusOK {
+			return nil
+		}
+
+		lastStatus = httpResp.Status
+
+		// Grafana may return 5xx while it is still being provisioned after first access.
+		if httpResp.StatusCode < http.StatusInternalServerError || attempt == maxAttempts {
+			break
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(retryWait):
+		}
 	}
 
-	req.Header.Set("X-Auth-Token", secretKey)
-
-	httpResp, err := m.HTTPClient().Do(req)
-	if err != nil {
-		return fmt.Errorf("access grafana: %w", err)
-	}
-
-	defer func() { _ = httpResp.Body.Close() }()
-
-	_, _ = io.Copy(io.Discard, httpResp.Body)
-
-	if httpResp.StatusCode != http.StatusOK {
-		return fmt.Errorf("access grafana: unexpected status %s", httpResp.Status)
-	}
-
-	return nil
+	return fmt.Errorf("access grafana: unexpected status %s", lastStatus)
 }

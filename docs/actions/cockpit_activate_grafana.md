@@ -44,3 +44,5 @@ action "scaleway_cockpit_activate_grafana" "main" {
 ### Required
 
 - `project_id` (String) ID of the Project
+
+
