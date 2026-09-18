@@ -251,6 +251,29 @@ func (r *VolumeResource) Create(
 }
 
 func (r *VolumeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state volumeResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	zone, id, err := zonal.ParseID(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("failed to parse block volume id", err.Error())
+
+		return
+	}
+
+	volume, err := waitForBlockVolume(ctx, r.api, zone, id, defaultBlockTimeout)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to wait for block volume during read", err.Error())
+
+		return
+	}
+
+	newState := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
 func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
