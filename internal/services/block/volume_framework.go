@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -358,6 +359,44 @@ func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest,
 }
 
 func (r *VolumeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state volumeResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	zone, id, err := zonal.ParseID(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("failed to parse block volume id during delete", err.Error())
+
+		return
+	}
+
+	volume, err := waitForBlockVolumeToBeAvailable(ctx, r.api, zone, id, defaultBlockTimeout)
+	if err != nil {
+		if httperrors.Is404(err) {
+			return
+		}
+
+		resp.Diagnostics.AddError("failed to wait for block volume to be available", err.Error())
+
+		return
+	}
+
+	err = r.api.DeleteVolume(&block.DeleteVolumeRequest{
+		Zone:     volume.Zone,
+		VolumeID: volume.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			return
+		}
+
+		resp.Diagnostics.AddError("failed to delete block volume", err.Error())
+
+		return
+	}
 }
 
 func (r *VolumeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
