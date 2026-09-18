@@ -1,0 +1,41 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.DataSourceTemplateType */ -}}
+---
+subcategory: "Redis"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }}
+
+{{ .Description -}}
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end -}}
+{{ end -}}
+
+## Argument Reference
+
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which to list cluster versions.
+
+- `include_disabled` - (Optional) Whether to include disabled Redis™ engine versions. Defaults to `false`.
+
+- `include_beta` - (Optional) Whether to include beta Redis™ engine versions. Defaults to `false`.
+
+- `include_deprecated` - (Optional) Whether to include deprecated Redis™ engine versions. Defaults to `false`.
+
+- `version` - (Optional) Filter Redis™ engine versions that match a given name pattern.
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the data source (the zone).
+
+- `versions` - List of available Redis™ cluster versions.
+    - `version` - Redis™ engine version.
+    - `end_of_life_at` - End of life date of the version (RFC3339).
+    - `released_at` - Release date of the version (RFC3339).
+    - `logo_url` - URL of the Redis™ logo.

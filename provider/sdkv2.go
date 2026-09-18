@@ -379,6 +379,8 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_rdb_instance":                                       rdb.DataSourceInstance(),
 				"scaleway_rdb_privilege":                                      rdb.DataSourcePrivilege(),
 				"scaleway_redis_cluster":                                      redis.DataSourceCluster(),
+				"scaleway_redis_cluster_versions":                             redis.DataSourceClusterVersions(),
+				"scaleway_redis_node_types":                                   redis.DataSourceNodeTypes(),
 				"scaleway_registry_image":                                     registry.DataSourceImage(),
 				"scaleway_registry_namespace":                                 registry.DataSourceNamespace(),
 				"scaleway_registry_image_tag":                                 registry.DataSourceImageTag(),
