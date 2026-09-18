@@ -50,6 +50,7 @@ func TestAccMailboxDomain_WithProjectID(t *testing.T) {
 	// Fixed project_id must match the VCR cassette response body; CI's default
 	// project differs and would cause "inconsistent result after apply".
 	projectID := "46fd79d8-1a35-4548-bfb8-03df51a0ebae"
+
 	if *acctest.UpdateCassettes {
 		var ok bool
 
