@@ -304,28 +304,32 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 
 func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
+		cockpitAPI := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
+		region := scw.RegionFrPar
+
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_cockpit_alert_manager" {
 				continue
 			}
 
-			api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
 			projectID := rs.Primary.Attributes["project_id"]
-			region := scw.RegionFrPar
-			alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+			if projectID == "" {
+				continue
+			}
+
+			alertManager, err := cockpitAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
 				Region:    region,
 				ProjectID: projectID,
 			})
+			if httperrors.Is404(err) || httperrors.Is403(err) {
+				continue
+			}
 
-			if !httperrors.Is404(err) && !httperrors.Is403(err) {
+			if err != nil {
 				return err
 			}
 
-			if alertManager == nil {
-				return nil
-			}
-
-			if alertManager.AlertManagerEnabled {
+			if alertManager != nil && alertManager.AlertManagerEnabled {
 				return errors.New("cockpit alert manager (" + rs.Primary.ID + ") is still enabled")
 			}
 		}
