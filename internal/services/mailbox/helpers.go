@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	defaultDomainTimeout  = 5 * time.Minute
-	defaultMailboxTimeout = 5 * time.Minute
+	defaultDomainTimeout  = 15 * time.Minute
+	defaultMailboxTimeout = 15 * time.Minute
 	defaultRetryInterval  = 5 * time.Second
 )
 

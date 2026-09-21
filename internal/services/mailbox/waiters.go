@@ -24,7 +24,8 @@ func waitForDomain(ctx context.Context, api *mailboxsdk.API, domainID string, ti
 }
 
 // waitForMailbox waits until the mailbox leaves provisioning states.
-// waiting_domain is stable: the mailbox exists and depends on domain DNS validation.
+// waiting_domain is stable when the domain is not ready yet. If the domain is
+// already ready, keep waiting so the mailbox can catch up to ready.
 func waitForMailbox(ctx context.Context, api *mailboxsdk.API, mailboxID string, timeout time.Duration) (*mailboxsdk.Mailbox, error) {
 	retryInterval := defaultRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
@@ -39,22 +40,37 @@ func waitForMailbox(ctx context.Context, api *mailboxsdk.API, mailboxID string, 
 			return nil, err
 		}
 
+		keepWaiting := false
+
 		switch mb.Status {
 		case mailboxsdk.MailboxStatusCreating,
 			mailboxsdk.MailboxStatusWaitingPayment,
 			mailboxsdk.MailboxStatusRenewing,
 			mailboxsdk.MailboxStatusRestoring:
-			if time.Now().After(deadline) {
-				return nil, fmt.Errorf("timeout waiting for mailbox %s (last status: %s)", mailboxID, mb.Status)
+			keepWaiting = true
+		case mailboxsdk.MailboxStatusWaitingDomain:
+			domain, domainErr := api.GetDomain(&mailboxsdk.GetDomainRequest{DomainID: mb.DomainID}, scw.WithContext(ctx))
+			if domainErr != nil {
+				return nil, domainErr
 			}
 
-			select {
-			case <-ctx.Done():
-				return nil, ctx.Err()
-			case <-time.After(retryInterval):
+			if domain.Status == mailboxsdk.DomainStatusReady {
+				keepWaiting = true
 			}
-		default:
+		}
+
+		if !keepWaiting {
 			return mb, nil
+		}
+
+		if time.Now().After(deadline) {
+			return nil, fmt.Errorf("timeout waiting for mailbox %s (last status: %s)", mailboxID, mb.Status)
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(retryInterval):
 		}
 	}
 }

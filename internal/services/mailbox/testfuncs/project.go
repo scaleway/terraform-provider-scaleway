@@ -5,7 +5,9 @@ import (
 )
 
 // CassetteProjectID is the project ID embedded in mailbox VCR cassettes.
-const CassetteProjectID = "46fd79d8-1a35-4548-bfb8-03df51a0ebae"
+// Must be the project that can create DNS zones under TF_TEST_DOMAIN
+// (scaleway-terraform.com), same as TEM acceptance tests.
+const CassetteProjectID = "105bdce1-64c0-48ab-899d-868455867ecf"
 
 // TestProjectID returns the project ID to use in acceptance tests.
 // Replay always uses CassetteProjectID so Terraform config matches cassette
