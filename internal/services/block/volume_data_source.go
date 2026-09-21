@@ -177,10 +177,14 @@ func (d *VolumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			Name: &volumeName,
 		}
 
-		if !config.ProjectID.IsNull() && !config.ProjectID.IsUnknown() && config.ProjectID.ValueString() != "" {
-			projectID := config.ProjectID.ValueString()
-			listReq.ProjectID = &projectID
+		projectID, err := meta.ExtractFrameworkProjectID(config.ProjectID, d.meta.ScwClient())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
+
+			return
 		}
+
+		listReq.ProjectID = &projectID
 
 		res, listErr := d.api.ListVolumes(listReq, scw.WithContext(ctx))
 		if listErr != nil {
