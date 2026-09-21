@@ -33,17 +33,17 @@ type VolumeDataSource struct {
 }
 
 type volumeDataSourceModel struct {
+	Tags             types.List   `tfsdk:"tags"`
 	ID               types.String `tfsdk:"id"`
 	VolumeID         types.String `tfsdk:"volume_id"`
 	Name             types.String `tfsdk:"name"`
 	ProjectID        types.String `tfsdk:"project_id"`
 	Zone             types.String `tfsdk:"zone"`
-	Iops             types.Int64  `tfsdk:"iops"`
-	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
 	SnapshotID       types.String `tfsdk:"snapshot_id"`
 	InstanceVolumeID types.String `tfsdk:"instance_volume_id"`
-	Tags             types.List   `tfsdk:"tags"`
 	SRN              types.String `tfsdk:"srn"`
+	Iops             types.Int64  `tfsdk:"iops"`
+	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
 }
 
 func (d *VolumeDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
