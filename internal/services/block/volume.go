@@ -266,6 +266,9 @@ func (r *VolumeResource) Create(
 	}
 
 	state := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	if !data.InstanceVolumeID.IsNull() && !data.InstanceVolumeID.IsUnknown() {
+		state.InstanceVolumeID = data.InstanceVolumeID
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	resp.Diagnostics.Append(resp.Identity.Set(
 		ctx, framework.SetZonalIdentity(volume.Zone, volume.ID),
@@ -295,6 +298,7 @@ func (r *VolumeResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	newState := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	newState.InstanceVolumeID = state.InstanceVolumeID
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(
 		ctx, framework.SetZonalIdentity(volume.Zone, volume.ID),
@@ -379,6 +383,7 @@ func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	newState := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	newState.InstanceVolumeID = plan.InstanceVolumeID
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(
 		ctx, framework.SetZonalIdentity(volume.Zone, volume.ID),
@@ -445,12 +450,13 @@ func (r *VolumeResource) ImportState(
 
 func flattenVolume(ctx context.Context, volume *block.Volume, reference any, diags *diag.Diagnostics) volumeResourceModel {
 	model := volumeResourceModel{
-		ID:        types.StringValue(zonal.NewIDString(volume.Zone, volume.ID)),
-		Name:      types.StringValue(volume.Name),
-		SizeInGB:  types.Int64Value(int64(volume.Size / scw.GB)),
-		ProjectID: types.StringValue(volume.ProjectID),
-		Zone:      types.StringValue(volume.Zone.String()),
-		SRN:       types.StringValue(volume.Srn),
+		ID:               types.StringValue(zonal.NewIDString(volume.Zone, volume.ID)),
+		Name:             types.StringValue(volume.Name),
+		SizeInGB:         types.Int64Value(int64(volume.Size / scw.GB)),
+		ProjectID:        types.StringValue(volume.ProjectID),
+		Zone:             types.StringValue(volume.Zone.String()),
+		SRN:              types.StringValue(volume.Srn),
+		InstanceVolumeID: types.StringNull(),
 	}
 
 	tagsList, d := scwtypes.FlattenStringList(ctx, "tags", volume.Tags, reference)
