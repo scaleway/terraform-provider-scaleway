@@ -21,7 +21,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/az"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datawarehouse"
@@ -311,7 +310,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_baremetal_server":                                   baremetal.DataSourceServer(),
 				"scaleway_billing_consumptions":                               billing.DataSourceConsumptions(),
 				"scaleway_billing_invoices":                                   billing.DataSourceInvoices(),
-				"scaleway_block_volume":                                       block.DataSourceVolume(),
 				"scaleway_cockpit_config":                                     cockpit.DataSourceCockpitConfig(),
 				"scaleway_cockpit_grafana":                                    cockpit.DataSourceCockpitGrafana(),
 				"scaleway_cockpit_preconfigured_alert":                        cockpit.DataSourceCockpitPreconfiguredAlert(),
