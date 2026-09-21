@@ -153,7 +153,7 @@ func testSweepCockpitDataSource(_ string) error {
 }
 
 func testSweepCockpitAlertManager(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
+	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		accountAPI := accountSDK.NewProjectAPI(scwClient)
 		cockpitAPI := cockpit.NewRegionalAPI(scwClient)
 
@@ -167,13 +167,55 @@ func testSweepCockpitAlertManager(_ string) error {
 				continue
 			}
 
-			_, err := cockpitAPI.DisableAlertManager(&cockpit.RegionalAPIDisableAlertManagerRequest{
+			alertManager, err := cockpitAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+				Region:    region,
 				ProjectID: project.ID,
 			})
 			if err != nil {
-				if !httperrors.Is404(err) {
-					logging.L.Warningf("failed to disable alert manager on project %s: %s", project.ID, err)
+				if httperrors.Is404(err) || httperrors.Is403(err) {
+					continue
 				}
+
+				logging.L.Warningf("failed to get alert manager on project %s: %s", project.ID, err)
+
+				continue
+			}
+
+			if alertManager == nil || !alertManager.AlertManagerEnabled {
+				continue
+			}
+
+			contactPoints, err := cockpitAPI.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
+				Region:    region,
+				ProjectID: project.ID,
+			})
+			if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
+				logging.L.Warningf("failed to list contact points on project %s: %s", project.ID, err)
+			}
+
+			if contactPoints != nil {
+				for _, cp := range contactPoints.ContactPoints {
+					if cp.Email == nil {
+						continue
+					}
+
+					err = cockpitAPI.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
+						Region:    region,
+						ProjectID: project.ID,
+						Email:     &cockpit.ContactPointEmail{To: cp.Email.To},
+					})
+					if err != nil && !httperrors.Is404(err) {
+						logging.L.Warningf("failed to delete contact point on project %s: %s", project.ID, err)
+					}
+				}
+			}
+
+			_, err = cockpitAPI.DisableAlertManager(&cockpit.RegionalAPIDisableAlertManagerRequest{
+				Region:    region,
+				ProjectID: project.ID,
+			})
+			if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
+				logging.L.Warningf("failed to disable alert manager on project %s: %s", project.ID, err)
 			}
 		}
 
