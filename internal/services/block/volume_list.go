@@ -163,7 +163,7 @@ func (r *VolumeListResource) List(ctx context.Context, req list.ListRequest, str
 			identityData := framework.SetZonalIdentity(row.Zone, row.Volume.ID)
 			result.Diagnostics.Append(result.Identity.Set(ctx, &identityData)...)
 
-			flatVolume := flattenVolume(ctx, row.Volume, nil, &result.Diagnostics)
+			flatVolume := flattenVolume(ctx, r.blockAPI, row.Volume, nil, &result.Diagnostics)
 			result.Diagnostics.Append(result.Resource.Set(ctx, &flatVolume)...)
 
 			if !push(result) {
