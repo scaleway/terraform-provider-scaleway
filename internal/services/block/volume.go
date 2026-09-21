@@ -265,7 +265,7 @@ func (r *VolumeResource) Create(
 		return
 	}
 
-	state := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	state := flattenVolume(ctx, r.api, volume, req, &resp.Diagnostics)
 	if !data.InstanceVolumeID.IsNull() && !data.InstanceVolumeID.IsUnknown() {
 		state.InstanceVolumeID = data.InstanceVolumeID
 	}
@@ -293,12 +293,18 @@ func (r *VolumeResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	volume, err := waitForBlockVolume(ctx, r.api, zone, id, defaultBlockTimeout)
 	if err != nil {
+		if httperrors.Is404(err) {
+			resp.State.RemoveResource(ctx)
+
+			return
+		}
+
 		resp.Diagnostics.AddError("failed to wait for block volume during read", err.Error())
 
 		return
 	}
 
-	newState := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	newState := flattenVolume(ctx, r.api, volume, req, &resp.Diagnostics)
 	newState.InstanceVolumeID = state.InstanceVolumeID
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(
@@ -369,8 +375,27 @@ func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	_, err = waitForBlockVolume(ctx, r.api, zone, id, defaultBlockTimeout)
+	if err != nil {
+		if httperrors.Is404(err) {
+			resp.State.RemoveResource(ctx)
+
+			return
+		}
+
+		resp.Diagnostics.AddError("failed to wait for block volume during update", err.Error())
+
+		return
+	}
+
 	volume, err := r.api.UpdateVolume(updateReq, scw.WithContext(ctx))
 	if err != nil {
+		if httperrors.Is404(err) {
+			resp.State.RemoveResource(ctx)
+
+			return
+		}
+
 		resp.Diagnostics.AddError("failed to update block volume", err.Error())
 
 		return
@@ -383,7 +408,7 @@ func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	newState := flattenVolume(ctx, volume, req, &resp.Diagnostics)
+	newState := flattenVolume(ctx, r.api, volume, req, &resp.Diagnostics)
 	newState.InstanceVolumeID = plan.InstanceVolumeID
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(
@@ -430,6 +455,13 @@ func (r *VolumeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 		return
 	}
+
+	_, err = waitForBlockVolume(ctx, r.api, zone, id, defaultBlockTimeout)
+	if err != nil && !httperrors.Is404(err) {
+		resp.Diagnostics.AddError("failed to wait for block volume during delete", err.Error())
+
+		return
+	}
 }
 
 func (r *VolumeResource) ImportState(
@@ -449,7 +481,7 @@ func (r *VolumeResource) ImportState(
 	)
 }
 
-func flattenVolume(ctx context.Context, volume *block.Volume, reference any, diags *diag.Diagnostics) volumeResourceModel {
+func flattenVolume(ctx context.Context, api *block.API, volume *block.Volume, reference any, diags *diag.Diagnostics) volumeResourceModel {
 	model := volumeResourceModel{
 		ID:               types.StringValue(zonal.NewIDString(volume.Zone, volume.ID)),
 		Name:             types.StringValue(volume.Name),
@@ -472,7 +504,15 @@ func flattenVolume(ctx context.Context, volume *block.Volume, reference any, dia
 	}
 
 	if volume.ParentSnapshotID != nil {
-		model.SnapshotID = types.StringValue(zonal.NewIDString(volume.Zone, *volume.ParentSnapshotID))
+		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
+			SnapshotID: *volume.ParentSnapshotID,
+			Zone:       volume.Zone,
+		}, scw.WithContext(ctx))
+		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
+			model.SnapshotID = types.StringValue(zonal.NewIDString(volume.Zone, *volume.ParentSnapshotID))
+		} else {
+			model.SnapshotID = types.StringNull()
+		}
 	} else {
 		model.SnapshotID = types.StringNull()
 	}
