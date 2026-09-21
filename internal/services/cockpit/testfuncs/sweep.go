@@ -16,6 +16,10 @@ import (
 // Cockpit resource doesn't require explicit deactivation.
 // Sources, tokens, and other resources are cleaned up by their respective sweepers.
 func AddTestSweepers() {
+	resource.AddTestSweepers("scaleway_cockpit_grafana_user", &resource.Sweeper{
+		Name: "scaleway_cockpit_grafana_user",
+		F:    testSweepCockpitGrafanaUser,
+	})
 	resource.AddTestSweepers("scaleway_cockpit_token", &resource.Sweeper{
 		Name: "scaleway_cockpit_token",
 		F:    testSweepCockpitToken,
@@ -65,6 +69,51 @@ func testSweepCockpitToken(_ string) error {
 				if err != nil {
 					if !httperrors.Is404(err) {
 						logging.L.Warningf("failed to delete token: %s", err)
+					}
+				}
+			}
+		}
+
+		return nil
+	})
+}
+
+func testSweepCockpitGrafanaUser(_ string) error {
+	return acctest.Sweep(func(scwClient *scw.Client) error {
+		accountAPI := accountSDK.NewProjectAPI(scwClient)
+		cockpitAPI := cockpit.NewGlobalAPI(scwClient)
+
+		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("failed to list projects: %w", err)
+		}
+
+		for _, project := range listProjects.Projects {
+			if !strings.HasPrefix(project.Name, "tf_tests") {
+				continue
+			}
+
+			listGrafanaUsers, err := cockpitAPI.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
+				ProjectID: project.ID,
+			}, scw.WithAllPages())
+			if err != nil {
+				if httperrors.Is404(err) {
+					continue
+				}
+
+				logging.L.Warningf("failed to list grafana users: %s", err)
+
+				continue
+			}
+
+			for _, grafanaUser := range listGrafanaUsers.GrafanaUsers {
+				err = cockpitAPI.DeleteGrafanaUser(&cockpit.GlobalAPIDeleteGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
+					ProjectID:     project.ID,
+					GrafanaUserID: grafanaUser.ID,
+				})
+				if err != nil {
+					if !httperrors.Is404(err) {
+						logging.L.Warningf("failed to delete grafana user: %s", err)
 					}
 				}
 			}

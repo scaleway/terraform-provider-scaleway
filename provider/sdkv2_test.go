@@ -229,6 +229,7 @@ func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
 		"scaleway_apple_silicon_server",
 		"scaleway_autoscaling_instance_template",
 		"scaleway_cockpit_alert_manager",
+		"scaleway_cockpit_grafana_user",
 		"scaleway_cockpit_token",
 		"scaleway_container_cron",
 		"scaleway_container_domain",

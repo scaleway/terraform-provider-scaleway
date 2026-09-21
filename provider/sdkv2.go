@@ -140,6 +140,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_block_volume":                                       block.ResourceVolume(),
 				"scaleway_cockpit":                                            cockpit.ResourceCockpit(),
 				"scaleway_cockpit_source":                                     cockpit.ResourceCockpitSource(),
+				"scaleway_cockpit_grafana_user":                               cockpit.ResourceCockpitGrafanaUser(),
 				"scaleway_cockpit_token":                                      cockpit.ResourceToken(),
 				"scaleway_cockpit_alert_manager":                              cockpit.ResourceCockpitAlertManager(),
 				"scaleway_cockpit_exporter":                                   cockpit.ResourceCockpitExporter(),

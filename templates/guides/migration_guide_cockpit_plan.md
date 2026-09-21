@@ -111,7 +111,9 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 
 **Grafana Access:**
 
-Grafana authentication is managed through Scaleway IAM. To retrieve the Grafana URL, use the `scaleway_cockpit_grafana` data source:
+~> **Note:** The `scaleway_cockpit_grafana_user` resource is deprecated and will be removed on January 1st, 2026. Grafana authentication is now managed through Scaleway IAM.
+
+To retrieve the Grafana URL, use the `scaleway_cockpit_grafana` data source. Authentication is handled via your Scaleway IAM credentials:
 
 ```terraform
 data "scaleway_cockpit_grafana" "main" {
@@ -197,6 +199,8 @@ terraform import scaleway_cockpit_source.main fr-par/11111111-1111-1111-1111-111
 ```
 
 ### Grafana Data Source
+
+~> **Note:** The `scaleway_cockpit_grafana_user` resource is deprecated. Grafana authentication is now handled via Scaleway IAM, and no import is needed for the data source.
 
 The `scaleway_cockpit_grafana` data source automatically retrieves Grafana information. No import is required:
 
