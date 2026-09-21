@@ -290,7 +290,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_billing_consumptions":                               billing.DataSourceConsumptions(),
 				"scaleway_billing_invoices":                                   billing.DataSourceInvoices(),
 				"scaleway_block_snapshot":                                     block.DataSourceSnapshot(),
-				"scaleway_block_volume":                                       block.DataSourceVolume(),
 				"scaleway_cockpit":                                            cockpit.DataSourceCockpit(),
 				"scaleway_cockpit_config":                                     cockpit.DataSourceCockpitConfig(),
 				"scaleway_cockpit_grafana":                                    cockpit.DataSourceCockpitGrafana(),
