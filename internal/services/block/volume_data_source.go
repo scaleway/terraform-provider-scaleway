@@ -222,7 +222,7 @@ func (d *VolumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	flat := flattenVolume(ctx, volume, nil, &resp.Diagnostics)
+	flat := flattenVolume(ctx, d.api, volume, nil, &resp.Diagnostics)
 
 	state := volumeDataSourceModel{
 		ID:               flat.ID,
