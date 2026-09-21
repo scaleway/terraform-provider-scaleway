@@ -265,6 +265,7 @@ func (r *VolumeResource) Create(
 	if !data.InstanceVolumeID.IsNull() && !data.InstanceVolumeID.IsUnknown() {
 		state.InstanceVolumeID = data.InstanceVolumeID
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	resp.Diagnostics.Append(resp.Identity.Set(
 		ctx, framework.SetZonalIdentity(volume.Zone, volume.ID),
