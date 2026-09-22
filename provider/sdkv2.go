@@ -295,8 +295,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_cockpit":                                            cockpit.DataSourceCockpit(),
 				"scaleway_cockpit_config":                                     cockpit.DataSourceCockpitConfig(),
 				"scaleway_cockpit_grafana":                                    cockpit.DataSourceCockpitGrafana(),
-				"scaleway_cockpit_grafana_product_dashboard":                  cockpit.DataSourceCockpitGrafanaProductDashboard(),
-				"scaleway_cockpit_grafana_product_dashboards":                 cockpit.DataSourceCockpitGrafanaProductDashboards(),
 				"scaleway_cockpit_preconfigured_alert":                        cockpit.DataSourceCockpitPreconfiguredAlert(),
 				"scaleway_cockpit_products":                                   cockpit.DataSourceCockpitProducts(),
 				"scaleway_cockpit_exporter":                                   cockpit.DataSourceCockpitExporter(),
