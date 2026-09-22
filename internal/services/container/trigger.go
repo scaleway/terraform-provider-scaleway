@@ -191,6 +191,7 @@ func triggerSchema() map[string]*schema.Schema {
 					"credentials_file_content": {
 						Type:        schema.TypeString,
 						Required:    true,
+						Sensitive:   true,
 						Description: "The content of the NATS credentials file that will be used to authenticate with the NATS server and subscribe to the specified subject.",
 					},
 				},
