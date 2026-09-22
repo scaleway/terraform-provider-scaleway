@@ -184,7 +184,9 @@ func (d *VolumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			return
 		}
 
-		listReq.ProjectID = &projectID
+		if !config.ProjectID.IsNull() {
+			listReq.ProjectID = &projectID
+		}
 
 		res, listErr := d.api.ListVolumes(listReq, scw.WithContext(ctx))
 		if listErr != nil {
