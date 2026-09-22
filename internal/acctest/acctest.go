@@ -48,6 +48,11 @@ var foldersUsingVCRv4 = []string{
 	"secret",
 }
 
+func init() {
+	// Cassettes store redacted secrets; ignore them when matching VCRv4 requests.
+	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password")
+}
+
 func FolderUsesVCRv4(fullFolderPath string) bool {
 	fullPathSplit := strings.Split(fullFolderPath, "/")
 	folder := fullPathSplit[len(fullPathSplit)-1]
@@ -193,8 +198,8 @@ func extractTestGeneratedNamePrefix(name string) string {
 	}
 
 	generated := host[dashIndex+1:]
-	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
 
+	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
 	if generatedToIntErr != nil {
 		return name
 	}

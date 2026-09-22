@@ -413,7 +413,7 @@ func (r *MailboxResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	_, err := r.api.DeleteMailbox(&mailboxsdk.DeleteMailboxRequest{MailboxID: state.ID.ValueString()}, scw.WithContext(ctx))
+	mb, err := r.api.DeleteMailbox(&mailboxsdk.DeleteMailboxRequest{MailboxID: state.ID.ValueString()}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			return
@@ -421,6 +421,11 @@ func (r *MailboxResource) Delete(ctx context.Context, req resource.DeleteRequest
 
 		resp.Diagnostics.AddError("Failed to delete mailbox", err.Error())
 
+		return
+	}
+
+	// Soft-delete returns deletion_scheduled immediately; only poll when still transient.
+	if mb != nil && mb.Status == mailboxsdk.MailboxStatusDeletionScheduled {
 		return
 	}
 

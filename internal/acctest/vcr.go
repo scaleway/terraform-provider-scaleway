@@ -186,9 +186,6 @@ func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
 		cassetteURLValues.Del(query)
 	}
 
-	requestURL.RawQuery = requestURLValues.Encode()
-	cassetteURL.RawQuery = cassetteURLValues.Encode()
-
 	// Specific handling of s3 URLs
 	// Url format is https://test-acc-scaleway-object-bucket-lifecycle-8445817190507446251.s3.fr-par.scw.cloud/?lifecycle=
 	if strings.HasSuffix(requestURL.Host, "scw.cloud") {
@@ -221,9 +218,31 @@ func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
 	}
 
 	return request.Method == cassette.Method &&
-		request.URL.Path == cassetteURL.Path &&
-		requestURL.RawQuery == cassetteURL.RawQuery &&
+		compareFieldsStrings(request.URL.Path, cassetteURL.Path) &&
+		compareURLQueries(requestURLValues, cassetteURLValues) &&
 		cassetteBodyMatcher(request, cassette)
+}
+
+// compareURLQueries compares query maps, fuzzing generated name prefixes in values.
+func compareURLQueries(request, cassette url.Values) bool {
+	if len(request) != len(cassette) {
+		return false
+	}
+
+	for key, requestValues := range request {
+		cassetteValues, ok := cassette[key]
+		if !ok || len(requestValues) != len(cassetteValues) {
+			return false
+		}
+
+		for i := range requestValues {
+			if !compareFieldsStrings(requestValues[i], cassetteValues[i]) {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {

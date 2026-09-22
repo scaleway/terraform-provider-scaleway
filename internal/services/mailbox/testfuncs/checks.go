@@ -52,7 +52,7 @@ func CreateTestDomain(tt *acctest.TestTools, subdomainPrefix string) string {
 
 	timeout := defaultTestDomainTimeout
 
-	_, err := domainAPI.CreateDNSZone(&domainsdk.CreateDNSZoneRequest{
+	dnsZone, err := domainAPI.CreateDNSZone(&domainsdk.CreateDNSZoneRequest{
 		ProjectID: projectID,
 		Domain:    acctest.TestDomain,
 		Subdomain: subdomain,
@@ -61,12 +61,22 @@ func CreateTestDomain(tt *acctest.TestTools, subdomainPrefix string) string {
 		tt.T.Fatalf("failed to create DNS zone %q: %v", zoneName, err)
 	}
 
+	if dnsZone != nil && dnsZone.Domain != "" {
+		if dnsZone.Subdomain == "" {
+			zoneName = dnsZone.Domain
+		} else {
+			zoneName = dnsZone.Subdomain + "." + dnsZone.Domain
+		}
+	}
+
+	cleanupZone := zoneName
+
 	tt.T.Cleanup(func() {
 		_, cleanupErr := domainAPI.DeleteDNSZone(&domainsdk.DeleteDNSZoneRequest{
-			DNSZone: zoneName,
+			DNSZone: cleanupZone,
 		}, scw.WithContext(tt.T.Context()))
 		if cleanupErr != nil && !httperrors.Is404(cleanupErr) {
-			tt.T.Logf("cleanup: failed to delete DNS zone %q: %v", zoneName, cleanupErr)
+			tt.T.Logf("cleanup: failed to delete DNS zone %q: %v", cleanupZone, cleanupErr)
 		}
 	})
 
@@ -165,7 +175,7 @@ func applyRequiredDNSRecords(
 				},
 			},
 		},
-		ReturnAllRecords: scw.BoolPtr(false),
+		ReturnAllRecords: new(false),
 	}, scw.WithContext(ctx))
 
 	return err
