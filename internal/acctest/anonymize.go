@@ -17,6 +17,7 @@ var SensitiveFields = map[string]any{
 	"token":         "xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx",
 	"password":      "xxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+	"email":         "tf_test@example.com",
 }
 
 // LeakCheckFields: fields checked on request body only (responses ignored).
@@ -26,6 +27,16 @@ var LeakCheckFields = map[string]any{
 	"secret":        "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 	"token":         "xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+	"email":         "tf_test@example.com",
+}
+
+// FieldNamespaces restricts a sensitive field to a specific API namespace
+// (a URL path prefix). An empty value means the field applies to all
+// namespaces. This lets a common key like "email" be anonymized only for the
+// services that need it, without affecting services that assert real email
+// values (e.g. cockpit contact points).
+var FieldNamespaces = map[string]string{
+	"email": "/partner/",
 }
 
 var HeaderPlaceholders = map[string]string{ //nolint: gosec // G101: placeholder values for anonymization
@@ -73,13 +84,19 @@ func AnonymizeCassetteFile(path string) error {
 			continue
 		}
 
+		var namespace string
+
 		if req, ok := inter["request"].(map[string]any); ok {
-			anonymizeBodyInMap(req, "body")
+			if url, ok := req["url"].(string); ok {
+				namespace = url
+			}
+
+			anonymizeBodyInMap(req, "body", namespace)
 			anonymizeHeadersInMap(req, "headers")
 		}
 
 		if resp, ok := inter["response"].(map[string]any); ok {
-			anonymizeBodyInMap(resp, "body")
+			anonymizeBodyInMap(resp, "body", namespace)
 			anonymizeHeadersInMap(resp, "headers")
 		}
 	}
@@ -92,7 +109,7 @@ func AnonymizeCassetteFile(path string) error {
 	return os.WriteFile(path, out, 0o600)
 }
 
-func anonymizeBodyInMap(m map[string]any, key string) {
+func anonymizeBodyInMap(m map[string]any, key string, namespace string) {
 	body, ok := m[key].(string)
 	if !ok || body == "" {
 		return
@@ -108,7 +125,7 @@ func anonymizeBodyInMap(m map[string]any, key string) {
 		return
 	}
 
-	if anonymizeJSON(v) {
+	if anonymizeJSON(v, namespace) {
 		b, err := json.Marshal(v)
 		if err != nil {
 			return
@@ -136,30 +153,38 @@ func anonymizeHeadersInMap(m map[string]any, key string) {
 	}
 }
 
-func anonymizeJSON(v any) bool {
+func anonymizeJSON(v any, namespace string) bool {
 	modified := false
 
 	switch x := v.(type) {
 	case map[string]any:
 		for key, val := range x {
 			keyLower := strings.ToLower(key)
-			if placeholder, ok := SensitiveFields[keyLower]; ok {
+			if placeholder, ok := SensitiveFields[keyLower]; ok && FieldApplies(keyLower, namespace) {
 				placeholderStr, _ := placeholder.(string)
 				if s, ok := val.(string); ok && s != "" && s != placeholderStr {
 					x[key] = placeholder
 					modified = true
 				}
-			} else if anonymizeJSON(val) {
+			} else if anonymizeJSON(val, namespace) {
 				modified = true
 			}
 		}
 	case []any:
 		for _, item := range x {
-			if anonymizeJSON(item) {
+			if anonymizeJSON(item, namespace) {
 				modified = true
 			}
 		}
 	}
 
 	return modified
+}
+
+// FieldApplies reports whether the sensitive field should be anonymized for the
+// given API namespace. A field with no configured namespace applies everywhere.
+func FieldApplies(field, namespace string) bool {
+	ns, ok := FieldNamespaces[field]
+
+	return !ok || ns == "" || namespace == "" || strings.Contains(namespace, ns)
 }

@@ -2,6 +2,7 @@ package secret_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -27,13 +28,13 @@ func TestAccDataSourceSecret_Basic(t *testing.T) {
 					  name        = "%s"
 					  description = "DataSourceSecret test description"
 					}
-					
+
 					data "scaleway_secret" "by_name" {
 					  name            = scaleway_secret.main.name
 					  depends_on	  = [scaleway_secret.main]
 					  project_id 	  = scaleway_secret.main.project_id
 					}
-					
+
 					data "scaleway_secret" "by_id" {
 					  secret_id       = scaleway_secret.main.id
 					  depends_on	  = [scaleway_secret.main]
@@ -45,6 +46,9 @@ func TestAccDataSourceSecret_Basic(t *testing.T) {
 
 					testAccCheckSecretExists(tt, "data.scaleway_secret.by_id"),
 					resource.TestCheckResourceAttr("data.scaleway_secret.by_id", "name", secretName),
+
+					resource.TestMatchResourceAttr("data.scaleway_secret.by_name", "srn", regexp.MustCompile(`^srn://secret-manager\..+/regions/.+/secrets/.+$`)),
+					resource.TestMatchResourceAttr("data.scaleway_secret.by_id", "srn", regexp.MustCompile(`^srn://secret-manager\..+/regions/.+/secrets/.+$`)),
 				),
 			},
 		},
@@ -65,7 +69,7 @@ func TestAccDataSourceSecret_Path(t *testing.T) {
 					  name = "test-secret-ds-path"
 					  path = "/test-secret-ds-path-path"
 					}
-					
+
 					data "scaleway_secret" "by_name" {
 					  name = scaleway_secret.main.name
 					  path = "/test-secret-ds-path-path"
@@ -76,6 +80,7 @@ func TestAccDataSourceSecret_Path(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretExists(tt, "data.scaleway_secret.by_name"),
 					resource.TestCheckResourceAttr("data.scaleway_secret.by_name", "name", "test-secret-ds-path"),
+					resource.TestMatchResourceAttr("data.scaleway_secret.by_name", "srn", regexp.MustCompile(`^srn://secret-manager\..+/regions/.+/secrets/.+$`)),
 				),
 			},
 		},
@@ -120,6 +125,7 @@ func TestAccDataSourceSecret_WithVersions(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_secret.with_versions", "versions.0.created_at"),
 					resource.TestCheckResourceAttrSet("data.scaleway_secret.with_versions", "versions.0.status"),
 					resource.TestCheckResourceAttr("data.scaleway_secret.with_versions", "versions.1.revision", "1"),
+					resource.TestMatchResourceAttr("data.scaleway_secret.with_versions", "srn", regexp.MustCompile(`^srn://secret-manager\..+/regions/.+/secrets/.+$`)),
 				),
 			},
 		},
@@ -148,6 +154,7 @@ func TestAccDataSourceSecret_NoVersions(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.scaleway_secret.fresh", "version_count", "0"),
 					resource.TestCheckResourceAttr("data.scaleway_secret.fresh", "versions.#", "0"),
+					resource.TestMatchResourceAttr("data.scaleway_secret.fresh", "srn", regexp.MustCompile(`^srn://secret-manager\..+/regions/.+/secrets/.+$`)),
 				),
 			},
 		},

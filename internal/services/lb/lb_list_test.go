@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	lbtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb/testfuncs"
 )
 
 func TestAccListLBs_Basic(t *testing.T) {
@@ -18,7 +19,7 @@ func TestAccListLBs_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isLbDestroyed(tt),
+		CheckDestroy:             lbtestfuncs.IsLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

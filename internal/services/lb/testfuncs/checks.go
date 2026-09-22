@@ -74,3 +74,35 @@ func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 		})
 	}
 }
+
+func IsLbDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_lb" {
+				continue
+			}
+
+			lbAPI, zone, ID, err := lb.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = lbAPI.GetLB(&lb2.ZonedAPIGetLBRequest{
+				Zone: zone,
+				LBID: ID,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("load Balancer (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !httperrors.Is404(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
+}

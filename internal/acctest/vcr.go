@@ -225,7 +225,13 @@ func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 		return nil
 	}
 
+	namespace := i.Request.URL
+
 	for key, placeholder := range SensitiveFields {
+		if !FieldApplies(key, namespace) {
+			continue
+		}
+
 		if val, ok := jsonBody[key]; ok {
 			if s, ok := val.(string); ok && s != "" && s != placeholder {
 				jsonBody[key] = placeholder

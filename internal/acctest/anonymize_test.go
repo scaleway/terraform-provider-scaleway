@@ -39,11 +39,11 @@ func TestAccCassettes_NoSensitiveLeak(t *testing.T) {
 func checkInteractionForLeaks(t *testing.T, cassettePath string, idx int, inter *cassette.Interaction) {
 	t.Helper()
 
-	checkBodyForLeaks(t, cassettePath, idx, "request", inter.Request.Body)
+	checkBodyForLeaks(t, cassettePath, idx, "request", inter.Request.Body, inter.Request.URL)
 	checkHeadersForLeaks(t, cassettePath, idx, "request", inter.Request.Headers)
 }
 
-func checkBodyForLeaks(t *testing.T, cassettePath string, idx int, part, body string) {
+func checkBodyForLeaks(t *testing.T, cassettePath string, idx int, part, body, namespace string) {
 	t.Helper()
 
 	trimmed := strings.TrimSpace(body)
@@ -56,17 +56,17 @@ func checkBodyForLeaks(t *testing.T, cassettePath string, idx int, part, body st
 		return
 	}
 
-	checkJSONForLeaks(t, cassettePath, idx, part, v, "")
+	checkJSONForLeaks(t, cassettePath, idx, part, v, "", namespace)
 }
 
-func checkJSONForLeaks(t *testing.T, cassettePath string, idx int, part string, v any, path string) {
+func checkJSONForLeaks(t *testing.T, cassettePath string, idx int, part string, v any, path, namespace string) {
 	t.Helper()
 
 	switch x := v.(type) {
 	case map[string]any:
 		for key, val := range x {
 			keyLower := strings.ToLower(key)
-			if placeholder, isSensitive := acctest.LeakCheckFields[keyLower]; isSensitive {
+			if placeholder, isSensitive := acctest.LeakCheckFields[keyLower]; isSensitive && acctest.FieldApplies(keyLower, namespace) {
 				if s, ok := val.(string); ok && s != "" {
 					expected, _ := placeholder.(string)
 					if s != expected {
@@ -75,12 +75,12 @@ func checkJSONForLeaks(t *testing.T, cassettePath string, idx int, part string, 
 					}
 				}
 			} else {
-				checkJSONForLeaks(t, cassettePath, idx, part, val, path+"."+key)
+				checkJSONForLeaks(t, cassettePath, idx, part, val, path+"."+key, namespace)
 			}
 		}
 	case []any:
 		for i, item := range x {
-			checkJSONForLeaks(t, cassettePath, idx, part, item, path+fmt.Sprintf("[%d]", i))
+			checkJSONForLeaks(t, cassettePath, idx, part, item, path+fmt.Sprintf("[%d]", i), namespace)
 		}
 	}
 }

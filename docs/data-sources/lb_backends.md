@@ -50,6 +50,7 @@ In addition to all arguments above, the following attributes are exported:
     - `timeout_connect` - Maximum initial server connection establishment time.
     - `timeout_tunnel` - Maximum tunnel inactivity time.
     - `failover_host` - Scaleway S3 bucket website to be served if all backend servers are down.
+    - `host` - Value used as the HTTP `Host` header or TLS SNI when connecting to backend servers.
     - `ssl_bridging` - Enables SSL between Load Balancer and backend servers.
     - `ignore_ssl_server_verify` - Specifies whether the Load Balancer should check the backend server’s certificate before initiating a connection.
     - `health_check_timeout` - Timeout before a health check request is considered failed.

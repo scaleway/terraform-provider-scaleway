@@ -58,14 +58,14 @@ func (r *ConnectorListResource) ListResourceConfigSchema(_ context.Context, _ li
 				Description: "Filter for connectors attached to this source VPC (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"target_vpc_id": schema.StringAttribute{
 				Description: "Filter for connectors attached to this target VPC (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 		},

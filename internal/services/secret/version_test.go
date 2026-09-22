@@ -51,6 +51,7 @@ func TestAccSecretVersion_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "revision", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "created_at"),
+					resource.TestMatchResourceAttr("scaleway_secret_version.v1", "srn", regexp.MustCompile(`^srn://secret-manager\..+/regions/.+/versions/.+$`)),
 				),
 			},
 			{

@@ -61,28 +61,28 @@ func (r *RouteListResource) ListResourceConfigSchema(_ context.Context, _ list.L
 				Description: "Filter for routes belonging to this VPC (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"nexthop_resource_id": schema.StringAttribute{
 				Description: "Filter for routes with this nexthop resource ID (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"nexthop_private_network_id": schema.StringAttribute{
 				Description: "Filter for routes with this nexthop private network ID (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"nexthop_vpc_connector_id": schema.StringAttribute{
 				Description: "Filter for routes with this nexthop VPC connector ID (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"nexthop_resource_type": schema.StringAttribute{

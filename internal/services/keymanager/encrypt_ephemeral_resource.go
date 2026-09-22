@@ -84,7 +84,7 @@ func (r *EncryptEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 				Required:    true,
 				Description: "ID of the key to use for encryption. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"plaintext": schema.StringAttribute{

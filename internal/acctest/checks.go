@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"regexp"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -77,11 +78,49 @@ func CheckResourceRawIDMatches(res1, attr1, res2, attr2 string) resource.TestChe
 	}
 }
 
+// CheckResourceAttrPairInSet asserts that the set attribute of a resource contains another resource's attribute.
+// If 'ignoreLocality' is set to true, equality will be checked on raw UUIDs only, assuming the values to compare are IDs.
+func CheckResourceAttrPairInSet(resourceWithSet, setAttribute, resourceToLookFor, attrToLookFor string, ignoreLocality bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rsWithSet, ok := s.RootModule().Resources[resourceWithSet]
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceWithSet)
+		}
+
+		rsToLookFor, ok := s.RootModule().Resources[resourceToLookFor]
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceToLookFor)
+		}
+
+		valueToLookFor := rsToLookFor.Primary.Attributes[attrToLookFor]
+
+		setLen, err := strconv.Atoi(rsWithSet.Primary.Attributes[setAttribute+".#"])
+		if err != nil {
+			return fmt.Errorf("conversion error: from %q to int", rsWithSet.Primary.Attributes[setAttribute+".#"])
+		}
+
+		for i := range setLen {
+			pathToCheck := fmt.Sprintf("%s.%d", setAttribute, i)
+
+			elem := rsWithSet.Primary.Attributes[pathToCheck]
+			if elem == valueToLookFor {
+				return nil
+			}
+
+			if ignoreLocality && locality.ExpandID(elem) == locality.ExpandID(valueToLookFor) {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("could not find %q of %s (%s) in set %q from resource %s", attrToLookFor, resourceToLookFor, valueToLookFor, setAttribute, resourceWithSet)
+	}
+}
+
 func CheckResourceAttrUUID(name string, key string) resource.TestCheckFunc {
 	return resource.TestMatchResourceAttr(name, key, UUIDRegex)
 }
 
-var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
+var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}`)
 
 func CheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

@@ -75,7 +75,7 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "test-autoconfig"
+	subDomainName := "tf-test-tem-autoconfig"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -125,7 +125,7 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "test-autoconfig-update"
+	subDomainName := "tf-test-tem-autoconfig-update"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,

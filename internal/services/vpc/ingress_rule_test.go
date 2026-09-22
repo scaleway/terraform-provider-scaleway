@@ -1,6 +1,7 @@
 package vpc_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -51,6 +52,7 @@ func TestAccVPCIngressRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc_ingress_rule.main", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_ingress_rule.main", "is_ipv6"),
 					resource.TestCheckResourceAttr("scaleway_vpc_ingress_rule.main", "region", "fr-par"),
+					resource.TestMatchResourceAttr("scaleway_vpc_ingress_rule.main", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/ingress-rules/.+$`)),
 				),
 			},
 			{
