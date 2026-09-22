@@ -23,7 +23,6 @@ var (
 
 type PartnerOrganizationRequestAdminRoleAction struct {
 	partnerAPI *partner.API
-	meta       *meta.Meta
 }
 
 func (a *PartnerOrganizationRequestAdminRoleAction) Configure(_ context.Context, req action.ConfigureRequest, resp *action.ConfigureResponse) {
@@ -41,7 +40,6 @@ func (a *PartnerOrganizationRequestAdminRoleAction) Configure(_ context.Context,
 		return
 	}
 
-	a.meta = m
 	a.partnerAPI = partner.NewAPI(meta.ExtractScwClient(m))
 }
 

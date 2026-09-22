@@ -23,7 +23,6 @@ var (
 
 type PartnerOrganizationUnlockAction struct {
 	partnerAPI *partner.API
-	meta       *meta.Meta
 }
 
 func (a *PartnerOrganizationUnlockAction) Configure(_ context.Context, req action.ConfigureRequest, resp *action.ConfigureResponse) {
@@ -41,7 +40,6 @@ func (a *PartnerOrganizationUnlockAction) Configure(_ context.Context, req actio
 		return
 	}
 
-	a.meta = m
 	a.partnerAPI = partner.NewAPI(meta.ExtractScwClient(m))
 }
 
