@@ -60,6 +60,14 @@ func waitForMailbox(ctx context.Context, api *mailboxsdk.API, mailboxID string, 
 		}
 
 		if !keepWaiting {
+			switch mb.Status {
+			case mailboxsdk.MailboxStatusPaymentFailed,
+				mailboxsdk.MailboxStatusLocked,
+				mailboxsdk.MailboxStatusDeleting,
+				mailboxsdk.MailboxStatusDeletionScheduled:
+				return nil, fmt.Errorf("mailbox %s ended in unexpected status %s", mailboxID, mb.Status)
+			}
+
 			return mb, nil
 		}
 

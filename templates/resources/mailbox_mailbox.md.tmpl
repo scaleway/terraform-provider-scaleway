@@ -34,7 +34,7 @@ A **mailbox** is a hosted email address (`local_part@domain`) that belongs to a
 - `password` - (Optional, **Sensitive**) Password for the mailbox. Conflicts with `password_wo`. Stored in state.
 - `password_wo` - (Optional, Write-only) Password in [write-only](../guides/using-write-only-arguments.md) mode. Conflicts with `password`. Never stored in state. Requires `password_wo_version`.
 - `password_wo_version` - (Optional) Version of the write-only password. Bump it together with `password_wo` to rotate the password.
-- `subscription_period` - (Required) Billing period for the mailbox. Accepted values: `monthly`, `yearly`.
+- `subscription_period` - (Required) Billing period for the mailbox. Accepted values: `monthly`, `yearly`. Can be updated in place to change the next renewal period.
 
 ## Attributes Reference
 

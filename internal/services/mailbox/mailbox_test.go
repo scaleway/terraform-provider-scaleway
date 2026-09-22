@@ -14,6 +14,8 @@ func TestAccMailboxMailbox_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+
 	domainID := mailboxtestfuncs.CreateTestDomain(tt, sdkacctest.RandomWithPrefix("tf-tests-mbx-basic"))
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -54,7 +56,10 @@ func TestAccMailboxMailbox_PasswordChange(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+
 	domainID := mailboxtestfuncs.CreateTestDomain(tt, sdkacctest.RandomWithPrefix("tf-tests-mbx-pwd"))
+	mailboxID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -72,6 +77,7 @@ resource "scaleway_mailbox_mailbox" "pwd" {
 				Check: resource.ComposeTestCheckFunc(
 					mailboxtestfuncs.CheckMailboxExists(tt, "scaleway_mailbox_mailbox.pwd"),
 					resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.pwd", "status", "ready"),
+					acctest.CheckResourceIDPersisted("scaleway_mailbox_mailbox.pwd", &mailboxID),
 				),
 			},
 			{
@@ -83,7 +89,10 @@ resource "scaleway_mailbox_mailbox" "pwd" {
   subscription_period = "monthly"
 }
 `, domainID),
-				Check: mailboxtestfuncs.CheckMailboxExists(tt, "scaleway_mailbox_mailbox.pwd"),
+				Check: resource.ComposeTestCheckFunc(
+					mailboxtestfuncs.CheckMailboxExists(tt, "scaleway_mailbox_mailbox.pwd"),
+					acctest.CheckResourceIDPersisted("scaleway_mailbox_mailbox.pwd", &mailboxID),
+				),
 			},
 		},
 	})
@@ -93,7 +102,10 @@ func TestAccMailboxMailbox_PasswordWO(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+
 	domainID := mailboxtestfuncs.CreateTestDomain(tt, sdkacctest.RandomWithPrefix("tf-tests-mbx-pwo"))
+	mailboxID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -114,6 +126,7 @@ resource "scaleway_mailbox_mailbox" "pwd_wo" {
 					resource.TestCheckNoResourceAttr("scaleway_mailbox_mailbox.pwd_wo", "password_wo"),
 					resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.pwd_wo", "password_wo_version", "1"),
 					resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.pwd_wo", "status", "ready"),
+					acctest.CheckResourceIDPersisted("scaleway_mailbox_mailbox.pwd_wo", &mailboxID),
 				),
 			},
 			{
@@ -129,6 +142,7 @@ resource "scaleway_mailbox_mailbox" "pwd_wo" {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr("scaleway_mailbox_mailbox.pwd_wo", "password_wo"),
 					resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.pwd_wo", "password_wo_version", "2"),
+					acctest.CheckResourceIDPersisted("scaleway_mailbox_mailbox.pwd_wo", &mailboxID),
 				),
 			},
 		},
@@ -139,7 +153,10 @@ func TestAccMailboxMailbox_ForceNewOnLocalPartChange(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+
 	domainID := mailboxtestfuncs.CreateTestDomain(tt, sdkacctest.RandomWithPrefix("tf-tests-mbx-fn"))
+	mailboxID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -154,7 +171,11 @@ resource "scaleway_mailbox_mailbox" "force_new" {
   subscription_period = "monthly"
 }
 `, domainID),
-				Check: resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.force_new", "local_part", "original"),
+				Check: resource.ComposeTestCheckFunc(
+					mailboxtestfuncs.CheckMailboxExists(tt, "scaleway_mailbox_mailbox.force_new"),
+					resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.force_new", "local_part", "original"),
+					acctest.CheckResourceIDPersisted("scaleway_mailbox_mailbox.force_new", &mailboxID),
+				),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -165,7 +186,59 @@ resource "scaleway_mailbox_mailbox" "force_new" {
   subscription_period = "monthly"
 }
 `, domainID),
-				Check: resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.force_new", "local_part", "renamed"),
+				Check: resource.ComposeTestCheckFunc(
+					mailboxtestfuncs.CheckMailboxExists(tt, "scaleway_mailbox_mailbox.force_new"),
+					resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.force_new", "local_part", "renamed"),
+					acctest.CheckResourceIDChanged("scaleway_mailbox_mailbox.force_new", &mailboxID),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMailboxMailbox_UpdateSubscriptionPeriod(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+
+	domainID := mailboxtestfuncs.CreateTestDomain(tt, sdkacctest.RandomWithPrefix("tf-tests-mbx-period"))
+	mailboxID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             mailboxtestfuncs.CheckMailboxDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_mailbox_mailbox" "period" {
+  domain_id           = %q
+  local_part          = "period.update"
+  password            = "S3cur3P@ssw0rd!"
+  subscription_period = "monthly"
+}
+`, domainID),
+				Check: resource.ComposeTestCheckFunc(
+					mailboxtestfuncs.CheckMailboxExists(tt, "scaleway_mailbox_mailbox.period"),
+					resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.period", "subscription_period", "monthly"),
+					resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.period", "status", "ready"),
+					acctest.CheckResourceIDPersisted("scaleway_mailbox_mailbox.period", &mailboxID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_mailbox_mailbox" "period" {
+  domain_id           = %q
+  local_part          = "period.update"
+  password            = "S3cur3P@ssw0rd!"
+  subscription_period = "yearly"
+}
+`, domainID),
+				Check: resource.ComposeTestCheckFunc(
+					mailboxtestfuncs.CheckMailboxExists(tt, "scaleway_mailbox_mailbox.period"),
+					resource.TestCheckResourceAttr("scaleway_mailbox_mailbox.period", "subscription_period", "yearly"),
+					acctest.CheckResourceIDPersisted("scaleway_mailbox_mailbox.period", &mailboxID),
+				),
 			},
 		},
 	})

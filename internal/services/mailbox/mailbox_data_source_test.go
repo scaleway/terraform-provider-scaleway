@@ -14,6 +14,8 @@ func TestAccDataSourceMailboxMailbox_ByID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+
 	domainID := mailboxtestfuncs.CreateTestDomain(tt, sdkacctest.RandomWithPrefix("tf-tests-mbx-dsid"))
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -55,6 +57,8 @@ data "scaleway_mailbox_mailbox" "by_id" {
 func TestAccDataSourceMailboxMailbox_ByEmail(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
 
 	domainID := mailboxtestfuncs.CreateTestDomain(tt, sdkacctest.RandomWithPrefix("tf-tests-mbx-dsem"))
 

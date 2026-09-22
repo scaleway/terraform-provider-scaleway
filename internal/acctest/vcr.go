@@ -46,15 +46,25 @@ var BodyMatcherIgnore = []string{
 	"mnq_nats_subject",
 	// cockpit exporter datadog destination
 	"api_key",
+	// secrets that must never be compared literally (anonymized in cassettes)
+	"password",
+	"new_password",
 }
 
-// removeKeyRecursive removes a key from a map and all its nested maps
+// removeKeyRecursive removes a key from a map and all its nested maps/slices.
 func removeKeyRecursive(m map[string]any, key string) {
 	delete(m, key)
 
 	for _, v := range m {
-		if v, ok := v.(map[string]any); ok {
-			removeKeyRecursive(v, key)
+		switch nested := v.(type) {
+		case map[string]any:
+			removeKeyRecursive(nested, key)
+		case []any:
+			for _, item := range nested {
+				if child, ok := item.(map[string]any); ok {
+					removeKeyRecursive(child, key)
+				}
+			}
 		}
 	}
 }

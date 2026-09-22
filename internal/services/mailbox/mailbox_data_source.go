@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	mailboxsdk "github.com/scaleway/scaleway-sdk-go/api/mailbox/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	scwdatasource "github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -78,6 +79,7 @@ func (d *MailboxDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				Computed:            true,
 				MarkdownDescription: "Full email address of the mailbox. Exactly one of `mailbox_id` or `email` must be specified.",
 				Validators: []validator.String{
+					verify.IsStringEmail(),
 					stringvalidator.ExactlyOneOf(
 						path.MatchRoot("mailbox_id"),
 						path.MatchRoot("email"),
@@ -176,31 +178,16 @@ func (d *MailboxDataSource) Read(ctx context.Context, req datasource.ReadRequest
 			return
 		}
 
-		for _, mb := range listResp.Mailboxes {
-			if mb.Email != email {
-				continue
-			}
-
-			if mailboxID != "" {
-				resp.Diagnostics.AddError(
-					"Multiple mailboxes found",
-					fmt.Sprintf("found multiple mailboxes with email %q", email),
-				)
-
-				return
-			}
-
-			mailboxID = mb.ID
-		}
-
-		if mailboxID == "" {
-			resp.Diagnostics.AddError(
-				"Mailbox not found",
-				fmt.Sprintf("no mailbox found with email %q", email),
-			)
+		mb, err := scwdatasource.FindExact(listResp.Mailboxes, func(candidate *mailboxsdk.Mailbox) bool {
+			return candidate != nil && candidate.Email == email
+		}, email)
+		if err != nil {
+			resp.Diagnostics.AddError("Mailbox lookup failed", err.Error())
 
 			return
 		}
+
+		mailboxID = mb.ID
 	default:
 		resp.Diagnostics.AddError(
 			"Missing lookup key",

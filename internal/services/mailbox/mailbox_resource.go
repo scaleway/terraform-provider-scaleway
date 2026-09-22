@@ -102,6 +102,7 @@ func (r *MailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Sensitive:           true,
 				MarkdownDescription: "Password for the mailbox. Only one of `password` or `password_wo` should be specified.",
 				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
 					stringvalidator.ExactlyOneOf(
 						path.MatchRoot("password"),
 						path.MatchRoot("password_wo"),
@@ -113,6 +114,7 @@ func (r *MailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				WriteOnly:           true,
 				MarkdownDescription: "Password in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. To update `password_wo`, also update `password_wo_version`.",
 				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
 					stringvalidator.ExactlyOneOf(
 						path.MatchRoot("password"),
 						path.MatchRoot("password_wo"),
@@ -129,8 +131,9 @@ func (r *MailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			},
 			"subscription_period": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "Billing subscription period: monthly or yearly",
+				MarkdownDescription: "Billing subscription period: monthly or yearly. Updating this value changes the next renewal period.",
 				Validators: []validator.String{
+					// canceled is an API-only value; create/update accept monthly|yearly only.
 					stringvalidator.OneOf(
 						string(mailboxsdk.MailboxSubscriptionPeriodMonthly),
 						string(mailboxsdk.MailboxSubscriptionPeriodYearly),
@@ -337,12 +340,28 @@ func (r *MailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	var newPassword *string
 
 	if !plan.PasswordWoVersion.Equal(state.PasswordWoVersion) {
-		if !config.PasswordWo.IsNull() && !config.PasswordWo.IsUnknown() {
-			newPassword = providertypes.ExpandStringPtr(config.PasswordWo.ValueString())
+		if config.PasswordWo.IsNull() || config.PasswordWo.IsUnknown() || config.PasswordWo.ValueString() == "" {
+			resp.Diagnostics.AddError(
+				"Missing password_wo",
+				"password_wo_version changed but password_wo is empty; set both to rotate the password.",
+			)
+
+			return
 		}
+
+		newPassword = providertypes.ExpandStringPtr(config.PasswordWo.ValueString())
 	}
 
 	if newPassword == nil && !plan.Password.Equal(state.Password) {
+		if plan.Password.IsNull() || plan.Password.ValueString() == "" {
+			resp.Diagnostics.AddError(
+				"Missing password",
+				"password changed but the new value is empty.",
+			)
+
+			return
+		}
+
 		newPassword = providertypes.ExpandStringPtr(plan.Password.ValueString())
 	}
 
@@ -417,6 +436,16 @@ func (r *MailboxResource) ImportState(ctx context.Context, req resource.ImportSt
 
 // convertMailboxToState maps API fields into state, preserving password fields from prior state/plan.
 func convertMailboxToState(mb *mailboxsdk.Mailbox, prior mailboxResourceModel) mailboxResourceModel {
+	subscriptionPeriod := mb.SubscriptionPeriod.String()
+	// UpdateMailbox may only schedule the next period; keep the configured value when it
+	// matches next_subscription_period to avoid a perpetual plan diff.
+	if !prior.SubscriptionPeriod.IsNull() && !prior.SubscriptionPeriod.IsUnknown() {
+		desired := prior.SubscriptionPeriod.ValueString()
+		if desired != "" && desired == mb.NextSubscriptionPeriod.String() && desired != subscriptionPeriod {
+			subscriptionPeriod = desired
+		}
+	}
+
 	return mailboxResourceModel{
 		ID:                             types.StringValue(mb.ID),
 		DomainID:                       types.StringValue(mb.DomainID),
@@ -424,7 +453,7 @@ func convertMailboxToState(mb *mailboxsdk.Mailbox, prior mailboxResourceModel) m
 		Password:                       prior.Password,
 		PasswordWo:                     types.StringNull(),
 		PasswordWoVersion:              prior.PasswordWoVersion,
-		SubscriptionPeriod:             types.StringValue(mb.SubscriptionPeriod.String()),
+		SubscriptionPeriod:             types.StringValue(subscriptionPeriod),
 		Email:                          types.StringValue(mb.Email),
 		Status:                         types.StringValue(mb.Status.String()),
 		SubscriptionPeriodStartedAt:    flattenTime(mb.SubscriptionPeriodStartedAt),

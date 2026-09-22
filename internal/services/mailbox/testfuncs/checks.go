@@ -96,6 +96,12 @@ func CreateTestDomain(tt *acctest.TestTools, subdomainPrefix string) string {
 		tt.T.Fatalf("failed waiting for test mailbox domain %q: %v", zoneName, err)
 	}
 
+	// On cassette replay the API response keeps the recorded FQDN; use it for
+	// subsequent DNS updates so relative record names and URLs match the cassette.
+	if domain.Name != "" {
+		zoneName = domain.Name
+	}
+
 	records, err := mailboxAPI.GetDomainRecords(&mailboxsdk.GetDomainRecordsRequest{
 		DomainID: domain.ID,
 	}, scw.WithContext(ctx))
