@@ -4,17 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -48,8 +46,8 @@ type snapshotResourceModel struct {
 	Name      types.String `tfsdk:"name"`
 	VolumeID  types.String `tfsdk:"volume_id"`
 	Tags      types.List   `tfsdk:"tags"`
-	Import    types.Object `tfsdk:"import"`
-	Export    types.Object `tfsdk:"export"`
+	Import    types.List   `tfsdk:"import"`
+	Export    types.List   `tfsdk:"export"`
 	Srn       types.String `tfsdk:"srn"`
 	Zone      types.String `tfsdk:"zone"`
 	ProjectID types.String `tfsdk:"project_id"`
@@ -65,6 +63,34 @@ type snapshotImportModel struct {
 type snapshotExportModel struct {
 	Bucket types.String `tfsdk:"bucket"`
 	Key    types.String `tfsdk:"key"`
+}
+
+func extractSnapshotImportBlock(ctx context.Context, list types.List) (snapshotImportModel, diag.Diagnostics) {
+	var elems []snapshotImportModel
+	diags := list.ElementsAs(ctx, &elems, false)
+	if diags.HasError() {
+		return snapshotImportModel{}, diags
+	}
+
+	if len(elems) == 0 {
+		return snapshotImportModel{}, nil
+	}
+
+	return elems[0], nil
+}
+
+func extractSnapshotExportBlock(ctx context.Context, list types.List) (snapshotExportModel, diag.Diagnostics) {
+	var elems []snapshotExportModel
+	diags := list.ElementsAs(ctx, &elems, false)
+	if diags.HasError() {
+		return snapshotExportModel{}, diags
+	}
+
+	if len(elems) == 0 {
+		return snapshotExportModel{}, nil
+	}
+
+	return elems[0], nil
 }
 
 func (r *SnapshotResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -102,46 +128,6 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				ElementType:         types.StringType,
 				MarkdownDescription: "The tags associated with the snapshot",
 			},
-			"import": schema.SingleNestedAttribute{
-				Optional:            true,
-				MarkdownDescription: "Import snapshot from a qcow",
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.Object{
-					objectvalidator.ConflictsWith(path.MatchRoot("volume_id")),
-				},
-				Attributes: map[string]schema.Attribute{
-					"bucket": schema.StringAttribute{
-						Required:            true,
-						MarkdownDescription: "Bucket containing qcow",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.RequiresReplace(),
-						},
-					},
-					"key": schema.StringAttribute{
-						Required:            true,
-						MarkdownDescription: "Key of the qcow file in the specified bucket",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.RequiresReplace(),
-						},
-					},
-				},
-			},
-			"export": schema.SingleNestedAttribute{
-				Optional:            true,
-				MarkdownDescription: "Export snapshot to a qcow",
-				Attributes: map[string]schema.Attribute{
-					"bucket": schema.StringAttribute{
-						Required:            true,
-						MarkdownDescription: "Bucket containing qcow",
-					},
-					"key": schema.StringAttribute{
-						Required:            true,
-						MarkdownDescription: "Key of the qcow file in the specified bucket",
-					},
-				},
-			},
 			"srn": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The Scaleway Resource Name (SRN) of the snapshot",
@@ -168,6 +154,51 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				},
 				Validators: []validator.String{
 					verify.IsStringUUID(),
+				},
+			},
+		},
+		Blocks: map[string]schema.Block{
+			"import": schema.ListNestedBlock{
+				MarkdownDescription: "Import snapshot from a qcow",
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(1),
+					listvalidator.ConflictsWith(path.MatchRoot("volume_id")),
+				},
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"bucket": schema.StringAttribute{
+							Optional:            true,
+							MarkdownDescription: "Bucket containing qcow",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.RequiresReplace(),
+							},
+						},
+						"key": schema.StringAttribute{
+							Optional:            true,
+							MarkdownDescription: "Key of the qcow file in the specified bucket",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.RequiresReplace(),
+							},
+						},
+					},
+				},
+			},
+			"export": schema.ListNestedBlock{
+				MarkdownDescription: "Export snapshot to a qcow",
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(1),
+				},
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"bucket": schema.StringAttribute{
+							Optional:            true,
+							MarkdownDescription: "Bucket containing qcow",
+						},
+						"key": schema.StringAttribute{
+							Optional:            true,
+							MarkdownDescription: "Key of the qcow file in the specified bucket",
+						},
+					},
 				},
 			},
 		},
@@ -231,7 +262,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 
 	var snapshot *block.Snapshot
 
-	if plan.Import.IsNull() || plan.Import.IsUnknown() {
+	if plan.Import.IsNull() || plan.Import.IsUnknown() || len(plan.Import.Elements()) == 0 {
 		snapshot, err = r.api.CreateSnapshot(&block.CreateSnapshotRequest{
 			Zone:      zone,
 			ProjectID: projectID,
@@ -245,9 +276,8 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 			return
 		}
 	} else {
-		var importData snapshotImportModel
-		resp.Diagnostics.Append(plan.Import.As(ctx, &importData, basetypes.ObjectAsOptions{})...)
-
+		importData, importDiags := extractSnapshotImportBlock(ctx, plan.Import)
+		resp.Diagnostics.Append(importDiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -274,10 +304,9 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	if !plan.Export.IsNull() && !plan.Export.IsUnknown() {
-		var exportData snapshotExportModel
-		resp.Diagnostics.Append(plan.Export.As(ctx, &exportData, basetypes.ObjectAsOptions{})...)
-
+	if !plan.Export.IsNull() && !plan.Export.IsUnknown() && len(plan.Export.Elements()) > 0 {
+		exportData, exportDiags := extractSnapshotExportBlock(ctx, plan.Export)
+		resp.Diagnostics.Append(exportDiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -441,10 +470,9 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 		}
 	}
 
-	if !plan.Export.Equal(state.Export) && !plan.Export.IsNull() && !plan.Export.IsUnknown() {
-		var exportData snapshotExportModel
-		resp.Diagnostics.Append(plan.Export.As(ctx, &exportData, basetypes.ObjectAsOptions{})...)
-
+	if !plan.Export.Equal(state.Export) && !plan.Export.IsNull() && !plan.Export.IsUnknown() && len(plan.Export.Elements()) > 0 {
+		exportData, exportDiags := extractSnapshotExportBlock(ctx, plan.Export)
+		resp.Diagnostics.Append(exportDiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
