@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -66,20 +65,6 @@ type snapshotImportModel struct {
 type snapshotExportModel struct {
 	Bucket types.String `tfsdk:"bucket"`
 	Key    types.String `tfsdk:"key"`
-}
-
-func snapshotImportAttrTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"bucket": types.StringType,
-		"key":    types.StringType,
-	}
-}
-
-func snapshotExportAttrTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"bucket": types.StringType,
-		"key":    types.StringType,
-	}
 }
 
 func (r *SnapshotResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -215,6 +200,7 @@ func (r *SnapshotResource) Configure(_ context.Context, req resource.ConfigureRe
 func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan snapshotResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -261,6 +247,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 	} else {
 		var importData snapshotImportModel
 		resp.Diagnostics.Append(plan.Import.As(ctx, &importData, basetypes.ObjectAsOptions{})...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -290,6 +277,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 	if !plan.Export.IsNull() && !plan.Export.IsUnknown() {
 		var exportData snapshotExportModel
 		resp.Diagnostics.Append(plan.Export.As(ctx, &exportData, basetypes.ObjectAsOptions{})...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -336,6 +324,7 @@ func (r *SnapshotResource) Read(
 	}
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -396,6 +385,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -454,6 +444,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.Export.Equal(state.Export) && !plan.Export.IsNull() && !plan.Export.IsUnknown() {
 		var exportData snapshotExportModel
 		resp.Diagnostics.Append(plan.Export.As(ctx, &exportData, basetypes.ObjectAsOptions{})...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -490,6 +481,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 func (r *SnapshotResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state snapshotResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -547,6 +539,7 @@ func flattenBlockSnapshot(ctx context.Context, snapshot *block.Snapshot, referen
 
 	tags, tagsDiags := providertypes.FlattenStringList(ctx, "tags", snapshot.Tags, reference)
 	diags.Append(tagsDiags...)
+
 	state.Tags = tags
 
 	return state
