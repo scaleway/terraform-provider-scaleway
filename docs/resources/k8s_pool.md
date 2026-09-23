@@ -172,6 +172,10 @@ For the field to be properly taken into account, the `upgrade_pools` field of th
 
 - `startup_taints` - The list of Kubernetes taints applied at node creation but not reconciled afterward.
 
+- `user_data` - (Optional) User data applied and reconciled with the pool, as a map of key to content.
+
+~> **Important:** Updates to this field will recreate a new resource.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

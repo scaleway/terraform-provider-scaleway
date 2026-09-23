@@ -49,7 +49,7 @@ func TestAccIPAMIP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "address_cidr"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "updated_at"),
-					resource.TestMatchResourceAttr("scaleway_ipam_ip.ip01", "srn", regexp.MustCompile(`^srn://ipam\..+/zones/.+/ips/.+$`)),
+					resource.TestMatchResourceAttr("scaleway_ipam_ip.ip01", "srn", regexp.MustCompile(`^srn://ipam\..+/regions/.+/ips/.+$`)),
 				),
 			},
 			{

@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -42,7 +43,35 @@ func ResourcePool() *schema.Resource {
 		DeleteContext: ResourceK8SPoolDelete,
 		CustomizeDiff: ResourceK8SPoolCustomDiff,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+				// user_data is create-only and the pool's Read only fetches it when it
+				// is already non-empty in state. A passthrough import leaves it empty,
+				// so an imported pool with user data would never record it and a spurious
+				// replacement would be planned. Fetch it explicitly during import.
+				k8sAPI, region, poolID, err := NewAPIWithRegionAndID(m, d.Id())
+				if err != nil {
+					return nil, err
+				}
+
+				pool, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
+					Region: region,
+					PoolID: poolID,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return nil, err
+				}
+
+				userData, err := fetchPoolUserData(ctx, k8sAPI, pool)
+				if err != nil {
+					return nil, err
+				}
+
+				if err := d.Set("user_data", userData); err != nil {
+					return nil, err
+				}
+
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultK8SPoolTimeout),
@@ -243,6 +272,15 @@ func poolSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"user_data": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "User data applied and reconciled with the pool, as a map of key to content",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
 		"zone":   zonal.Schema(),
 		"region": regional.Schema(),
 		// Computed elements
@@ -438,6 +476,13 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		req.StartupTaints = expandCoreV1Taints(startupTaints)
 	}
 
+	if rawUserData, ok := d.GetOk("user_data"); ok {
+		req.UserData = make(map[string][]byte)
+		for key, value := range rawUserData.(map[string]any) {
+			req.UserData[key] = []byte(value.(string))
+		}
+	}
+
 	// Validate pool configuration
 	diags := validateRootVolumeSpecs(ctx, m.(*meta.Meta).ScwClient(), req)
 	if diags.HasError() {
@@ -523,6 +568,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	diags := setPoolState(ctx, d, m, pool, k8sAPI, nodes)
+	diags = append(diags, setPoolUserData(ctx, d, k8sAPI, pool)...)
 
 	err = identity.SetRegionalIdentity(d, pool.Region, pool.ID)
 	if err != nil {
@@ -632,6 +678,58 @@ func setPoolState(ctx context.Context, d *schema.ResourceData, m any, pool *k8s.
 	_ = d.Set("nodes", nodes)
 
 	return diags
+}
+
+// fetchPoolUserData fetches the pool's user data from the API: it lists the user data
+// keys and then reads the content of each one.
+func fetchPoolUserData(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) (map[string]any, error) {
+	listResp, err := k8sAPI.ListUserData(&k8s.ListUserDataRequest{
+		Region: pool.Region,
+		PoolID: pool.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	userData := make(map[string]any, len(listResp.UserData))
+	for _, summary := range listResp.UserData {
+		file, err := k8sAPI.GetUserData(&k8s.GetUserDataRequest{
+			Region: pool.Region,
+			PoolID: pool.ID,
+			Key:    summary.Key,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
+
+		content, err := io.ReadAll(file.Content)
+		if err != nil {
+			return nil, err
+		}
+
+		userData[summary.Key] = string(content)
+	}
+
+	return userData, nil
+}
+
+// setPoolUserData reads the pool's user data from the API and stores it in state.
+// It only performs the fetch when the pool is known to have user data (i.e. user_data
+// is non-empty in state or config), so pools without user data do not trigger extra
+// API calls. This enables drift detection: because user_data is ForceNew and the API
+// exposes no update endpoint, any change detected here forces a pool replacement.
+func setPoolUserData(ctx context.Context, d *schema.ResourceData, k8sAPI *k8s.API, pool *k8s.Pool) diag.Diagnostics {
+	existing, _ := d.Get("user_data").(map[string]any)
+	if len(existing) == 0 {
+		return nil
+	}
+
+	userData, err := fetchPoolUserData(ctx, k8sAPI, pool)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diag.FromErr(d.Set("user_data", userData))
 }
 
 func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

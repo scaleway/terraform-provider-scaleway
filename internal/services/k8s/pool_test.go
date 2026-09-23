@@ -969,6 +969,53 @@ func TestAccPool_TaintsAndLabels(t *testing.T) {
 	})
 }
 
+func TestAccPool_UserData(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.main"),
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: kapsuleClusterConfigForPoolTests("user-data", latestK8SVersion) + `
+					resource "scaleway_k8s_pool" "main" {
+					    name = "test-pool-user-data"
+						cluster_id = scaleway_k8s_cluster.main.id
+						size = 1
+						tags = [ "terraform-test", "scaleway_k8s_pool", "user-data" ]
+						node_type = "PRO2_XXS"
+						wait_for_pool_ready = false
+
+						user_data = {
+							"foo"   = "bar"
+							"hello" = "world"
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "user_data.%", "2"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "user_data.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "user_data.hello", "world"),
+				),
+			},
+			{
+				ResourceName:            "scaleway_k8s_pool.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"wait_for_pool_ready", "status"},
+			},
+		},
+	})
+}
+
 func TestAccPool_Version_Explicit(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
