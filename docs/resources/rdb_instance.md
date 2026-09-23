@@ -49,16 +49,21 @@ output "upgradable_versions" {
   value = scaleway_rdb_instance.main.upgradable_versions
 }
 
-# To upgrade to PostgreSQL 15, simply change the engine value
-# This will trigger a blue/green upgrade with automatic endpoint migration
+# To upgrade to PostgreSQL 15, change the engine value and explicitly allow the major version upgrade.
+# This triggers a blue/green upgrade: read the "Engine upgrade" section of this page before applying.
 # resource "scaleway_rdb_instance" "main" {
-#   name           = "my-database"
-#   node_type      = "DB-DEV-S"
-#   engine         = "PostgreSQL-15"  # Changed from PostgreSQL-14
-#   is_ha_cluster  = false
-#   disable_backup = true
-#   user_name      = "my_user"
-#   password       = "thiZ_is_v&ry_s3cret"
+#   name                        = "my-database"
+#   node_type                   = "DB-DEV-S"
+#   engine                      = "PostgreSQL-15" # Changed from PostgreSQL-14
+#   allow_major_version_upgrade = true
+#   is_ha_cluster               = false
+#   disable_backup              = true
+#   user_name                   = "my_user"
+#   password                    = "thiZ_is_v&ry_s3cret"
+#
+#   timeouts {
+#     update = "120m"
+#   }
 # }
 ```
 
@@ -217,11 +222,9 @@ interruption.
 
 ~> **Warning** Provider versions prior to `2.61.0` did not support engine upgrades. Changing the `engine` value in these versions would recreate the Database Instance **empty**, resulting in **data loss**. Ensure you are using provider version `>= 2.61.0` before upgrading your Database Instance engine version.
 
-~> **Important** Updates to `engine` will perform a blue/green upgrade using `MajorUpgradeWorkflow`. This creates a new instance from a snapshot, migrates endpoints automatically, and updates the Terraform state with the new instance ID. The upgrade ensures minimal downtime but **any writes between the snapshot and the endpoint migration will be lost**. Use the `upgradable_versions` computed attribute to check available versions for upgrade.
+~> **Important** Changing `engine` on an existing Database Instance is a blue/green major version upgrade that replaces the instance behind the resource. It is refused at plan time unless `allow_major_version_upgrade = true`. Read [Engine upgrade](#engine-upgrade) before applying it.
 
-~> **Note** Major engine upgrades (especially with HA) can take longer than other updates. The default `timeouts.update` for this resource is **60 minutes** — increase it further for large databases if needed. If Terraform times out, the Scaleway blue/green workflow may still continue in the background. See [Engine upgrade timeout recovery](#engine-upgrade-timeout-recovery) below.
-
-~> **Note** The provider copies instance-level data managed outside `scaleway_rdb_instance`, such as ACL rules, to the upgraded instance during the engine upgrade. However, Terraform plans dependent resources before the blue/green upgrade returns the new instance ID. As a result, resources that reference the previous instance ID, such as `scaleway_rdb_acl`, may require a second `terraform apply` to fully reconcile their Terraform state with the upgraded instance.
+- `allow_major_version_upgrade` - (Optional, defaults to `false`) Must be set to `true` to change `engine` on an existing Database Instance. It has no effect on creation and is not sent to the Scaleway API. You can leave it set to `true` permanently, or only set it for the apply that performs the upgrade. See [Engine upgrade](#engine-upgrade).
 
 - `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`lssd`, `sbs_5k` or `sbs_15k`).
 
@@ -343,13 +346,50 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
     - `forced_at` - Time when Scaleway-side maintenance will be applied.
     - `is_applicable` - Whether the maintenance can be applied by the user.
 
-## Engine upgrade timeout recovery
+## Engine upgrade
+
+Changing `engine` (e.g. from `PostgreSQL-15` to `PostgreSQL-16`) on an existing Database Instance does **not** upgrade it in place. The provider runs the Scaleway `MajorUpgradeWorkflow`, which is a blue/green operation.
+
+### What happens during `terraform apply`
+
+1. Scaleway snapshots the current instance and creates a **new** Database Instance running the target engine from that snapshot.
+2. The Terraform state switches to the **new instance ID** as soon as the new instance is created. The resource `id` changes.
+3. Once the new instance is ready, Scaleway migrates the endpoints (load balancer and Private Network) to it. Clients keep using the same endpoints.
+4. The provider re-enables high availability if `is_ha_cluster = true`, copies the ACL rules, then deletes the previous instance.
+
+### Before you upgrade
+
+- **Writes can be lost.** Any write made to the previous instance between the snapshot and the endpoint migration is not copied to the new instance. Stop writes or plan a maintenance window.
+- **Check the target version.** It must be listed in the `upgradable_versions` attribute of the instance. Otherwise the apply fails with the list of available versions.
+- **Test on a copy first.** Restore a snapshot or a backup to a separate instance and upgrade it, to validate extensions, application compatibility and the upgrade duration.
+- **Size the timeout.** The whole sequence, including the HA re-activation and the deletion of the previous instance, must fit in `timeouts.update` (**60 minutes** by default). Increase it for large or HA instances.
+- **Expect a second apply for dependent resources.** Resources that reference the instance ID, such as `scaleway_rdb_acl`, are planned before the new ID is known and are reconciled by the next `terraform apply`.
+- **Do not combine the upgrade with other changes.** Apply the `engine` change on its own, so a failure is easy to diagnose.
+
+### Example
+
+```terraform
+resource "scaleway_rdb_instance" "main" {
+  name                        = "my-database"
+  node_type                   = "db-dev-s"
+  engine                      = "PostgreSQL-16" # previously PostgreSQL-15
+  allow_major_version_upgrade = true
+
+  timeouts {
+    update = "120m"
+  }
+}
+```
+
+Without `allow_major_version_upgrade = true`, `terraform plan` fails with an error that explains the blue/green behavior. Creating a new instance with any `engine` never requires the flag.
+
+### Engine upgrade timeout recovery
 
 Use this procedure when a blue/green `engine` upgrade times out in Terraform. The Scaleway upgrade may still finish in the background (snapshot, restore, endpoint migration).
 
 ~> **Warning** Do not re-apply an `engine` change while an upgrade is still running. If Terraform state still points to the old instance, another apply can start a **second** blue/green upgrade (another new instance), leave more orphaned instances, and make the state harder to recover. Wait until the first upgrade has finished, then follow the steps below.
 
-### 1. Find the instances (CLI)
+#### 1. Find the instances (CLI)
 
 If Terraform returned a timeout error after the upgrade started, the error message includes the **new** and **old** instance regional IDs.
 
@@ -374,11 +414,11 @@ You can also compare with the ID stored in Terraform state:
 terraform state show scaleway_rdb_instance.main
 ```
 
-### 2. Wait for the upgrade to finish
+#### 2. Wait for the upgrade to finish
 
 Wait until the **new** instance is `ready` with the expected engine and endpoints before changing Terraform state.
 
-### 3. Delete the old instance (CLI)
+#### 3. Delete the old instance (CLI)
 
 Once the new instance is live and endpoints are migrated:
 
@@ -388,7 +428,7 @@ scw rdb instance delete instance-id=22222222-2222-2222-2222-222222222222 region=
 
 Replace the instance ID and region with the **old** instance values.
 
-### 4. Fix Terraform state
+#### 4. Fix Terraform state
 
 If Terraform state still points to the **old** instance ID but the **new** instance is the live one:
 

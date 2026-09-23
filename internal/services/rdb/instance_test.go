@@ -1951,13 +1951,32 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 					},
 				),
 			},
-			// Step 2: Attempt upgrade to invalid version (should fail)
+			// Step 2: Attempt upgrade without allow_major_version_upgrade (should fail at plan)
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-engine-upgrade"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "engine-upgrade"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, newVersion),
+				ExpectError: regexp.MustCompile(`Set allow_major_version_upgrade = true to confirm`),
+			},
+			// Step 3: Attempt upgrade to invalid version (should fail)
 			{
 				Config: `
 					resource "scaleway_rdb_instance" "main" {
 						name           = "test-rdb-engine-upgrade"
 						node_type      = "db-dev-s"
 						engine         = "PostgreSQL-99.99"
+						allow_major_version_upgrade = true
 						is_ha_cluster  = false
 						disable_backup = true
 						user_name      = "test_user"
@@ -1969,13 +1988,14 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 				`,
 				ExpectError: regexp.MustCompile(`engine version PostgreSQL-99\.99 is not available for upgrade`),
 			},
-			// Step 3: Upgrade to valid new version and verify old instance destroyed
+			// Step 4: Upgrade to valid new version and verify old instance destroyed
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "main" {
 						name           = "test-rdb-engine-upgrade"
 						node_type      = "db-dev-s"
 						engine         = %q
+						allow_major_version_upgrade = true
 						is_ha_cluster  = false
 						disable_backup = true
 						user_name      = "test_user"
@@ -2083,16 +2103,17 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "main" {
-						name              = "test-rdb-engine-upgrade-ha"
-						node_type         = "db-dev-s"
-						engine            = %q
-						is_ha_cluster     = true
-						disable_backup    = true
-						user_name         = "test_user"
-						password          = "thiZ_is_v&ry_s3cret"
-						tags              = ["terraform-test", "engine-upgrade-ha"]
-						volume_type       = "sbs_5k"
-						volume_size_in_gb = 10
+						name                        = "test-rdb-engine-upgrade-ha"
+						node_type                   = "db-dev-s"
+						engine                      = %q
+						allow_major_version_upgrade = true
+						is_ha_cluster               = true
+						disable_backup              = true
+						user_name                   = "test_user"
+						password                    = "thiZ_is_v&ry_s3cret"
+						tags                        = ["terraform-test", "engine-upgrade-ha"]
+						volume_type                 = "sbs_5k"
+						volume_size_in_gb           = 10
 					}
 				`, newVersion),
 				Check: resource.ComposeTestCheckFunc(
@@ -2178,6 +2199,7 @@ func TestAccInstance_EngineUpgrade_WithACL(t *testing.T) {
 				name               = "test-rdb-engine-upgrade-acl"
 				node_type          = "db-dev-s"
 				engine             = %q
+				allow_major_version_upgrade = true
 				is_ha_cluster      = false
 				disable_backup     = true
 				user_name          = "test_user"
