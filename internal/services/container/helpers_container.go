@@ -226,6 +226,9 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.Args = types.ExpandStrings(args)
 	}
 
+	req.EnableDefaultPublicEndpoint = types.ExpandBoolPtr(types.GetBool(d, "enable_default_public_endpoint"))
+	req.EnablePrivateEndpoint = types.ExpandBoolPtr(types.GetBool(d, "enable_private_endpoint"))
+
 	if pnID, ok := d.GetOk("private_network_id"); ok {
 		req.PrivateNetworkID = types.ExpandStringPtr(locality.ExpandID(pnID.(string)))
 	}
@@ -410,6 +413,14 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 
 	if d.HasChanges("private_network_id") {
 		req.PrivateNetworkID = types.ExpandUpdatedStringPtr(locality.ExpandID(d.Get("private_network_id")))
+	}
+
+	if d.HasChange("enable_default_public_endpoint") {
+		req.EnableDefaultPublicEndpoint = types.ExpandBoolPtr(d.Get("enable_default_public_endpoint"))
+	}
+
+	if d.HasChange("enable_private_endpoint") {
+		req.EnablePrivateEndpoint = types.ExpandBoolPtr(d.Get("enable_private_endpoint"))
 	}
 
 	return req, nil
