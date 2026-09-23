@@ -2,311 +2,552 @@ package block
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	providertypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-func ResourceSnapshot() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: ResourceBlockSnapshotCreate,
-		ReadContext:   ResourceBlockSnapshotRead,
-		UpdateContext: ResourceBlockSnapshotUpdate,
-		DeleteContext: ResourceBlockSnapshotDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultBlockTimeout),
-			Read:    schema.DefaultTimeout(defaultBlockTimeout),
-			Delete:  schema.DefaultTimeout(defaultBlockTimeout),
-			Default: schema.DefaultTimeout(defaultBlockTimeout),
-		},
-		SchemaVersion: 0,
-		Identity:      identity.DefaultZonal(),
-		SchemaFunc:    snapshotSchema,
+var (
+	_ resource.Resource                = (*SnapshotResource)(nil)
+	_ resource.ResourceWithConfigure   = (*SnapshotResource)(nil)
+	_ resource.ResourceWithImportState = (*SnapshotResource)(nil)
+	_ resource.ResourceWithIdentity    = (*SnapshotResource)(nil)
+)
+
+func NewSnapshotResource() resource.Resource {
+	return &SnapshotResource{}
+}
+
+type SnapshotResource struct {
+	api  *block.API
+	meta *meta.Meta
+}
+
+type snapshotResourceModel struct {
+	ID        types.String `tfsdk:"id"`
+	Name      types.String `tfsdk:"name"`
+	VolumeID  types.String `tfsdk:"volume_id"`
+	Tags      types.List   `tfsdk:"tags"`
+	Import    types.Object `tfsdk:"import"`
+	Export    types.Object `tfsdk:"export"`
+	Srn       types.String `tfsdk:"srn"`
+	Zone      types.String `tfsdk:"zone"`
+	ProjectID types.String `tfsdk:"project_id"`
+}
+
+type snapshotResourceIdentityModel = identityfw.ZonalIdentity
+
+type snapshotImportModel struct {
+	Bucket types.String `tfsdk:"bucket"`
+	Key    types.String `tfsdk:"key"`
+}
+
+type snapshotExportModel struct {
+	Bucket types.String `tfsdk:"bucket"`
+	Key    types.String `tfsdk:"key"`
+}
+
+func snapshotImportAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"bucket": types.StringType,
+		"key":    types.StringType,
 	}
 }
 
-func snapshotSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Optional:    true,
-			Description: "The snapshot name",
-		},
-		"volume_id": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-			Description:      "ID of the volume from which creates a snapshot",
-			DiffSuppressFunc: dsf.Locality,
-			ConflictsWith:    []string{"import"},
-		},
-		"tags": {
-			Type: schema.TypeList,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-			Optional:    true,
-			Description: "The tags associated with the snapshot",
-		},
-		"import": {
-			Type:     schema.TypeList,
-			ForceNew: true,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"bucket": {
-						Type:             schema.TypeString,
-						Required:         true,
-						ForceNew:         true,
-						Description:      "Bucket containing qcow",
-						DiffSuppressFunc: dsf.Locality,
-						StateFunc: func(i any) string {
-							return regional.ExpandID(i.(string)).ID
-						},
-					},
-					"key": {
-						Type:        schema.TypeString,
-						Required:    true,
-						ForceNew:    true,
-						Description: "Key of the qcow file in the specified bucket",
-					},
-				},
-			},
-			Optional:      true,
-			Description:   "Import snapshot from a qcow",
-			ConflictsWith: []string{"volume_id"},
-		},
-		"export": {
-			Type:     schema.TypeList,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"bucket": {
-						Type:             schema.TypeString,
-						Required:         true,
-						Description:      "Bucket containing qcow",
-						DiffSuppressFunc: dsf.Locality,
-						StateFunc: func(i any) string {
-							return regional.ExpandID(i.(string)).ID
-						},
-					},
-					"key": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "Key of the qcow file in the specified bucket",
-					},
-				},
-			},
-			Optional:    true,
-			Description: "Export snapshot to a qcow",
-		},
-		"srn": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The Scaleway Resource Name (SRN) of the snapshot",
-		},
-		"zone":       zonal.Schema(),
-		"project_id": account.ProjectIDSchema(),
+func snapshotExportAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"bucket": types.StringType,
+		"key":    types.StringType,
 	}
 }
 
-func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := blockAPIWithZone(d, m)
+func (r *SnapshotResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_block_snapshot"
+}
+
+func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: "Manages a Scaleway Block Snapshot",
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The ID of the snapshot",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "The snapshot name",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"volume_id": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "ID of the volume from which creates a snapshot",
+				Validators: []validator.String{
+					verify.IsStringUUIDOrUUIDWithZone(),
+				},
+			},
+			"tags": schema.ListAttribute{
+				Optional:            true,
+				ElementType:         types.StringType,
+				MarkdownDescription: "The tags associated with the snapshot",
+			},
+			"import": schema.SingleNestedAttribute{
+				Optional:            true,
+				MarkdownDescription: "Import snapshot from a qcow",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.MatchRoot("volume_id")),
+				},
+				Attributes: map[string]schema.Attribute{
+					"bucket": schema.StringAttribute{
+						Required:            true,
+						MarkdownDescription: "Bucket containing qcow",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+					"key": schema.StringAttribute{
+						Required:            true,
+						MarkdownDescription: "Key of the qcow file in the specified bucket",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+				},
+			},
+			"export": schema.SingleNestedAttribute{
+				Optional:            true,
+				MarkdownDescription: "Export snapshot to a qcow",
+				Attributes: map[string]schema.Attribute{
+					"bucket": schema.StringAttribute{
+						Required:            true,
+						MarkdownDescription: "Bucket containing qcow",
+					},
+					"key": schema.StringAttribute{
+						Required:            true,
+						MarkdownDescription: "Key of the qcow file in the specified bucket",
+					},
+				},
+			},
+			"srn": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the snapshot",
+			},
+			"zone": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "The zone you want to attach the resource to",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					verify.IsStringOneOfWithWarning(zonal.AllZones()),
+				},
+			},
+			"project_id": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "The project_id you want to attach the resource to",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					verify.IsStringUUID(),
+				},
+			},
+		},
+	}
+}
+
+func (r *SnapshotResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityfw.DefaultZonal()
+}
+
+func (r *SnapshotResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.meta = m
+	r.api = block.NewAPI(r.meta.ScwClient())
+}
+
+func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan snapshotResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	zone, err := meta.ExtractFrameworkZone(plan.Zone, r.meta.ScwClient())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to resolve zone", err.Error())
+
+		return
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(plan.ProjectID, r.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
+
+		return
+	}
+
+	name := plan.Name.ValueString()
+	if name == "" {
+		name = providertypes.NewRandomName("snapshot")
+	}
+
+	tags := providertypes.ExpandStringList(ctx, plan.Tags, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	var snapshot *block.Snapshot
 
-	if _, isImported := d.GetOk("import"); !isImported {
-		snapshot, err = api.CreateSnapshot(&block.CreateSnapshotRequest{
+	if plan.Import.IsNull() || plan.Import.IsUnknown() {
+		snapshot, err = r.api.CreateSnapshot(&block.CreateSnapshotRequest{
 			Zone:      zone,
-			ProjectID: d.Get("project_id").(string),
-			Name:      types.ExpandOrGenerateString(d.Get("name").(string), "snapshot"),
-			VolumeID:  locality.ExpandID(d.Get("volume_id")),
-			Tags:      types.ExpandStrings(d.Get("tags")),
+			ProjectID: projectID,
+			Name:      name,
+			VolumeID:  locality.ExpandID(plan.VolumeID.ValueString()),
+			Tags:      tags,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return diag.FromErr(err)
+			resp.Diagnostics.AddError("Failed to create block snapshot", err.Error())
+
+			return
 		}
 	} else {
-		req := &block.ImportSnapshotFromObjectStorageRequest{
+		var importData snapshotImportModel
+		resp.Diagnostics.Append(plan.Import.As(ctx, &importData, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		snapshot, err = r.api.ImportSnapshotFromObjectStorage(&block.ImportSnapshotFromObjectStorageRequest{
 			Zone:      zone,
-			ProjectID: d.Get("project_id").(string),
-			Name:      types.ExpandOrGenerateString(d.Get("name"), "snapshot"),
-			Bucket:    regional.ExpandID(d.Get("import.0.bucket")).ID,
-			Key:       d.Get("import.0.key").(string),
-			Tags:      types.ExpandStrings(d.Get("tags")),
-		}
-
-		snapshot, err = api.ImportSnapshotFromObjectStorage(req, scw.WithContext(ctx))
+			ProjectID: projectID,
+			Name:      name,
+			Bucket:    regional.ExpandID(importData.Bucket.ValueString()).ID,
+			Key:       importData.Key.ValueString(),
+			Tags:      tags,
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return diag.FromErr(err)
+			resp.Diagnostics.AddError("Failed to import block snapshot", err.Error())
+
+			return
 		}
 	}
 
-	err = identity.SetZonalIdentity(d, zone, snapshot.ID)
+	snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, snapshot.ID, defaultBlockTimeout)
 	if err != nil {
-		return diag.FromErr(err)
-	}
+		resp.Diagnostics.AddError("Failed waiting for block snapshot", err.Error())
 
-	_, err = waitForBlockSnapshot(ctx, api, zone, snapshot.ID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if _, shouldExport := d.GetOk("export"); shouldExport {
-		req := block.ExportSnapshotToObjectStorageRequest{
-			Zone:       zone,
-			SnapshotID: snapshot.ID,
-			Bucket:     regional.ExpandID(d.Get("export.0.bucket")).ID,
-			Key:        d.Get("export.0.key").(string),
-		}
-
-		_, err = api.ExportSnapshotToObjectStorage(&req, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	return ResourceBlockSnapshotRead(ctx, d, m)
-}
-
-func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	snapshot, err := waitForBlockSnapshot(ctx, api, zone, id, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	setSnapshotState(d, snapshot)
-
-	err = identity.SetZonalIdentity(d, snapshot.Zone, snapshot.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
-}
-
-func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	snapshot, err := waitForBlockSnapshot(ctx, api, zone, id, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	req := &block.UpdateSnapshotRequest{
-		Zone:       snapshot.Zone,
-		SnapshotID: snapshot.ID,
-	}
-
-	if d.HasChange("name") {
-		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
-	}
-
-	if d.HasChange("tags") {
-		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
-	}
-
-	if _, err := api.UpdateSnapshot(req, scw.WithContext(ctx)); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if shouldExport := d.HasChange("export"); shouldExport {
-		req := block.ExportSnapshotToObjectStorageRequest{
-			Zone:       snapshot.Zone,
-			SnapshotID: snapshot.ID,
-			Bucket:     regional.ExpandID(d.Get("export.0.bucket")).ID,
-			Key:        d.Get("export.0.key").(string),
-		}
-
-		_, err = api.ExportSnapshotToObjectStorage(&req, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	return ResourceBlockSnapshotRead(ctx, d, m)
-}
-
-func ResourceBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	snapshot, err := waitForBlockSnapshotToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = api.DeleteSnapshot(&block.DeleteSnapshotRequest{
-		Zone:       snapshot.Zone,
-		SnapshotID: snapshot.ID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForBlockSnapshot(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
-	return nil
-}
-
-func setSnapshotState(resourceData *schema.ResourceData, snapshot *block.Snapshot) {
-	if snapshot == nil {
 		return
 	}
 
-	_ = resourceData.Set("name", snapshot.Name)
-	_ = resourceData.Set("project_id", snapshot.ProjectID)
-	_ = resourceData.Set("tags", snapshot.Tags)
-	_ = resourceData.Set("zone", snapshot.Zone)
+	if !plan.Export.IsNull() && !plan.Export.IsUnknown() {
+		var exportData snapshotExportModel
+		resp.Diagnostics.Append(plan.Export.As(ctx, &exportData, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 
-	if snapshot.ParentVolume != nil {
-		_ = resourceData.Set("volume_id", snapshot.ParentVolume.ID)
-	} else {
-		_ = resourceData.Set("volume_id", "")
+		_, err = r.api.ExportSnapshotToObjectStorage(&block.ExportSnapshotToObjectStorageRequest{
+			Zone:       zone,
+			SnapshotID: snapshot.ID,
+			Bucket:     regional.ExpandID(exportData.Bucket.ValueString()).ID,
+			Key:        exportData.Key.ValueString(),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to export block snapshot", err.Error())
+
+			return
+		}
 	}
 
-	_ = resourceData.Set("srn", snapshot.Srn)
+	state := flattenBlockSnapshot(ctx, snapshot, &plan, &resp.Diagnostics)
+	state.VolumeID = plan.VolumeID
+	state.Import = plan.Import
+	state.Export = plan.Export
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(
+		resp.Identity.Set(ctx, identityfw.SetZonalIdentity(snapshot.Zone, snapshot.ID))...,
+	)
+}
+
+func (r *SnapshotResource) Read(
+	ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse,
+) {
+	var (
+		state    snapshotResourceModel
+		identity snapshotResourceIdentityModel
+	)
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() &&
+		!identity.ID.IsNull() &&
+		!identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resourceID := state.ID.ValueString()
+	if identityAvailable {
+		resourceID = identity.ID.ValueString()
+	}
+
+	zone, id, err := zonal.ParseID(locality.ExpandID(resourceID))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+
+		return
+	}
+
+	snapshot, err := waitForBlockSnapshot(ctx, r.api, zone, id, defaultBlockTimeout)
+	if err != nil {
+		if httperrors.Is404(err) {
+			resp.State.RemoveResource(ctx)
+
+			return
+		}
+
+		resp.Diagnostics.AddError("Failed to read block snapshot", err.Error())
+
+		return
+	}
+
+	newState := flattenBlockSnapshot(ctx, snapshot, &state, &resp.Diagnostics)
+
+	// Preserve the user-provided volume_id (which may carry a zone locality prefix)
+	// so it does not drift against the config. Fall back to the API value on import.
+	if state.VolumeID.IsNull() || state.VolumeID.IsUnknown() {
+		if snapshot.ParentVolume != nil {
+			newState.VolumeID = types.StringValue(snapshot.ParentVolume.ID)
+		} else {
+			newState.VolumeID = types.StringNull()
+		}
+	} else {
+		newState.VolumeID = state.VolumeID
+	}
+
+	newState.Import = state.Import
+	newState.Export = state.Export
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(
+		resp.Identity.Set(ctx, identityfw.SetZonalIdentity(snapshot.Zone, snapshot.ID))...,
+	)
+}
+
+func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var (
+		plan  snapshotResourceModel
+		state snapshotResourceModel
+	)
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	zone, id, err := zonal.ParseID(locality.ExpandID(state.ID.ValueString()))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+
+		return
+	}
+
+	snapshot, err := waitForBlockSnapshot(ctx, r.api, zone, id, defaultBlockTimeout)
+	if err != nil {
+		if httperrors.Is404(err) {
+			resp.State.RemoveResource(ctx)
+
+			return
+		}
+
+		resp.Diagnostics.AddError("Failed to read block snapshot", err.Error())
+
+		return
+	}
+
+	updateReq := &block.UpdateSnapshotRequest{
+		Zone:       snapshot.Zone,
+		SnapshotID: snapshot.ID,
+	}
+
+	shouldUpdate := false
+
+	if !plan.Name.Equal(state.Name) {
+		name := plan.Name.ValueString()
+		updateReq.Name = &name
+		shouldUpdate = true
+	}
+
+	if !plan.Tags.Equal(state.Tags) {
+		tags := providertypes.ExpandUpdatedStringList(ctx, plan.Tags, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		updateReq.Tags = &tags
+		shouldUpdate = true
+	}
+
+	if shouldUpdate {
+		if _, err := r.api.UpdateSnapshot(updateReq, scw.WithContext(ctx)); err != nil {
+			resp.Diagnostics.AddError("Failed to update block snapshot", err.Error())
+
+			return
+		}
+	}
+
+	if !plan.Export.Equal(state.Export) && !plan.Export.IsNull() && !plan.Export.IsUnknown() {
+		var exportData snapshotExportModel
+		resp.Diagnostics.Append(plan.Export.As(ctx, &exportData, basetypes.ObjectAsOptions{})...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		_, err = r.api.ExportSnapshotToObjectStorage(&block.ExportSnapshotToObjectStorageRequest{
+			Zone:       snapshot.Zone,
+			SnapshotID: snapshot.ID,
+			Bucket:     regional.ExpandID(exportData.Bucket.ValueString()).ID,
+			Key:        exportData.Key.ValueString(),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to export block snapshot", err.Error())
+
+			return
+		}
+	}
+
+	snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, id, defaultBlockTimeout)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read block snapshot after update", err.Error())
+
+		return
+	}
+
+	newState := flattenBlockSnapshot(ctx, snapshot, &plan, &resp.Diagnostics)
+	newState.VolumeID = plan.VolumeID
+	newState.Import = plan.Import
+	newState.Export = plan.Export
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetZonalIdentity(snapshot.Zone, snapshot.ID))...)
+}
+
+func (r *SnapshotResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state snapshotResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	zone, id, err := zonal.ParseID(locality.ExpandID(state.ID.ValueString()))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+
+		return
+	}
+
+	_, err = waitForBlockSnapshotToBeAvailable(ctx, r.api, zone, id, defaultBlockTimeout)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed waiting for block snapshot before delete", err.Error())
+
+		return
+	}
+
+	err = r.api.DeleteSnapshot(&block.DeleteSnapshotRequest{
+		Zone:       zone,
+		SnapshotID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			return
+		}
+
+		resp.Diagnostics.AddError("Failed to delete block snapshot", err.Error())
+
+		return
+	}
+
+	_, err = waitForBlockSnapshot(ctx, r.api, zone, id, defaultBlockTimeout)
+	if err != nil && !httperrors.Is404(err) {
+		resp.Diagnostics.AddError("Failed waiting for block snapshot deletion", err.Error())
+	}
+}
+
+func (r *SnapshotResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
+}
+
+func flattenBlockSnapshot(ctx context.Context, snapshot *block.Snapshot, reference any, diags *diag.Diagnostics) snapshotResourceModel {
+	if snapshot == nil {
+		return snapshotResourceModel{}
+	}
+
+	state := snapshotResourceModel{
+		ID:        types.StringValue(zonal.NewIDString(snapshot.Zone, snapshot.ID)),
+		Name:      types.StringValue(snapshot.Name),
+		ProjectID: types.StringValue(snapshot.ProjectID),
+		Zone:      types.StringValue(snapshot.Zone.String()),
+		Srn:       types.StringValue(snapshot.Srn),
+	}
+
+	tags, tagsDiags := providertypes.FlattenStringList(ctx, "tags", snapshot.Tags, reference)
+	diags.Append(tagsDiags...)
+	state.Tags = tags
+
+	return state
 }

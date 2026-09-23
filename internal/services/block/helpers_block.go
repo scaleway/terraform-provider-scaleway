@@ -122,3 +122,22 @@ func migrateInstanceToBlockVolume(ctx context.Context, api *instancehelpers.Bloc
 
 	return blockVolume, nil
 }
+
+func setSnapshotState(resourceData *schema.ResourceData, snapshot *block.Snapshot) {
+	if snapshot == nil {
+		return
+	}
+
+	_ = resourceData.Set("name", snapshot.Name)
+	_ = resourceData.Set("project_id", snapshot.ProjectID)
+	_ = resourceData.Set("tags", snapshot.Tags)
+	_ = resourceData.Set("zone", snapshot.Zone)
+
+	if snapshot.ParentVolume != nil {
+		_ = resourceData.Set("volume_id", snapshot.ParentVolume.ID)
+	} else {
+		_ = resourceData.Set("volume_id", "")
+	}
+
+	_ = resourceData.Set("srn", snapshot.Srn)
+}
