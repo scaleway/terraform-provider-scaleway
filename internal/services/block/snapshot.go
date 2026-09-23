@@ -334,7 +334,7 @@ func (r *SnapshotResource) Read(
 		resourceID = identity.ID.ValueString()
 	}
 
-	zone, id, err := zonal.ParseID(locality.ExpandID(resourceID))
+	zone, id, err := zonal.ParseID(resourceID)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
 
@@ -390,7 +390,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	zone, id, err := zonal.ParseID(locality.ExpandID(state.ID.ValueString()))
+	zone, id, err := zonal.ParseID(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
 
@@ -486,7 +486,7 @@ func (r *SnapshotResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	zone, id, err := zonal.ParseID(locality.ExpandID(state.ID.ValueString()))
+	zone, id, err := zonal.ParseID(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
 
