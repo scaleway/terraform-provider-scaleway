@@ -49,7 +49,7 @@ type mailboxDataSourceModel struct {
 }
 
 func (d *MailboxDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_mailbox_mailbox"
+	resp.TypeName = req.ProviderTypeName + "_mailbox"
 }
 
 //go:embed descriptions/mailbox_data_source.md

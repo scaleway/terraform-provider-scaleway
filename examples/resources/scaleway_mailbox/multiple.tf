@@ -6,7 +6,7 @@ locals {
   mailboxes = toset(["alice", "bob"])
 }
 
-resource "scaleway_mailbox_mailbox" "employees" {
+resource "scaleway_mailbox" "employees" {
   for_each = local.mailboxes
 
   domain_id           = scaleway_mailbox_domain.corp.id

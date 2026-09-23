@@ -13,15 +13,15 @@ import (
 
 // AddTestSweepers registers sweepers that clean up test resources.
 func AddTestSweepers() {
-	resource.AddTestSweepers("scaleway_mailbox_mailbox", &resource.Sweeper{
-		Name: "scaleway_mailbox_mailbox",
+	resource.AddTestSweepers("scaleway_mailbox", &resource.Sweeper{
+		Name: "scaleway_mailbox",
 		F:    testSweepMailboxes,
 	})
 
 	resource.AddTestSweepers("scaleway_mailbox_domain", &resource.Sweeper{
 		Name:         "scaleway_mailbox_domain",
 		F:            testSweepDomains,
-		Dependencies: []string{"scaleway_mailbox_mailbox"},
+		Dependencies: []string{"scaleway_mailbox"},
 	})
 }
 

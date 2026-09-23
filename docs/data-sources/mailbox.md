@@ -1,9 +1,9 @@
 ---
 subcategory: "Mailbox"
-page_title: "Scaleway: scaleway_mailbox_mailbox"
+page_title: "Scaleway: scaleway_mailbox"
 ---
 
-# scaleway_mailbox_mailbox
+# scaleway_mailbox
 
 Use this data source to get information about a Scaleway Mailbox mailbox based on its UUID
 or its full email address.
@@ -15,7 +15,7 @@ or its full email address.
 ### By ID
 
 ```terraform
-data "scaleway_mailbox_mailbox" "by_id" {
+data "scaleway_mailbox" "by_id" {
   mailbox_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
@@ -23,7 +23,7 @@ data "scaleway_mailbox_mailbox" "by_id" {
 ### By email
 
 ```terraform
-data "scaleway_mailbox_mailbox" "by_email" {
+data "scaleway_mailbox" "by_email" {
   email = "john.doe@mail.example.com"
 }
 ```

@@ -60,7 +60,7 @@ type mailboxResourceModel struct {
 type mailboxResourceIdentityModel = framework.GlobalIdentity
 
 func (r *MailboxResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_mailbox_mailbox"
+	resp.TypeName = req.ProviderTypeName + "_mailbox"
 }
 
 //go:embed descriptions/mailbox_resource.md

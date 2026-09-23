@@ -329,7 +329,7 @@ func CheckMailboxDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 		api := mailboxsdk.NewAPI(tt.Meta.ScwClient())
 
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_mailbox_mailbox" {
+			if rs.Type != "scaleway_mailbox" {
 				continue
 			}
 

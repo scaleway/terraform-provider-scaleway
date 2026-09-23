@@ -10,7 +10,7 @@ import (
 	mailboxtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mailbox/testfuncs"
 )
 
-func TestAccDataSourceMailboxMailbox_ByID(t *testing.T) {
+func TestAccDataSourceMailbox_ByID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -24,29 +24,29 @@ func TestAccDataSourceMailboxMailbox_ByID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "scaleway_mailbox_mailbox" "ds_by_id" {
+resource "scaleway_mailbox" "ds_by_id" {
   domain_id           = %q
   local_part          = "datasource.byid"
   password            = "S3cur3P@ssw0rd!"
   subscription_period = "monthly"
 }
 
-data "scaleway_mailbox_mailbox" "by_id" {
-  mailbox_id = scaleway_mailbox_mailbox.ds_by_id.id
+data "scaleway_mailbox" "by_id" {
+  mailbox_id = scaleway_mailbox.ds_by_id.id
 }
 `, domainID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"data.scaleway_mailbox_mailbox.by_id", "id",
-						"scaleway_mailbox_mailbox.ds_by_id", "id",
+						"data.scaleway_mailbox.by_id", "id",
+						"scaleway_mailbox.ds_by_id", "id",
 					),
 					resource.TestCheckResourceAttrPair(
-						"data.scaleway_mailbox_mailbox.by_id", "email",
-						"scaleway_mailbox_mailbox.ds_by_id", "email",
+						"data.scaleway_mailbox.by_id", "email",
+						"scaleway_mailbox.ds_by_id", "email",
 					),
 					resource.TestCheckResourceAttrPair(
-						"data.scaleway_mailbox_mailbox.by_id", "status",
-						"scaleway_mailbox_mailbox.ds_by_id", "status",
+						"data.scaleway_mailbox.by_id", "status",
+						"scaleway_mailbox.ds_by_id", "status",
 					),
 				),
 			},
@@ -54,7 +54,7 @@ data "scaleway_mailbox_mailbox" "by_id" {
 	})
 }
 
-func TestAccDataSourceMailboxMailbox_ByEmail(t *testing.T) {
+func TestAccDataSourceMailbox_ByEmail(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -68,25 +68,25 @@ func TestAccDataSourceMailboxMailbox_ByEmail(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "scaleway_mailbox_mailbox" "ds_by_email" {
+resource "scaleway_mailbox" "ds_by_email" {
   domain_id           = %q
   local_part          = "datasource.byemail"
   password            = "S3cur3P@ssw0rd!"
   subscription_period = "monthly"
 }
 
-data "scaleway_mailbox_mailbox" "by_email" {
-  email = scaleway_mailbox_mailbox.ds_by_email.email
+data "scaleway_mailbox" "by_email" {
+  email = scaleway_mailbox.ds_by_email.email
 }
 `, domainID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
-						"data.scaleway_mailbox_mailbox.by_email", "id",
-						"scaleway_mailbox_mailbox.ds_by_email", "id",
+						"data.scaleway_mailbox.by_email", "id",
+						"scaleway_mailbox.ds_by_email", "id",
 					),
 					resource.TestCheckResourceAttrPair(
-						"data.scaleway_mailbox_mailbox.by_email", "domain_id",
-						"scaleway_mailbox_mailbox.ds_by_email", "domain_id",
+						"data.scaleway_mailbox.by_email", "domain_id",
+						"scaleway_mailbox.ds_by_email", "domain_id",
 					),
 				),
 			},
