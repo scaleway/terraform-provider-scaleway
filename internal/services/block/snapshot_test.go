@@ -71,7 +71,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 					resource "scaleway_block_snapshot" "qcow-block-snapshot" {
 					  name = "test-acc-block-snapshot-qcow2"
 					  import {
-					    bucket = scaleway_object.qcow-object.bucket
+					    bucket = scaleway_object_bucket.snapshot-bucket.name
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
