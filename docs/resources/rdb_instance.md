@@ -350,6 +350,8 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
 
 Changing `engine` (e.g. from `PostgreSQL-15` to `PostgreSQL-16`) on an existing Database Instance does **not** upgrade it in place. The provider runs the Scaleway `MajorUpgradeWorkflow`, which is a blue/green operation.
 
+For the product-side process, prerequisites and limitations, see [How to upgrade a PostgreSQL version](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/how-to/postgresql-upgrade-version/).
+
 ### What happens during `terraform apply`
 
 1. Scaleway snapshots the current instance and creates a **new** Database Instance running the target engine from that snapshot.
