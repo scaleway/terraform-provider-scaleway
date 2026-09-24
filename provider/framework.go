@@ -306,6 +306,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		billing.NewBudgetDataSource,
 		billing.NewBudgetAlertDataSource,
 		billing.NewBudgetAlertNotificationDataSource,
+		block.NewSnapshotsDataSource,
 		cockpit.NewGrafanaProductDashboardDataSource,
 		cockpit.NewGrafanaProductDashboardsDataSource,
 		datalab.NewDatalabDataSource,
