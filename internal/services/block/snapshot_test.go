@@ -120,7 +120,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					  name = "test-acc-export-block-snapshot-qcow2"
 					  volume_id = scaleway_block_volume.main.id
 					  export {
-					    bucket = scaleway_object.qcow-object.bucket
+					    bucket = scaleway_object_bucket.snapshot-bucket.name
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
@@ -153,7 +153,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					  name = "test-acc-export-block-snapshot-qcow2"
 					  volume_id = scaleway_block_volume.main.id
 					  export {
-					    bucket = scaleway_object.qcow-object.bucket
+					    bucket = scaleway_object_bucket.snapshot-bucket.name
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
@@ -161,7 +161,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					resource "scaleway_block_snapshot" "qcow-block-import-snapshot" {
 					  name = "test-acc-block-snapshot-qcow2"
 					  import {
-					    bucket = scaleway_object.qcow-object.bucket
+					    bucket = scaleway_object_bucket.snapshot-bucket.name
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
