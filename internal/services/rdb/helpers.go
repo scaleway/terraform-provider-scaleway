@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -150,11 +151,22 @@ func isTimeoutErr(err error) bool {
 }
 
 // customizeDiffEngineUpgrade fails the plan when `engine` changes on an existing instance
-// without `allow_major_version_upgrade = true`, because the blue/green upgrade replaces
-// the instance behind the resource and can lose writes.
+// without `allow_major_version_upgrade = true`, or when the engine change is combined with
+// other attribute updates. The blue/green upgrade replaces the instance behind the resource
+// and can lose writes; it must be applied alone.
 func customizeDiffEngineUpgrade(_ context.Context, d *schema.ResourceDiff, _ any) error {
 	if d.Id() == "" || !d.HasChange("engine") {
 		return nil
+	}
+
+	otherChanges := engineUpgradeConflictingChanges(d)
+	if len(otherChanges) > 0 {
+		return fmt.Errorf(
+			"cannot change engine together with other attributes (%s): "+
+				"apply the engine upgrade alone in a dedicated terraform apply, "+
+				"see the \"Engine upgrade\" section of the scaleway_rdb_instance documentation",
+			strings.Join(otherChanges, ", "),
+		)
 	}
 
 	if d.Get("allow_major_version_upgrade").(bool) {
@@ -172,6 +184,26 @@ func customizeDiffEngineUpgrade(_ context.Context, d *schema.ResourceDiff, _ any
 			"see the \"Engine upgrade\" section of the scaleway_rdb_instance documentation",
 		oldEngine, newEngine,
 	)
+}
+
+// engineUpgradeConflictingChanges lists resource attributes changing alongside `engine`,
+// excluding `allow_major_version_upgrade` which is required to confirm the upgrade.
+func engineUpgradeConflictingChanges(d *schema.ResourceDiff) []string {
+	var otherChanges []string
+
+	for key := range instanceSchema() {
+		if key == "engine" || key == "allow_major_version_upgrade" {
+			continue
+		}
+
+		if d.HasChange(key) {
+			otherChanges = append(otherChanges, key)
+		}
+	}
+
+	sort.Strings(otherChanges)
+
+	return otherChanges
 }
 
 // majorUpgradeTimeoutOrErr returns a clear diagnostic when a blue/green engine upgrade

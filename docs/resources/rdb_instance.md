@@ -366,7 +366,7 @@ For the product-side process, prerequisites and limitations, see [How to upgrade
 - **Test on a copy first.** Restore a snapshot or a backup to a separate instance and upgrade it, to validate extensions, application compatibility and the upgrade duration.
 - **Size the timeout.** The whole sequence, including the HA re-activation and the deletion of the previous instance, must fit in `timeouts.update` (**60 minutes** by default). Increase it for large or HA instances.
 - **Expect a second apply for dependent resources.** Resources that reference the instance ID, such as `scaleway_rdb_acl`, are planned before the new ID is known and are reconciled by the next `terraform apply`.
-- **Do not combine the upgrade with other changes.** Apply the `engine` change on its own, so a failure is easy to diagnose.
+- **Do not combine the upgrade with other changes.** Changing `engine` together with any other attribute is rejected at plan time. Apply the engine upgrade alone.
 
 ### Example
 
