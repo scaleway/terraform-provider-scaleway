@@ -378,7 +378,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	_ = d.Set("region", region)
-	_ = d.Set("bucket", regional.NewIDString(region, bucket))
+	_ = d.Set("bucket", bucket)
 	_ = d.Set("key", key)
 
 	for k, v := range obj.Metadata {
