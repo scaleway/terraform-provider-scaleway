@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -64,10 +65,12 @@ func dataSourceConnectorReadByID(ctx context.Context, d *schema.ResourceData, m 
 	id := locality.ExpandID(connectorID)
 	d.SetId(regional.NewIDString(region, id))
 
-	connector, err := vpcAPI.GetVPCConnector(&vpc.GetVPCConnectorRequest{
-		Region:         region,
-		VpcConnectorID: id,
-	}, scw.WithContext(ctx))
+	connector, err := transport.RetryOn403Value(ctx, func() (*vpc.VPCConnector, error) {
+		return vpcAPI.GetVPCConnector(&vpc.GetVPCConnectorRequest{
+			Region:         region,
+			VpcConnectorID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -96,7 +99,9 @@ func dataSourceConnectorReadByFilters(ctx context.Context, d *schema.ResourceDat
 		req.TargetVpcID = new(locality.ExpandID(targetVpcID.(string)))
 	}
 
-	res, err := vpcAPI.ListVPCConnectors(req, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCConnectorsResponse, error) {
+		return vpcAPI.ListVPCConnectors(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
