@@ -67,6 +67,7 @@ type snapshotExportModel struct {
 
 func extractSnapshotImportBlock(ctx context.Context, list types.List) (snapshotImportModel, diag.Diagnostics) {
 	var elems []snapshotImportModel
+
 	diags := list.ElementsAs(ctx, &elems, false)
 	if diags.HasError() {
 		return snapshotImportModel{}, diags
@@ -81,6 +82,7 @@ func extractSnapshotImportBlock(ctx context.Context, list types.List) (snapshotI
 
 func extractSnapshotExportBlock(ctx context.Context, list types.List) (snapshotExportModel, diag.Diagnostics) {
 	var elems []snapshotExportModel
+
 	diags := list.ElementsAs(ctx, &elems, false)
 	if diags.HasError() {
 		return snapshotExportModel{}, diags
@@ -278,6 +280,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 	} else {
 		importData, importDiags := extractSnapshotImportBlock(ctx, plan.Import)
 		resp.Diagnostics.Append(importDiags...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -307,6 +310,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 	if !plan.Export.IsNull() && !plan.Export.IsUnknown() && len(plan.Export.Elements()) > 0 {
 		exportData, exportDiags := extractSnapshotExportBlock(ctx, plan.Export)
 		resp.Diagnostics.Append(exportDiags...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -473,6 +477,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.Export.Equal(state.Export) && !plan.Export.IsNull() && !plan.Export.IsUnknown() && len(plan.Export.Elements()) > 0 {
 		exportData, exportDiags := extractSnapshotExportBlock(ctx, plan.Export)
 		resp.Diagnostics.Append(exportDiags...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
