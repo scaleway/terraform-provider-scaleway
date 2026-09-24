@@ -43,7 +43,7 @@ func TestAccSnapshot_Basic(t *testing.T) {
 	})
 }
 
-func TestAccSnapshot_ImportAndVolumeIDConflict(t *testing.T) {
+func TestAccSnapshot_VolumeIDConflict(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
