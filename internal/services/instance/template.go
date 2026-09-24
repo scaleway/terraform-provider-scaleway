@@ -200,6 +200,7 @@ func (r *TemplateResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"project_id": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
+				Sensitive:           true,
 				MarkdownDescription: "The project ID the Instance Template belongs to. Defaults to the provider's project ID.",
 				Validators: []validator.String{
 					verify.IsStringUUID(),
