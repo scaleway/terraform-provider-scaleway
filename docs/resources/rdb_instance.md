@@ -222,7 +222,7 @@ interruption.
 
 ~> **Warning** Provider versions prior to `2.61.0` did not support engine upgrades. Changing the `engine` value in these versions would recreate the Database Instance **empty**, resulting in **data loss**. Ensure you are using provider version `>= 2.61.0` before upgrading your Database Instance engine version.
 
-~> **Important** Changing `engine` on an existing Database Instance is a blue/green major version upgrade that replaces the instance behind the resource. It is refused at plan time unless `allow_major_version_upgrade = true`. Read [Engine upgrade](#engine-upgrade) before applying it.
+~> **Important** Changing `engine` on an existing Database Instance triggers a blue/green major version upgrade only if `allow_major_version_upgrade = true`. When triggered, the upgrade replaces the instance behind the resource. If `allow_major_version_upgrade` is not explicitly set to `true`, any update to `engine` attribute will be rejected at plan time . Read [Engine upgrade](#engine-upgrade) before applying it.
 
 - `allow_major_version_upgrade` - (Optional, defaults to `false`) Must be set to `true` to change `engine` on an existing Database Instance. It has no effect on creation and is not sent to the Scaleway API. You can leave it set to `true` permanently, or only set it for the apply that performs the upgrade. See [Engine upgrade](#engine-upgrade).
 
