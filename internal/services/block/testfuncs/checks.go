@@ -2,6 +2,7 @@ package blocktestfuncs
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -114,5 +115,37 @@ func IsSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 		}
 
 		return nil
+	}
+}
+
+// MatchAttrPairIgnorePrefix is a custom check function which compares two Terraform configuration
+// fields and considers them equals if the expected value contains a region/zone prefix but not the actual value.
+// Can be modified if need be in the future.
+func MatchAttrPairIgnorePrefix(nameFirst, keyFirst, nameSecond, keySecond string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rsFirst, ok := s.RootModule().Resources[nameFirst]
+		if !ok {
+			return fmt.Errorf("first resource not found in state: %s", nameFirst)
+		}
+
+		valFirst := rsFirst.Primary.Attributes[keyFirst]
+
+		rsSecond, ok := s.RootModule().Resources[nameSecond]
+		if !ok {
+			return fmt.Errorf("second resource not found in state: %s", nameSecond)
+		}
+
+		valSecond := rsSecond.Primary.Attributes[keySecond]
+
+		splitExpected := strings.Split(valFirst, "/")
+		splitActual := strings.Split(valSecond, "/")
+
+		if len(splitExpected) == 2 && len(splitActual) == 1 {
+			if splitExpected[1] == splitActual[0] {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("expected (prefix-insensitive) %q, but got %q", valFirst, valSecond)
 	}
 }
