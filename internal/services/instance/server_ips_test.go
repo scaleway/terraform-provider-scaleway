@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
@@ -108,6 +110,74 @@ func TestAccServer_IPs(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image", "ip_id"},
+			},
+		},
+	})
+}
+
+func TestAccServer_PublicIPsDependentUpdate(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip1" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						name   = "tf-acc-server-public-ips-dependent"
+						ip_ids = [scaleway_instance_ip.ip1.id]
+						image  = "ubuntu_jammy"
+						type   = "PRO2-XXS"
+						state  = "stopped"
+						tags   = ["terraform-test", "scaleway_instance_server", "public_ips_dependent"]
+					}
+
+					resource "terraform_data" "dependent" {
+						input = scaleway_instance_server.main.public_ips[0].address
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
+					resource.TestCheckResourceAttrPair("terraform_data.dependent", "output", "scaleway_instance_ip.ip1", "address"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip1" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_ip" "ip2" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						name   = "tf-acc-server-public-ips-dependent"
+						ip_ids = [scaleway_instance_ip.ip2.id]
+						image  = "ubuntu_jammy"
+						type   = "PRO2-XXS"
+						state  = "stopped"
+						tags   = ["terraform-test", "scaleway_instance_server", "public_ips_dependent"]
+					}
+
+					resource "terraform_data" "dependent" {
+						input = scaleway_instance_server.main.public_ips[0].address
+					}`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectUnknownValue("scaleway_instance_server.main", tfjsonpath.New("public_ips")),
+						plancheck.ExpectResourceAction("terraform_data.dependent", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip2", "id"),
+					resource.TestCheckResourceAttrPair("terraform_data.dependent", "output", "scaleway_instance_ip.ip2", "address"),
+				),
 			},
 		},
 	})

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -44,12 +45,22 @@ func dataSourceRegistrationRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	id := task.ProjectID + "/" + task.ID
-	d.SetId(id)
+	domainNames := SplitDomains(task.Domain)
+	if len(domainNames) == 0 {
+		domainNames = []string{domainName}
+	}
 
 	_ = d.Set("task_id", task.ID)
 	_ = d.Set("project_id", task.ProjectID)
-	_ = d.Set("domain_names", SplitDomains(task.Domain))
+	_ = d.Set("domain_names", domainNames)
+
+	// Prefer the stable domain-name ID when the registration task is archived
+	// (synthetic task with empty ID). Avoid building a broken "projectID/" ID.
+	if task.ID != "" {
+		d.SetId(task.ProjectID + "/" + task.ID)
+	} else {
+		d.SetId(strings.Join(domainNames, ","))
+	}
 
 	return readRegistrationIntoState(ctx, d, m)
 }

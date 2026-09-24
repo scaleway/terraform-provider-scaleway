@@ -47,10 +47,12 @@ jobs:
           - keymanager
           - lb
           - marketplace
+          - messageq
           - mnq
           - mongodb
           - object
           - opensearch
+          - partner
           - rdb
           - redis
           - registry
@@ -116,6 +118,10 @@ jobs:
           SKIP_TESTS_ALL: ${{ vars.SKIP_TESTS_ALL }}
       - name: Run Acceptance Tests
         run: |
+          [ -n "$SCW_DEFAULT_ORGANIZATION_ID_VALUE" ] && export SCW_DEFAULT_ORGANIZATION_ID="$SCW_DEFAULT_ORGANIZATION_ID_VALUE"
+          [ -n "$SCW_DEFAULT_PROJECT_ID_VALUE" ] && export SCW_DEFAULT_PROJECT_ID="$SCW_DEFAULT_PROJECT_ID_VALUE"
+          [ -n "$SCW_PARTNER_ORGANIZATION_ID_VALUE" ] && export SCW_PARTNER_ORGANIZATION_ID="$SCW_PARTNER_ORGANIZATION_ID_VALUE"
+
           SKIP_PATTERN="${{ steps.skip-config.outputs.skip_pattern }}"
 
           if [ -n "$SKIP_PATTERN" ]; then
@@ -154,8 +160,11 @@ jobs:
           SCW_DEBUG: 0
           SCW_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
           SCW_SECRET_KEY: "11111111-1111-1111-1111-111111111111"
-          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
-          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          SCW_DEFAULT_ORGANIZATION_ID_VALUE: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+          SCW_DEFAULT_PROJECT_ID_VALUE: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          SCW_PARTNER_ORGANIZATION_ID_VALUE: ${{ secrets.SCW_PARTNER_ORGANIZATION_ID }}
+          SCW_PARTNER_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
+          SCW_PARTNER_SECRET_KEY: "11111111-1111-1111-1111-111111111111"
           SCW_ENABLE_BETA: true
           AWS_DISABLE_CLOCK_SKEW_CORRECTION: true
   test-scwconfig:
@@ -217,10 +226,12 @@ jobs:
           - keymanager
           - lb
           - marketplace
+          - messageq
           - mnq
           - mongodb
           - object
           - opensearch
+          - partner
           - rdb
           - redis
           - registry
@@ -288,6 +299,10 @@ jobs:
           SKIP_TESTS_ALL: ${{ vars.SKIP_TESTS_ALL }}
       - name: Run Acceptance Tests
         run: |
+          [ -n "$SCW_DEFAULT_ORGANIZATION_ID_VALUE" ] && export SCW_DEFAULT_ORGANIZATION_ID="$SCW_DEFAULT_ORGANIZATION_ID_VALUE"
+          [ -n "$SCW_DEFAULT_PROJECT_ID_VALUE" ] && export SCW_DEFAULT_PROJECT_ID="$SCW_DEFAULT_PROJECT_ID_VALUE"
+          [ -n "$SCW_PARTNER_ORGANIZATION_ID_VALUE" ] && export SCW_PARTNER_ORGANIZATION_ID="$SCW_PARTNER_ORGANIZATION_ID_VALUE"
+
           SKIP_PATTERN="${{ steps.skip-config.outputs.skip_pattern }}"
 
           if [ -n "$SKIP_PATTERN" ]; then
@@ -328,8 +343,11 @@ jobs:
           SCW_DEBUG: 0
           SCW_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
           SCW_SECRET_KEY: "11111111-1111-1111-1111-111111111111"
-          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
-          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          SCW_DEFAULT_ORGANIZATION_ID_VALUE: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+          SCW_DEFAULT_PROJECT_ID_VALUE: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          SCW_PARTNER_ORGANIZATION_ID_VALUE: ${{ secrets.SCW_PARTNER_ORGANIZATION_ID }}
+          SCW_PARTNER_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
+          SCW_PARTNER_SECRET_KEY: "11111111-1111-1111-1111-111111111111"
           SCW_ENABLE_BETA: true
           TF_ACC_LOG: trace
           TF_ACC_OPENTOFU: true
