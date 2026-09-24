@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 var (
@@ -107,7 +108,9 @@ func (r *VPCListResource) FetchVPCs(ctx context.Context, region scw.Region, proj
 		RoutingEnabled: data.RoutingEnabled.ValueBoolPointer(),
 	}
 
-	response, err := r.vpcAPI.ListVPCs(listRequest, scw.WithContext(ctx), scw.WithAllPages())
+	response, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCsResponse, error) {
+		return r.vpcAPI.ListVPCs(listRequest, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, err
 	}
