@@ -346,3 +346,31 @@ func CheckEdgeServicesRouteExists(tt *acctest.TestTools, n string) resource.Test
 		return nil
 	}
 }
+
+func CheckEdgeServicesPlanDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_edge_services_plan" {
+				continue
+			}
+
+			edgeAPI := edgeservices.NewEdgeServicesAPI(tt.Meta)
+
+			err := edgeAPI.DeleteCurrentPlan(&edge.DeleteCurrentPlanRequest{
+				ProjectID: rs.Primary.Attributes["project_id"],
+			})
+
+			// If no error resource still exists
+			if err == nil {
+				return fmt.Errorf("plan (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !httperrors.Is404(err) && !httperrors.Is403(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
+}

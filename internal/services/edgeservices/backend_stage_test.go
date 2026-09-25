@@ -39,7 +39,7 @@ func TestAccEdgeServicesBackend_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-basic-edgeservices"
+					  name = "tf-test-scaleway-object-bucket-basic-edgeservices"
 					  tags = {
 						foo = "bar"
 					  }
