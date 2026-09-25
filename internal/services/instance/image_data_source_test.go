@@ -72,11 +72,11 @@ func TestAccDataSourceImage_Tags(t *testing.T) {
 					resource "scaleway_instance_image" "main" {
 						name            = "tf-test-image-tags"
 						root_volume_id  = scaleway_block_snapshot.main.id
-						tags            = ["product=vivado", "version=2021.1"]
+						tags            = ["env=production", "version=v1.2.3"]
 					}
 
 					data "scaleway_instance_image" "by_tags" {
-						tags      = ["product=vivado", "version=2021.1"]
+						tags      = ["env=production", "version=v1.2.3"]
 						latest    = true
 						depends_on = [scaleway_instance_image.main]
 					}
