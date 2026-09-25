@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
@@ -40,21 +39,29 @@ func ResourceContainer() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    containerSchema,
-		CustomizeDiff: customdiff.All(
-			customdiff.IfValue(
-				"enable_private_endpoint",
-				func(_ context.Context, v, _ any) bool {
-					return v.(bool)
-				},
-				func(_ context.Context, d *schema.ResourceDiff, _ any) error {
-					if _, ok := d.GetOk("private_network_id"); !ok {
-						return errors.New("private_network_id must be set when enable_private_endpoint is true")
-					}
+		CustomizeDiff: func(_ context.Context, d *schema.ResourceDiff, _ any) error {
+			// private_network_id can be unknown during plan when it references
+			// a resource created in the same configuration, in which case
+			// GetOk reports it as unset. Check the raw configuration to detect
+			// whether the user actually declared the attribute.
+			rawConfig := d.GetRawConfig()
+			if rawConfig.IsNull() {
+				return nil
+			}
 
-					return nil
-				},
-			),
-		),
+			config := rawConfig.AsValueMap()
+
+			enablePrivateEndpoint, ok := config["enable_private_endpoint"]
+			if !ok || enablePrivateEndpoint.IsNull() || !enablePrivateEndpoint.IsKnown() || !enablePrivateEndpoint.True() {
+				return nil
+			}
+
+			if privateNetworkID, ok := config["private_network_id"]; !ok || privateNetworkID.IsNull() {
+				return errors.New("private_network_id must be set when enable_private_endpoint is true")
+			}
+
+			return nil
+		},
 	}
 }
 

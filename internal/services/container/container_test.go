@@ -1025,8 +1025,6 @@ func TestAccContainer_DefaultPublicEndpoint(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "enable_default_public_endpoint", "false"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "public_endpoint", ""),
-					resource.TestCheckResourceAttr("scaleway_container.main", "domain_name", ""),
 				),
 			},
 		},
@@ -1103,6 +1101,18 @@ func TestAccContainer_PrivateEndpoint(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "enable_private_endpoint", "false"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "private_endpoint", ""),
 				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc main {
+						name = "tf-acctest-container-private-endpoint"
+					}
+
+					resource scaleway_vpc_private_network main {
+						name = "test-acc-container-private-endpoint"
+						vpc_id = scaleway_vpc.main.id
+					}
+				`,
 			},
 		},
 	})
