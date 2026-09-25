@@ -17,6 +17,7 @@ import (
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 var (
@@ -96,7 +97,9 @@ func (r *PrivateNetworkListResource) FetchPrivateNetworks(ctx context.Context, r
 		VpcID:          locality.ExpandFrameworkID(data.VpcID),
 	}
 
-	response, err := r.vpcAPI.ListPrivateNetworks(listRequest, scw.WithContext(ctx), scw.WithAllPages())
+	response, err := transport.RetryOn403Value(ctx, func() (*vpc.ListPrivateNetworksResponse, error) {
+		return r.vpcAPI.ListPrivateNetworks(listRequest, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, err
 	}

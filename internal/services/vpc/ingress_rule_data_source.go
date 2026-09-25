@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -73,10 +74,12 @@ func dataSourceIngressRuleReadByID(ctx context.Context, d *schema.ResourceData, 
 	id := locality.ExpandID(ruleID)
 	d.SetId(regional.NewIDString(region, id))
 
-	rule, err := vpcAPI.GetIngressRule(&vpc.GetIngressRuleRequest{
-		Region: region,
-		RuleID: id,
-	}, scw.WithContext(ctx))
+	rule, err := transport.RetryOn403Value(ctx, func() (*vpc.IngressRule, error) {
+		return vpcAPI.GetIngressRule(&vpc.GetIngressRuleRequest{
+			Region: region,
+			RuleID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -111,7 +114,9 @@ func dataSourceIngressRuleReadByFilters(ctx context.Context, d *schema.ResourceD
 		req.IsIPv6 = types.ExpandBoolPtr(isIPv6)
 	}
 
-	res, err := vpcAPI.ListIngressRules(req, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListIngressRulesResponse, error) {
+		return vpcAPI.ListIngressRules(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

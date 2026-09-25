@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -58,7 +59,9 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}
 
-		res, err := vpcAPI.ListVPCs(request, scw.WithContext(ctx))
+		res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCsResponse, error) {
+			return vpcAPI.ListVPCs(request, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -75,7 +78,9 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 				OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 			}
 
-			res, err := vpcAPI.ListVPCs(request, scw.WithContext(ctx))
+			res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCsResponse, error) {
+				return vpcAPI.ListVPCs(request, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -101,10 +106,12 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	res, err := vpcAPI.GetVPC(&vpc.GetVPCRequest{
-		Region: region,
-		VpcID:  regional.ExpandID(vpcID).ID,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.VPC, error) {
+		return vpcAPI.GetVPC(&vpc.GetVPCRequest{
+			Region: region,
+			VpcID:  regional.ExpandID(vpcID).ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
