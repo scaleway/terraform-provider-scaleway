@@ -140,3 +140,26 @@ func diffSuppressFuncRouteResourceID(_, oldValue, newValue string, _ *schema.Res
 
 	return oldResourceID == newResourceID
 }
+
+func customDiffCheckFeatureNotDisabled(diff *schema.ResourceDiff, key string, errMsg string) error {
+	if diff.Id() == "" {
+		rawConfig := diff.GetRawConfig()
+		if rawConfig.IsNull() || !rawConfig.IsKnown() {
+			return nil
+		}
+
+		value := rawConfig.GetAttr(key)
+		if value.IsNull() || !value.IsKnown() || value.True() {
+			return nil
+		}
+
+		return errors.New(errMsg)
+	}
+
+	before, after := diff.GetChange(key)
+	if before != nil && before.(bool) && after != nil && !after.(bool) {
+		return errors.New(errMsg)
+	}
+
+	return nil
+}
