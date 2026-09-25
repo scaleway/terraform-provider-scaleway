@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -49,6 +50,16 @@ func dataSourceImageSchema() map[string]*schema.Schema {
 			Default:       true,
 			Description:   "Select most recent image if multiple match",
 			ConflictsWith: []string{"image_id"},
+		},
+		"tags": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			Computed:      true,
+			Description:   "List of tags to filter images by (e.g. [\"env=production\", \"version=v1.2.3\"])",
+			ConflictsWith: []string{"image_id"},
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
 		},
 		"zone":            zonal.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
@@ -107,44 +118,50 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	imageID, ok := d.GetOk("image_id")
-	if !ok { // Get instance by name, zone, and arch.
-		res, err := instanceAPI.ListImages(&instance.ListImagesRequest{
+	if !ok { // Get image by name, architecture, tags and zone.
+		name := d.Get("name").(string)
+		arch := d.Get("architecture").(string)
+		tags := types.ExpandStrings(d.Get("tags"))
+
+		listReq := &instance.ListImagesRequest{
 			Zone:    zone,
-			Name:    types.ExpandStringPtr(d.Get("name")),
-			Arch:    types.ExpandStringPtr(d.Get("architecture")),
+			Name:    types.ExpandStringPtr(name),
+			Arch:    types.ExpandStringPtr(arch),
 			Project: types.ExpandStringPtr(d.Get("project_id")),
-		}, scw.WithAllPages(), scw.WithContext(ctx))
+		}
+		if len(tags) > 0 {
+			listReq.Tags = new(strings.Join(tags, ","))
+		}
+
+		res, err := instanceAPI.ListImages(listReq, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		var matchingImages []*instance.Image
+		// The API name filter is a partial match, only keep exact matches.
+		matchingImages := make([]*instance.Image, 0, len(res.Images))
 
 		for _, image := range res.Images {
-			if image.Name == d.Get("name").(string) {
-				matchingImages = append(matchingImages, image)
+			if name != "" && image.Name != name {
+				continue
 			}
+
+			matchingImages = append(matchingImages, image)
 		}
 
 		if len(matchingImages) == 0 {
-			return diag.FromErr(fmt.Errorf("no image found with the name %s and architecture %s in zone %s", d.Get("name"), d.Get("architecture"), zone))
+			return diag.FromErr(fmt.Errorf("no image found with name %q, architecture %s and tags %v in zone %s", name, arch, tags, zone))
 		}
 
 		if len(matchingImages) > 1 && !d.Get("latest").(bool) {
-			return diag.FromErr(fmt.Errorf("%d images found with the same name %s and architecture %s in zone %s", len(matchingImages), d.Get("name"), d.Get("architecture"), zone))
+			return diag.FromErr(fmt.Errorf("%d images found with name %q, architecture %s and tags %v in zone %s", len(matchingImages), name, arch, tags, zone))
 		}
 
 		sort.Slice(matchingImages, func(i, j int) bool {
 			return matchingImages[i].ModificationDate.After(*matchingImages[j].ModificationDate)
 		})
 
-		for _, image := range matchingImages {
-			if image.Name == d.Get("name").(string) {
-				imageID = image.ID
-
-				break
-			}
-		}
+		imageID = matchingImages[0].ID
 	}
 
 	zonedID := datasource.NewZonedID(imageID, zone)
@@ -166,6 +183,7 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 	_ = d.Set("project_id", resp.Image.Project)
 	_ = d.Set("architecture", resp.Image.Arch)
 	_ = d.Set("name", resp.Image.Name)
+	_ = d.Set("tags", resp.Image.Tags)
 
 	_ = d.Set("creation_date", types.FlattenTime(resp.Image.CreationDate))
 	_ = d.Set("modification_date", types.FlattenTime(resp.Image.ModificationDate))
