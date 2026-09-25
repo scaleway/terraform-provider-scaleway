@@ -464,7 +464,7 @@ func (r *VolumeResource) ImportState(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to parse import ID",
-			fmt.Sprintf("Expected format: {zone}/{id}. %s", err.Error()),
+			"Expected format: {zone}/{id}. "+err.Error(),
 		)
 
 		return
