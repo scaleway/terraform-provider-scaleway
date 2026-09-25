@@ -292,6 +292,11 @@ func resourceZoneDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	// Root zones cannot be deleted: the API rejects it with a permanent 403.
+	if d.Get("subdomain").(string) == "" {
+		return nil
+	}
+
 	projectID, _, extractErr := meta.ExtractProjectID(d, m)
 	if extractErr != nil {
 		return diag.FromErr(extractErr)
