@@ -54,7 +54,7 @@ func dataSourceImageSchema() map[string]*schema.Schema {
 		"tags": {
 			Type:          schema.TypeList,
 			Optional:      true,
-			Description:   "List of tags to filter images by (e.g. [\"product=vivado\", \"version=2021.1\"])",
+			Description:   "List of tags to filter images by (e.g. [\"env=production\", \"version=v1.2.3\"])",
 			ConflictsWith: []string{"image_id"},
 			Elem: &schema.Schema{
 				Type: schema.TypeString,

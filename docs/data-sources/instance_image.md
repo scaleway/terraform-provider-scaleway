@@ -21,10 +21,10 @@ data "scaleway_instance_image" "my_image" {
 }
 
 # Get info by tags (select the most recent matching image)
-data "scaleway_instance_image" "vivado" {
+data "scaleway_instance_image" "by_tags" {
   tags = [
-    "product=vivado",
-    "version=2021.1",
+    "env=production",
+    "version=v1.2.3",
   ]
 
   latest = true
