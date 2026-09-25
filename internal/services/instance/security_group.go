@@ -55,6 +55,12 @@ func securityGroupSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The description of the security group",
 		},
+		"project_default": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "true if this is the default security group for the project.",
+		},
 		"inbound_default_policy": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -122,6 +128,7 @@ func ResourceInstanceSecurityGroupCreate(ctx context.Context, d *schema.Resource
 		Project:               types.ExpandStringPtr(d.Get("project_id")),
 		Description:           d.Get("description").(string),
 		Stateful:              d.Get("stateful").(bool),
+		ProjectDefault:        types.ExpandBoolPtr(d.Get("project_default")),
 		InboundDefaultPolicy:  instanceSDK.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
 		OutboundDefaultPolicy: instanceSDK.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
 		EnableDefaultSecurity: types.ExpandBoolPtr(d.Get("enable_default_security")),
@@ -155,6 +162,7 @@ func setSecurityGroupState(ctx context.Context, instanceAPI *instanceSDK.API, d 
 	_ = d.Set("project_id", sg.Project)
 	_ = d.Set("name", sg.Name)
 	_ = d.Set("stateful", sg.Stateful)
+	_ = d.Set("project_default", sg.ProjectDefault)
 	_ = d.Set("description", sg.Description)
 	_ = d.Set("inbound_default_policy", sg.InboundDefaultPolicy.String())
 	_ = d.Set("outbound_default_policy", sg.OutboundDefaultPolicy.String())
@@ -306,6 +314,7 @@ func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.Resource
 		Zone:                  zone,
 		SecurityGroupID:       ID,
 		Stateful:              new(d.Get("stateful").(bool)),
+		ProjectDefault:        new(d.Get("project_default").(bool)),
 		Description:           types.ExpandStringPtr(description),
 		InboundDefaultPolicy:  inboundDefaultPolicy,
 		OutboundDefaultPolicy: outboundDefaultPolicy,
