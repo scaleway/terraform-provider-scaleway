@@ -20,7 +20,7 @@ data "scaleway_instance_image" "my_image" {
   image_id = "11111111-1111-1111-1111-111111111111"
 }
 
-# Get info by tags (select the most recent matching image)
+# Get info by tags (select the most recently modified matching image)
 data "scaleway_instance_image" "by_tags" {
   tags = [
     "env=production",
@@ -39,9 +39,9 @@ data "scaleway_instance_image" "by_tags" {
 
 - `architecture` - (Optional, default `x86_64`) The architecture the image is compatible with. Possible values are: `x86_64` or `arm`.
 
-- `latest` - (Optional, default `true`) Use the latest image ID.
+- `latest` - (Optional, default `true`) Select the most recently modified image when multiple images match. When `false`, multiple matches are an error.
 
-- `tags` - (Optional) List of tags to filter images by. Only one of `name`+`tags` and `image_id` should be specified. When multiple images match, `latest = true` selects the most recently created one.
+- `tags` - (Optional) List of tags the image must have. Can be combined with `name` and `architecture`. Only one of `image_id` and the (`name`, `tags`) filters should be specified.
 
 - `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
 
