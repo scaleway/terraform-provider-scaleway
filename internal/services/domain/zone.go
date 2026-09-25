@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -99,10 +100,12 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 	zoneName := BuildZoneName(subdomainName, domainName)
 
 	// Check if a zone with the same name already exists in the project
-	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-		DNSZones:  []string{zoneName},
-	}, scw.WithContext(ctx))
+	zones, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZonesResponse, error) {
+		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			DNSZones:  []string{zoneName},
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -131,11 +134,13 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	dnsZone, err = domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
-		ProjectID: projectID,
-		Domain:    domainName,
-		Subdomain: subdomainName,
-	}, scw.WithContext(ctx))
+	dnsZone, err = transport.RetryOn403Value(ctx, func() (*domain.DNSZone, error) {
+		return domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
+			ProjectID: projectID,
+			Domain:    domainName,
+			Subdomain: subdomainName,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		// Handle case where zone was already created by another process (409 conflict)
 		if httperrors.Is409(err) {
@@ -165,10 +170,12 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	var zone *domain.DNSZone
 
-	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-		DNSZones:  []string{d.Id()},
-	}, scw.WithContext(ctx))
+	zones, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZonesResponse, error) {
+		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			DNSZones:  []string{d.Id()},
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -209,10 +216,12 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 // readZoneIntoState fetches zone data and sets schema attributes without Identity (for data sources).
 func readZoneIntoState(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, zoneName string) diag.Diagnostics {
-	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-		DNSZones:  []string{zoneName},
-	}, scw.WithContext(ctx))
+	zones, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZonesResponse, error) {
+		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			DNSZones:  []string{zoneName},
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -256,11 +265,13 @@ func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 			return diag.FromErr(extractErr)
 		}
 
-		_, err := domainAPI.UpdateDNSZone(&domain.UpdateDNSZoneRequest{
-			ProjectID:  projectID,
-			DNSZone:    d.Id(),
-			NewDNSZone: types.ExpandStringPtr(d.Get("subdomain")),
-		}, scw.WithContext(ctx))
+		_, err := transport.RetryOn403Value(ctx, func() (*domain.DNSZone, error) {
+			return domainAPI.UpdateDNSZone(&domain.UpdateDNSZoneRequest{
+				ProjectID:  projectID,
+				DNSZone:    d.Id(),
+				NewDNSZone: types.ExpandStringPtr(d.Get("subdomain")),
+			}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -281,15 +292,22 @@ func resourceZoneDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	// Root zones cannot be deleted: the API rejects it with a permanent 403.
+	if d.Get("subdomain").(string) == "" {
+		return nil
+	}
+
 	projectID, _, extractErr := meta.ExtractProjectID(d, m)
 	if extractErr != nil {
 		return diag.FromErr(extractErr)
 	}
 
-	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
-		ProjectID: projectID,
-		DNSZone:   d.Id(),
-	}, scw.WithContext(ctx))
+	_, err = transport.RetryOn403Value(ctx, func() (*domain.DeleteDNSZoneResponse, error) {
+		return domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
+			ProjectID: projectID,
+			DNSZone:   d.Id(),
+		}, scw.WithContext(ctx))
+	})
 
 	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		return diag.FromErr(err)
@@ -316,10 +334,12 @@ func resourceZoneCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m
 	zoneName := BuildZoneName(subdomainName, domainName)
 
 	// Check if a zone with the same name already exists in the project
-	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: types.ExpandStringPtr(diff.Get("project_id")),
-		DNSZones:  []string{zoneName},
-	}, scw.WithContext(ctx))
+	zones, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZonesResponse, error) {
+		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
+			ProjectID: types.ExpandStringPtr(diff.Get("project_id")),
+			DNSZones:  []string{zoneName},
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return err
 	}

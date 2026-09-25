@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -45,12 +46,14 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 	recordIDRaw, ok := d.GetOk("record_id")
 	if !ok { // Get Record by dns_zone, name, type and data.
-		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-			DNSZone:   dnsZone,
-			Name:      d.Get("name").(string),
-			Type:      domain.RecordType(d.Get("type").(string)),
-			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-		}, scw.WithContext(ctx), scw.WithAllPages())
+		res, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZoneRecordsResponse, error) {
+			return domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+				DNSZone:   dnsZone,
+				Name:      d.Get("name").(string),
+				Type:      domain.RecordType(d.Get("type").(string)),
+				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			}, scw.WithContext(ctx), scw.WithAllPages())
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -93,10 +96,12 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 }
 
 func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, dnsZone, recordID string) diag.Diagnostics {
-	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-		DNSZone: dnsZone,
-		ID:      &recordID,
-	}, scw.WithAllPages(), scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZoneRecordsResponse, error) {
+		return domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+			DNSZone: dnsZone,
+			ID:      &recordID,
+		}, scw.WithAllPages(), scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
@@ -118,7 +123,9 @@ func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI 
 	// Data sources do not support Identity schema; use SetId directly.
 	d.SetId(fmt.Sprintf("%s/%s", dnsZone, record.ID))
 
-	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
+	dnsZones, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZonesResponse, error) {
+		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return nil
