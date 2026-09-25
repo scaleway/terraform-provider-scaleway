@@ -1,10 +1,12 @@
 package block_test
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 )
@@ -208,6 +210,72 @@ func TestAccVolume_UpdateIops(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "iops", "15000"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccVolume_UpdateWithoutName verifies that when a volume is created
+// without an explicit name (letting the API auto-generate one), subsequent
+// updates do not overwrite the generated name with an empty string.
+// This is a regression test for the bug where a computed+optional "name"
+// attribute marked as unknown in the plan during an update would cause
+// ValueString() to return "" and rename the volume to empty.
+func TestAccVolume_UpdateWithoutName(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	var generatedName string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						iops = 5000
+						size_in_gb = 20
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttrSet("scaleway_block_volume.main", "name"),
+					func(state *terraform.State) error {
+						rs, ok := state.RootModule().Resources["scaleway_block_volume.main"]
+						if !ok {
+							return fmt.Errorf("resource not found: scaleway_block_volume.main")
+						}
+						generatedName = rs.Primary.Attributes["name"]
+						if generatedName == "" {
+							return fmt.Errorf("expected auto-generated name to be non-empty")
+						}
+						return nil
+					},
+				),
+			},
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						iops = 15000
+						size_in_gb = 20
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "iops", "15000"),
+					func(state *terraform.State) error {
+						rs := state.RootModule().Resources["scaleway_block_volume.main"]
+						currentName := rs.Primary.Attributes["name"]
+						if currentName == "" {
+							return fmt.Errorf("name was overwritten to empty string after update (bug regression)")
+						}
+						if currentName != generatedName {
+							return fmt.Errorf("name changed from %q to %q after update without changing name config", generatedName, currentName)
+						}
+						return nil
+					},
 				),
 			},
 		},
