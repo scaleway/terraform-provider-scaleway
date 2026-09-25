@@ -177,14 +177,14 @@ func (d *VolumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			Name: &volumeName,
 		}
 
-		projectID, err := meta.ExtractFrameworkProjectID(config.ProjectID, d.meta.ScwClient())
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
-
-			return
-		}
-
 		if !config.ProjectID.IsNull() {
+			projectID, err := meta.ExtractFrameworkProjectID(config.ProjectID, d.meta.ScwClient())
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
+
+				return
+			}
+
 			listReq.ProjectID = &projectID
 		}
 
