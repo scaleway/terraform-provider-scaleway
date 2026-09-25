@@ -42,9 +42,15 @@ var foldersUsingVCRv4 = []string{
 	"jobs",
 	"k8s",
 	"keymanager",
+	"mailbox",
 	"marketplace",
 	"partner",
 	"secret",
+}
+
+func init() {
+	// Cassettes store redacted secrets; ignore them when matching VCRv4 requests.
+	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password")
 }
 
 func FolderUsesVCRv4(fullFolderPath string) bool {
@@ -176,21 +182,29 @@ func NewTestTools(t *testing.T) *TestTools {
 
 // Test Generated name has format: "{prefix}-{generated_number}
 // example: test-acc-scaleway-project-3723338038624371236
+// Also supports FQDNs: tf-tests-mbx-basic-123.scaleway-terraform.com
 func extractTestGeneratedNamePrefix(name string) string {
-	// {prefix}-{generated}
-	//         ^
-	dashIndex := strings.LastIndex(name, "-")
+	suffix := ""
+	host := name
 
-	generated := name[dashIndex+1:]
-	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
+	if dot := strings.Index(name, "."); dot >= 0 {
+		host = name[:dot]
+		suffix = name[dot:]
+	}
 
-	if dashIndex == -1 || generatedToIntErr != nil {
-		// some are only {name}
+	dashIndex := strings.LastIndex(host, "-")
+	if dashIndex == -1 {
 		return name
 	}
 
-	// {prefix}
-	return name[:dashIndex]
+	generated := host[dashIndex+1:]
+
+	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
+	if generatedToIntErr != nil {
+		return name
+	}
+
+	return host[:dashIndex] + suffix
 }
 
 // Generated names have format: "tf-{prefix}-{generated1}-{generated2}"
