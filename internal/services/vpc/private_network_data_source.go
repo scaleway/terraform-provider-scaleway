@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -53,13 +54,15 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	if !ok {
 		pnName := d.Get("name").(string)
 
-		res, err := vpcAPI.ListPrivateNetworks(
-			&vpc.ListPrivateNetworksRequest{
-				Name:      types.ExpandStringPtr(pnName),
-				Region:    region,
-				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-				VpcID:     types.ExpandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
-			}, scw.WithContext(ctx))
+		res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListPrivateNetworksResponse, error) {
+			return vpcAPI.ListPrivateNetworks(
+				&vpc.ListPrivateNetworksRequest{
+					Name:      types.ExpandStringPtr(pnName),
+					Region:    region,
+					ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+					VpcID:     types.ExpandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
+				}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -80,10 +83,12 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	d.SetId(regionalID)
 	_ = d.Set("private_network_id", regionalID)
 
-	pn, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
-		PrivateNetworkID: regional.ExpandID(privateNetworkID).ID,
-		Region:           region,
-	}, scw.WithContext(ctx))
+	pn, err := transport.RetryOn403Value(ctx, func() (*vpc.PrivateNetwork, error) {
+		return vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
+			PrivateNetworkID: regional.ExpandID(privateNetworkID).ID,
+			Region:           region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

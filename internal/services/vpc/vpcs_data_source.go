@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -91,12 +92,14 @@ func DataSourceVPCsRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	res, err := vpcAPI.ListVPCs(&vpc.ListVPCsRequest{
-		Region:    region,
-		Tags:      types.ExpandStrings(d.Get("tags")),
-		Name:      types.ExpandStringPtr(d.Get("name")),
-		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCsResponse, error) {
+		return vpcAPI.ListVPCs(&vpc.ListVPCsRequest{
+			Region:    region,
+			Tags:      types.ExpandStrings(d.Get("tags")),
+			Name:      types.ExpandStringPtr(d.Get("name")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
