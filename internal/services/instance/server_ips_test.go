@@ -511,6 +511,10 @@ func TestAccServer_IPImport(t *testing.T) {
 func testAccServerImportThenPlan(t *testing.T, serverName, ips, server, publicIPsCount string) {
 	t.Helper()
 
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping: OpenTofu refreshes a resource targeted by a removed block before forgetting it and Terraform does not, so the recorded interactions do not match")
+	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -555,7 +559,7 @@ func testAccServerImportThenPlan(t *testing.T, serverName, ips, server, publicIP
 				Check: resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", publicIPsCount),
 			},
 			{
-				Config:   ips + server + importBlock,
+				Config:   ips + server,
 				PlanOnly: true,
 			},
 		},
