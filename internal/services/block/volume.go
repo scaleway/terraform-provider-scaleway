@@ -357,11 +357,6 @@ func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	if !plan.Iops.Equal(state.Iops) {
 		iops := plan.Iops.ValueInt64()
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
 		updateReq.PerfIops = new(uint32(iops))
 		hasChanges = true
 	}
