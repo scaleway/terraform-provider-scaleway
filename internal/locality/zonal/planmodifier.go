@@ -38,6 +38,10 @@ func (m localityPlanModifier) PlanModifyString(
 	}
 
 	if req.PlanValue.IsNull() {
+		if !req.StateValue.IsNull() && req.StateValue.ValueString() != "" {
+			resp.RequiresReplace = true
+		}
+
 		return
 	}
 
