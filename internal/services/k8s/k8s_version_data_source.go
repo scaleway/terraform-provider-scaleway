@@ -117,7 +117,8 @@ func DataSourceK8SVersionRead(ctx context.Context, d *schema.ResourceData, m any
 	_ = d.Set("name", version.Name)
 	_ = d.Set("major_minor_only", majorMinor)
 	_ = d.Set("available_cnis", version.AvailableCnis)
-	_ = d.Set("available_container_runtimes", version.AvailableContainerRuntimes)
+	// version.AvailableContainerRuntimes is deprecated and only containerd is available
+	_ = d.Set("available_container_runtimes", []string{"containerd"})
 	_ = d.Set("available_feature_gates", version.AvailableFeatureGates)
 	_ = d.Set("region", region)
 	_ = d.Set("srn", version.Srn)
