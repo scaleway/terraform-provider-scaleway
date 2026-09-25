@@ -54,6 +54,7 @@ func dataSourceImageSchema() map[string]*schema.Schema {
 		"tags": {
 			Type:          schema.TypeList,
 			Optional:      true,
+			Computed:      true,
 			Description:   "List of tags to filter images by (e.g. [\"env=production\", \"version=v1.2.3\"])",
 			ConflictsWith: []string{"image_id"},
 			Elem: &schema.Schema{
@@ -179,6 +180,7 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 	_ = d.Set("project_id", resp.Image.Project)
 	_ = d.Set("architecture", resp.Image.Arch)
 	_ = d.Set("name", resp.Image.Name)
+	_ = d.Set("tags", resp.Image.Tags)
 
 	_ = d.Set("creation_date", types.FlattenTime(resp.Image.CreationDate))
 	_ = d.Set("modification_date", types.FlattenTime(resp.Image.ModificationDate))
