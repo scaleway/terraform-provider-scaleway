@@ -1,6 +1,7 @@
 package block_test
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"testing"
@@ -245,12 +246,14 @@ func TestAccVolume_UpdateWithoutName(t *testing.T) {
 					func(state *terraform.State) error {
 						rs, ok := state.RootModule().Resources["scaleway_block_volume.main"]
 						if !ok {
-							return fmt.Errorf("resource not found: scaleway_block_volume.main")
+							return errors.New("resource not found: scaleway_block_volume.main")
 						}
+
 						generatedName = rs.Primary.Attributes["name"]
 						if generatedName == "" {
-							return fmt.Errorf("expected auto-generated name to be non-empty")
+							return errors.New("expected auto-generated name to be non-empty")
 						}
+
 						return nil
 					},
 				),
@@ -267,13 +270,16 @@ func TestAccVolume_UpdateWithoutName(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "iops", "15000"),
 					func(state *terraform.State) error {
 						rs := state.RootModule().Resources["scaleway_block_volume.main"]
+
 						currentName := rs.Primary.Attributes["name"]
 						if currentName == "" {
-							return fmt.Errorf("name was overwritten to empty string after update (bug regression)")
+							return errors.New("name was overwritten to empty string after update (bug regression)")
 						}
+
 						if currentName != generatedName {
 							return fmt.Errorf("name changed from %q to %q after update without changing name config", generatedName, currentName)
 						}
+
 						return nil
 					},
 				),
