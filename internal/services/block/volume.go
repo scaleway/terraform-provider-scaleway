@@ -75,6 +75,9 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Computed:    true,
 				Optional:    true,
 				Description: "The volume name",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"iops": schema.Int64Attribute{
 				Required:    true,
