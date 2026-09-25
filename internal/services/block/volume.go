@@ -340,7 +340,7 @@ func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	if !plan.SizeInGB.Equal(state.SizeInGB) {
-		updateReq.Size = new(scw.Size(uint64(plan.SizeInGB.ValueInt64()) * gb))
+		updateReq.Size = new(scw.Size(plan.SizeInGB.ValueInt64()) * scw.GB)
 		hasChanges = true
 	}
 
