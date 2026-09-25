@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -457,18 +458,39 @@ func (r *VolumeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 func (r *VolumeResource) ImportState(
 	ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse,
 ) {
-	zone, id, err := zonal.ParseID(req.ID)
+	zone, err := meta.ExtractFrameworkZone(types.StringNull(), r.meta.ScwClient())
 	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve zone", err.Error())
+
+		return
+	}
+
+	id := locality.ExpandID(req.ID)
+	if !validation.IsUUID(id) {
 		resp.Diagnostics.AddError(
-			"failed to parse import id", "expected format: {zone}/{uuid}. "+err.Error(),
+			"Invalid ID",
+			fmt.Sprintf("Expected a valid UUID, got: %s (after parsing)", id),
 		)
 
 		return
 	}
 
-	resp.Diagnostics.Append(
-		resp.State.SetAttribute(ctx, path.Root("id"), zonal.NewIDString(zone, id))...,
-	)
+	volume, err := r.api.GetVolume(&block.GetVolumeRequest{
+		Zone:     zone,
+		VolumeID: id,
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("failed to get volume", err.Error())
+
+		return
+	}
+
+	flatVolume := flattenVolume(ctx, r.api, volume, req, &resp.Diagnostics)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &flatVolume)...)
+	resp.Diagnostics.Append(resp.Identity.Set(
+		ctx, framework.SetZonalIdentity(volume.Zone, volume.ID),
+	)...)
 }
 
 func flattenVolume(ctx context.Context, api *block.API, volume *block.Volume, reference any, diags *diag.Diagnostics) volumeResourceModel {
