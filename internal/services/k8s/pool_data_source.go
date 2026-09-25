@@ -106,5 +106,8 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	return setPoolState(ctx, d, m, pool, k8sAPI, nodes)
+	diags := setPoolUserData(ctx, d, k8sAPI, pool)
+	diags = append(diags, setPoolState(ctx, d, m, pool, k8sAPI, nodes)...)
+
+	return diags
 }
