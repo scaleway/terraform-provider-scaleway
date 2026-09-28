@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -123,6 +124,7 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				MarkdownDescription: "ID of the volume from which creates a snapshot",
 				Validators: []validator.String{
 					verify.IsStringUUIDOrUUIDWithZone(),
+					stringvalidator.ConflictsWith(path.MatchRoot("volume_id")),
 				},
 			},
 			"tags": schema.ListAttribute{
@@ -169,14 +171,15 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"bucket": schema.StringAttribute{
-							Optional:            true,
+							Required:            true,
 							MarkdownDescription: "Bucket containing qcow",
 							PlanModifiers: []planmodifier.String{
+								// FIXME: how to implement DiffSuppressFunc dsf.Locality?
 								stringplanmodifier.RequiresReplace(),
 							},
 						},
 						"key": schema.StringAttribute{
-							Optional:            true,
+							Required:            true,
 							MarkdownDescription: "Key of the qcow file in the specified bucket",
 							PlanModifiers: []planmodifier.String{
 								stringplanmodifier.RequiresReplace(),
@@ -193,11 +196,11 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"bucket": schema.StringAttribute{
-							Optional:            true,
+							Required:            true,
 							MarkdownDescription: "Bucket containing qcow",
 						},
 						"key": schema.StringAttribute{
-							Optional:            true,
+							Required:            true,
 							MarkdownDescription: "Key of the qcow file in the specified bucket",
 						},
 					},
