@@ -2,13 +2,16 @@ package edgeservices
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -29,18 +32,41 @@ func ResourcePlan() *schema.Resource {
 }
 
 func planIdentity() *schema.ResourceIdentity {
-	return identity.WrapSchemaMap(map[string]*schema.Schema{
-		"project_id": {
-			Type:              schema.TypeString,
-			Description:       "The project ID",
-			RequiredForImport: true,
+	return &schema.ResourceIdentity{
+		Version: 1,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return map[string]*schema.Schema{
+				"project_id": identity.DefaultProjectIDAttribute(),
+			}
 		},
-		"name": {
-			Type:              schema.TypeString,
-			Description:       "The plan name",
-			RequiredForImport: true,
+		IdentityUpgraders: []schema.IdentityUpgrader{
+			{
+				Version: 0,
+				Type: tftypes.Object{
+					AttributeTypes: map[string]tftypes.Type{
+						"project_id": tftypes.String,
+						"name":       tftypes.String,
+					},
+				},
+				Upgrade: upgradePlanIdentityV0,
+			},
 		},
-	})
+	}
+}
+
+func upgradePlanIdentityV0(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
+	if rawState == nil {
+		return map[string]any{}, nil
+	}
+
+	projectID, ok := rawState["project_id"].(string)
+	if !ok {
+		return nil, fmt.Errorf("identity project_id must be a string, got %T", rawState["project_id"])
+	}
+
+	return map[string]any{
+		"project_id": projectID,
+	}, nil
 }
 
 func planSchema() map[string]*schema.Schema {
@@ -56,10 +82,28 @@ func planSchema() map[string]*schema.Schema {
 	}
 }
 
+func setPlanIdentity(d *schema.ResourceData, projectID, planName string) error {
+	resourceIdentity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	if err = resourceIdentity.Set("project_id", projectID); err != nil {
+		return err
+	}
+
+	d.SetId(projectID + "/" + planName)
+
+	return nil
+}
+
 func ResourcePlanCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	projectID := d.Get("project_id").(string)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	plan, err := api.SelectPlan(&edgeservices.SelectPlanRequest{
 		ProjectID: projectID,
@@ -69,11 +113,9 @@ func ResourcePlanCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetMultiPartIdentity(d, map[string]string{
-		"project_id": projectID,
-		"name":       plan.PlanName.String(),
-	}, "project_id", "name")
-	if err != nil {
+	_ = d.Set("project_id", projectID)
+
+	if err = setPlanIdentity(d, projectID, plan.PlanName.String()); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -85,6 +127,14 @@ func ResourcePlanRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 
 	idParts := identity.ParseMultiPartID(d.Id(), "project_id", "name")
 	projectID := idParts["project_id"]
+
+	// Legacy / broken state may have an empty project_id in the ID
+	// Drop it so the next apply recreates with a resolved project_id
+	if projectID == "" {
+		d.SetId("")
+
+		return nil
+	}
 
 	plan, err := api.GetCurrentPlan(&edgeservices.GetCurrentPlanRequest{
 		ProjectID: projectID,
@@ -99,14 +149,16 @@ func ResourcePlanRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
+	if plan.PlanName == "" || plan.PlanName == edgeservices.PlanNameUnknownName {
+		d.SetId("")
+
+		return nil
+	}
+
 	_ = d.Set("name", plan.PlanName.String())
 	_ = d.Set("project_id", projectID)
 
-	err = identity.SetMultiPartIdentity(d, map[string]string{
-		"project_id": projectID,
-		"name":       plan.PlanName.String(),
-	}, "project_id", "name")
-	if err != nil {
+	if err = setPlanIdentity(d, projectID, plan.PlanName.String()); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -117,8 +169,13 @@ func ResourcePlanUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 	api := NewEdgeServicesAPI(m)
 
 	if d.HasChange("name") {
-		_, err := api.SelectPlan(&edgeservices.SelectPlanRequest{
-			ProjectID: d.Get("project_id").(string),
+		projectID, _, err := meta.ExtractProjectID(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = api.SelectPlan(&edgeservices.SelectPlanRequest{
+			ProjectID: projectID,
 			PlanName:  edgeservices.PlanName(d.Get("name").(string)),
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -132,8 +189,13 @@ func ResourcePlanUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 func ResourcePlanDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
-	err := api.DeleteCurrentPlan(&edgeservices.DeleteCurrentPlanRequest{
-		ProjectID: d.Get("project_id").(string),
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = api.DeleteCurrentPlan(&edgeservices.DeleteCurrentPlanRequest{
+		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
