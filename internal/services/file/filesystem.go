@@ -17,6 +17,7 @@ import (
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -27,6 +28,7 @@ var (
 	_ resource.Resource                = (*FileSystemResource)(nil)
 	_ resource.ResourceWithConfigure   = (*FileSystemResource)(nil)
 	_ resource.ResourceWithImportState = (*FileSystemResource)(nil)
+	_ resource.ResourceWithIdentity    = (*FileSystemResource)(nil)
 )
 
 func NewFileSystemResource() resource.Resource {
@@ -151,6 +153,10 @@ func (r *FileSystemResource) Configure(_ context.Context, req resource.Configure
 
 	r.meta = m
 	r.api = file.NewAPI(r.meta.ScwClient())
+}
+
+func (r *FileSystemResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityfw.DefaultRegional()
 }
 
 func (r *FileSystemResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
