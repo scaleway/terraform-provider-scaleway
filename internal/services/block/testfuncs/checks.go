@@ -140,15 +140,18 @@ func MatchAttrPairIgnorePrefix(nameFirst, keyFirst, nameSecond, keySecond string
 		splitFirst := strings.Split(valFirst, "/")
 		splitSecond := strings.Split(valSecond, "/")
 
-		if len(splitFirst) == len(splitSecond) {
+		switch {
+		case len(splitFirst) == len(splitSecond):
 			if valFirst == valSecond {
 				return nil
 			}
-		} else if len(splitFirst) == 2 && len(splitSecond) == 1 {
+
+		case len(splitFirst) == 2 && len(splitSecond) == 1:
 			if splitFirst[1] == splitSecond[0] {
 				return nil
 			}
-		} else if len(splitFirst) == 1 && len(splitSecond) == 2 {
+
+		case len(splitFirst) == 1 && len(splitSecond) == 2:
 			if splitFirst[0] == splitSecond[1] {
 				return nil
 			}
