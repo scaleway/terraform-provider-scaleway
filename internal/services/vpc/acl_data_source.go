@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -42,11 +43,13 @@ func DataSourceACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 	regionalID := datasource.NewRegionalID(d.Get("vpc_id"), region)
 	d.SetId(regionalID)
 
-	acl, err := vpcAPI.GetACL(&vpc.GetACLRequest{
-		VpcID:  vpcID,
-		Region: region,
-		IsIPv6: d.Get("is_ipv6").(bool),
-	}, scw.WithContext(ctx))
+	acl, err := transport.RetryOn403Value(ctx, func() (*vpc.GetACLResponse, error) {
+		return vpcAPI.GetACL(&vpc.GetACLRequest{
+			VpcID:  vpcID,
+			Region: region,
+			IsIPv6: d.Get("is_ipv6").(bool),
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
