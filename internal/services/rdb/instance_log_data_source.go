@@ -124,16 +124,9 @@ func (d *InstanceLogDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	fallbackRegion, err := meta.ExtractFrameworkRegion(config.Region, d.meta.ScwClient())
+	region, instanceLogID, err := resolveRegionAndID(config.InstanceLogID.ValueString(), config.Region.ValueString(), d.meta.ScwClient())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
-
-		return
-	}
-
-	region, instanceLogID, err := regionAndIDFromAttr(config.InstanceLogID.ValueString(), fallbackRegion)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse instance_log_id", err.Error())
+		resp.Diagnostics.AddError("Failed to resolve region and instance_log_id", err.Error())
 
 		return
 	}

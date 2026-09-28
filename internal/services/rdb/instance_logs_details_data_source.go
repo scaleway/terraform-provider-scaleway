@@ -41,8 +41,8 @@ type instanceLogsDetailsDataSourceModel struct {
 
 func instanceLogDetailAttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"log_name": types.StringType,
-		"size":     types.Int64Type,
+		"log_name":      types.StringType,
+		"size_in_bytes": types.Int64Type,
 	}
 }
 
@@ -85,7 +85,7 @@ func (d *InstanceLogsDetailsDataSource) Schema(_ context.Context, _ datasource.S
 							Computed:            true,
 							MarkdownDescription: "Name of the remote log.",
 						},
-						"size": schema.Int64Attribute{
+						"size_in_bytes": schema.Int64Attribute{
 							Computed:            true,
 							MarkdownDescription: "Size of the remote log in bytes.",
 						},
@@ -124,16 +124,9 @@ func (d *InstanceLogsDetailsDataSource) Read(ctx context.Context, req datasource
 		return
 	}
 
-	fallbackRegion, err := meta.ExtractFrameworkRegion(config.Region, d.meta.ScwClient())
+	region, instanceID, err := resolveRegionAndID(config.InstanceID.ValueString(), config.Region.ValueString(), d.meta.ScwClient())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
-
-		return
-	}
-
-	region, instanceID, err := regionAndIDFromAttr(config.InstanceID.ValueString(), fallbackRegion)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse instance_id", err.Error())
+		resp.Diagnostics.AddError("Failed to resolve region and instance_id", err.Error())
 
 		return
 	}
@@ -178,8 +171,8 @@ func flattenInstanceLogsDetails(details []*rdb.ListInstanceLogsDetailsResponseIn
 		}
 
 		obj, d := types.ObjectValue(instanceLogDetailAttrTypes(), map[string]attr.Value{
-			"log_name": types.StringValue(detail.LogName),
-			"size":     types.Int64Value(int64(detail.Size)),
+			"log_name":      types.StringValue(detail.LogName),
+			"size_in_bytes": types.Int64Value(int64(detail.Size)),
 		})
 		diags.Append(d...)
 

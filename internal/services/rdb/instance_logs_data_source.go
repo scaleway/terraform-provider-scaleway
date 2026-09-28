@@ -163,16 +163,9 @@ func (d *InstanceLogsDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	fallbackRegion, err := meta.ExtractFrameworkRegion(config.Region, d.meta.ScwClient())
+	region, instanceID, err := resolveRegionAndID(config.InstanceID.ValueString(), config.Region.ValueString(), d.meta.ScwClient())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
-
-		return
-	}
-
-	region, instanceID, err := regionAndIDFromAttr(config.InstanceID.ValueString(), fallbackRegion)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse instance_id", err.Error())
+		resp.Diagnostics.AddError("Failed to resolve region and instance_id", err.Error())
 
 		return
 	}
@@ -215,13 +208,17 @@ func flattenInstanceLogs(logs []*rdb.InstanceLog, diags *diag.Diagnostics) types
 		return emptyList
 	}
 
-	items := make([]attr.Value, len(logs))
+	items := make([]attr.Value, 0, len(logs))
 
-	for i, log := range logs {
+	for _, log := range logs {
+		if log == nil {
+			continue
+		}
+
 		obj, d := flattenInstanceLogObject(log)
 		diags.Append(d...)
 
-		items[i] = obj
+		items = append(items, obj)
 	}
 
 	list, d := types.ListValue(itemType, items)

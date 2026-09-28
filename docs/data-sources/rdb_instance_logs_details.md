@@ -38,5 +38,5 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of this data source, in the `{region}/{instance_id}` format.
 - `details` - Remote Database Instance logs details.
-  - `log_name` - Name of the remote log.
-  - `size` - Size of the remote log in bytes.
+    - `log_name` - Name of the remote log.
+    - `size_in_bytes` - Size of the remote log in bytes.

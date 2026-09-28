@@ -29,6 +29,6 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The ID of the Database Instance log, in the `{region}/{id}` format.
 - `status` - Status of the log (`unknown`, `ready`, `creating`, `error`).
 - `node_name` - Name of the underlying node.
-- `download_url` - Presigned Object Storage URL to download the log file.
+- `download_url` - (Sensitive) Presigned Object Storage URL to download the log file.
 - `created_at` - Creation date of the log (RFC 3339 format).
 - `expires_at` - Expiration date of the log (RFC 3339 format).
