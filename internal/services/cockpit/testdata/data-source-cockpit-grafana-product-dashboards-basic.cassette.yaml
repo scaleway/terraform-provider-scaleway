@@ -1,0 +1,388 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 128
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"name":"tf_tests_cockpit_grafana_product_dashboards","organization_id":"46fd79d8-1a35-4548-bfb8-03df51a0ebae","description":""}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 314
+        uncompressed: false
+        body: '{"created_at":"2026-09-17T05:15:29.608988Z","description":"","id":"2ee55cc7-4fb6-41fa-ae63-96324dcb87cc","name":"tf_tests_cockpit_grafana_product_dashboards","organization_id":"46fd79d8-1a35-4548-bfb8-03df51a0ebae","qualification":null,"srn":"","status":"active","updated_at":"2026-09-17T05:15:29.608988Z"}'
+        headers:
+            Content-Length:
+                - "314"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 17 Sep 2026 05:15:29 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - d5288fb3-d9e5-4c47-b849-278f2980bdcc
+        status: 200 OK
+        code: 200
+        duration: 317.429125ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/2ee55cc7-4fb6-41fa-ae63-96324dcb87cc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 359
+        uncompressed: false
+        body: '{"created_at":"2026-09-17T05:15:29.608988Z","description":"","id":"2ee55cc7-4fb6-41fa-ae63-96324dcb87cc","name":"tf_tests_cockpit_grafana_product_dashboards","organization_id":"46fd79d8-1a35-4548-bfb8-03df51a0ebae","qualification":{"architecture_type":"unknown_architecture_type"},"srn":"","status":"active","updated_at":"2026-09-17T05:15:29.608988Z"}'
+        headers:
+            Content-Length:
+                - "359"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 17 Sep 2026 05:15:29 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 7263a822-3f0d-4a7f-9373-5b13a8e8b10b
+        status: 200 OK
+        code: 200
+        duration: 54.648667ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/grafana/product-dashboards?page=1&project_id=2ee55cc7-4fb6-41fa-ae63-96324dcb87cc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 16476
+        uncompressed: false
+        body: '{"dashboards":[{"name":"scw-generative-apis-deployment-logs","tags":["inference","scw","logs"],"title":"Generative APIs Deployment Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-generative-apis-deployment-logs/generative-apis-deployment-logs","variables":["region","deployment_name","filter"]},{"name":"scw-generative-apis-deployment-overview","tags":["inference","metrics","scw"],"title":"Generative APIs Deployment Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-generative-apis-deployment-overview/generative-apis-deployment-overview","variables":["region","deployment_name"]},{"name":"scw-instance-gpus","tags":["scw","instance"],"title":"Instance GPUs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-instance-gpus/instance-gpus","variables":["region","server_name","gpu_index"]},{"name":"scw-instance-overview","tags":["scw","instance"],"title":"Instance Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-instance-overview/instance-overview","variables":["region","availability_zone","server_name","Filters"]},{"name":"scw-apache-kafka-overview","tags":["scw","apachekafka","kafka"],"title":"Apache Kafka Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-apache-kafka-overview/apache-kafka-overview","variables":["region","resource_name","topic"]},{"name":"scw-serverless-jobs-logs","tags":["serverless-jobs","logs","scw"],"title":"Serverless Jobs Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-jobs-logs/serverless-jobs-logs","variables":["datasource","job_definition_name","job_run_id","attempt"]},{"name":"scw-serverless-jobs-overview","tags":["serverless-jobs","scw"],"title":"Serverless Jobs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-jobs-overview/serverless-jobs-overview","variables":["datasource","job_definition_name","job_run_id"]},{"name":"scw-vpc-private-networks-overview","tags":["scw","private-network","network"],"title":"VPC Private Networks Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-vpc-private-networks-overview/vpc-private-networks-overview","variables":["region","resource_id"]},{"name":"scw-qaas-logs","tags":["qaas","scw","logs"],"title":"QaaS Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-qaas-logs/qaas-logs","variables":["region","filter"]},{"name":"scw-mongodb-overview","tags":["scw","mongodb"],"title":"MongoDB Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-mongodb-overview/mongodb-overview","variables":["region","cl_name","host","Interval"]},{"name":"scw-cockpit-logs-drilldown","tags":["scw","cockpit"],"title":"Cockpit Logs Drilldown","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cockpit-logs-drilldown/cockpit-logs-drilldown","variables":["region","dsName"]},{"name":"scw-cockpit-metrics-drilldown","tags":["scw","cockpit"],"title":"Cockpit Metrics Drilldown","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cockpit-metrics-drilldown/cockpit-metrics-drilldown","variables":["region","dsName"]},{"name":"scw-cockpit-overview","tags":["scw","cockpit"],"title":"Cockpit Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cockpit-overview/cockpit-overview","variables":["region"]},{"name":"scw-block-storage-overview","tags":["scw","sbs"],"title":"Block Storage overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-block-storage-overview/block-storage-overview","variables":["region","zone"]},{"name":"scw-environmental-footprint-overview","tags":["scw","environmental-footprint"],"title":"Environmental Footprint Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-environmental-footprint-overview/environmental-footprint-overview","variables":[]},{"name":"scw-secret-manager-overview","tags":["scw","secret-manager"],"title":"Secret Manager Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-secret-manager-overview/secret-manager-overview","variables":["region","secret_name"]},{"name":"scw-iot-hub","tags":["scw","iot"],"title":"IoT Hub","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-iot-hub/iot-hub","variables":["region","Hubs","Devices"]},{"name":"scw-rabbitmq---logs","tags":["rabbitmq","scw"],"title":"RabbitMQ - Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-rabbitmq---logs/rabbitmq---logs","variables":["datasource","resource_name","level"]},{"name":"scw-cloud-essentials-for-rabbitmq---over","tags":["rabbitmq-prometheus","scw"],"title":"Cloud Essentials for RabbitMQ - Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cloud-essentials-for-rabbitmq---over/cloud-essentials-for-rabbitmq---over","variables":["region","resource_id"]},{"name":"scw-redis-overview","tags":["scw","redis"],"title":"Redis Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-redis-overview/redis-overview","variables":["region","resource_name","instance"]},{"name":"scw-serverless-containers-logs","tags":["serverless-containers","scw"],"title":"Serverless Containers Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-containers-logs/serverless-containers-logs","variables":["region","container_name","container_instance"]},{"name":"scw-serverless-containers-overview","tags":["serverless-containers","scw"],"title":"Serverless Containers Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-containers-overview/serverless-containers-overview","variables":["region","container_name"]},{"name":"scw-serverless-containers-triggers-overv","tags":["scw","serverless-containers"],"title":"Serverless Containers Triggers Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-containers-triggers-overv/serverless-containers-triggers-overv","variables":["region","trigger_source_type","trigger_name","trigger_id"]},{"name":"scw-serverless-functions-logs","tags":["serverless-functions","scw"],"title":"Serverless Functions Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-functions-logs/serverless-functions-logs","variables":["region","function_name","function_instance"]},{"name":"scw-serverless-functions-overview","tags":["serverless-functions","scw"],"title":"Serverless Functions Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-functions-overview/serverless-functions-overview","variables":["region","datasource","function_name"]},{"name":"scw-kubernetes-cluster-audit-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Audit Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-audit-logs/kubernetes-cluster-audit-logs","variables":["region","cluster_name","decision","username","status","verb"]},{"name":"scw-kubernetes-cluster-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-logs/kubernetes-cluster-logs","variables":["region","cluster_name","component","level"]},{"name":"scw-kubernetes-cluster-node-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Node Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-node-logs/kubernetes-cluster-node-logs","variables":["region","cluster_name","node","syslog_identifier"]},{"name":"scw-kubernetes-cluster-overview","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview","variables":["region","cluster_name"]},{"name":"scw-kubernetes-cluster-pod-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Pod Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-pod-logs/kubernetes-cluster-pod-logs","variables":["region","cluster_name","namespace","pod","container"]},{"name":"scw-edge-services-logs","tags":["scw","edge-services","network"],"title":"Edge-services Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-edge-services-logs/edge-services-logs","variables":["region","edge_name","filter","loglevel"]},{"name":"scw-edge-services-overview","tags":["scw ","edge-services","scw"],"title":"Edge-Services Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-edge-services-overview/edge-services-overview","variables":["region","edge_service_name"]},{"name":"scw-generative-apis-overview","tags":["scw"],"title":"Generative APIs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-generative-apis-overview/generative-apis-overview","variables":["region","model","token_type","processing_type","principal_id"]},{"name":"scw-interlink-overview","tags":["scw","network","interlink"],"title":"Interlink Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-interlink-overview/interlink-overview","variables":["region","interlink_id","dedicated_connection_id"]},{"name":"scw-rdb-mysql-overview","tags":["scw","rdb"],"title":"RDB MySQL Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-rdb-mysql-overview/rdb-mysql-overview","variables":["region","resource_name","instance"]},{"name":"scw-rdb-postgresql-overview","tags":["scw","rdb"],"title":"RDB PostgreSQL Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-rdb-postgresql-overview/rdb-postgresql-overview","variables":["region","resource_name","instance"]},{"name":"scw-opensearch-logs-overview","tags":["scw","opensearch"],"title":"Opensearch Logs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-opensearch-logs-overview/opensearch-logs-overview","variables":["region","resource_name","level"]},{"name":"scw-opensearch-prometheus","tags":["opensearch","SCW","scw"],"title":"OpenSearch Prometheus","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-opensearch-prometheus/opensearch-prometheus","variables":["region","resource_id","project_id","resource_name"]},{"name":"scw-serverless-sql-database-overview","tags":["scw","serverless-sql-db"],"title":"Serverless SQL Database Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-sql-database-overview/serverless-sql-database-overview","variables":["region","database"]},{"name":"scw-object-storage-logs-overview","tags":["scw","object-storage"],"title":"Object Storage Logs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-object-storage-logs-overview/object-storage-logs-overview","variables":["region","bucketName","Filter"]},{"name":"scw-object-storage-overview","tags":["scw","object-storage","s3","bucket"],"title":"Object Storage Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-object-storage-overview/object-storage-overview","variables":["region","bucketName"]},{"name":"scw-transactional-email-overview","tags":["scw","transactional-email"],"title":"Transactional Email Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-transactional-email-overview/transactional-email-overview","variables":["region","domain"]},{"name":"scw-clickhouse-data-warehouse-overview","tags":["scw","data-warehouse-clickhouse"],"title":"ClickHouse Data Warehouse Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-clickhouse-data-warehouse-overview/clickhouse-data-warehouse-overview","variables":["region","data_warehouse"]},{"name":"scw-pgw-logs","tags":["scw","public-gateway","network","logs"],"title":"PGW Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-pgw-logs/pgw-logs","variables":["region","resource_name"]},{"name":"scw-pgw-overview","tags":["scw","public-gateway","network"],"title":"PGW Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-pgw-overview/pgw-overview","variables":["region","resource_id"]},{"name":"scw-apache-spark-overview","tags":["scw","apachespark"],"title":"Apache Spark Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-apache-spark-overview/apache-spark-overview","variables":["region","datalab_name"]},{"name":"scw-hpc-gpu-metrics","tags":["nvidia","nvidia-smi","hpc","scw"],"title":"HPC GPU Metrics","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-hpc-gpu-metrics/hpc-gpu-metrics","variables":["region","cluster","node","gpu"]},{"name":"scw-hpc-node-metrics","tags":["scw","hpc","system"],"title":"HPC Node Metrics","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-hpc-node-metrics/hpc-node-metrics","variables":["region","cluster","name"]},{"name":"scw-hpc-slurm","tags":["scw","hpc","slurm"],"title":"HPC Slurm","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-hpc-slurm/hpc-slurm","variables":["region","cluster"]},{"name":"scw-lb-logs-overview","tags":["scw","lb","network"],"title":"LB Logs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-lb-logs-overview/lb-logs-overview","variables":["region","lb_name","lb_frontend","lb_backends","loglevel","Filter"]},{"name":"scw-lb-overview","tags":["scw"],"title":"LB Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview","variables":["region","lb_name","lb_frontend","lb_backend"]},{"name":"scw-messaging-nats-overview","tags":["scw","messaging"],"title":"Messaging NATS Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-messaging-nats-overview/messaging-nats-overview","variables":["region","nats_account","streams"]},{"name":"scw-messaging-sns-overview","tags":["scw","messaging"],"title":"Messaging SNS Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-messaging-sns-overview/messaging-sns-overview","variables":["region","topics"]},{"name":"scw-messaging-sqs-overview","tags":["scw","messaging"],"title":"Messaging SQS Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-messaging-sqs-overview/messaging-sqs-overview","variables":["region","queues"]},{"name":"scw-s2s-vpn-logs","tags":["scw","s2s-vpn"],"title":"S2S VPN Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-s2s-vpn-logs/s2s-vpn-logs","variables":["region","resource_name"]},{"name":"scw-s2s-vpn-overview","tags":["scw"],"title":"S2S VPN Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-s2s-vpn-overview/s2s-vpn-overview","variables":["region","resource_name","connection_name"]}],"total_count":56}'
+        headers:
+            Content-Length:
+                - "16476"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 17 Sep 2026 05:15:29 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - a7ab71f4-25a6-4277-ac9a-e19ff09517ef
+        status: 200 OK
+        code: 200
+        duration: 125.311625ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/grafana/product-dashboards?page=1&project_id=2ee55cc7-4fb6-41fa-ae63-96324dcb87cc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 16476
+        uncompressed: false
+        body: '{"dashboards":[{"name":"scw-generative-apis-deployment-logs","tags":["inference","scw","logs"],"title":"Generative APIs Deployment Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-generative-apis-deployment-logs/generative-apis-deployment-logs","variables":["region","deployment_name","filter"]},{"name":"scw-generative-apis-deployment-overview","tags":["inference","metrics","scw"],"title":"Generative APIs Deployment Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-generative-apis-deployment-overview/generative-apis-deployment-overview","variables":["region","deployment_name"]},{"name":"scw-instance-gpus","tags":["scw","instance"],"title":"Instance GPUs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-instance-gpus/instance-gpus","variables":["region","server_name","gpu_index"]},{"name":"scw-instance-overview","tags":["scw","instance"],"title":"Instance Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-instance-overview/instance-overview","variables":["region","availability_zone","server_name","Filters"]},{"name":"scw-apache-kafka-overview","tags":["scw","apachekafka","kafka"],"title":"Apache Kafka Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-apache-kafka-overview/apache-kafka-overview","variables":["region","resource_name","topic"]},{"name":"scw-serverless-jobs-logs","tags":["serverless-jobs","logs","scw"],"title":"Serverless Jobs Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-jobs-logs/serverless-jobs-logs","variables":["datasource","job_definition_name","job_run_id","attempt"]},{"name":"scw-serverless-jobs-overview","tags":["serverless-jobs","scw"],"title":"Serverless Jobs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-jobs-overview/serverless-jobs-overview","variables":["datasource","job_definition_name","job_run_id"]},{"name":"scw-vpc-private-networks-overview","tags":["scw","private-network","network"],"title":"VPC Private Networks Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-vpc-private-networks-overview/vpc-private-networks-overview","variables":["region","resource_id"]},{"name":"scw-qaas-logs","tags":["qaas","scw","logs"],"title":"QaaS Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-qaas-logs/qaas-logs","variables":["region","filter"]},{"name":"scw-mongodb-overview","tags":["scw","mongodb"],"title":"MongoDB Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-mongodb-overview/mongodb-overview","variables":["region","cl_name","host","Interval"]},{"name":"scw-cockpit-logs-drilldown","tags":["scw","cockpit"],"title":"Cockpit Logs Drilldown","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cockpit-logs-drilldown/cockpit-logs-drilldown","variables":["region","dsName"]},{"name":"scw-cockpit-metrics-drilldown","tags":["scw","cockpit"],"title":"Cockpit Metrics Drilldown","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cockpit-metrics-drilldown/cockpit-metrics-drilldown","variables":["region","dsName"]},{"name":"scw-cockpit-overview","tags":["scw","cockpit"],"title":"Cockpit Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cockpit-overview/cockpit-overview","variables":["region"]},{"name":"scw-block-storage-overview","tags":["scw","sbs"],"title":"Block Storage overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-block-storage-overview/block-storage-overview","variables":["region","zone"]},{"name":"scw-environmental-footprint-overview","tags":["scw","environmental-footprint"],"title":"Environmental Footprint Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-environmental-footprint-overview/environmental-footprint-overview","variables":[]},{"name":"scw-secret-manager-overview","tags":["scw","secret-manager"],"title":"Secret Manager Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-secret-manager-overview/secret-manager-overview","variables":["region","secret_name"]},{"name":"scw-iot-hub","tags":["scw","iot"],"title":"IoT Hub","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-iot-hub/iot-hub","variables":["region","Hubs","Devices"]},{"name":"scw-rabbitmq---logs","tags":["rabbitmq","scw"],"title":"RabbitMQ - Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-rabbitmq---logs/rabbitmq---logs","variables":["datasource","resource_name","level"]},{"name":"scw-cloud-essentials-for-rabbitmq---over","tags":["rabbitmq-prometheus","scw"],"title":"Cloud Essentials for RabbitMQ - Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cloud-essentials-for-rabbitmq---over/cloud-essentials-for-rabbitmq---over","variables":["region","resource_id"]},{"name":"scw-redis-overview","tags":["scw","redis"],"title":"Redis Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-redis-overview/redis-overview","variables":["region","resource_name","instance"]},{"name":"scw-serverless-containers-logs","tags":["serverless-containers","scw"],"title":"Serverless Containers Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-containers-logs/serverless-containers-logs","variables":["region","container_name","container_instance"]},{"name":"scw-serverless-containers-overview","tags":["serverless-containers","scw"],"title":"Serverless Containers Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-containers-overview/serverless-containers-overview","variables":["region","container_name"]},{"name":"scw-serverless-containers-triggers-overv","tags":["scw","serverless-containers"],"title":"Serverless Containers Triggers Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-containers-triggers-overv/serverless-containers-triggers-overv","variables":["region","trigger_source_type","trigger_name","trigger_id"]},{"name":"scw-serverless-functions-logs","tags":["serverless-functions","scw"],"title":"Serverless Functions Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-functions-logs/serverless-functions-logs","variables":["region","function_name","function_instance"]},{"name":"scw-serverless-functions-overview","tags":["serverless-functions","scw"],"title":"Serverless Functions Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-functions-overview/serverless-functions-overview","variables":["region","datasource","function_name"]},{"name":"scw-kubernetes-cluster-audit-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Audit Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-audit-logs/kubernetes-cluster-audit-logs","variables":["region","cluster_name","decision","username","status","verb"]},{"name":"scw-kubernetes-cluster-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-logs/kubernetes-cluster-logs","variables":["region","cluster_name","component","level"]},{"name":"scw-kubernetes-cluster-node-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Node Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-node-logs/kubernetes-cluster-node-logs","variables":["region","cluster_name","node","syslog_identifier"]},{"name":"scw-kubernetes-cluster-overview","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview","variables":["region","cluster_name"]},{"name":"scw-kubernetes-cluster-pod-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Pod Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-pod-logs/kubernetes-cluster-pod-logs","variables":["region","cluster_name","namespace","pod","container"]},{"name":"scw-edge-services-logs","tags":["scw","edge-services","network"],"title":"Edge-services Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-edge-services-logs/edge-services-logs","variables":["region","edge_name","filter","loglevel"]},{"name":"scw-edge-services-overview","tags":["scw ","edge-services","scw"],"title":"Edge-Services Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-edge-services-overview/edge-services-overview","variables":["region","edge_service_name"]},{"name":"scw-generative-apis-overview","tags":["scw"],"title":"Generative APIs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-generative-apis-overview/generative-apis-overview","variables":["region","model","token_type","processing_type","principal_id"]},{"name":"scw-interlink-overview","tags":["scw","network","interlink"],"title":"Interlink Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-interlink-overview/interlink-overview","variables":["region","interlink_id","dedicated_connection_id"]},{"name":"scw-rdb-mysql-overview","tags":["scw","rdb"],"title":"RDB MySQL Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-rdb-mysql-overview/rdb-mysql-overview","variables":["region","resource_name","instance"]},{"name":"scw-rdb-postgresql-overview","tags":["scw","rdb"],"title":"RDB PostgreSQL Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-rdb-postgresql-overview/rdb-postgresql-overview","variables":["region","resource_name","instance"]},{"name":"scw-opensearch-logs-overview","tags":["scw","opensearch"],"title":"Opensearch Logs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-opensearch-logs-overview/opensearch-logs-overview","variables":["region","resource_name","level"]},{"name":"scw-opensearch-prometheus","tags":["opensearch","SCW","scw"],"title":"OpenSearch Prometheus","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-opensearch-prometheus/opensearch-prometheus","variables":["region","resource_id","project_id","resource_name"]},{"name":"scw-serverless-sql-database-overview","tags":["scw","serverless-sql-db"],"title":"Serverless SQL Database Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-sql-database-overview/serverless-sql-database-overview","variables":["region","database"]},{"name":"scw-object-storage-logs-overview","tags":["scw","object-storage"],"title":"Object Storage Logs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-object-storage-logs-overview/object-storage-logs-overview","variables":["region","bucketName","Filter"]},{"name":"scw-object-storage-overview","tags":["scw","object-storage","s3","bucket"],"title":"Object Storage Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-object-storage-overview/object-storage-overview","variables":["region","bucketName"]},{"name":"scw-transactional-email-overview","tags":["scw","transactional-email"],"title":"Transactional Email Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-transactional-email-overview/transactional-email-overview","variables":["region","domain"]},{"name":"scw-clickhouse-data-warehouse-overview","tags":["scw","data-warehouse-clickhouse"],"title":"ClickHouse Data Warehouse Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-clickhouse-data-warehouse-overview/clickhouse-data-warehouse-overview","variables":["region","data_warehouse"]},{"name":"scw-pgw-logs","tags":["scw","public-gateway","network","logs"],"title":"PGW Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-pgw-logs/pgw-logs","variables":["region","resource_name"]},{"name":"scw-pgw-overview","tags":["scw","public-gateway","network"],"title":"PGW Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-pgw-overview/pgw-overview","variables":["region","resource_id"]},{"name":"scw-apache-spark-overview","tags":["scw","apachespark"],"title":"Apache Spark Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-apache-spark-overview/apache-spark-overview","variables":["region","datalab_name"]},{"name":"scw-hpc-gpu-metrics","tags":["nvidia","nvidia-smi","hpc","scw"],"title":"HPC GPU Metrics","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-hpc-gpu-metrics/hpc-gpu-metrics","variables":["region","cluster","node","gpu"]},{"name":"scw-hpc-node-metrics","tags":["scw","hpc","system"],"title":"HPC Node Metrics","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-hpc-node-metrics/hpc-node-metrics","variables":["region","cluster","name"]},{"name":"scw-hpc-slurm","tags":["scw","hpc","slurm"],"title":"HPC Slurm","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-hpc-slurm/hpc-slurm","variables":["region","cluster"]},{"name":"scw-lb-logs-overview","tags":["scw","lb","network"],"title":"LB Logs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-lb-logs-overview/lb-logs-overview","variables":["region","lb_name","lb_frontend","lb_backends","loglevel","Filter"]},{"name":"scw-lb-overview","tags":["scw"],"title":"LB Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview","variables":["region","lb_name","lb_frontend","lb_backend"]},{"name":"scw-messaging-nats-overview","tags":["scw","messaging"],"title":"Messaging NATS Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-messaging-nats-overview/messaging-nats-overview","variables":["region","nats_account","streams"]},{"name":"scw-messaging-sns-overview","tags":["scw","messaging"],"title":"Messaging SNS Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-messaging-sns-overview/messaging-sns-overview","variables":["region","topics"]},{"name":"scw-messaging-sqs-overview","tags":["scw","messaging"],"title":"Messaging SQS Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-messaging-sqs-overview/messaging-sqs-overview","variables":["region","queues"]},{"name":"scw-s2s-vpn-logs","tags":["scw","s2s-vpn"],"title":"S2S VPN Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-s2s-vpn-logs/s2s-vpn-logs","variables":["region","resource_name"]},{"name":"scw-s2s-vpn-overview","tags":["scw"],"title":"S2S VPN Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-s2s-vpn-overview/s2s-vpn-overview","variables":["region","resource_name","connection_name"]}],"total_count":56}'
+        headers:
+            Content-Length:
+                - "16476"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 17 Sep 2026 05:15:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 593e7751-1d96-4a9a-b24d-7a68925c402b
+        status: 200 OK
+        code: 200
+        duration: 242.157708ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/2ee55cc7-4fb6-41fa-ae63-96324dcb87cc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 359
+        uncompressed: false
+        body: '{"created_at":"2026-09-17T05:15:29.608988Z","description":"","id":"2ee55cc7-4fb6-41fa-ae63-96324dcb87cc","name":"tf_tests_cockpit_grafana_product_dashboards","organization_id":"46fd79d8-1a35-4548-bfb8-03df51a0ebae","qualification":{"architecture_type":"unknown_architecture_type"},"srn":"","status":"active","updated_at":"2026-09-17T05:15:29.608988Z"}'
+        headers:
+            Content-Length:
+                - "359"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 17 Sep 2026 05:15:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "45"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 0d14168e-b7cf-4898-809c-04c97f786c9d
+        status: 200 OK
+        code: 200
+        duration: 34.713458ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/grafana/product-dashboards?page=1&project_id=2ee55cc7-4fb6-41fa-ae63-96324dcb87cc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 16476
+        uncompressed: false
+        body: '{"dashboards":[{"name":"scw-generative-apis-deployment-logs","tags":["inference","scw","logs"],"title":"Generative APIs Deployment Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-generative-apis-deployment-logs/generative-apis-deployment-logs","variables":["region","deployment_name","filter"]},{"name":"scw-generative-apis-deployment-overview","tags":["inference","metrics","scw"],"title":"Generative APIs Deployment Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-generative-apis-deployment-overview/generative-apis-deployment-overview","variables":["region","deployment_name"]},{"name":"scw-instance-gpus","tags":["scw","instance"],"title":"Instance GPUs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-instance-gpus/instance-gpus","variables":["region","server_name","gpu_index"]},{"name":"scw-instance-overview","tags":["scw","instance"],"title":"Instance Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-instance-overview/instance-overview","variables":["region","availability_zone","server_name","Filters"]},{"name":"scw-apache-kafka-overview","tags":["scw","apachekafka","kafka"],"title":"Apache Kafka Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-apache-kafka-overview/apache-kafka-overview","variables":["region","resource_name","topic"]},{"name":"scw-serverless-jobs-logs","tags":["serverless-jobs","logs","scw"],"title":"Serverless Jobs Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-jobs-logs/serverless-jobs-logs","variables":["datasource","job_definition_name","job_run_id","attempt"]},{"name":"scw-serverless-jobs-overview","tags":["serverless-jobs","scw"],"title":"Serverless Jobs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-jobs-overview/serverless-jobs-overview","variables":["datasource","job_definition_name","job_run_id"]},{"name":"scw-vpc-private-networks-overview","tags":["scw","private-network","network"],"title":"VPC Private Networks Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-vpc-private-networks-overview/vpc-private-networks-overview","variables":["region","resource_id"]},{"name":"scw-qaas-logs","tags":["qaas","scw","logs"],"title":"QaaS Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-qaas-logs/qaas-logs","variables":["region","filter"]},{"name":"scw-mongodb-overview","tags":["scw","mongodb"],"title":"MongoDB Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-mongodb-overview/mongodb-overview","variables":["region","cl_name","host","Interval"]},{"name":"scw-cockpit-logs-drilldown","tags":["scw","cockpit"],"title":"Cockpit Logs Drilldown","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cockpit-logs-drilldown/cockpit-logs-drilldown","variables":["region","dsName"]},{"name":"scw-cockpit-metrics-drilldown","tags":["scw","cockpit"],"title":"Cockpit Metrics Drilldown","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cockpit-metrics-drilldown/cockpit-metrics-drilldown","variables":["region","dsName"]},{"name":"scw-cockpit-overview","tags":["scw","cockpit"],"title":"Cockpit Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cockpit-overview/cockpit-overview","variables":["region"]},{"name":"scw-block-storage-overview","tags":["scw","sbs"],"title":"Block Storage overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-block-storage-overview/block-storage-overview","variables":["region","zone"]},{"name":"scw-environmental-footprint-overview","tags":["scw","environmental-footprint"],"title":"Environmental Footprint Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-environmental-footprint-overview/environmental-footprint-overview","variables":[]},{"name":"scw-secret-manager-overview","tags":["scw","secret-manager"],"title":"Secret Manager Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-secret-manager-overview/secret-manager-overview","variables":["region","secret_name"]},{"name":"scw-iot-hub","tags":["scw","iot"],"title":"IoT Hub","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-iot-hub/iot-hub","variables":["region","Hubs","Devices"]},{"name":"scw-rabbitmq---logs","tags":["rabbitmq","scw"],"title":"RabbitMQ - Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-rabbitmq---logs/rabbitmq---logs","variables":["datasource","resource_name","level"]},{"name":"scw-cloud-essentials-for-rabbitmq---over","tags":["rabbitmq-prometheus","scw"],"title":"Cloud Essentials for RabbitMQ - Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-cloud-essentials-for-rabbitmq---over/cloud-essentials-for-rabbitmq---over","variables":["region","resource_id"]},{"name":"scw-redis-overview","tags":["scw","redis"],"title":"Redis Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-redis-overview/redis-overview","variables":["region","resource_name","instance"]},{"name":"scw-serverless-containers-logs","tags":["serverless-containers","scw"],"title":"Serverless Containers Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-containers-logs/serverless-containers-logs","variables":["region","container_name","container_instance"]},{"name":"scw-serverless-containers-overview","tags":["serverless-containers","scw"],"title":"Serverless Containers Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-containers-overview/serverless-containers-overview","variables":["region","container_name"]},{"name":"scw-serverless-containers-triggers-overv","tags":["scw","serverless-containers"],"title":"Serverless Containers Triggers Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-containers-triggers-overv/serverless-containers-triggers-overv","variables":["region","trigger_source_type","trigger_name","trigger_id"]},{"name":"scw-serverless-functions-logs","tags":["serverless-functions","scw"],"title":"Serverless Functions Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-functions-logs/serverless-functions-logs","variables":["region","function_name","function_instance"]},{"name":"scw-serverless-functions-overview","tags":["serverless-functions","scw"],"title":"Serverless Functions Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-functions-overview/serverless-functions-overview","variables":["region","datasource","function_name"]},{"name":"scw-kubernetes-cluster-audit-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Audit Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-audit-logs/kubernetes-cluster-audit-logs","variables":["region","cluster_name","decision","username","status","verb"]},{"name":"scw-kubernetes-cluster-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-logs/kubernetes-cluster-logs","variables":["region","cluster_name","component","level"]},{"name":"scw-kubernetes-cluster-node-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Node Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-node-logs/kubernetes-cluster-node-logs","variables":["region","cluster_name","node","syslog_identifier"]},{"name":"scw-kubernetes-cluster-overview","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview","variables":["region","cluster_name"]},{"name":"scw-kubernetes-cluster-pod-logs","tags":["scw","kubernetes"],"title":"Kubernetes Cluster Pod Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-kubernetes-cluster-pod-logs/kubernetes-cluster-pod-logs","variables":["region","cluster_name","namespace","pod","container"]},{"name":"scw-edge-services-logs","tags":["scw","edge-services","network"],"title":"Edge-services Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-edge-services-logs/edge-services-logs","variables":["region","edge_name","filter","loglevel"]},{"name":"scw-edge-services-overview","tags":["scw ","edge-services","scw"],"title":"Edge-Services Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-edge-services-overview/edge-services-overview","variables":["region","edge_service_name"]},{"name":"scw-generative-apis-overview","tags":["scw"],"title":"Generative APIs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-generative-apis-overview/generative-apis-overview","variables":["region","model","token_type","processing_type","principal_id"]},{"name":"scw-interlink-overview","tags":["scw","network","interlink"],"title":"Interlink Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-interlink-overview/interlink-overview","variables":["region","interlink_id","dedicated_connection_id"]},{"name":"scw-rdb-mysql-overview","tags":["scw","rdb"],"title":"RDB MySQL Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-rdb-mysql-overview/rdb-mysql-overview","variables":["region","resource_name","instance"]},{"name":"scw-rdb-postgresql-overview","tags":["scw","rdb"],"title":"RDB PostgreSQL Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-rdb-postgresql-overview/rdb-postgresql-overview","variables":["region","resource_name","instance"]},{"name":"scw-opensearch-logs-overview","tags":["scw","opensearch"],"title":"Opensearch Logs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-opensearch-logs-overview/opensearch-logs-overview","variables":["region","resource_name","level"]},{"name":"scw-opensearch-prometheus","tags":["opensearch","SCW","scw"],"title":"OpenSearch Prometheus","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-opensearch-prometheus/opensearch-prometheus","variables":["region","resource_id","project_id","resource_name"]},{"name":"scw-serverless-sql-database-overview","tags":["scw","serverless-sql-db"],"title":"Serverless SQL Database Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-serverless-sql-database-overview/serverless-sql-database-overview","variables":["region","database"]},{"name":"scw-object-storage-logs-overview","tags":["scw","object-storage"],"title":"Object Storage Logs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-object-storage-logs-overview/object-storage-logs-overview","variables":["region","bucketName","Filter"]},{"name":"scw-object-storage-overview","tags":["scw","object-storage","s3","bucket"],"title":"Object Storage Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-object-storage-overview/object-storage-overview","variables":["region","bucketName"]},{"name":"scw-transactional-email-overview","tags":["scw","transactional-email"],"title":"Transactional Email Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-transactional-email-overview/transactional-email-overview","variables":["region","domain"]},{"name":"scw-clickhouse-data-warehouse-overview","tags":["scw","data-warehouse-clickhouse"],"title":"ClickHouse Data Warehouse Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-clickhouse-data-warehouse-overview/clickhouse-data-warehouse-overview","variables":["region","data_warehouse"]},{"name":"scw-pgw-logs","tags":["scw","public-gateway","network","logs"],"title":"PGW Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-pgw-logs/pgw-logs","variables":["region","resource_name"]},{"name":"scw-pgw-overview","tags":["scw","public-gateway","network"],"title":"PGW Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-pgw-overview/pgw-overview","variables":["region","resource_id"]},{"name":"scw-apache-spark-overview","tags":["scw","apachespark"],"title":"Apache Spark Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-apache-spark-overview/apache-spark-overview","variables":["region","datalab_name"]},{"name":"scw-hpc-gpu-metrics","tags":["nvidia","nvidia-smi","hpc","scw"],"title":"HPC GPU Metrics","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-hpc-gpu-metrics/hpc-gpu-metrics","variables":["region","cluster","node","gpu"]},{"name":"scw-hpc-node-metrics","tags":["scw","hpc","system"],"title":"HPC Node Metrics","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-hpc-node-metrics/hpc-node-metrics","variables":["region","cluster","name"]},{"name":"scw-hpc-slurm","tags":["scw","hpc","slurm"],"title":"HPC Slurm","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-hpc-slurm/hpc-slurm","variables":["region","cluster"]},{"name":"scw-lb-logs-overview","tags":["scw","lb","network"],"title":"LB Logs Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-lb-logs-overview/lb-logs-overview","variables":["region","lb_name","lb_frontend","lb_backends","loglevel","Filter"]},{"name":"scw-lb-overview","tags":["scw"],"title":"LB Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview","variables":["region","lb_name","lb_frontend","lb_backend"]},{"name":"scw-messaging-nats-overview","tags":["scw","messaging"],"title":"Messaging NATS Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-messaging-nats-overview/messaging-nats-overview","variables":["region","nats_account","streams"]},{"name":"scw-messaging-sns-overview","tags":["scw","messaging"],"title":"Messaging SNS Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-messaging-sns-overview/messaging-sns-overview","variables":["region","topics"]},{"name":"scw-messaging-sqs-overview","tags":["scw","messaging"],"title":"Messaging SQS Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-messaging-sqs-overview/messaging-sqs-overview","variables":["region","queues"]},{"name":"scw-s2s-vpn-logs","tags":["scw","s2s-vpn"],"title":"S2S VPN Logs","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-s2s-vpn-logs/s2s-vpn-logs","variables":["region","resource_name"]},{"name":"scw-s2s-vpn-overview","tags":["scw"],"title":"S2S VPN Overview","url":"https://2ee55cc7-4fb6-41fa-ae63-96324dcb87cc.dashboard.cockpit.scaleway.com/d/scw-s2s-vpn-overview/s2s-vpn-overview","variables":["region","resource_name","connection_name"]}],"total_count":56}'
+        headers:
+            Content-Length:
+                - "16476"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 17 Sep 2026 05:15:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - f21c7e17-5af6-4551-8722-3e806f163df6
+        status: 200 OK
+        code: 200
+        duration: 73.842042ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/2ee55cc7-4fb6-41fa-ae63-96324dcb87cc
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 17 Sep 2026 05:15:32 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - a9153c05-e856-4369-b390-be814cba9c07
+        status: 204 No Content
+        code: 204
+        duration: 1.621074416s

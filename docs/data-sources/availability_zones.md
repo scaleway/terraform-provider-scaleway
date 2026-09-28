@@ -10,7 +10,7 @@ The `scaleway_availability_zones` data source is used to retrieve information ab
 For technical and legal reasons, some products are split by Region or by Availability Zones. When using such product,
 you can choose the location that better fits your need (country, latency, etc.).
 
-Refer to the Account [documentation](https://www.scaleway.com/en/docs/console/account/reference-content/products-availability/) for more information.
+Refer to the Account [documentation](https://www.scaleway.com/en/product-availability-by-region/) for more information.
 
 ## Retrieve the Availability Zones of a Region
 

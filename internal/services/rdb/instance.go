@@ -41,7 +41,7 @@ func ResourceInstance() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),
-			Update:  schema.DefaultTimeout(defaultInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultInstanceUpdateTimeout),
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
@@ -329,11 +329,10 @@ func instanceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
-			Description: "Logs policy configuration",
+			Description: "Logs policy configuration for remote logs retention on the Database Instance",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					// Computed
 					"max_age_retention": {
 						Type:        schema.TypeInt,
 						Optional:    true,
@@ -344,7 +343,7 @@ func instanceSchema() map[string]*schema.Schema {
 						Type:        schema.TypeInt,
 						Optional:    true,
 						Computed:    true,
-						Description: "The max disk size of remote logs to keep on the Database Instance.",
+						Description: "The max disk size (in bytes) of remote logs to keep on the Database Instance",
 					},
 				},
 			},
@@ -1169,7 +1168,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {
-				return diag.FromErr(err)
+				return majorUpgradeTimeoutOrErr(err, region, ID, oldInstanceID)
 			}
 
 			if d.Get("is_ha_cluster").(bool) && !upgradedInstance.IsHaCluster {
@@ -1186,7 +1185,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 
 				_, err = waitForRDBInstance(ctx, rdbAPI, region, upgradedInstance.ID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil && !httperrors.Is404(err) {
-					return diag.FromErr(err)
+					return majorUpgradeTimeoutOrErr(err, region, ID, oldInstanceID)
 				}
 			}
 

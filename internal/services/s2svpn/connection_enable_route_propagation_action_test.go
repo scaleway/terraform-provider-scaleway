@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
+	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
 func TestAccActionS2SVPNConnectionEnableRoutePropagation_Basic(t *testing.T) {
@@ -28,10 +29,11 @@ func TestAccActionS2SVPNConnectionEnableRoutePropagation_Basic(t *testing.T) {
 			testAccCheckVPNGatewayDestroy(tt),
 			testAccCheckCustomerGatewayDestroy(tt),
 			testAccCheckRoutingPolicyDestroy(tt),
+			secrettestfuncs.CheckSecretDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: testAccConnectionPSKSecretConfig("tf-test-connection-enable-route-prop-psk") + `
 					resource "scaleway_vpc" "main" {
 						name = "tf-test-vpc-enable-route-prop"
 					}
@@ -73,6 +75,8 @@ func TestAccActionS2SVPNConnectionEnableRoutePropagation_Basic(t *testing.T) {
 						customer_gateway_id       = scaleway_s2s_vpn_customer_gateway.main.id
 						initiation_policy         = "customer_gateway"
 						enable_route_propagation  = false
+						secret_id                 = scaleway_secret.psk.id
+						secret_version            = scaleway_secret_version.psk.revision
 						region                    = "fr-par"
 
 						lifecycle {

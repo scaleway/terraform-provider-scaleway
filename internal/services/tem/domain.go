@@ -131,7 +131,12 @@ func domainSchema() map[string]*schema.Schema {
 		"mx_config": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "MX record configuration for the domain blackhole",
+			Description: "MX exchange hostname for the domain blackhole (without priority), suitable for scaleway_domain_record.data",
+		},
+		"mx_priority": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "MX priority for the domain blackhole, suitable for scaleway_domain_record.priority",
 		},
 		"smtp_host": {
 			Type:        schema.TypeString,
@@ -332,10 +337,24 @@ func setDomainState(d *schema.ResourceData, domain *tem.Domain, region scw.Regio
 
 		// MX
 		if domain.Records.Mx != nil {
-			_ = d.Set("mx_config", domain.Records.Mx.Value)
+			priority, exchange := FlattenMXRecordValue(domain.Records.Mx.Value)
+			_ = d.Set("mx_config", exchange)
+			_ = d.Set("mx_priority", priority)
+
+			if exchange != "" {
+				_ = d.Set("mx_blackhole", exchange)
+			} else {
+				_ = d.Set("mx_blackhole", tem.MXBlackhole)
+			}
 		} else {
 			_ = d.Set("mx_config", "")
+			_ = d.Set("mx_priority", 0)
+			_ = d.Set("mx_blackhole", tem.MXBlackhole)
 		}
+	} else {
+		_ = d.Set("mx_config", "")
+		_ = d.Set("mx_priority", 0)
+		_ = d.Set("mx_blackhole", tem.MXBlackhole)
 	}
 
 	_ = d.Set("smtp_host", tem.SMTPHost)
@@ -344,7 +363,6 @@ func setDomainState(d *schema.ResourceData, domain *tem.Domain, region scw.Regio
 	_ = d.Set("smtp_port_alternative", tem.SMTPPortAlternative)
 	_ = d.Set("smtps_port", tem.SMTPSPort)
 	_ = d.Set("smtps_port_alternative", tem.SMTPSPortAlternative)
-	_ = d.Set("mx_blackhole", tem.MXBlackhole)
 	_ = d.Set("reputation", flattenDomainReputation(domain.Reputation))
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", domain.ProjectID)

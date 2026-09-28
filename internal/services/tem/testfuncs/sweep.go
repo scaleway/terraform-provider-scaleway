@@ -29,9 +29,7 @@ func testSweepDomain(_ string) error {
 		}
 
 		for _, ns := range listDomains.Domains {
-			if ns.Name == "test.scaleway-terraform.com" {
-				logging.L.Debugf("sweeper: skipping deletion of domain %s", ns.Name)
-
+			if !acctest.IsTestResource(ns.Name) {
 				continue
 			}
 

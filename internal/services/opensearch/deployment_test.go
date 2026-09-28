@@ -127,6 +127,7 @@ resource "scaleway_opensearch_deployment" "pn" {
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "name", "tf-test-opensearch-pn"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
 					testAccCheckOpenSearchHasNoPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
+					testAccCheckOpenSearchHasPublicEndpoint("scaleway_opensearch_deployment.pn"),
 					testAccCheckOpenSearchAPIHasNoPrivateEndpoint(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
 				),
@@ -164,8 +165,10 @@ resource "scaleway_opensearch_deployment" "pn" {
 `, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
+					// Adding private_network keeps the existing public endpoint.
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "2"),
 					testAccCheckOpenSearchHasPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
+					testAccCheckOpenSearchHasPublicEndpoint("scaleway_opensearch_deployment.pn"),
 					testAccCheckOpenSearchAPIHasPrivateEndpoint(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
 				),
@@ -201,6 +204,7 @@ resource "scaleway_opensearch_deployment" "pn" {
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
 					testAccCheckOpenSearchHasNoPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
+					testAccCheckOpenSearchHasPublicEndpoint("scaleway_opensearch_deployment.pn"),
 					testAccCheckOpenSearchAPIHasNoPrivateEndpoint(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
 				),
@@ -271,8 +275,10 @@ resource "scaleway_opensearch_deployment" "pn" {
 `, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
+					// Create with private_network: private API + public Dashboards.
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "2"),
 					testAccCheckOpenSearchHasPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
+					testAccCheckOpenSearchHasPublicEndpoint("scaleway_opensearch_deployment.pn"),
 					testAccCheckOpenSearchAPIPrivateNetworkID(tt, "scaleway_opensearch_deployment.pn", "scaleway_vpc_private_network.pn1"),
 					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
 				),
@@ -316,8 +322,9 @@ resource "scaleway_opensearch_deployment" "pn" {
 `, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "2"),
 					testAccCheckOpenSearchHasPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
+					testAccCheckOpenSearchHasPublicEndpoint("scaleway_opensearch_deployment.pn"),
 					testAccCheckOpenSearchAPIPrivateNetworkID(tt, "scaleway_opensearch_deployment.pn", "scaleway_vpc_private_network.pn2"),
 					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
 				),
@@ -349,6 +356,28 @@ func testAccCheckOpenSearchHasPrivateNetworkEndpoint(resourceName string) resour
 	}
 }
 
+func testAccCheckOpenSearchHasPublicEndpoint(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		n, err := strconv.Atoi(rs.Primary.Attributes["endpoints.#"])
+		if err != nil {
+			return fmt.Errorf("parse endpoints.#: %w", err)
+		}
+
+		for i := range n {
+			if rs.Primary.Attributes[fmt.Sprintf("endpoints.%d.public", i)] == "true" {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("expected a public endpoint among %d endpoints", n)
+	}
+}
+
 func testAccCheckOpenSearchHasNoPrivateNetworkEndpoint(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -374,10 +403,6 @@ func testAccCheckOpenSearchHasNoPrivateNetworkEndpoint(resourceName string) reso
 
 // testAccCheckOpenSearchAPIHasPrivateEndpoint calls GetDeployment and verifies
 // that the API actually has a private network endpoint.
-//
-// This is necessary because setDeploymentState filters endpoints in Terraform
-// state to match the config, so state-based checks cannot detect API drift
-// where both public and private endpoints coexist.
 func testAccCheckOpenSearchAPIHasPrivateEndpoint(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -418,7 +443,7 @@ func testAccCheckOpenSearchAPIHasPrivateEndpoint(tt *acctest.TestTools, resource
 // that the API has no private network endpoint (i.e., only public endpoints remain).
 //
 // This catches Bug #1: when removing a private_network block, the API may still
-// have a stale private endpoint even though Terraform state was filtered to hide it.
+// have a stale private endpoint.
 func testAccCheckOpenSearchAPIHasNoPrivateEndpoint(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]

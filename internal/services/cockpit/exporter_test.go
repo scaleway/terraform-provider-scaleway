@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	cockpitSDK "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -19,6 +20,10 @@ import (
 const defaultOrgIDPlaceholder = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 func TestAccCockpitExporter_Basic_Datadog(t *testing.T) {
+	if *acctest.UpdateCassettes && os.Getenv(env.TestDatadogAPIKey) == "" {
+		t.Skipf("Skipping TestAccCockpitExporter_Basic_Datadog: %s is required for live acceptance tests", env.TestDatadogAPIKey)
+	}
+
 	if *acctest.UpdateCassettes {
 		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
 	}
@@ -34,7 +39,7 @@ func TestAccCockpitExporter_Basic_Datadog(t *testing.T) {
 	exporterName := "my-datadog-exporter"
 	datadogAPIKey := "00000000000000000000000000000000"
 
-	if k := os.Getenv("TF_TEST_DATADOG_API_KEY"); k != "" {
+	if k := os.Getenv(env.TestDatadogAPIKey); k != "" {
 		datadogAPIKey = k
 	}
 

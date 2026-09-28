@@ -68,8 +68,9 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 		}
 
 		privateNicResp, err := instanceAPI.GetPrivateNetworkInterface(&instance.GetPrivateNetworkInterfaceRequest{
+			Zone:                      zone,
 			PrivateNetworkInterfaceID: privateNicSummary.ID,
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}

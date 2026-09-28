@@ -70,6 +70,7 @@ func ResourceServer() *schema.Resource {
 			customDiffInstanceServerType,
 			customDiffInstanceServerImage,
 			customDiffInstanceRootVolumeSize,
+			customDiffInstanceServerPublicIPs,
 		),
 	}
 }
@@ -1508,6 +1509,14 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 
 	if marketplaceImage.Label != image.ID {
 		return diff.ForceNew("image")
+	}
+
+	return nil
+}
+
+func customDiffInstanceServerPublicIPs(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	if diff.HasChange("ip_ids") || diff.HasChange("ip_id") || diff.HasChange("enable_dynamic_ip") {
+		return diff.SetNewComputed("public_ips")
 	}
 
 	return nil

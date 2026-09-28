@@ -3,7 +3,6 @@ package cockpit
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -90,41 +89,6 @@ func NewAPIWithRegionAndProjectID(m any, id string) (*cockpit.RegionalAPI, scw.R
 	}
 
 	return api, scw.Region(parts[0]), parts[1], nil
-}
-
-// NewAPIGrafanaUserID returns a new cockpit API with the Grafana user ID and the project ID.
-func NewAPIGrafanaUserID(m any, id string) (*cockpit.GlobalAPI, string, uint32, error) {
-	projectID, resourceIDString, err := parseCockpitID(id)
-	if err != nil {
-		return nil, "", 0, err
-	}
-
-	grafanaUserID, err := strconv.ParseUint(resourceIDString, 10, 32)
-	if err != nil {
-		return nil, "", 0, err
-	}
-
-	api, err := NewGlobalAPI(m)
-	if err != nil {
-		return nil, "", 0, err
-	}
-
-	return api, projectID, uint32(grafanaUserID), nil
-}
-
-// cockpitIDWithProjectID returns a cockpit ID with a project ID.
-func cockpitIDWithProjectID(projectID string, id string) string {
-	return projectID + "/" + id
-}
-
-// parseCockpitID returns the project ID and the cockpit ID from a combined ID.
-func parseCockpitID(id string) (projectID string, cockpitID string, err error) {
-	parts := strings.Split(id, "/")
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("invalid cockpit ID: %s", id)
-	}
-
-	return parts[0], parts[1], nil
 }
 
 func cockpitTokenUpgradeV1SchemaType() cty.Type {
