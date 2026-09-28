@@ -7,7 +7,7 @@ import (
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 )
 
-func TestMatchAttrPairIgnoreCase(t *testing.T) {
+func TestMatchAttrPairIgnorePrefix(t *testing.T) {
 	mockState := &terraform.State{
 		Modules: []*terraform.ModuleState{
 			{
@@ -40,7 +40,7 @@ func TestMatchAttrPairIgnoreCase(t *testing.T) {
 		expectError bool
 	}{
 		{
-			name:        "Successful case-insensitive match",
+			name:        "Successful prefix-insensitive match",
 			resFirst:    "example_resource.match_1",
 			resSecond:   "example_resource.match_2",
 			expectError: false,
