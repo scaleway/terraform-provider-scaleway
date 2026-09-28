@@ -118,9 +118,9 @@ func IsSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	}
 }
 
-// MatchAttrPairIgnorePrefix is a custom check function which compares two Terraform configuration
-// fields and considers them equals if the expected value contains a region/zone prefix but not the actual value.
-// Can be modified if need be in the future.
+// MatchAttrPairIgnorePrefix is a custom check function which compares two Terraform resource
+// attributes and considers them equal if one value contains a region/zone prefix (e.g., "fr-par-1/<id>")
+// and the other does not (e.g., "<id>"). The match is symmetric: it handles both directions.
 func MatchAttrPairIgnorePrefix(nameFirst, keyFirst, nameSecond, keySecond string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rsFirst, ok := s.RootModule().Resources[nameFirst]
@@ -137,11 +137,19 @@ func MatchAttrPairIgnorePrefix(nameFirst, keyFirst, nameSecond, keySecond string
 
 		valSecond := rsSecond.Primary.Attributes[keySecond]
 
-		splitExpected := strings.Split(valFirst, "/")
-		splitActual := strings.Split(valSecond, "/")
+		splitFirst := strings.Split(valFirst, "/")
+		splitSecond := strings.Split(valSecond, "/")
 
-		if len(splitExpected) == 2 && len(splitActual) == 1 {
-			if splitExpected[1] == splitActual[0] {
+		if len(splitFirst) == len(splitSecond) {
+			if valFirst == valSecond {
+				return nil
+			}
+		} else if len(splitFirst) == 2 && len(splitSecond) == 1 {
+			if splitFirst[1] == splitSecond[0] {
+				return nil
+			}
+		} else if len(splitFirst) == 1 && len(splitSecond) == 2 {
+			if splitFirst[0] == splitSecond[1] {
 				return nil
 			}
 		}
