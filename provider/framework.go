@@ -319,6 +319,9 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		messageq.NewDeploymentDataSource,
 		messageq.NewNodeTypeDataSource,
 		messageq.NewVersionDataSource,
+		rdb.NewInstanceLogDataSource,
+		rdb.NewInstanceLogsDataSource,
+		rdb.NewInstanceLogsDetailsDataSource,
 	}
 }
 

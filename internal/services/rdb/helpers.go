@@ -175,3 +175,21 @@ func majorUpgradeTimeoutOrErr(err error, region scw.Region, newInstanceID, oldIn
 		),
 	}}
 }
+
+// regionAndIDFromAttr resolves a regional ID (region/uuid) or bare UUID with a fallback region.
+func regionAndIDFromAttr(value string, fallback scw.Region) (scw.Region, string, error) {
+	if value == "" {
+		return "", "", errors.New("id is empty")
+	}
+
+	region, id, err := regional.ParseID(value)
+	if err == nil {
+		return region, id, nil
+	}
+
+	if !strings.Contains(value, "/") {
+		return fallback, value, nil
+	}
+
+	return "", "", fmt.Errorf("invalid regional id %q: %w", value, err)
+}

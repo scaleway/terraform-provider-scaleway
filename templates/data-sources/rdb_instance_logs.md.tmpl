@@ -1,0 +1,35 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.DatasourceTemplateType */ -}}
+---
+subcategory: "Databases"
+page_title: "Scaleway: scaleway_rdb_instance_logs"
+---
+
+# Data Source: scaleway_rdb_instance_logs
+
+Gets information about available logs for a Scaleway Managed Database Instance.
+
+Refer to the Managed Databases for PostgreSQL and MySQL [documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/) for more information.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/scaleway_rdb_instance_logs/data-source.tf" }}
+
+## Argument Reference
+
+- `instance_id` - (Required) The ID of the Database Instance. Can be a plain UUID or a regional ID (`{region}/{id}`).
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance exists.
+- `order_by` - (Optional) Criteria to use when ordering Database Instance logs listing. Possible values are `created_at_asc` and `created_at_desc`.
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of this data source, in the `{region}/{instance_id}` format.
+- `instance_logs` - List of available logs for the Database Instance.
+  - `id` - UUID of the Database Instance log, in the `{region}/{id}` format.
+  - `status` - Status of the log (`unknown`, `ready`, `creating`, `error`).
+  - `node_name` - Name of the underlying node.
+  - `download_url` - Presigned Object Storage URL to download the log file.
+  - `created_at` - Creation date of the log (RFC 3339 format).
+  - `expires_at` - Expiration date of the log (RFC 3339 format).
+  - `region` - Region the Database Instance is in.
