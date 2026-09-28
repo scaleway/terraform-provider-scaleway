@@ -174,8 +174,7 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 							Required:            true,
 							MarkdownDescription: "Bucket containing qcow",
 							PlanModifiers: []planmodifier.String{
-								// FIXME: how to implement DiffSuppressFunc dsf.Locality?
-								stringplanmodifier.RequiresReplace(),
+								zonal.LocalityPlanModifier(),
 							},
 						},
 						"key": schema.StringAttribute{
