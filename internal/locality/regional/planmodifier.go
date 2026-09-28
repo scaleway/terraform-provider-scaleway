@@ -1,21 +1,19 @@
-package zonal
+package regional
 
 import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
-// LocalityPlanModifier suppresses diffs between bare IDs and zonal IDs
-// (e.g. "bucket-name" vs "fr-par-1/bucket-name").
+// LocalityPlanModifier suppresses diffs between bare IDs and regional IDs
+// (e.g. "bucket-name" vs "fr-par/bucket-name").
 //
-// During Create, if the plan value lacks a zone prefix, it is normalised
-// to include one so the API can resolve the correct zone.
-//
-// During Update, if the plan and state values differ only by a zone
-// prefix, the plan value is carried over unchanged so no diff is
-// produced (mimicking the old dsf.Locality behaviour).
+// During Update, if the plan and state values differ only by a regional
+// prefix, the plan value is normalised to the state value so no diff is
+// produced.
 func LocalityPlanModifier() planmodifier.String {
 	return localityPlanModifier{}
 }
@@ -23,7 +21,7 @@ func LocalityPlanModifier() planmodifier.String {
 type localityPlanModifier struct{}
 
 func (m localityPlanModifier) Description(_ context.Context) string {
-	return "Suppresses diffs between bare IDs and zonal IDs (e.g. \"name\" vs \"fr-par-1/name\")."
+	return "Suppresses diffs between bare IDs and regional IDs (e.g. \"name\" vs \"fr-par/name\")."
 }
 
 func (m localityPlanModifier) MarkdownDescription(ctx context.Context) string {
@@ -34,18 +32,20 @@ func (m localityPlanModifier) PlanModifyString(
 	_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse,
 ) {
 	planStr := req.PlanValue.ValueString()
-	expandedPlanID := ExpandID(planStr).ID
+	expandedPlanID := locality.ExpandID(planStr)
 
-	// Add zone prefix if necessary (create path)
+	// Add region prefix if necessary
 	if planStr != expandedPlanID {
 		resp.PlanValue = types.StringValue(expandedPlanID)
 	}
 
-	// Suppress diffs during update when only the zone prefix differs
+	// 3. Handle Updates (Semantic Equality)
+	// If there is a prior state (update phase) and the normalized versions match,
+	// suppress the diff by carrying over the exact state value.
 	if !req.StateValue.IsNull() && !req.StateValue.IsUnknown() {
-		expandedStateID := ExpandID(req.StateValue.ValueString()).ID
+		stateID := locality.ExpandID(req.StateValue.ValueString())
 
-		if expandedStateID == expandedPlanID {
+		if stateID == expandedPlanID {
 			resp.PlanValue = req.StateValue
 		}
 	}

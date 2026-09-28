@@ -174,7 +174,7 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 							Required:            true,
 							MarkdownDescription: "Bucket containing qcow",
 							PlanModifiers: []planmodifier.String{
-								zonal.LocalityPlanModifier(),
+								regional.LocalityPlanModifier(),
 							},
 						},
 						"key": schema.StringAttribute{
