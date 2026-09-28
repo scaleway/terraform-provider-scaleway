@@ -16,7 +16,7 @@ A Budget allows you to track and control spending across your Scaleway resources
 ```terraform
 resource "scaleway_billing_budget" "main" {
   organization_id   = "11111111-1111-1111-1111-111111111111"
-  consumption_limit = 10000
+  consumption_limit = 100
   enabled           = true
 }
 ```
@@ -26,7 +26,7 @@ resource "scaleway_billing_budget" "main" {
 ## Argument Reference
 
 - `organization_id` - (Optional) The organization ID. If not provided, the default organization configured in the provider is used.
-- `consumption_limit` - (Required) Cost limit for the budget in cents.
+- `consumption_limit` - (Required) Cost limit for the budget in euros.
 - `enabled` - (Optional) Whether the budget is enabled or not. Defaults to `true`.
 
 ## Attributes Reference

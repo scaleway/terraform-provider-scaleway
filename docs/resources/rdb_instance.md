@@ -63,6 +63,24 @@ output "upgradable_versions" {
 ```
 
 ```terraform
+### Example with logs policy
+
+resource "scaleway_rdb_instance" "main" {
+  name          = "test-rdb"
+  node_type     = "DB-DEV-S"
+  engine        = "PostgreSQL-15"
+  is_ha_cluster = true
+  user_name     = "my_initial_user"
+  password      = "thiZ_is_v&ry_s3cret"
+
+  logs_policy {
+    max_age_retention    = 30
+    total_disk_retention = 100000000 # in bytes
+  }
+}
+```
+
+```terraform
 ### Usage of ephemeral random_password for instance password without storing it in state
 
 // Generate an ephemeral password (not stored in the state)
@@ -266,6 +284,13 @@ interruption.
 - `backup_schedule_retention` - (Optional) Backup schedule retention in days.
 
 - `backup_same_region` - (Optional) Boolean to store logical backups in the same region as the Database Instance.
+
+### Logs Policy
+
+- `logs_policy` - (Optional) Logs policy configuration for remote logs retention on the Database Instance. When not set, the API defaults apply and are returned as computed values.
+
+    - `max_age_retention` - (Optional) Max age (in days) of remote logs to keep on the Database Instance.
+    - `total_disk_retention` - (Optional) Max disk size (in bytes) of remote logs to keep on the Database Instance.
 
 ### Settings
 
