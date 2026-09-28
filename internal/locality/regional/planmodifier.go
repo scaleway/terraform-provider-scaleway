@@ -34,14 +34,12 @@ func (m localityPlanModifier) PlanModifyString(
 	planStr := req.PlanValue.ValueString()
 	expandedPlanID := locality.ExpandID(planStr)
 
-	// Add region prefix if necessary
+	// If planStr contains a prefix, remove it (Create step)
 	if planStr != expandedPlanID {
 		resp.PlanValue = types.StringValue(expandedPlanID)
 	}
 
-	// 3. Handle Updates (Semantic Equality)
-	// If there is a prior state (update phase) and the normalized versions match,
-	// suppress the diff by carrying over the exact state value.
+	// If state exists (Update step), set the raw ID into the plan
 	if !req.StateValue.IsNull() && !req.StateValue.IsUnknown() {
 		stateID := locality.ExpandID(req.StateValue.ValueString())
 
