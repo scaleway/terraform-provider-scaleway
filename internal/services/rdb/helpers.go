@@ -175,35 +175,3 @@ func majorUpgradeTimeoutOrErr(err error, region scw.Region, newInstanceID, oldIn
 		),
 	}}
 }
-
-// resolveRegionAndID parses a regional ID first, then falls back to regionValue / provider default.
-func resolveRegionAndID(idValue string, regionValue string, client *scw.Client) (scw.Region, string, error) {
-	if idValue == "" {
-		return "", "", errors.New("id is empty")
-	}
-
-	region, id, err := regional.ParseID(idValue)
-	if err == nil {
-		return region, id, nil
-	}
-
-	if strings.Contains(idValue, "/") {
-		return "", "", fmt.Errorf("invalid regional id %q: %w", idValue, err)
-	}
-
-	if regionValue != "" {
-		parsedRegion, parseErr := scw.ParseRegion(regionValue)
-		if parseErr != nil {
-			return "", "", parseErr
-		}
-
-		return parsedRegion, idValue, nil
-	}
-
-	fallbackRegion, exists := client.GetDefaultRegion()
-	if !exists {
-		return "", "", regional.ErrRegionNotFound
-	}
-
-	return fallbackRegion, idValue, nil
-}

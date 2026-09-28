@@ -124,7 +124,7 @@ func (d *InstanceLogDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	region, instanceLogID, err := resolveRegionAndID(config.InstanceLogID.ValueString(), config.Region.ValueString(), d.meta.ScwClient())
+	region, instanceLogID, err := regional.ResolveID(config.InstanceLogID.ValueString(), config.Region.ValueString(), d.meta.ScwClient())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve region and instance_log_id", err.Error())
 

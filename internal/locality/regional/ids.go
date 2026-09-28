@@ -1,6 +1,7 @@
 package regional
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -80,4 +81,42 @@ func ParseID(regionalID string) (region scw.Region, id string, err error) {
 	region, err = scw.ParseRegion(loc)
 
 	return region, id, err
+}
+
+// ResolveID resolves a regional ID (`region/uuid`) or a bare UUID.
+// Precedence: regional ID locality, then regionValue, then the client's default region.
+// Prefer a regional ID when present so a missing region attribute still works.
+func ResolveID(idValue string, regionValue string, client *scw.Client) (scw.Region, string, error) {
+	if idValue == "" {
+		return "", "", errors.New("id is empty")
+	}
+
+	region, id, err := ParseID(idValue)
+	if err == nil {
+		return region, id, nil
+	}
+
+	if strings.Contains(idValue, "/") {
+		return "", "", fmt.Errorf("invalid regional id %q: %w", idValue, err)
+	}
+
+	if regionValue != "" {
+		parsedRegion, parseErr := scw.ParseRegion(regionValue)
+		if parseErr != nil {
+			return "", "", parseErr
+		}
+
+		return parsedRegion, idValue, nil
+	}
+
+	if client == nil {
+		return "", "", ErrRegionNotFound
+	}
+
+	fallbackRegion, exists := client.GetDefaultRegion()
+	if !exists {
+		return "", "", ErrRegionNotFound
+	}
+
+	return fallbackRegion, idValue, nil
 }
