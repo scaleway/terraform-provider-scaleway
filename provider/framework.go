@@ -274,7 +274,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		billing.NewBudgetAlertNotificationResource,
 		billing.NewBudgetAlertResource,
 		billing.NewBudgetResource,
-    block.NewSnapshotResource,
+		block.NewSnapshotResource,
 		datalab.NewDatalabResource,
 		file.NewFileSystemResource,
 		iam.NewSamlCertificateResource,
