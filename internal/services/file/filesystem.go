@@ -209,6 +209,9 @@ func (r *FileSystemResource) Create(ctx context.Context, req resource.CreateRequ
 
 	state := flattenFilesystem(ctx, fs, req, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(
+		resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(fs.Region, fs.ID))...,
+	)
 }
 
 func (r *FileSystemResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -241,6 +244,9 @@ func (r *FileSystemResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	newState := flattenFilesystem(ctx, fs, req, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(
+		resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(fs.Region, fs.ID))...,
+	)
 }
 
 func (r *FileSystemResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -328,6 +334,9 @@ func (r *FileSystemResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	newState := flattenFilesystem(ctx, fs, req, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(
+		resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(fs.Region, fs.ID))...,
+	)
 }
 
 func (r *FileSystemResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
