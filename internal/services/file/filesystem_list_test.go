@@ -30,7 +30,7 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 			{
 				Config: `
 				resource "scaleway_file_filesystem" "fs1" {
-					name = "test-fs-01"
+					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
 				}`,
@@ -38,13 +38,13 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 			{
 				Config: `
 				resource "scaleway_file_filesystem" "fs1" {
-					name = "test-fs-01"
+					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
 				}
 
 				resource "scaleway_file_filesystem" "fs2" {
-					name = "test-fs-02"
+					name = "test-fs02"
 					size_in_gb = 200
 					tags = ["foo"]
 				}`,
@@ -52,19 +52,19 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 			{
 				Config: `
 				resource "scaleway_file_filesystem" "fs1" {
-					name = "test-fs-01"
+					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
 				}
 
 				resource "scaleway_file_filesystem" "fs2" {
-					name = "test-fs-02"
+					name = "test-fs02"
 					size_in_gb = 200
 					tags = ["foo"]
 				}
 
 				resource "scaleway_file_filesystem" "fs3" {
-					name = "test-fs-03"
+					name = "test-fs03"
 					size_in_gb = 300
 					tags = ["bar"]
 				}`,
@@ -92,7 +92,7 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 
 					  config {
 						regions = ["fr-par"]
-						name = "test-fs-01"
+						name = "test-fs01"
 						project_ids = [scaleway_file_filesystem.fs1.project_id]
 					  }
 					}`,
