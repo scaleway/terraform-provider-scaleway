@@ -124,7 +124,7 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				MarkdownDescription: "ID of the volume from which creates a snapshot",
 				Validators: []validator.String{
 					verify.IsStringUUIDOrUUIDWithZone(),
-					stringvalidator.ConflictsWith(path.MatchRoot("volume_id")),
+					stringvalidator.ConflictsWith(path.MatchRoot("import")),
 				},
 			},
 			"tags": schema.ListAttribute{
