@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -348,7 +349,7 @@ func ResourceVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	err = retry.RetryContext(ctx, defaultVPCPrivateNetworkRetryInterval, func() *retry.RetryError {
+	err = retry.RetryContext(ctx, 2*time.Minute, func() *retry.RetryError {
 		err := transport.RetryOn403(ctx, func() error {
 			return vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
 				PrivateNetworkID: ID,
