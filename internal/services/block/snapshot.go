@@ -392,7 +392,8 @@ func (r *SnapshotResource) Read(
 	// so it does not drift against the config. Fall back to the API value on import.
 	if state.VolumeID.IsNull() || state.VolumeID.IsUnknown() {
 		if snapshot.ParentVolume != nil {
-			newState.VolumeID = types.StringValue(snapshot.ParentVolume.ID)
+			volumeZoneID := zonal.NewIDString(snapshot.Zone, snapshot.ParentVolume.ID)
+			newState.VolumeID = types.StringValue(volumeZoneID)
 		} else {
 			newState.VolumeID = types.StringNull()
 		}

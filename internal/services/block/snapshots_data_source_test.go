@@ -81,7 +81,7 @@ func TestAccDataSourceSnapshots_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"scaleway_block_snapshot.main", "zone", "data.scaleway_block_snapshots.by_name", "snapshots.0.zone",
 					),
-					blocktestfuncs.MatchAttrPairIgnorePrefix(
+					resource.TestCheckResourceAttrPair(
 						"scaleway_block_snapshot.main", "volume_id", "data.scaleway_block_snapshots.by_name", "snapshots.0.volume_id",
 					),
 					resource.TestCheckResourceAttrPair(

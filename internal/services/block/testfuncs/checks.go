@@ -2,7 +2,6 @@ package blocktestfuncs
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -115,48 +114,5 @@ func IsSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 		}
 
 		return nil
-	}
-}
-
-// MatchAttrPairIgnorePrefix is a custom check function which compares two Terraform resource
-// attributes and considers them equal if one value contains a region/zone prefix (e.g., "fr-par-1/<id>")
-// and the other does not (e.g., "<id>"). The match is symmetric: it handles both directions.
-func MatchAttrPairIgnorePrefix(nameFirst, keyFirst, nameSecond, keySecond string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rsFirst, ok := s.RootModule().Resources[nameFirst]
-		if !ok {
-			return fmt.Errorf("first resource not found in state: %s", nameFirst)
-		}
-
-		valFirst := rsFirst.Primary.Attributes[keyFirst]
-
-		rsSecond, ok := s.RootModule().Resources[nameSecond]
-		if !ok {
-			return fmt.Errorf("second resource not found in state: %s", nameSecond)
-		}
-
-		valSecond := rsSecond.Primary.Attributes[keySecond]
-
-		splitFirst := strings.Split(valFirst, "/")
-		splitSecond := strings.Split(valSecond, "/")
-
-		switch {
-		case len(splitFirst) == len(splitSecond):
-			if valFirst == valSecond {
-				return nil
-			}
-
-		case len(splitFirst) == 2 && len(splitSecond) == 1:
-			if splitFirst[1] == splitSecond[0] {
-				return nil
-			}
-
-		case len(splitFirst) == 1 && len(splitSecond) == 2:
-			if splitFirst[0] == splitSecond[1] {
-				return nil
-			}
-		}
-
-		return fmt.Errorf("expected (prefix-insensitive) %q, but got %q", valFirst, valSecond)
 	}
 }

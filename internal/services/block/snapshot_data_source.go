@@ -213,7 +213,8 @@ func (d *SnapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	if snapshot.ParentVolume != nil {
-		state.VolumeID = types.StringValue(snapshot.ParentVolume.ID)
+		volumeZoneID := zonal.NewIDString(snapshot.Zone, snapshot.ParentVolume.ID)
+		state.VolumeID = types.StringValue(volumeZoneID)
 	} else {
 		state.VolumeID = types.StringNull()
 	}
