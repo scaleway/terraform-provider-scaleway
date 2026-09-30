@@ -243,6 +243,7 @@ func flattenSnapshotsList(ctx context.Context, snapshots []*block.Snapshot, diag
 		diags.Append(d...)
 
 		volumeID := types.StringNull()
+
 		if snapshot.ParentVolume != nil {
 			volumeZoneID := zonal.NewIDString(snapshot.Zone, snapshot.ParentVolume.ID)
 			volumeID = types.StringValue(volumeZoneID)
