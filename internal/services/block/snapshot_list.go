@@ -219,6 +219,13 @@ func (r *SnapshotListResource) List(ctx context.Context, req list.ListRequest, s
 
 			if req.IncludeResource {
 				resourceModel := flattenBlockSnapshot(ctx, row.Snapshot, &data, &result.Diagnostics)
+
+				if row.Snapshot.ParentVolume != nil {
+					resourceModel.VolumeID = types.StringValue(
+						zonal.NewIDString(row.Snapshot.Zone, row.Snapshot.ParentVolume.ID),
+					)
+				}
+
 				resourceDiags := result.Resource.Set(ctx, &resourceModel)
 				result.Diagnostics.Append(resourceDiags...)
 			}
