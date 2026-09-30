@@ -8,50 +8,24 @@ import (
 	"strings"
 )
 
-// CompareJSONFields is the entry point for comparing two interface values
+// compareJSONFields is the entry point for comparing two interface values
 // handle string with special cases, map[string]interface{} and []interface{} or any other primitive type
-func CompareJSONFields(requestValue, cassetteValue any, strict bool) bool {
-	// Tolerate JSON null vs empty array [] mismatches caused by SDK
-	// serialization drift (unset slices may serialize as either).
-	if IsNilOrEmptySlice(requestValue) && IsNilOrEmptySlice(cassetteValue) {
-		return true
-	}
-
-	// If either side is nil and they were not both nil/empty above, they are a
-	// genuine mismatch. Returning here also guards the type assertions below
-	// against panicking on a nil value.
-	if requestValue == nil || cassetteValue == nil {
-		return false
-	}
-
+func compareJSONFields(requestValue, cassetteValue any, strict bool) bool {
 	switch requestValue := requestValue.(type) {
 	case string:
-		return CompareFieldsStrings(requestValue, cassetteValue.(string))
+		return compareFieldsStrings(requestValue, cassetteValue.(string))
 	case map[string]any:
-		return CompareJSONBodies(requestValue, cassetteValue.(map[string]any), strict)
+		return compareJSONBodies(requestValue, cassetteValue.(map[string]any), strict)
 	case []any:
-		return CompareSlices(requestValue, cassetteValue.([]any))
+		return compareSlices(requestValue, cassetteValue.([]any))
 	default:
 		return reflect.DeepEqual(requestValue, cassetteValue)
 	}
 }
 
-// IsNilOrEmptySlice reports whether v is nil or an empty []any.
-// Used to tolerate JSON null vs [] mismatches caused by SDK serialization drift,
-// where an unset slice may serialize as either null or [].
-func IsNilOrEmptySlice(v any) bool {
-	if v == nil {
-		return true
-	}
-
-	s, ok := v.([]any)
-
-	return ok && len(s) == 0
-}
-
-// CompareJSONBodies compare two given maps that represent json bodies
+// compareJSONBodies compare two given maps that represent json bodies
 // returns true if both json are equivalent
-func CompareJSONBodies(request, cassette map[string]any, strict bool) bool {
+func compareJSONBodies(request, cassette map[string]any, strict bool) bool {
 	for key, requestValue := range request {
 		cassetteValue, ok := cassette[key]
 		if !ok {
@@ -62,15 +36,11 @@ func CompareJSONBodies(request, cassette map[string]any, strict bool) bool {
 			continue
 		}
 
-		// Tolerate JSON null vs empty array [] mismatches (see IsNilOrEmptySlice).
-		// Without this, reflect.TypeOf reports different types (nil vs []any)
-		// and the request never matches the recorded cassette interaction.
-		if reflect.TypeOf(cassetteValue) != reflect.TypeOf(requestValue) &&
-			(!IsNilOrEmptySlice(requestValue) || !IsNilOrEmptySlice(cassetteValue)) {
+		if reflect.TypeOf(cassetteValue) != reflect.TypeOf(requestValue) {
 			return false
 		}
 
-		if !CompareJSONFields(requestValue, cassetteValue, strict) {
+		if !compareJSONFields(requestValue, cassetteValue, strict) {
 			return false
 		}
 	}
@@ -101,7 +71,7 @@ func compareFormBodies(request, cassette url.Values) bool {
 			continue
 		}
 
-		if !CompareStringSlices(requestValue, cassette[key]) {
+		if !compareStringSlices(requestValue, cassette[key]) {
 			return false
 		}
 	}
@@ -118,9 +88,9 @@ func compareFormBodies(request, cassette url.Values) bool {
 	return true
 }
 
-// CompareFieldsStrings compare two strings from request JSON bodies
+// compareFieldsStrings compare two strings from request JSON bodies
 // has special case when string are terraform generated names
-func CompareFieldsStrings(expected, actual string) bool {
+func compareFieldsStrings(expected, actual string) bool {
 	if expected == actual {
 		return true
 	}
@@ -159,7 +129,7 @@ func CompareFieldsStrings(expected, actual string) bool {
 	return expectedHandled == actualHandled
 }
 
-func CompareStringSlices(request, cassette []string) bool {
+func compareStringSlices(request, cassette []string) bool {
 	if len(request) != len(cassette) {
 		return false
 	}
@@ -168,7 +138,7 @@ func CompareStringSlices(request, cassette []string) bool {
 	slices.Sort(cassette)
 
 	for i, v := range request {
-		if !CompareFieldsStrings(v, cassette[i]) {
+		if !compareFieldsStrings(v, cassette[i]) {
 			return false
 		}
 	}
@@ -176,9 +146,9 @@ func CompareStringSlices(request, cassette []string) bool {
 	return true
 }
 
-// CompareSlices compares two slices of interface{}
+// compareSlices compares two slices of interface{}
 // in case of slice of map[string]interface{}, it will attempt to find a match in the other slice without taking into account the order
-func CompareSlices(request, cassette []any) bool {
+func compareSlices(request, cassette []any) bool {
 	if len(request) != len(cassette) {
 		return false
 	}
@@ -199,7 +169,7 @@ func CompareSlices(request, cassette []any) bool {
 			cassetteStrings[i] = v.(string)
 		}
 
-		return CompareStringSlices(requestStrings, cassetteStrings)
+		return compareStringSlices(requestStrings, cassetteStrings)
 	case float64:
 		sort.Slice(request, func(i, j int) bool {
 			return request[i].(float64) < request[j].(float64)
@@ -222,14 +192,14 @@ func CompareSlices(request, cassette []any) bool {
 		for i := range request {
 			// cleanup ignored keys
 			for _, key := range BodyMatcherIgnore {
-				RemoveKeyRecursive(request[i].(map[string]any), key)
+				removeKeyRecursive(request[i].(map[string]any), key)
 			}
 
 			for _, key := range BodyMatcherIgnore {
-				RemoveKeyRecursive(cassette[i].(map[string]any), key)
+				removeKeyRecursive(cassette[i].(map[string]any), key)
 			}
 
-			if CompareJSONFields(request[i], cassette[i], false) {
+			if compareJSONFields(request[i], cassette[i], false) {
 				matched++
 			}
 		}
@@ -253,7 +223,7 @@ func CompareSlices(request, cassette []any) bool {
 					continue
 				}
 
-				if CompareJSONFields(request[i], cassette[j], true) {
+				if compareJSONFields(request[i], cassette[j], true) {
 					matched++
 					reqVisited[i] = true
 					casVisited[j] = true

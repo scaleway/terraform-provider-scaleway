@@ -51,18 +51,18 @@ var BodyMatcherIgnore = []string{
 	"new_password",
 }
 
-// RemoveKeyRecursive removes a key from a map and all its nested maps/slices.
-func RemoveKeyRecursive(m map[string]any, key string) {
+// removeKeyRecursive removes a key from a map and all its nested maps/slices.
+func removeKeyRecursive(m map[string]any, key string) {
 	delete(m, key)
 
 	for _, v := range m {
 		switch nested := v.(type) {
 		case map[string]any:
-			RemoveKeyRecursive(nested, key)
+			removeKeyRecursive(nested, key)
 		case []any:
 			for _, item := range nested {
 				if child, ok := item.(map[string]any); ok {
-					RemoveKeyRecursive(child, key)
+					removeKeyRecursive(child, key)
 				}
 			}
 		}
@@ -165,11 +165,11 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 	}
 	// remove keys that should be ignored during comparison
 	for _, key := range BodyMatcherIgnore {
-		RemoveKeyRecursive(requestJSON, key)
-		RemoveKeyRecursive(cassetteJSON, key)
+		removeKeyRecursive(requestJSON, key)
+		removeKeyRecursive(cassetteJSON, key)
 	}
 
-	return CompareJSONBodies(requestJSON, cassetteJSON, false)
+	return compareJSONBodies(requestJSON, cassetteJSON, false)
 }
 
 // CassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
@@ -218,7 +218,7 @@ func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
 	}
 
 	return request.Method == cassette.Method &&
-		CompareFieldsStrings(request.URL.Path, cassetteURL.Path) &&
+		compareFieldsStrings(request.URL.Path, cassetteURL.Path) &&
 		compareURLQueries(requestURLValues, cassetteURLValues) &&
 		cassetteBodyMatcher(request, cassette)
 }
@@ -236,7 +236,7 @@ func compareURLQueries(request, cassette url.Values) bool {
 		}
 
 		for i := range requestValues {
-			if !CompareFieldsStrings(requestValues[i], cassetteValues[i]) {
+			if !compareFieldsStrings(requestValues[i], cassetteValues[i]) {
 				return false
 			}
 		}
