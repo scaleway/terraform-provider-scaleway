@@ -5,7 +5,10 @@ import (
 	"context"
 	"errors"
 	"io"
+	"math"
+	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -45,7 +48,7 @@ func NewRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 	c.HTTPClient = &http.Client{Transport: defaultTransport}
 
 	// Defaults
-	c.RetryMax = 3
+	c.RetryMax = 5
 	c.RetryWaitMax = 2 * time.Minute
 	c.Logger = logging.L
 	c.RetryWaitMin = time.Second * 2
@@ -56,6 +59,7 @@ func NewRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 
 		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 	}
+	c.Backoff = rateLimitBackoff
 
 	// If ErrorHandler is not set, retryablehttp will wrap http errors
 	c.ErrorHandler = func(resp *http.Response, err error, _ int) (*http.Response, error) {
@@ -88,6 +92,66 @@ func NewRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 // TODO Retry logic should be moved in the SDK
 func NewRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
 	return NewRetryableTransportWithOptions(defaultTransport, RetryableTransportOptions{})
+}
+
+// rateLimitBackoff computes how long to wait before the next retry.
+//
+// Scaleway's API Gateway (Envoy) returns 429 responses carrying no timing
+// guidance whatsoever — only "x-envoy-ratelimited: true", with no Retry-After
+// or X-RateLimit-* headers. So client-side backoff is the only lever we have.
+// The jitter is the important part: Terraform issues many requests concurrently,
+// so without it every throttled request would retry in lock-step and immediately
+// re-trigger the limit (a thundering herd). Retry-After is still honored if
+// present, since some individual product APIs may set it and it is the standard.
+func rateLimitBackoff(minWait, maxWait time.Duration, attemptNum int, resp *http.Response) time.Duration {
+	if resp != nil {
+		// Retry-After (RFC 7231): honored if present, though Scaleway's gateway
+		// does not currently send it on rate-limited responses.
+		if wait, ok := parseRetryAfter(resp.Header.Get("Retry-After")); ok {
+			return wait
+		}
+	}
+
+	// Exponential backoff (minWait * 2^attemptNum), capped at maxWait.
+	backoff := float64(minWait) * math.Pow(2, float64(attemptNum))
+	if backoff > float64(maxWait) || math.IsInf(backoff, 0) {
+		backoff = float64(maxWait)
+	}
+
+	// Full jitter across [minWait, backoff].
+	span := int64(backoff) - int64(minWait)
+	if span <= 0 {
+		return minWait
+	}
+
+	return minWait + time.Duration(rand.Int63n(span))
+}
+
+// parseRetryAfter parses an RFC 7231 Retry-After value: either a number of
+// seconds or an HTTP-date. It returns ok=false when the header is absent or
+// malformed so the caller can fall back to computed backoff.
+func parseRetryAfter(v string) (time.Duration, bool) {
+	if v == "" {
+		return 0, false
+	}
+
+	if secs, err := strconv.ParseInt(v, 10, 64); err == nil {
+		if secs < 0 {
+			return 0, false
+		}
+
+		return time.Duration(secs) * time.Second, true
+	}
+
+	if t, err := http.ParseTime(v); err == nil {
+		if until := time.Until(t); until > 0 {
+			return until, true
+		}
+
+		return 0, true // date already passed: retry immediately
+	}
+
+	return 0, false
 }
 
 // RetryableTransport client is a bridge between scw.httpClient interface and retryablehttp.Client
