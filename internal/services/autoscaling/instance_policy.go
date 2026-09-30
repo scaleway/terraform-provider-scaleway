@@ -2,19 +2,13 @@ package autoscaling
 
 import (
 	"context"
-	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	autoscaling "github.com/scaleway/scaleway-sdk-go/api/autoscaling/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -27,9 +21,9 @@ func ResourceInstancePolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Identity:      identity.DefaultZonal(),
-		SchemaVersion: 0,
-		SchemaFunc:    instancePolicySchema,
+		SchemaVersion:      0,
+		SchemaFunc:         instancePolicySchema,
+		DeprecationMessage: deprecationMessage,
 	}
 }
 
@@ -122,137 +116,26 @@ func instancePolicySchema() map[string]*schema.Schema {
 	}
 }
 
-func ResourceInstancePolicyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := NewAPIWithZone(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	req := &autoscaling.CreateInstancePolicyRequest{
-		Zone:            zone,
-		InstanceGroupID: locality.ExpandID(d.Get("instance_group_id").(string)),
-		Name:            types.ExpandOrGenerateString(d.Get("name").(string), "instance-policy"),
-		Action:          autoscaling.InstancePolicyAction(d.Get("action").(string)),
-		Type:            autoscaling.InstancePolicyType(d.Get("type").(string)),
-		Value:           uint32(d.Get("value").(int)),
-		Priority:        uint32(d.Get("priority").(int)),
-		Metric:          expandPolicyMetric(d.Get("metric").([]any)),
-	}
-
-	policy, err := api.CreateInstancePolicy(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = identity.SetZonalIdentity(d, policy.Zone, policy.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return ResourceInstancePolicyRead(ctx, d, m)
+func ResourceInstancePolicyCreate(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+	return diag.Diagnostics{{
+		Severity: diag.Error,
+		Summary:  "scaleway_autoscaling_instance_policy is no longer supported",
+		Detail:   deprecationMessage,
+	}}
 }
 
-func ResourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	policy, err := api.GetInstancePolicy(&autoscaling.GetInstancePolicyRequest{
-		Zone:     zone,
-		PolicyID: ID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	diags := setInstancePolicyState(d, policy)
-
-	err = identity.SetZonalIdentity(d, policy.Zone, policy.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diags
-}
-
-func setInstancePolicyState(d *schema.ResourceData, policy *autoscaling.InstancePolicy) diag.Diagnostics {
-	_ = d.Set("name", policy.Name)
-	_ = d.Set("action", policy.Action.String())
-	_ = d.Set("type", policy.Type.String())
-	_ = d.Set("value", int(policy.Value))
-	_ = d.Set("priority", int(policy.Priority))
-	_ = d.Set("metric", flattenPolicyMetric(policy.Metric))
-	_ = d.Set("instance_group_id", zonal.NewIDString(policy.Zone, policy.InstanceGroupID))
-	_ = d.Set("zone", policy.Zone)
+func ResourceInstancePolicyRead(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
+	d.SetId("")
 
 	return nil
 }
 
-func ResourceInstancePolicyUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func ResourceInstancePolicyUpdate(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
+	d.SetId("")
 
-	updateRequest := &autoscaling.UpdateInstancePolicyRequest{
-		Zone:     zone,
-		PolicyID: ID,
-		Action:   autoscaling.InstancePolicyAction(d.Get("action").(string)),
-		Type:     autoscaling.InstancePolicyType(d.Get("type").(string)),
-	}
-
-	hasChanged := false
-
-	if d.HasChange("name") {
-		updateRequest.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
-		hasChanged = true
-	}
-
-	if d.HasChange("metric") {
-		updateRequest.Metric = expandUpdatePolicyMetric(d.Get("metric"))
-		hasChanged = true
-	}
-
-	if d.HasChange("value") {
-		updateRequest.Value = types.ExpandUint32Ptr(d.Get("value"))
-		hasChanged = true
-	}
-
-	if d.HasChange("priority") {
-		updateRequest.Priority = types.ExpandUint32Ptr(d.Get("priority"))
-		hasChanged = true
-	}
-
-	if hasChanged {
-		_, err = api.UpdateInstancePolicy(updateRequest, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	return ResourceInstancePolicyRead(ctx, d, m)
+	return nil
 }
 
-func ResourceInstancePolicyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = api.DeleteInstancePolicy(&autoscaling.DeleteInstancePolicyRequest{
-		Zone:     zone,
-		PolicyID: id,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
+func ResourceInstancePolicyDelete(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
 	return nil
 }
