@@ -68,7 +68,7 @@ func (r *BudgetResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				},
 			},
 			"consumption_limit": schema.Int64Attribute{
-				MarkdownDescription: "Cost limit for the budget in cents.",
+				MarkdownDescription: "Cost limit for the budget in euros.",
 				Required:            true,
 			},
 			"enabled": schema.BoolAttribute{

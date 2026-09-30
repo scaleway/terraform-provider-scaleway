@@ -22,3 +22,18 @@ func SharedS3ClientForRegion(region scw.Region) (*s3.Client, error) {
 
 	return NewS3ClientFromMeta(ctx, m, region.String())
 }
+
+// SharedS3ClientForRegionWithProjectID returns a common S3 client needed for the sweeper
+func SharedS3ClientForRegionWithProjectID(region scw.Region, projectID string) (*s3.Client, error) {
+	ctx := context.Background()
+
+	m, err := meta.NewMeta(ctx, &meta.Config{
+		TerraformVersion: "terraform-tests",
+		ForceZone:        region.GetZones()[0],
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return NewS3ClientFromMetaWithProjectID(ctx, m, region.String(), projectID)
+}
