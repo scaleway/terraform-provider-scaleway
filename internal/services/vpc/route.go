@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -123,7 +124,9 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		Region:                  region,
 	}
 
-	res, err := vpcAPI.CreateRoute(req, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.Route, error) {
+		return vpcAPI.CreateRoute(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -142,10 +145,12 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	res, err := vpcAPI.GetRoute(&vpc.GetRouteRequest{
-		Region:  region,
-		RouteID: ID,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.Route, error) {
+		return vpcAPI.GetRoute(&vpc.GetRouteRequest{
+			Region:  region,
+			RouteID: ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -246,7 +251,11 @@ func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	if hasChanged {
-		_, err = vpcAPI.UpdateRoute(updateRequest, scw.WithContext(ctx))
+		err = transport.RetryOn403(ctx, func() error {
+			_, err := vpcAPI.UpdateRoute(updateRequest, scw.WithContext(ctx))
+
+			return err
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -262,10 +271,12 @@ func ResourceRouteDelete(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	// issue with route deletion for now, permissions_denied
-	err = vpcAPI.DeleteRoute(&vpc.DeleteRouteRequest{
-		Region:  region,
-		RouteID: ID,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOn403(ctx, func() error {
+		return vpcAPI.DeleteRoute(&vpc.DeleteRouteRequest{
+			Region:  region,
+			RouteID: ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

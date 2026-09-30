@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -375,7 +376,9 @@ func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, do
 		OrderBy:   domain.ListTasksRequestOrderByDomainDesc,
 	}
 
-	listTasksResponse, err := registrarAPI.ListTasks(req, scw.WithContext(ctx), scw.WithAllPages())
+	listTasksResponse, err := transport.RetryOn403Value(ctx, func() (*domain.ListTasksResponse, error) {
+		return registrarAPI.ListTasks(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error listing tasks: %w", err)
 	}
@@ -395,9 +398,11 @@ func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, do
 	// outside Terraform where no create/transfer task exists in ListTasks (tasks are archived
 	// after some time and disappear from the active table).
 	// Fall back to GetDomain to confirm the domain is actually managed by this account.
-	domainResp, domainErr := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
-		Domain: domainName,
-	}, scw.WithContext(ctx))
+	domainResp, domainErr := transport.RetryOn403Value(ctx, func() (*domain.Domain, error) {
+		return registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+			Domain: domainName,
+		}, scw.WithContext(ctx))
+	})
 	if domainErr != nil {
 		if httperrors.Is404(domainErr) {
 			return nil, fmt.Errorf("no domain registration found for domain %q: %w", domainName, domainErr)
@@ -445,10 +450,12 @@ func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *doma
 		return names, nil
 	}
 
-	listTasksResponse, err := registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{
-		PageSize: new(uint32(1000)),
-		OrderBy:  domain.ListTasksRequestOrderByDomainDesc,
-	}, scw.WithContext(ctx), scw.WithAllPages())
+	listTasksResponse, err := transport.RetryOn403Value(ctx, func() (*domain.ListTasksResponse, error) {
+		return registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{
+			PageSize: new(uint32(1000)),
+			OrderBy:  domain.ListTasksRequestOrderByDomainDesc,
+		}, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving tasks: %w", err)
 	}
