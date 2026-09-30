@@ -26,24 +26,26 @@ const servicesDir = "../services"
 
 func exceptionsCassettesCases() map[string]struct{} {
 	return map[string]struct{}{
+		"../services/baremetal/testdata/server-cloud-init-not-compatible-offer.cassette.yaml":              {},
+		"../services/block/testdata/action-snapshot-export-basic.cassette.yaml":                            {},
+		"../services/container/testdata/container-private-endpoint.cassette.yaml":                          {},
+		"../services/container/testdata/data-source-container-private-endpoint.cassette.yaml":              {},
+		"../services/container/testdata/namespace-vpc-integration.cassette.yaml":                           {},
+		"../services/file/testdata/file-system-invalid-size-granularity-fails.cassette.yaml":               {},
+		"../services/file/testdata/file-system-size-too-small-fails.cassette.yaml":                         {},
+		"../services/function/testdata/function-namespace-vpc-integration.cassette.yaml":                   {},
+		"../services/iam/testdata/data-source-scim-invalid-deactivated.cassette.yaml":                      {},
+		"../services/keymanager/testdata/decrypt-ephemeral-resource-invalid-associated-data.cassette.yaml": {},
 		"../services/mnq/testdata/sns-topic-basic.cassette.yaml":                                           {},
 		"../services/mnq/testdata/sns-topic-subscription-basic.cassette.yaml":                              {},
 		"../services/mnq/testdata/sqs-already-activated.cassette.yaml":                                     {},
 		"../services/object/testdata/bucket-cors-empty-origin.cassette.yaml":                               {},
 		"../services/object/testdata/bucket-destroy-force.cassette.yaml":                                   {},
+		"../services/object/testdata/object-bucket-destroy-force.cassette.yaml":                            {},
 		"../services/rdb/testdata/data-source-privilege-basic.cassette.yaml":                               {},
 		"../services/rdb/testdata/privilege-basic.cassette.yaml":                                           {},
-		"../services/object/testdata/object-bucket-destroy-force.cassette.yaml":                            {},
 		"../services/secret/testdata/secret-protected.cassette.yaml":                                       {},
 		"../services/secret/testdata/secret-version-type.cassette.yaml":                                    {},
-		"../services/file/testdata/file-system-invalid-size-granularity-fails.cassette.yaml":               {},
-		"../services/file/testdata/file-system-size-too-small-fails.cassette.yaml":                         {},
-		"../services/container/testdata/namespace-vpc-integration.cassette.yaml":                           {},
-		"../services/function/testdata/function-namespace-vpc-integration.cassette.yaml":                   {},
-		"../services/baremetal/testdata/server-cloud-init-not-compatible-offer.cassette.yaml":              {},
-		"../services/keymanager/testdata/decrypt-ephemeral-resource-invalid-associated-data.cassette.yaml": {},
-		"../services/block/testdata/action-snapshot-export-basic.cassette.yaml":                            {},
-		"../services/iam/testdata/data-source-scim-invalid-deactivated.cassette.yaml":                      {},
 	}
 }
 
