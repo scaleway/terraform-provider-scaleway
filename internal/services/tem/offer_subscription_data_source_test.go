@@ -35,7 +35,21 @@ func TestAccDataSourceOfferSubscription_Basic(t *testing.T) {
 				`, orgID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "project_id"),
-					resource.TestCheckResourceAttr("data.scaleway_tem_offer_subscription.test", "offer_name", "scale"),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "organization_id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "offer_name"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+
+					data "scaleway_tem_offer_subscription" "test" {
+						organization_id = "%s"
+					}
+				`, orgID),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "project_id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "organization_id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "offer_name"),
 				),
 			},
 		},
