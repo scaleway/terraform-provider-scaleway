@@ -33,9 +33,11 @@ data "scaleway_instance_image" "by_tags" {
 
 ## Argument Reference
 
-- `name` - (Optional) The image name. Only one of `name` and `image_id` should be specified.
+~> **Important:** At least one of `image_id`, `name` or `tags` must be set to a non-empty value.
 
-- `image_id` - (Optional) The image id. Only one of `name` and `image_id` should be specified.
+- `name` - (Optional) The exact image name. Conflicts with `image_id`.
+
+- `image_id` - (Optional) The image id. Conflicts with `name`, `architecture`, `latest` and `tags`.
 
 - `architecture` - (Optional, default `x86_64`) The architecture the image is compatible with. Possible values are: `x86_64` or `arm`.
 

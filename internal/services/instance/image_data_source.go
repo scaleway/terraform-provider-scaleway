@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -30,12 +31,14 @@ func dataSourceImageSchema() map[string]*schema.Schema {
 			Optional:      true,
 			Description:   "Exact name of the desired image",
 			ConflictsWith: []string{"image_id"},
+			AtLeastOneOf:  []string{"image_id", "name", "tags"},
 		},
 		"image_id": {
 			Type:          schema.TypeString,
 			Optional:      true,
 			Description:   "ID of the desired image",
 			ConflictsWith: []string{"name", "architecture"},
+			AtLeastOneOf:  []string{"image_id", "name", "tags"},
 		},
 		"architecture": {
 			Type:          schema.TypeString,
@@ -57,6 +60,7 @@ func dataSourceImageSchema() map[string]*schema.Schema {
 			Computed:      true,
 			Description:   "List of tags to filter images by (e.g. [\"env=production\", \"version=v1.2.3\"])",
 			ConflictsWith: []string{"image_id"},
+			AtLeastOneOf:  []string{"image_id", "name", "tags"},
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -122,6 +126,12 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 		name := d.Get("name").(string)
 		arch := d.Get("architecture").(string)
 		tags := types.ExpandStrings(d.Get("tags"))
+
+		// AtLeastOneOf accepts empty and unknown values, which would select
+		// the most recent image of the project without any filter.
+		if name == "" && len(tags) == 0 {
+			return diag.FromErr(errors.New("one of image_id, name or tags must be set to a non-empty value"))
+		}
 
 		listReq := &instance.ListImagesRequest{
 			Zone:    zone,
