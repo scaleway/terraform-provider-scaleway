@@ -990,11 +990,15 @@ func resourceBucketLifecycleRulesExpirationRead(expiration *s3Types.LifecycleExp
 	// date...).
 
 	e := make(map[string]any)
-	if expiration.Days != nil && aws.ToInt32(expiration.Days) > 0 {
+
+	switch {
+	case expiration.Days != nil && aws.ToInt32(expiration.Days) > 0:
 		e["days"] = int(aws.ToInt32(expiration.Days))
-	} else if expiration.Date != nil && !expiration.Date.IsZero() {
+
+	case expiration.Date != nil && !expiration.Date.IsZero():
 		e["date"] = aws.ToString(new(expiration.Date.Format("2006-01-02")))
-	} else if expiration.ExpiredObjectDeleteMarker != nil {
+
+	case expiration.ExpiredObjectDeleteMarker != nil:
 		// The function "validateBucket" considers this field empty when it is set
 		// "false". This means we can set it here without risks.
 		e["expired_object_delete_marker"] = aws.ToBool(expiration.ExpiredObjectDeleteMarker)
