@@ -568,7 +568,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	diags := setPoolState(ctx, d, m, pool, k8sAPI, nodes)
-	diags = append(diags, setPoolUserData(ctx, d, k8sAPI, pool)...)
+	diags = append(diags, setPoolUserData(ctx, d, k8sAPI, pool, false)...)
 
 	err = identity.SetRegionalIdentity(d, pool.Region, pool.ID)
 	if err != nil {
@@ -714,13 +714,15 @@ func fetchPoolUserData(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) (ma
 }
 
 // setPoolUserData reads the pool's user data from the API and stores it in state.
-// It only performs the fetch when the pool is known to have user data (i.e. user_data
-// is non-empty in state or config), so pools without user data do not trigger extra
-// API calls. This enables drift detection: because user_data is ForceNew and the API
-// exposes no update endpoint, any change detected here forces a pool replacement.
-func setPoolUserData(ctx context.Context, d *schema.ResourceData, k8sAPI *k8s.API, pool *k8s.Pool) diag.Diagnostics {
+// Unless alwaysFetch is true, it only performs the fetch when the pool is known to
+// have user data (i.e. user_data is non-empty in state or config), so pools without
+// user data do not trigger extra API calls. This enables drift detection: because
+// user_data is ForceNew and the API exposes no update endpoint, any change detected
+// here forces a pool replacement. The data source passes alwaysFetch, as it must
+// always expose the pool's user data.
+func setPoolUserData(ctx context.Context, d *schema.ResourceData, k8sAPI *k8s.API, pool *k8s.Pool, alwaysFetch bool) diag.Diagnostics {
 	existing, _ := d.Get("user_data").(map[string]any)
-	if len(existing) == 0 {
+	if !alwaysFetch && len(existing) == 0 {
 		return nil
 	}
 
