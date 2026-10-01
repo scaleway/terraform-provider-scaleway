@@ -1,0 +1,424 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+[settings]
+lockfile = true
+
+[task_config]
+shell = "bash -c"
+
+[tools]
+devcontainer-cli = "0.89"
+"github:bflad/tfproviderdocs" = "0.12.1"
+"github:hashicorp/terraform-plugin-docs" = "latest"
+go = "1.27"
+"go:github.com/boumenot/gocover-cobertura" = "1.5"
+"go:github.com/go-delve/delve/cmd/dlv" = "1.27"
+"go:github.com/jfrappier/tfsprout/cmd/tfsproutx" = "0.2.0"
+"go:github.com/katbyte/terrafmt" = "1.0"
+"go:gotest.tools/gotestsum" = "1.13"
+golangci-lint = "2.13"
+goreleaser = "2.18"
+hadolint = "2.15"
+"npm:actions-up" = "1.20"
+"npm:markdown-link-check" = "3.15"
+opentofu = "1.12"
+rumdl = "0.2"
+terraform = "1.16"
+typos = "1.50"
+zizmor = "1.30"
+
+[env]
+_.file = '.env'
+
+[tasks.'deps:go']
+description = "download the dependencies for the golang code"
+run = '''
+go mod download
+'''
+
+[tasks.'gen:doc']
+description = "generate the provider documentation"
+usage = '''
+flag "-q --quiet" negate="--verbose" {
+  default #true
+}
+'''
+run = '''
+args=(generate -provider-name scaleway)
+output=(/dev/stdout)
+if [ "${usage_quiet}" == "true" ]; then
+  output=(/dev/null)
+fi
+tfplugindocs "${args[@]}" > "${output[@]}"
+'''
+
+[tasks.'build:provider']
+description = "build the provider"
+usage = '''
+flag "--ldflags <ldflags>" {
+  help "linker flags"
+  default "-s -w"
+}
+flag "--tags <tags>" {
+  help "build tags"
+  default "timetzdata"
+}
+flag "-o --output <path>" {
+  help "output binary path"
+  default "./terraform-provider-scaleway"
+}
+flag "--race" {
+  help "enable data race detection"
+}
+flag "--verbose" {
+  help "print the commands as they are run"
+}
+'''
+depends = ["deps:go"]
+run = '''
+args=(build)
+if [ "${usage_race:-false}" = "true" ]; then
+  args+=(-race)
+fi
+if [ "${usage_verbose:-false}" = "true" ]; then
+  args+=(-v)
+fi
+if [ -n "${usage_ldflags:-}" ]; then
+  args+=(-ldflags "${usage_ldflags?}")
+fi
+if [ -n "${usage_tags:-}" ]; then
+  args+=(-tags "${usage_tags?}")
+fi
+if [ -n "${usage_output:-}" ]; then
+  args+=(-o "${usage_output?}")
+fi
+args+=(.)
+go "${args[@]}"
+'''
+
+[tasks.'fmt:doc']
+description = "format the documentation"
+depends = ["fmt:doc:*"]
+
+[tasks.'fmt:doc:rumdl']
+run = '''
+rumdl fmt -s ./docs
+'''
+
+[tasks.'fmt:doc:terrafmt']
+run = '''
+terrafmt fmt ./docs
+'''
+
+[tasks.'fmt:go']
+description = "format the golang code"
+run = '''
+golangci-lint fmt
+'''
+
+[tasks.'fmt:examples']
+description = "format the examples"
+run = '''
+terraform fmt -recursive -check -diff examples
+'''
+
+[tasks.'lint:go']
+description = "lint the golang code"
+usage = '''
+arg "[packages]" {
+  help "target packages to lint"
+  default "./..."
+}
+flag "--fix" {
+  help "apply the fixes detected by the linters if supported"
+}
+flag "--fast-only" {
+  help "run only fast linters"
+}
+flag "--new" {
+  help "show only new issues (since HEAD~ or unstaged changes)"
+}
+flag "-j --concurrency <n>" {
+  help "number of CPUs to use"
+}
+flag "--timeout <duration>" {
+  help "total linter timeout"
+}
+'''
+run = '''
+args=(run)
+if [ "${usage_fix:-false}" = "true" ]; then
+  args+=(--fix)
+fi
+if [ "${usage_fast_only:-false}" = "true" ]; then
+  args+=(--fast-only)
+fi
+if [ "${usage_new:-false}" = "true" ]; then
+  args+=(--new)
+fi
+if [ -n "${usage_concurrency:-}" ]; then
+  args+=(--concurrency "${usage_concurrency?}")
+fi
+if [ -n "${usage_timeout:-}" ]; then
+  args+=(--timeout "${usage_timeout?}")
+fi
+args+=("${usage_packages?}")
+golangci-lint "${args[@]}"
+'''
+
+[tasks.'lint:actions']
+description = "lint the workflows"
+run = '''
+zizmor .
+'''
+
+[tasks.'lint:doc']
+description = "lint the doc"
+depends = [ "lint:doc:*" ]
+wait_for = [ "gen:doc" ]
+
+[tasks.'lint:doc:terrafmt']
+run = '''
+terrafmt fmt --check ./docs
+'''
+
+[tasks.'lint:doc:tfproviderdocs']
+run = '''
+tfproviderdocs check -provider-name scaleway -enable-contents-check
+'''
+
+[tasks.'lint:doc:tfplugindocs']
+usage = '''
+flag "-q --quiet" negate="--verbose" {
+  default #true
+}
+'''
+run = '''
+args=(validate -provider-name scaleway)
+filter=(cat)
+if [ "${usage_quiet}" == "true" ]; then
+  filter=(grep -v -e "DEBUG" -e "^running")
+fi
+tfplugindocs "${args[@]}" 2>&1 | "${filter[@]}"
+'''
+
+[tasks.'lint:typos']
+description = "look for misspells"
+run = '''
+typos
+'''
+
+[tasks.'lint:provider']
+description = "lint the provider for terraform-specific issues"
+run = '''
+tfsproutx -S013=false -XR001=false -XS002=false -R019=false ./...
+'''
+
+[tasks.'test:provider']
+description = "test the provider"
+depends = ["deps:go"]
+usage = '''
+arg "[packages]" {
+  help "target packages to test"
+  default "./..."
+}
+flag "--run <regex>" {
+  help "run only tests matching the given regex"
+}
+flag "--acceptance" {
+  help "run the acceptance tests (uses the terraform binary)"
+}
+flag "--tool <tool>" {
+  help "tool to run acceptance tests against"
+  choices "terraform" "opentofu"
+  default "terraform"
+}
+flag "--cassettes" {
+  help "record cassettes (requires a valid scaleway token)"
+}
+flag "--debug" {
+  help "enable sdk debug mode"
+}
+flag "--race" {
+  help "enable data race detection"
+}
+flag "--format <fmt>" {
+  help "gotestsum output format"
+  default "pkgname"
+}
+flag "--rerun-fails <n>" {
+  help "rerun failed tests up to n times"
+}
+flag "--timeout <duration>" {
+  help "test timeout (e.g. 30s, 5m, 1h)"
+}
+flag "--max-fails <n>" {
+  help "stop after n failures"
+}
+flag "--jsonfile <file>" {
+  help "write all test2json input to a file"
+}
+flag "--coverprofile <file>" {
+  help "write a coverage profile to the file"
+}
+flag "--parallel <n>" {
+  help "execute n tests in parallel when allowed"
+}
+flag "--parallel-pkg <n>" {
+  help "build and execute n test binaries in concurrence"
+}
+flag "--failfast" {
+  help "don't start new tests after the first failed test"
+}
+'''
+run = '''
+export TF_UPDATE_CASSETTES="${usage_cassettes:-false}"
+export TF_TEST_DOMAIN="scaleway-terraform.com"
+export TF_TEST_DOMAIN_ZONE="tf"
+export SCW_DEBUG="${usage_debug:-false}"
+export SCW_ACCESS_KEY="SCWXXXXXXXXXXXXXFAKE"
+export SCW_SECRET_KEY="11111111-1111-1111-1111-111111111111"
+export SCW_DEFAULT_ORGANIZATION_ID="105bdce1-64c0-48ab-899d-868455867ecf"
+export SCW_DEFAULT_PROJECT_ID="105bdce1-64c0-48ab-899d-868455867ecf"
+export SCW_PARTNER_ORGANIZATION_ID="7fbc0d5f-9d3e-48e4-8fef-6a4533c9ab2e"
+export SCW_PARTNER_ACCESS_KEY="SCWXXXXXXXXXXXXXFAKE"
+export SCW_PARTNER_SECRET_KEY="11111111-1111-1111-1111-111111111111"
+export SCW_ENABLE_BETA="true"
+export AWS_DISABLE_CLOCK_SKEW_CORRECTION="true"
+
+if [ -n "${usage_acceptance:-}" ]; then
+  export TF_ACC=1
+fi
+case "${usage_tool}" in
+  terraform)
+    export TF_ACC_TERRAFORM_PATH=$(mise which terraform)
+    export TF_ACC_PROVIDER_NAMESPACE=hashicorp
+    export TF_ACC_PROVIDER_HOST=registry.terraform.io
+    export TF_ACC_OPENTOFU=false
+  ;;
+  opentofu)
+    export TF_ACC_TERRAFORM_PATH=$(mise which tofu)
+    export TF_ACC_PROVIDER_NAMESPACE=hashicorp
+    export TF_ACC_PROVIDER_HOST=registry.opentofu.org
+    export TF_ACC_OPENTOFU=true
+  ;;
+esac
+
+gotestsum_args=(--format "${usage_format?}")
+if [ -n "${usage_rerun_fails:-}" ]; then
+  gotestsum_args+=(--rerun-fails "${usage_rerun_fails?}")
+fi
+if [ -n "${usage_max_fails:-}" ]; then
+  gotestsum_args+=(--max-fails "${usage_max_fails?}")
+fi
+if [ -n "${usage_jsonfile:-}" ]; then
+  gotestsum_args+=(--jsonfile "${usage_jsonfile?}")
+fi
+
+test_args=()
+if [ -n "${usage_run:-}" ]; then
+  test_args+=(-run "${usage_run?}")
+fi
+if [ "${usage_race:-false}" = "true" ]; then
+  test_args+=(-race)
+fi
+if [ -n "${usage_timeout:-}" ]; then
+  test_args+=(-timeout "${usage_timeout?}")
+fi
+if [ -n "${usage_coverprofile:-}" ]; then
+  test_args+=(-coverprofile "${usage_coverprofile?}")
+fi
+if [ -n "${usage_parallel_pkg:-}" ]; then
+  test_args+=(-p "${usage_parallel_pkg?}")
+fi
+if [ -n "${usage_parallel:-}" ]; then
+  test_args+=(-parallel "${usage_parallel?}")
+fi
+if [ "${usage_failfast:-false}" = "true" ]; then
+  test_args+=(-failfast)
+fi
+test_args+=("${usage_packages?}")
+
+gotestsum "${gotestsum_args[@]}" -- "${test_args[@]}"
+'''
+
+[tasks.release]
+description = "create a new release of the repository"
+usage = '''
+flag "--snapshot" negate="--no-snapshot" {
+  help "generate an unversioned snapshot, skipping validations and publishing"
+  default #true
+}
+flag "--clean" negate="--no-clean" {
+  help "remove the dist directory before running"
+  default #true
+}
+flag "--draft" {
+  help "set the release to draft"
+}
+flag "--fail-fast" {
+  help "abort the release publishing on the first error"
+}
+flag "--verbose" {
+  help "enable verbose mode"
+}
+flag "--skip <items>" {
+  help "skip the given steps (e.g. docker,publish)"
+}
+flag "--parallelism <n>" {
+  help "number of tasks to run concurrently"
+}
+flag "--timeout <duration>" {
+  help "timeout for the entire release process"
+}
+'''
+run = '''
+args=(release)
+if [ "${usage_snapshot:-false}" = "true" ]; then
+  args+=(--snapshot)
+fi
+if [ "${usage_clean:-false}" = "true" ]; then
+  args+=(--clean)
+fi
+if [ "${usage_draft:-false}" = "true" ]; then
+  args+=(--draft)
+fi
+if [ "${usage_fail_fast:-false}" = "true" ]; then
+  args+=(--fail-fast)
+fi
+if [ "${usage_verbose:-false}" = "true" ]; then
+  args+=(--verbose)
+fi
+if [ -n "${usage_skip:-}" ]; then
+  args+=(--skip "${usage_skip?}")
+fi
+if [ -n "${usage_parallelism:-}" ]; then
+  args+=(--parallelism "${usage_parallelism?}")
+fi
+if [ -n "${usage_timeout:-}" ]; then
+  args+=(--timeout "${usage_timeout?}")
+fi
+goreleaser "${args[@]}"
+'''
+
+[tasks.default]
+description = "default task, fast local loop for the provider"
+depends = ["*:provider"]
+
+[tasks.ci]
+description = "meta-task for the ci"
+usage = '''
+flag "--coverprofile <file>" {
+  help "write a coverage profile to the file"
+}
+'''
+depends = [
+  "build:*",
+  "gen:*",
+  "lint:*",
+  { task = "test:provider", args = [
+    "--acceptance",
+    "{% if usage.coverprofile %}--coverprofile{% endif %}",
+    "{{ usage.coverprofile }}",
+  ] }
+]
