@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.107.0
 	github.com/aws/aws-sdk-go-v2/service/sns v1.47.2
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.46.4
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.52.1
 	github.com/aws/smithy-go v1.28.2
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.7.0
