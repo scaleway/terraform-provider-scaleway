@@ -36,6 +36,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mailbox"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/messageq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
@@ -266,20 +267,23 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		annotations.NewAnnotationsBindingResource,
 		annotations.NewAnnotationsKeyResource,
 		annotations.NewAnnotationsValueResource,
-		annotations.NewAnnotationsBindingResource,
-		billing.NewBudgetResource,
-		billing.NewBudgetAlertResource,
+		autoscaling.NewAutoScalingGroupResource,
 		billing.NewBudgetAlertNotificationResource,
+		billing.NewBudgetAlertResource,
+		billing.NewBudgetResource,
 		datalab.NewDatalabResource,
-		iam.NewSamlResource,
+		file.NewFileSystemResource,
 		iam.NewSamlCertificateResource,
+		iam.NewSamlResource,
 		iam.NewScimResource,
 		iam.NewScimTokenResource,
 		instance.NewTemplateResource,
-		autoscaling.NewAutoScalingGroupResource,
 		keymanager.NewKeyMaterialResource,
+		mailbox.NewDomainResource,
+		mailbox.NewMailboxResource,
 		messageq.NewDeploymentResource,
 		messageq.NewUserResource,
 		partner.NewPartnerOrganizationResource,
@@ -316,10 +320,14 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		iam.NewScimDataSource,
 		iam.NewScimTokenDataSource,
 		kafka.NewVersionDataSource,
+		mailbox.NewMailboxDataSource,
 		messageq.NewCertificateAuthorityDataSource,
 		messageq.NewDeploymentDataSource,
 		messageq.NewNodeTypeDataSource,
 		messageq.NewVersionDataSource,
+		rdb.NewInstanceLogDataSource,
+		rdb.NewInstanceLogsDataSource,
+		rdb.NewInstanceLogsDetailsDataSource,
 	}
 }
 
