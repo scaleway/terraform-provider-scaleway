@@ -35,12 +35,8 @@ func TestAccActionCockpitGrafanaSyncDataSources_Basic(t *testing.T) {
 						name = "tf_tests_cockpit_grafana_sync_data_sources"
 					}
 
-					resource "scaleway_cockpit" "main" {
-						project_id = scaleway_account_project.project.id
-					}
-
 					data "scaleway_cockpit_grafana" "main" {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -54,12 +50,8 @@ func TestAccActionCockpitGrafanaSyncDataSources_Basic(t *testing.T) {
 						name = "tf_tests_cockpit_grafana_sync_data_sources"
 					}
 
-					resource "scaleway_cockpit" "main" {
-						project_id = scaleway_account_project.project.id
-					}
-
 					data "scaleway_cockpit_grafana" "main" {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_cockpit_source" "metrics" {
@@ -91,12 +83,8 @@ func TestAccActionCockpitGrafanaSyncDataSources_Basic(t *testing.T) {
 						name = "tf_tests_cockpit_grafana_sync_data_sources"
 					}
 
-					resource "scaleway_cockpit" "main" {
-						project_id = scaleway_account_project.project.id
-					}
-
 					data "scaleway_cockpit_grafana" "main" {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 					}
 
 					resource "scaleway_cockpit_source" "metrics" {
