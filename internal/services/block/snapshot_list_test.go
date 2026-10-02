@@ -161,7 +161,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 				QueryResultChecks: []querycheck.QueryResultCheck{
 					querycheck.ExpectLength("list.scaleway_block_snapshot.by_volume_with_resource", 1),
 					querycheck.ExpectResourceKnownValues(
-						"list.scaleway_block_snapshot.by_volume_with_resource",
+						"scaleway_block_snapshot.by_volume_with_resource",
 						queryfilter.ByDisplayName(knownvalue.StringExact("test-snapshot-list-1")),
 						[]querycheck.KnownValueCheck{
 							{Path: tfjsonpath.New("volume_id"), KnownValue: knownvalue.NotNull()},
