@@ -32,6 +32,7 @@ type annotationsBindingDataSourceModel struct {
 	ID        types.String `tfsdk:"id"`
 	BindingID types.String `tfsdk:"binding_id"`
 	Srn       types.String `tfsdk:"srn"`
+	TargetSrn types.String `tfsdk:"target_srn"`
 	ValueID   types.String `tfsdk:"value_id"`
 	KeyID     types.String `tfsdk:"key_id"`
 }
@@ -56,6 +57,10 @@ func (d *AnnotationsBindingDataSource) Schema(ctx context.Context, req datasourc
 				MarkdownDescription: "The ID of the annotation binding.",
 			},
 			"srn": schema.StringAttribute{
+				MarkdownDescription: "The Scaleway Resource Number (SRN) of the binding.",
+				Computed:            true,
+			},
+			"target_srn": schema.StringAttribute{
 				MarkdownDescription: "Scaleway Resource Number associated to the binding.",
 				Computed:            true,
 			},
@@ -122,6 +127,7 @@ func (d *AnnotationsBindingDataSource) Read(ctx context.Context, req datasource.
 	state.ID = types.StringValue(binding.ID)
 	state.BindingID = types.StringValue(binding.ID)
 	state.Srn = types.StringValue(binding.Srn)
+	state.TargetSrn = types.StringValue(binding.TargetSrn)
 	state.ValueID = types.StringValue(binding.Value.ID)
 	state.KeyID = types.StringValue(binding.Key.ID)
 
