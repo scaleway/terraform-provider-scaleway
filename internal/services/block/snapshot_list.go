@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
@@ -225,6 +226,18 @@ func (r *SnapshotListResource) List(ctx context.Context, req list.ListRequest, s
 						zonal.NewIDString(row.Snapshot.Zone, row.Snapshot.ParentVolume.ID),
 					)
 				}
+
+				// Even though empty, set the correct type for Import and Export blocks
+				blockType := types.ObjectType{
+					AttrTypes: map[string]attr.Type{
+						"bucket": types.StringType,
+						"key":    types.StringType,
+					},
+				}
+				fixedList := types.ListNull(blockType)
+
+				resourceModel.Import = fixedList
+				resourceModel.Export = fixedList
 
 				resourceDiags := result.Resource.Set(ctx, &resourceModel)
 				result.Diagnostics.Append(resourceDiags...)
