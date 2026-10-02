@@ -100,3 +100,110 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourcePool_UserData(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	clusterName := "tf-cluster-pool"
+	poolName := "tf-pool"
+	version := testAccK8SClusterGetLatestK8SVersion(tt)
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "main" {
+						name = "TestAccDataSourcePool_UserData"
+					}
+
+					resource "scaleway_vpc_private_network" "main" {
+						name = "test-data-source-pool"
+						vpc_id = scaleway_vpc.main.id
+					}
+
+					resource "scaleway_k8s_cluster" "main" {
+					  	name 	= "%s"
+						version = "%s"
+						cni     = "cilium"
+					  	tags    = [ "terraform-test", "data_scaleway_k8s_pool", "basic" ]
+						delete_additional_resources = false
+						private_network_id = scaleway_vpc_private_network.main.id
+					}
+
+					resource "scaleway_k8s_pool" "default" {
+						cluster_id = "${scaleway_k8s_cluster.main.id}"
+						name = "%s"
+						node_type = "dev1_m"
+						size = 1
+						tags = [ "terraform-test", "data_scaleway_k8s_pool", "basic" ]
+
+						user_data = {
+							"foo"   = "bar"
+							"hello" = "world"
+						}
+					}`, clusterName, version, poolName),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "main" {}
+
+					resource "scaleway_vpc_private_network" "main" {
+						name = "test-data-source-pool"
+						vpc_id = scaleway_vpc.main.id
+					}
+
+					resource "scaleway_k8s_cluster" "main" {
+					  	name 	= "%s"
+						version = "%s"
+						cni     = "cilium"
+					  	tags    = [ "terraform-test", "data_scaleway_k8s_cluster", "basic" ]
+						delete_additional_resources = false
+						private_network_id = scaleway_vpc_private_network.main.id
+					}
+
+					resource "scaleway_k8s_pool" "default" {
+						cluster_id = "${scaleway_k8s_cluster.main.id}"
+						name = "%s"
+						node_type = "dev1_m"
+						size = 1
+						tags = [ "terraform-test", "data_scaleway_k8s_pool", "basic" ]
+
+						user_data = {
+							"foo"   = "bar"
+							"hello" = "world"
+						}
+					}
+
+					data "scaleway_k8s_pool" "prod" {
+					  	name = "${scaleway_k8s_pool.default.name}"
+						cluster_id = "${scaleway_k8s_cluster.main.id}"
+					}
+
+					data "scaleway_k8s_pool" "stg" {
+					  	pool_id = "${scaleway_k8s_pool.default.id}"
+					}`, clusterName, version, poolName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SPoolExists(tt, "data.scaleway_k8s_pool.prod"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.prod", "name", poolName),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.prod", "user_data.%", "2"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.prod", "user_data.foo", "bar"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.prod", "user_data.hello", "world"),
+					testAccCheckK8SPoolExists(tt, "data.scaleway_k8s_pool.stg"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.stg", "name", poolName),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.stg", "user_data.%", "2"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.stg", "user_data.foo", "bar"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.stg", "user_data.hello", "world"),
+					resource.TestCheckResourceAttrSet("data.scaleway_k8s_pool.stg", "nodes.0.public_ip"), // Deprecated attributes
+					resource.TestMatchResourceAttr("data.scaleway_k8s_pool.prod", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/pools/.+$`)),
+					resource.TestMatchResourceAttr("data.scaleway_k8s_pool.stg", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/pools/.+$`)),
+				),
+			},
+		},
+	})
+}
