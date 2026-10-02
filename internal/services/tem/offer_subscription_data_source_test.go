@@ -15,7 +15,7 @@ func TestAccDataSourceOfferSubscription_Basic(t *testing.T) {
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 
 	if !orgIDExists {
-		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+		orgID = "00000000-0000-0000-0000-000000000000"
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
