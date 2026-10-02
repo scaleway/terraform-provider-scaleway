@@ -51,13 +51,14 @@ func TestAccAnnotationsBindingResource_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_annotations_binding" "main" {
-						srn        = scaleway_key_manager_key.main.srn
+						target_srn = scaleway_key_manager_key.main.srn
 						value_id   = scaleway_annotations_value.main.id
 					}
 				`, orgID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_annotations_binding.main", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_annotations_binding.main", "srn", "scaleway_key_manager_key.main", "srn"),
+					resource.TestCheckResourceAttrSet("scaleway_annotations_binding.main", "srn"),
+					resource.TestCheckResourceAttrPair("scaleway_annotations_binding.main", "target_srn", "scaleway_key_manager_key.main", "srn"),
 					resource.TestCheckResourceAttrPair("scaleway_annotations_binding.main", "value_id", "scaleway_annotations_value.main", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_annotations_binding.main", "key_id", "scaleway_annotations_key.main", "id"),
 				),
