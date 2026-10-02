@@ -44,12 +44,8 @@ resource "scaleway_account_project" "project" {
   name = "my-observability-project"
 }
 
-resource "scaleway_cockpit" "main" {
-  project_id = scaleway_account_project.project.id
-}
-
 data "scaleway_cockpit_grafana" "main" {
-  project_id = scaleway_cockpit.main.project_id
+  project_id = scaleway_account_project.project.id
 }
 
 output "grafana_connection_info" {

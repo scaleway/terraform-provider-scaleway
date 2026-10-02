@@ -20,12 +20,8 @@ func TestAccDataSourceCockpitPreconfiguredAlert_Basic(t *testing.T) {
 						name = "tf_tests_cockpit_preconfigured_alert_ds"
 					}
 
-					resource "scaleway_cockpit" "main" {
-						project_id = scaleway_account_project.project.id
-					}
-
 					data "scaleway_cockpit_preconfigured_alert" "main" {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -50,17 +46,13 @@ func TestAccDataSourceCockpitPreconfiguredAlert_WithFilters(t *testing.T) {
 						name = "tf_tests_cockpit_preconfigured_alert_filters"
 					}
 
-					resource "scaleway_cockpit" "main" {
-						project_id = scaleway_account_project.project.id
-					}
-
 					data "scaleway_cockpit_preconfigured_alert" "enabled" {
-						project_id  = scaleway_cockpit.main.project_id
+						project_id  = scaleway_account_project.project.id
 						rule_status = "enabled"
 					}
 
 					data "scaleway_cockpit_preconfigured_alert" "disabled" {
-						project_id  = scaleway_cockpit.main.project_id
+						project_id  = scaleway_account_project.project.id
 						rule_status = "disabled"
 					}
 				`,
