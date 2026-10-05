@@ -281,6 +281,7 @@ func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseR
 	tokenIDBytes, diags := req.Private.GetKey(ctx, "token_id")
 
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -288,6 +289,7 @@ func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseR
 	regionBytes, diags := req.Private.GetKey(ctx, "region")
 
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
