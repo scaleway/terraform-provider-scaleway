@@ -40,6 +40,25 @@ resource "scaleway_secret" "ephemeral" {
 }
 ```
 
+
+### Create a secret with a Key Manager encryption key
+
+The following command shows you how to create a secret named `foo` whose versions are encrypted and decrypted with a dedicated [Key Manager](https://www.scaleway.com/en/docs/key-manager/) key, instead of an internal Key Manager key.
+
+```terraform
+resource "scaleway_key_manager_key" "main" {
+  name        = "my-kms-key"
+  usage       = "symmetric_encryption"
+  algorithm   = "aes_256_gcm"
+  unprotected = true
+}
+
+resource "scaleway_secret" "kms" {
+  name   = "foo"
+  key_id = scaleway_key_manager_key.main.id
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -54,6 +73,7 @@ The following arguments are supported:
     - `expires_once_accessed` - (Optional) True if the secret version expires after a single user access.
     - `action` - (Required) Action to perform when the version of a secret expires. Available values can be found in [SDK constants](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/secret/v1beta1#pkg-constants).
 - `type` - (Optional) Type of the secret. If not specified, the type is Opaque. Available values can be found in [SDK Constants](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/secret/v1beta1#pkg-constants).
+- `key_id` - (Optional, Forces new resource) ID of the [Key Manager](https://www.scaleway.com/en/docs/key-manager/) key used to encrypt and decrypt the secret's versions. Can be a UUID or a localized ID (`region/UUID`). If not set, Secret Manager uses a Key Manager internal key.
 - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the resource exists.
 - `project_id` - (Optional) The project ID containing is the secret.
