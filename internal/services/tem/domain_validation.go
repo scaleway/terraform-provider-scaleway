@@ -176,10 +176,10 @@ func ResourceDomainValidationDelete(_ context.Context, d *schema.ResourceData, _
 }
 
 func extractAfterSlash(s string) string {
-	lastIndex := strings.LastIndex(s, "/")
-	if lastIndex == -1 {
+	_, after, ok := strings.CutLast(s, "/")
+	if !ok {
 		return s
 	}
 
-	return s[lastIndex+1:]
+	return after
 }
