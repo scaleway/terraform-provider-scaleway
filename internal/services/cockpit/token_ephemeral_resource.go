@@ -171,6 +171,7 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 		projectID = data.ProjectID.ValueString()
 	} else {
 		var exists bool
+
 		projectID, exists = r.meta.ScwClient().GetDefaultProjectID()
 		if !exists {
 			resp.Diagnostics.AddError(
@@ -188,6 +189,7 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 		region = scw.Region(data.Region.ValueString())
 	} else {
 		var exists bool
+
 		region, exists = r.meta.ScwClient().GetDefaultRegion()
 		if !exists {
 			resp.Diagnostics.AddError(
@@ -201,10 +203,13 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 
 	// Expand scopes
 	var tokenScopes []cockpit.TokenScope
+
 	if !data.Scopes.IsNull() && !data.Scopes.IsUnknown() {
 		var scopesMap []map[string]bool
+
 		diags := data.Scopes.ElementsAs(ctx, &scopesMap, false)
 		resp.Diagnostics.Append(diags...)
+
 		if diags.HasError() {
 			return
 		}
@@ -274,12 +279,14 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 
 func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseRequest, resp *ephemeral.CloseResponse) {
 	tokenIDBytes, diags := req.Private.GetKey(ctx, "token_id")
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	regionBytes, diags := req.Private.GetKey(ctx, "region")
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
