@@ -55,6 +55,28 @@ type Meta struct {
 	// It is a pointer so that we can distinguish between "not set" (nil)
 	// and "explicitly set to false".
 	s3UsePathStyle *bool
+	// defaultAnnotations are annotation key→value name pairs defined at the
+	// provider level. They are resolved (created or found) during provider
+	// Configure and bindings are created for each annotated resource.
+	defaultAnnotations map[string]string
+	// defaultAnnotationsConfig holds the resolved default annotations with
+	// their API IDs. This is populated during provider Configure by calling
+	// annotations.ResolveDefaultsOnMeta.
+	defaultAnnotationsConfig *AnnotationDefaultsConfig
+}
+
+// AnnotationDefault represents a single resolved default annotation.
+type AnnotationDefault struct {
+	KeyName   string
+	KeyID     string
+	ValueName string
+	ValueID   string
+}
+
+// AnnotationDefaultsConfig holds the provider-level default annotations that
+// have been resolved to their API IDs during provider Configure.
+type AnnotationDefaultsConfig struct {
+	Items []AnnotationDefault
 }
 
 // NewMeta creates the Meta object containing the SDK client.
@@ -99,7 +121,7 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	// Return scaleway client
 	////
 
-	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, config.TerraformVersion, config.HTTPClient)
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, config.TerraformVersion, config.HTTPClient, config.DefaultAnnotations)
 }
 
 // NewMetaFromFrameworkConfig creates a Meta object from FrameworkProviderConfig
@@ -109,10 +131,10 @@ func NewMetaFromFrameworkConfig(ctx context.Context, config *FrameworkProviderCo
 		return nil, err
 	}
 
-	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, terraformVersion, nil)
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, terraformVersion, nil, config.DefaultAnnotations)
 }
 
-func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, endpoints map[string]string, s3UsePathStyle *bool, terraformVersion string, httpClient *http.Client) (*Meta, error) {
+func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, endpoints map[string]string, s3UsePathStyle *bool, terraformVersion string, httpClient *http.Client, defaultAnnotations map[string]string) (*Meta, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
 	}
@@ -129,11 +151,12 @@ func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSo
 	}
 
 	return &Meta{
-		scwClient:         scwClient,
-		httpClient:        httpClient,
-		credentialsSource: credentialsSource,
-		endpoints:         endpoints,
-		s3UsePathStyle:    s3UsePathStyle,
+		scwClient:          scwClient,
+		httpClient:         httpClient,
+		credentialsSource:  credentialsSource,
+		endpoints:          endpoints,
+		s3UsePathStyle:     s3UsePathStyle,
+		defaultAnnotations: defaultAnnotations,
 	}, nil
 }
 
@@ -189,6 +212,36 @@ func (m Meta) S3UsePathStyleOk() (bool, bool) {
 	}
 
 	return *m.s3UsePathStyle, true
+}
+
+// DefaultAnnotations returns the provider-level default annotations as a
+// map of key name → value name, or nil if none are configured.
+func (m Meta) DefaultAnnotations() map[string]string {
+	if len(m.defaultAnnotations) == 0 {
+		return nil
+	}
+
+	return m.defaultAnnotations
+}
+
+// SetDefaultAnnotations sets the provider-level default annotations on the
+// Meta. This is primarily used in acceptance tests to inject default
+// annotations without going through the provider configuration.
+func (m *Meta) SetDefaultAnnotations(annotations map[string]string) {
+	m.defaultAnnotations = annotations
+}
+
+// DefaultAnnotationsConfig returns the resolved default annotations config
+// with API IDs, or nil if not yet resolved or none configured.
+func (m Meta) DefaultAnnotationsConfig() *AnnotationDefaultsConfig {
+	return m.defaultAnnotationsConfig
+}
+
+// SetDefaultAnnotationsConfig stores the resolved default annotations
+// config on the Meta. Called during provider Configure after resolving
+// keys and values.
+func (m *Meta) SetDefaultAnnotationsConfig(dc *AnnotationDefaultsConfig) {
+	m.defaultAnnotationsConfig = dc
 }
 
 // HasMultipleVariableSources return an informative message during the Provider initialization
@@ -251,6 +304,7 @@ type Config struct {
 	ForceOrganizationID string
 	ForceAccessKey      string
 	ForceSecretKey      string
+	DefaultAnnotations  map[string]string
 }
 
 func customizeUserAgent(providerVersion string, terraformVersion string) string {
@@ -264,16 +318,17 @@ func customizeUserAgent(providerVersion string, terraformVersion string) string 
 }
 
 type FrameworkProviderConfig struct {
-	Endpoints      map[string]string
-	S3UsePathStyle *bool
-	AccessKey      string
-	SecretKey      string
-	ProfileName    string
-	ProjectID      string
-	OrganizationID string
-	Region         string
-	Zone           string
-	APIURL         string
+	Endpoints          map[string]string
+	S3UsePathStyle     *bool
+	AccessKey          string
+	SecretKey          string
+	ProfileName        string
+	ProjectID          string
+	OrganizationID     string
+	Region             string
+	Zone               string
+	APIURL             string
+	DefaultAnnotations map[string]string
 }
 
 func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {

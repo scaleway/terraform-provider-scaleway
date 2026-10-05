@@ -76,16 +76,17 @@ func (p *ScalewayProvider) Metadata(_ context.Context, _ provider.MetadataReques
 }
 
 type ScalewayProviderModel struct {
-	AccessKey      types.String `tfsdk:"access_key"`
-	SecretKey      types.String `tfsdk:"secret_key"`
-	Profile        types.String `tfsdk:"profile"`
-	ProjectID      types.String `tfsdk:"project_id"`
-	OrganizationID types.String `tfsdk:"organization_id"`
-	APIURL         types.String `tfsdk:"api_url"`
-	Region         types.String `tfsdk:"region"`
-	Zone           types.String `tfsdk:"zone"`
-	Endpoints      types.Set    `tfsdk:"endpoints"`
-	S3UsePathStyle types.Bool   `tfsdk:"s3_use_path_style"`
+	Endpoints          types.Set    `tfsdk:"endpoints"`
+	DefaultAnnotations types.Map    `tfsdk:"default_annotations"`
+	AccessKey          types.String `tfsdk:"access_key"`
+	SecretKey          types.String `tfsdk:"secret_key"`
+	Profile            types.String `tfsdk:"profile"`
+	ProjectID          types.String `tfsdk:"project_id"`
+	OrganizationID     types.String `tfsdk:"organization_id"`
+	APIURL             types.String `tfsdk:"api_url"`
+	Region             types.String `tfsdk:"region"`
+	Zone               types.String `tfsdk:"zone"`
+	S3UsePathStyle     types.Bool   `tfsdk:"s3_use_path_style"`
 }
 
 func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
@@ -126,6 +127,13 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 			"s3_use_path_style": schema.BoolAttribute{
 				Optional:    true,
 				Description: "Whether to enable the request to use path-style addressing.",
+			},
+			"default_annotations": schema.MapAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Description: "Default annotations to apply across all resources as key→value name pairs. " +
+					"Keys and values are created (or found by name) during provider configuration, " +
+					"and a binding is created for each annotated resource.",
 			},
 		},
 		Blocks: map[string]schema.Block{
@@ -205,6 +213,19 @@ func modelToFrameworkConfig(ctx context.Context, model *ScalewayProviderModel) *
 		config.S3UsePathStyle = &s3UsePathStyle
 	}
 
+	if !model.DefaultAnnotations.IsNull() && !model.DefaultAnnotations.IsUnknown() {
+		annotationsMap := make(map[string]string)
+		elements := model.DefaultAnnotations.Elements()
+
+		for key, value := range elements {
+			if strVal, ok := value.(types.String); ok {
+				annotationsMap[key] = strVal.ValueString()
+			}
+		}
+
+		config.DefaultAnnotations = annotationsMap
+	}
+
 	return config
 }
 
@@ -258,6 +279,17 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 		}
 	}
 
+	// Resolve default annotation keys and values (create or find by name).
+	// This caches their API IDs in Meta so resources can create bindings
+	// without additional lookups.
+	if m.DefaultAnnotations() != nil && m.DefaultAnnotationsConfig() == nil {
+		if err := annotations.ResolveDefaultsOnMeta(ctx, m); err != nil {
+			resp.Diagnostics.AddError("error resolving default annotations", err.Error())
+
+			return
+		}
+	}
+
 	resp.ResourceData = m
 	resp.DataSourceData = m
 	resp.ActionData = m
@@ -266,7 +298,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 }
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
-	return []func() resource.Resource{
+	resources := []func() resource.Resource{
 		annotations.NewAnnotationsBindingResource,
 		annotations.NewAnnotationsKeyResource,
 		annotations.NewAnnotationsValueResource,
@@ -288,6 +320,17 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		messageq.NewUserResource,
 		partner.NewPartnerOrganizationResource,
 	}
+
+	// Wrap all Framework resources so that default annotation bindings are
+	// created on Create and deleted on Delete for any resource that exposes a
+	// Computed "srn" attribute. This is a no-op when no default annotations
+	// are configured or when the resource has no Computed "srn" field (e.g.
+	// the annotations binding resource whose "srn" is Required).
+	for i, r := range resources {
+		resources[i] = annotations.WithDefaultBindingsFramework(r)
+	}
+
+	return resources
 }
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {

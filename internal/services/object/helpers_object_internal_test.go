@@ -36,7 +36,7 @@ func TestRetrieveS3EndpointProfileFromMeta(t *testing.T) {
 		S3Endpoint:    new(profileEndpoint),
 	}
 
-	m, err := meta.NewMetaFromProfile(t.Context(), profile, nil, nil, nil, "test", nil)
+	m, err := meta.NewMetaFromProfile(t.Context(), profile, nil, nil, nil, "test", nil, nil)
 	require.NoError(t, err)
 
 	// Simulate the NewS3ClientFromMeta call path: metaStruct=m, d=nil, m=nil

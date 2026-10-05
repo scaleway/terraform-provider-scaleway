@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/audittrail"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
@@ -150,6 +151,12 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Optional:    true,
 					Default:     false,
 					Description: "Whether to enable the request to use path-style addressing.",
+				},
+				"default_annotations": {
+					Type:        schema.TypeMap,
+					Optional:    true,
+					Description: "Default annotations to apply across all resources as key→value name pairs. Keys and values are created (or found by name) during provider configuration, and a binding is created for each annotated resource.",
+					Elem:        &schema.Schema{Type: schema.TypeString},
 				},
 			},
 
@@ -439,6 +446,14 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 
 		addBetaResources(p)
 
+		// Wrap all SDKv2 resources so that default annotation bindings are
+		// created on Create and deleted on Delete for any resource that
+		// exposes an "srn" attribute. This is a no-op when no default
+		// annotations are configured or when the resource has no "srn" field.
+		for name, r := range p.ResourcesMap {
+			p.ResourcesMap[name] = annotations.WithDefaultBindings(r)
+		}
+
 		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (any, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
 
@@ -463,11 +478,23 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 
 			s3UsePathStyle := types.ExpandBoolPtr(types.GetBool(data, "s3_use_path_style"))
 
+			var defaultAnnotations map[string]string
+
+			if rawAnnotations, ok := data.GetOk("default_annotations"); ok {
+				rawMap := rawAnnotations.(map[string]any)
+				defaultAnnotations = make(map[string]string, len(rawMap))
+
+				for k, v := range rawMap {
+					defaultAnnotations[k] = v.(string)
+				}
+			}
+
 			m, err := meta.NewMeta(ctx, &meta.Config{
-				ProviderSchema:   data,
-				TerraformVersion: terraformVersion,
-				Endpoints:        endpoints,
-				S3UsePathStyle:   s3UsePathStyle,
+				ProviderSchema:     data,
+				TerraformVersion:   terraformVersion,
+				Endpoints:          endpoints,
+				S3UsePathStyle:     s3UsePathStyle,
+				DefaultAnnotations: defaultAnnotations,
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
@@ -492,6 +519,18 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Summary:  "Multiple variable sources detected, please make sure the right credentials are used",
 					Detail:   message,
 				})
+			}
+
+			if m.DefaultAnnotations() != nil && m.DefaultAnnotationsConfig() == nil {
+				if err := annotations.ResolveDefaultsOnMeta(ctx, m); err != nil {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  "error resolving default annotations",
+						Detail:   err.Error(),
+					})
+
+					return m, diags
+				}
 			}
 
 			return m, diags
