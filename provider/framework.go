@@ -292,6 +292,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
 	return []func() ephemeral.EphemeralResource{
+		cockpit.NewTokenEphemeralResource,
 		iam.NewApiKeyEphemeralResource,
 		keymanager.NewDecryptEphemeralResource,
 		keymanager.NewEncryptEphemeralResource,
