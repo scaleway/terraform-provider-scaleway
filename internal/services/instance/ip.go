@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/tags"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -30,6 +31,7 @@ func ResourceIP() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    ipSchema,
 		Identity:      identity.DefaultZonal(),
+		CustomizeDiff: tags.CustomizeDiffTagsAll,
 	}
 }
 
@@ -71,6 +73,7 @@ func ipSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the ip",
 		},
+		"tags_all":        tags.TagsAllSchema(),
 		"zone":            zonal.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -88,10 +91,10 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m any
 		Project: types.ExpandStringPtr(d.Get("project_id")),
 		Type:    instanceSDK.IPType(d.Get("type").(string)),
 	}
-	tags := types.ExpandStrings(d.Get("tags"))
+	allTags := tags.ExpandTagsAll(d, m)
 
-	if len(tags) > 0 {
-		req.Tags = tags
+	if len(allTags) > 0 {
+		req.Tags = allTags
 	}
 
 	res, err := instanceAPI.CreateIP(req, scw.WithContext(ctx))
@@ -119,7 +122,7 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	return setIPState(d, res.IP)
+	return setIPState(d, m, res.IP)
 }
 
 func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -133,8 +136,8 @@ func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m any
 		Zone: zone,
 	}
 
-	if d.HasChange("tags") {
-		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	if d.HasChange("tags_all") {
+		req.Tags = tags.ExpandTagsAllUpdatedPtr(d, m)
 	}
 
 	_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
@@ -145,7 +148,7 @@ func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m any
 	return ResourceInstanceIPRead(ctx, d, m)
 }
 
-func setIPState(d *schema.ResourceData, ip *instanceSDK.IP) diag.Diagnostics {
+func setIPState(d *schema.ResourceData, m any, ip *instanceSDK.IP) diag.Diagnostics {
 	address := ip.Address.String()
 
 	prefix := ip.Prefix.String()
@@ -167,9 +170,7 @@ func setIPState(d *schema.ResourceData, ip *instanceSDK.IP) diag.Diagnostics {
 	_ = d.Set("reverse", ip.Reverse)
 	_ = d.Set("type", ip.Type)
 
-	if len(ip.Tags) > 0 {
-		_ = d.Set("tags", types.FlattenSliceString(ip.Tags))
-	}
+	tags.SetTagsAllAndTags(d, m, ip.Tags)
 
 	if ip.Server != nil {
 		_ = d.Set("server_id", zonal.NewIDString(ip.Zone, ip.Server.ID))
@@ -206,7 +207,7 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	return setIPState(d, res.IP)
+	return setIPState(d, m, res.IP)
 }
 
 func ResourceInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -15,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/tags"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -39,7 +41,7 @@ func ResourceImage() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    imageSchema,
 		Identity:      identity.DefaultZonal(),
-		CustomizeDiff: cdf.LocalityCheck("root_volume_id", "additional_volume_ids.#"),
+		CustomizeDiff: customdiff.All(cdf.LocalityCheck("root_volume_id", "additional_volume_ids.#"), tags.CustomizeDiffTagsAll),
 	}
 }
 
@@ -82,6 +84,7 @@ func imageSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 		},
+		"tags_all": tags.TagsAllSchema(),
 		"public": {
 			Type:        schema.TypeBool,
 			Optional:    true,
@@ -210,9 +213,9 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 		req.ExtraVolumes = expandImageExtraVolumesTemplates(locality.ExpandIDs(extraVolumesIDs))
 	}
 
-	tags, tagsExist := d.GetOk("tags")
-	if tagsExist {
-		req.Tags = types.ExpandStrings(tags)
+	allTags := tags.ExpandTagsAll(d, m)
+	if len(allTags) > 0 {
+		req.Tags = allTags
 	}
 
 	if _, exist := d.GetOk("public"); exist {
@@ -239,16 +242,16 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	return setImageState(d, image)
+	return setImageState(d, m, image)
 }
 
-func setImageState(d *schema.ResourceData, image *instanceSDK.Image) diag.Diagnostics {
+func setImageState(d *schema.ResourceData, m any, image *instanceSDK.Image) diag.Diagnostics {
 	_ = d.Set("name", image.Name)
 	_ = d.Set("root_volume_id", zonal.NewIDString(image.Zone, image.RootVolume.ID))
 	_ = d.Set("architecture", image.Arch)
 	_ = d.Set("root_volume", flattenImageRootVolume(image.RootVolume, image.Zone))
 	_ = d.Set("additional_volumes", flattenImageExtraVolumes(image.ExtraVolumes, image.Zone))
-	_ = d.Set("tags", image.Tags)
+	tags.SetTagsAllAndTags(d, m, image.Tags)
 	_ = d.Set("public", image.Public)
 	_ = d.Set("creation_date", types.FlattenTime(image.CreationDate))
 	_ = d.Set("modification_date", types.FlattenTime(image.ModificationDate))
@@ -286,7 +289,7 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	return setImageState(d, image.Image)
+	return setImageState(d, m, image.Image)
 }
 
 func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -312,7 +315,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 		req.Public = types.ExpandBoolPtr(d.Get("public"))
 	}
 
-	req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	req.Tags = tags.ExpandTagsAllUpdatedPtr(d, m)
 
 	image, err := api.GetImage(&instanceSDK.GetImageRequest{
 		Zone:    zone,

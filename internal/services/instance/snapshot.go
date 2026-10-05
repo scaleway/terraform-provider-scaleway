@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -17,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/tags"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -39,7 +41,7 @@ func ResourceSnapshot() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    snapshotSchema,
 		Identity:      identity.DefaultZonal(),
-		CustomizeDiff: cdf.LocalityCheck("volume_id"),
+		CustomizeDiff: customdiff.All(cdf.LocalityCheck("volume_id"), tags.CustomizeDiffTagsAll),
 	}
 }
 
@@ -80,6 +82,7 @@ func snapshotSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the snapshot",
 		},
+		"tags_all": tags.TagsAllSchema(),
 		"import": {
 			Type:     schema.TypeList,
 			ForceNew: true,
@@ -141,7 +144,7 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 		return diags
 	}
 
-	req.Tags = types.ExpandStringsPtr(d.Get("tags"))
+	req.Tags = tags.ExpandTagsAllPtr(d, m)
 
 	if volumeID, volumeIDExist := d.GetOk("volume_id"); volumeIDExist {
 		req.VolumeID = new(zonal.ExpandID(volumeID).ID)
@@ -176,10 +179,10 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	return setSnapshotState(d, snapshot)
+	return setSnapshotState(d, m, snapshot)
 }
 
-func setSnapshotState(d *schema.ResourceData, snapshot *instanceSDK.Snapshot) diag.Diagnostics {
+func setSnapshotState(d *schema.ResourceData, m any, snapshot *instanceSDK.Snapshot) diag.Diagnostics {
 	diags := handleDeprecatedSnapshotVolumeType(d)
 	if diags.HasError() {
 		return diags
@@ -188,7 +191,7 @@ func setSnapshotState(d *schema.ResourceData, snapshot *instanceSDK.Snapshot) di
 	_ = d.Set("name", snapshot.Name)
 	_ = d.Set("created_at", snapshot.CreationDate.Format(time.RFC3339))
 	_ = d.Set("type", snapshot.VolumeType.String())
-	_ = d.Set("tags", snapshot.Tags)
+	tags.SetTagsAllAndTags(d, m, snapshot.Tags)
 
 	if snapshot.BaseVolume != nil {
 		_ = d.Set("volume_id", zonal.NewIDString(snapshot.Zone, snapshot.BaseVolume.ID))
@@ -222,7 +225,7 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return setSnapshotState(d, snapshot.Snapshot)
+	return setSnapshotState(d, m, snapshot.Snapshot)
 }
 
 func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -235,12 +238,7 @@ func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData,
 		SnapshotID: id,
 		Zone:       zone,
 		Name:       new(d.Get("name").(string)),
-		Tags:       new([]string{}),
-	}
-
-	tags := types.ExpandStrings(d.Get("tags"))
-	if d.HasChange("tags") && len(tags) > 0 {
-		req.Tags = new(types.ExpandStrings(d.Get("tags")))
+		Tags:       tags.ExpandTagsAllUpdatedPtr(d, m),
 	}
 
 	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))

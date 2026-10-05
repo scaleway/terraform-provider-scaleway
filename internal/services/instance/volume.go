@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -17,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/tags"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -39,7 +41,7 @@ func ResourceVolume() *schema.Resource {
 		},
 		SchemaFunc:    volumeSchema,
 		Identity:      identity.DefaultZonal(),
-		CustomizeDiff: cdf.LocalityCheck("from_snapshot_id"),
+		CustomizeDiff: customdiff.All(cdf.LocalityCheck("from_snapshot_id"), tags.CustomizeDiffTagsAll),
 	}
 }
 
@@ -85,6 +87,7 @@ func volumeSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the volume",
 		},
+		"tags_all": tags.TagsAllSchema(),
 		"migrate_to_sbs": {
 			Type:        schema.TypeBool,
 			Optional:    true,
@@ -109,10 +112,10 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		VolumeType: instanceSDK.VolumeVolumeType(d.Get("type").(string)),
 		Project:    types.ExpandStringPtr(d.Get("project_id")),
 	}
-	tags := types.ExpandStrings(d.Get("tags"))
+	allTags := tags.ExpandTagsAll(d, m)
 
-	if len(tags) > 0 {
-		createVolumeRequest.Tags = tags
+	if len(allTags) > 0 {
+		createVolumeRequest.Tags = allTags
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
@@ -143,16 +146,16 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return setVolumeState(d, volume)
+	return setVolumeState(d, m, volume)
 }
 
-func setVolumeState(d *schema.ResourceData, volume *instanceSDK.Volume) diag.Diagnostics {
+func setVolumeState(d *schema.ResourceData, m any, volume *instanceSDK.Volume) diag.Diagnostics {
 	_ = d.Set("name", volume.Name)
 	_ = d.Set("organization_id", volume.Organization)
 	_ = d.Set("project_id", volume.Project)
 	_ = d.Set("zone", volume.Zone)
 	_ = d.Set("type", volume.VolumeType.String())
-	_ = d.Set("tags", volume.Tags)
+	tags.SetTagsAllAndTags(d, m, volume.Tags)
 
 	_, fromSnapshot := d.GetOk("from_snapshot_id")
 	if !fromSnapshot {
@@ -208,7 +211,7 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	return setVolumeState(d, res.Volume)
+	return setVolumeState(d, m, res.Volume)
 }
 
 func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -227,9 +230,8 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 		req.Name = new(d.Get("name").(string))
 	}
 
-	tags := types.ExpandStrings(d.Get("tags"))
-	if d.HasChange("tags") && len(tags) > 0 {
-		req.Tags = new(types.ExpandStrings(d.Get("tags")))
+	if d.HasChange("tags_all") {
+		req.Tags = tags.ExpandTagsAllUpdatedPtr(d, m)
 	}
 
 	if d.HasChange("size_in_gb") {

@@ -19,6 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/tags"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -27,6 +28,7 @@ var (
 	_ resource.Resource                = (*TemplateResource)(nil)
 	_ resource.ResourceWithConfigure   = (*TemplateResource)(nil)
 	_ resource.ResourceWithImportState = (*TemplateResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*TemplateResource)(nil)
 )
 
 func NewTemplateResource() resource.Resource {
@@ -43,6 +45,7 @@ type templateResourceModel struct {
 	FilesystemIDs      types.Set    `tfsdk:"filesystem_ids"`
 	PrivateNetworks    types.Set    `tfsdk:"private_networks"`
 	Tags               types.List   `tfsdk:"tags"`
+	TagsAll            types.List   `tfsdk:"tags_all"`
 	ServerTags         types.List   `tfsdk:"server_tags"`
 	CreatedAt          types.String `tfsdk:"created_at"`
 	SecurityGroupID    types.String `tfsdk:"security_group_id"`
@@ -82,6 +85,11 @@ func (r *TemplateResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:            true,
 				ElementType:         types.StringType,
 				MarkdownDescription: "The tags associated with the Instance Template.",
+			},
+			"tags_all": schema.ListAttribute{
+				Computed:            true,
+				ElementType:         types.StringType,
+				MarkdownDescription: "The tags associated with the Instance Template, including default tags from the provider configuration.",
 			},
 			"server_tags": schema.ListAttribute{
 				Optional:            true,
@@ -241,6 +249,10 @@ func (r *TemplateResource) Configure(_ context.Context, req resource.ConfigureRe
 	r.api = instanceV2.NewAPI(r.meta.ScwClient())
 }
 
+func (r *TemplateResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	tags.FrameworkModifyPlanTagsAll(ctx, req, resp, r.meta)
+}
+
 func (r *TemplateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data templateResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -272,7 +284,7 @@ func (r *TemplateResource) Create(ctx context.Context, req resource.CreateReques
 		PublicIPV6Count: uint32(data.PublicIPV6Count.ValueInt32()),
 	}
 
-	createReq.Tags = scwtypes.ExpandStringList(ctx, data.Tags, &resp.Diagnostics)
+	createReq.Tags = tags.FrameworkExpandTagsAll(ctx, data.Tags, r.meta.DefaultTags())
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -319,11 +331,11 @@ func (r *TemplateResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	state := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
+	state := flattenTemplate(ctx, tmpl, req, r.meta.DefaultTags(), &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func flattenTemplate(ctx context.Context, tmpl *instanceV2.Template, reference any, diags *diag.Diagnostics) any {
+func flattenTemplate(ctx context.Context, tmpl *instanceV2.Template, reference any, defaultTags []string, diags *diag.Diagnostics) any {
 	model := templateResourceModel{
 		ProjectID:       types.StringValue(tmpl.ProjectID),
 		ID:              types.StringValue(zonal.NewIDString(tmpl.Zone, tmpl.ID)),
@@ -334,10 +346,7 @@ func flattenTemplate(ctx context.Context, tmpl *instanceV2.Template, reference a
 		Zone:            types.StringValue(tmpl.Zone.String()),
 	}
 
-	tagList, d := scwtypes.FlattenStringList(ctx, "tags", tmpl.Tags, reference)
-	diags.Append(d...)
-
-	model.Tags = tagList
+	tags.FrameworkSetTagsAllAndTags(ctx, tmpl.Tags, defaultTags, &model.Tags, &model.TagsAll)
 
 	serverTagList, d := scwtypes.FlattenStringList(ctx, "server_tags", tmpl.ServerTags, reference)
 	diags.Append(d...)
@@ -440,7 +449,7 @@ func (r *TemplateResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	newState := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
+	newState := flattenTemplate(ctx, tmpl, req, r.meta.DefaultTags(), &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
@@ -476,12 +485,9 @@ func (r *TemplateResource) Update(ctx context.Context, req resource.UpdateReques
 		hasChanges = true
 	}
 
-	if !plan.Tags.Equal(state.Tags) {
-		updateReq.Tags = new(scwtypes.ExpandUpdatedStringList(ctx, plan.Tags, &resp.Diagnostics))
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
+	if !plan.TagsAll.Equal(state.TagsAll) {
+		mergedTags := tags.FrameworkExpandTagsAll(ctx, plan.Tags, r.meta.DefaultTags())
+		updateReq.Tags = &mergedTags
 		hasChanges = true
 	}
 
@@ -592,7 +598,7 @@ func (r *TemplateResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	newState := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
+	newState := flattenTemplate(ctx, tmpl, req, r.meta.DefaultTags(), &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 

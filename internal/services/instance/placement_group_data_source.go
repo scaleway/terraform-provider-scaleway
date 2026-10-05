@@ -99,5 +99,5 @@ func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return setPlacementGroupState(d, pg, pgV1)
+	return setPlacementGroupState(d, m, pg, pgV1)
 }

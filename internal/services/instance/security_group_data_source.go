@@ -89,5 +89,5 @@ func DataSourceInstanceSecurityGroupRead(ctx context.Context, d *schema.Resource
 	d.SetId(zonedID)
 	_ = d.Set("security_group_id", zonedID)
 
-	return setSecurityGroupState(ctx, instanceAPI, d, securityGroup)
+	return setSecurityGroupState(ctx, instanceAPI, d, m, securityGroup)
 }

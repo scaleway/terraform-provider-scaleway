@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	instance "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
@@ -19,7 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/tags"
 )
 
 func privateNICIdentity() *schema.ResourceIdentity {
@@ -47,7 +48,7 @@ func ResourcePrivateNIC() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
 		},
 		SchemaFunc:    privateNicSchema,
-		CustomizeDiff: cdf.LocalityCheck("server_id", "private_network_id"),
+		CustomizeDiff: customdiff.All(cdf.LocalityCheck("server_id", "private_network_id"), tags.CustomizeDiffTagsAll),
 		Identity:      privateNICIdentity(),
 	}
 }
@@ -80,6 +81,7 @@ func privateNicSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the private-nic",
 		},
+		"tags_all": tags.TagsAllSchema(),
 		"ip_ids": {
 			Type: schema.TypeList,
 			Elem: &schema.Schema{
@@ -144,7 +146,7 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 		Zone:             zone,
 		ServerID:         new(zonal.ExpandID(d.Get("server_id").(string)).ID),
 		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
-		Tags:             types.ExpandStrings(d.Get("tags")),
+		Tags:             tags.ExpandTagsAll(d, m),
 		IPIDs:            locality.ExpandIDs(d.Get("ipam_ip_ids")),
 		ProjectID:        projectID.(string),
 	}
@@ -191,9 +193,7 @@ func setPrivateNICState(ctx context.Context, d *schema.ResourceData, privateNIC 
 	_ = d.Set("mac_address", privateNIC.MacAddress)
 	_ = d.Set("project_id", privateNIC.ProjectID)
 
-	if len(privateNIC.Tags) > 0 {
-		_ = d.Set("tags", privateNIC.Tags)
-	}
+	tags.SetTagsAllAndTags(d, m, privateNIC.Tags)
 
 	// Get private NIC's private IPs if possible
 	diags := diag.Diagnostics{}
@@ -280,8 +280,8 @@ func ResourceInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceDat
 		PrivateNetworkInterfaceID: privateNICID,
 	}
 
-	if d.HasChange("tags") {
-		updateReq.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	if d.HasChange("tags_all") {
+		updateReq.Tags = tags.ExpandTagsAllUpdatedPtr(d, m)
 		needsUpdate = true
 	}
 

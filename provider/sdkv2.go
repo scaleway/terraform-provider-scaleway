@@ -5,6 +5,7 @@ import (
 	"maps"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -150,6 +151,23 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Optional:    true,
 					Default:     false,
 					Description: "Whether to enable the request to use path-style addressing.",
+				},
+				"default_tags": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					MaxItems:    1,
+					Description: "Configuration block with resource tags to default across all resources.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"tags": {
+								Type:     schema.TypeList,
+								Optional: true,
+								Elem:     &schema.Schema{Type: schema.TypeString},
+								Description: "Resource tags to default across all resources. " +
+									"Can also be configured using the `SCW_DEFAULT_TAGS` environment variable (comma-separated).",
+							},
+						},
+					},
 				},
 			},
 
@@ -463,11 +481,19 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 
 			s3UsePathStyle := types.ExpandBoolPtr(types.GetBool(data, "s3_use_path_style"))
 
+			var defaultTags []string
+			if v, ok := data.GetOk("default_tags"); ok && len(v.([]any)) > 0 && v.([]any)[0] != nil {
+				defaultTags = expandDefaultTags(v.([]any)[0].(map[string]any))
+			} else {
+				defaultTags = expandDefaultTags(nil)
+			}
+
 			m, err := meta.NewMeta(ctx, &meta.Config{
 				ProviderSchema:   data,
 				TerraformVersion: terraformVersion,
 				Endpoints:        endpoints,
 				S3UsePathStyle:   s3UsePathStyle,
+				DefaultTags:      defaultTags,
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
@@ -502,3 +528,41 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 }
 
 //gocyclo:ignore
+
+// expandDefaultTags builds the list of default tags from the provider
+// configuration block and the SCW_DEFAULT_TAGS environment variable.
+// Environment variable tags are merged first; tags defined in the
+// configuration block take precedence and are appended after.
+func expandDefaultTags(tfMap map[string]any) []string {
+	tags := make([]string, 0)
+
+	// SCW_DEFAULT_TAGS environment variable (comma-separated).
+	if envTags := os.Getenv("SCW_DEFAULT_TAGS"); envTags != "" {
+		for _, t := range strings.Split(envTags, ",") {
+			t = strings.TrimSpace(t)
+			if t != "" {
+				tags = append(tags, t)
+			}
+		}
+	}
+
+	// Tags from the configuration block.
+	if tfMap != nil {
+		if rawTags, ok := tfMap["tags"].([]any); ok {
+			for _, t := range rawTags {
+				if t == nil {
+					tags = append(tags, "")
+					continue
+				}
+
+				tags = append(tags, t.(string))
+			}
+		}
+	}
+
+	if len(tags) == 0 {
+		return nil
+	}
+
+	return tags
+}

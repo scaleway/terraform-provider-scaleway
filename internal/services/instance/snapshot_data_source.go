@@ -93,5 +93,5 @@ func DataSourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	return setSnapshotState(d, snapshot)
+	return setSnapshotState(d, m, snapshot)
 }

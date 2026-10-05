@@ -193,6 +193,17 @@ func ExtractScwClient(m any) *scw.Client {
 	return m.(*Meta).ScwClient()
 }
 
+// ExtractDefaultTags returns the provider-level default tags from the meta
+// value, or nil if none are configured.
+func ExtractDefaultTags(m any) []string {
+	metaVal, ok := m.(*Meta)
+	if !ok {
+		return nil
+	}
+
+	return metaVal.DefaultTags()
+}
+
 func ExtractHTTPClient(m any) *http.Client {
 	return m.(*Meta).HTTPClient()
 }
