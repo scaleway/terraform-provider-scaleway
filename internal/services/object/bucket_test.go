@@ -448,7 +448,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 								prefix  = ""
 								expiration {
 									days = 2
-									expired_object_delete_marker = false
+									expired_object_delete_marker = true
 								}
 							}
 						}`, bucketLifecycle, objectTestsMainRegion),
