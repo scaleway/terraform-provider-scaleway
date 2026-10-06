@@ -267,19 +267,20 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		annotations.NewAnnotationsBindingResource,
 		annotations.NewAnnotationsKeyResource,
 		annotations.NewAnnotationsValueResource,
-		annotations.NewAnnotationsBindingResource,
-		billing.NewBudgetResource,
-		billing.NewBudgetAlertResource,
+		autoscaling.NewAutoScalingGroupResource,
 		billing.NewBudgetAlertNotificationResource,
+		billing.NewBudgetAlertResource,
+		billing.NewBudgetResource,
 		datalab.NewDatalabResource,
-		iam.NewSamlResource,
+		file.NewFileSystemResource,
 		iam.NewSamlCertificateResource,
+		iam.NewSamlResource,
 		iam.NewScimResource,
 		iam.NewScimTokenResource,
 		instance.NewTemplateResource,
-		autoscaling.NewAutoScalingGroupResource,
 		keymanager.NewKeyMaterialResource,
 		mailbox.NewDomainResource,
 		mailbox.NewMailboxResource,
@@ -324,6 +325,9 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		messageq.NewDeploymentDataSource,
 		messageq.NewNodeTypeDataSource,
 		messageq.NewVersionDataSource,
+		rdb.NewInstanceLogDataSource,
+		rdb.NewInstanceLogsDataSource,
+		rdb.NewInstanceLogsDetailsDataSource,
 	}
 }
 

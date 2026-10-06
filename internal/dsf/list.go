@@ -18,9 +18,9 @@ func OrderDiff(k, _, _ string, d *schema.ResourceData) bool {
 }
 
 func ExtractBaseKey(k string) string {
-	lastDotIndex := strings.LastIndex(k, ".")
-	if lastDotIndex != -1 {
-		return k[:lastDotIndex]
+	before, _, ok := strings.CutLast(k, ".")
+	if ok {
+		return before
 	}
 
 	return k

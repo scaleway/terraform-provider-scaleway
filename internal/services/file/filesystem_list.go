@@ -8,19 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 var (
-	_ list.ListResource                 = (*FileSystemListResource)(nil)
-	_ list.ListResourceWithConfigure    = (*FileSystemListResource)(nil)
-	_ list.ListResourceWithRawV6Schemas = (*FileSystemListResource)(nil)
+	_ list.ListResource              = (*FileSystemListResource)(nil)
+	_ list.ListResourceWithConfigure = (*FileSystemListResource)(nil)
 )
 
 type FileSystemListResource struct {
@@ -65,13 +62,6 @@ func (r *FileSystemListResource) ListResourceConfigSchema(
 			"filesystem_ids":  listscw.UUIDsAttribute("FileSystem IDs to filter on."),
 		},
 	}
-}
-
-func (r *FileSystemListResource) RawV6Schemas(ctx context.Context, req list.RawV6SchemaRequest, resp *list.RawV6SchemaResponse) {
-	resourceFS := ResourceFileSystem()
-
-	resp.ProtoV6Schema = translate.Schema(resourceFS.ProtoSchema(ctx)())
-	resp.ProtoV6IdentitySchema = translate.ResourceIdentitySchema(resourceFS.ProtoIdentitySchema(ctx)())
 }
 
 type ListResourceModel struct {
@@ -192,48 +182,17 @@ func (r *FileSystemListResource) List(ctx context.Context, req list.ListRequest,
 			result := req.NewListResult(ctx)
 			result.DisplayName = rawFS.Name
 
-			fsResource := ResourceFileSystem()
-			resourceData := fsResource.Data(&terraform.InstanceState{})
+			identityDiags := result.Identity.Set(ctx, identityfw.SetRegionalIdentity(
+				rawFS.Region,
+				rawFS.ID,
+			))
+			result.Diagnostics.Append(identityDiags...)
 
-			err := identity.SetRegionalIdentity(resourceData, rawFS.Region, rawFS.ID)
-			if err != nil {
-				result.Diagnostics.AddError(
-					"Retrieving identity data",
-					"An error was encountered when retrieving the identity data: "+err.Error(),
-				)
-
-				if !push(result) {
-					return
-				}
-
-				continue
+			if req.IncludeResource {
+				resourceModel := flattenFilesystem(ctx, rawFS, &data, &result.Diagnostics)
+				resourceDiags := result.Resource.Set(ctx, &resourceModel)
+				result.Diagnostics.Append(resourceDiags...)
 			}
-
-			// Convert and set the identity and resource state into the result
-			tfTypeIdentity, errIdentityState := resourceData.TfTypeIdentityState()
-			if errIdentityState != nil {
-				result.Diagnostics.AddError(
-					"Converting identity data",
-					"An error was encountered when converting the identity data: "+errIdentityState.Error(),
-				)
-			}
-
-			identitySetDiags := result.Identity.Set(ctx, *tfTypeIdentity)
-			result.Diagnostics.Append(identitySetDiags...)
-
-			setFileSystemState(resourceData, rawFS)
-
-			// Convert and set the resource state into the result
-			tfTypeResource, errTfTypeResourceState := resourceData.TfTypeResourceState()
-			if errTfTypeResourceState != nil {
-				result.Diagnostics.AddError(
-					"Converting resource state",
-					"An error was encountered when converting the resource state: "+errTfTypeResourceState.Error(),
-				)
-			}
-
-			resourceSetDiags := result.Resource.Set(ctx, *tfTypeResource)
-			result.Diagnostics.Append(resourceSetDiags...)
 
 			// Send the result to the stream.
 			if !push(result) {

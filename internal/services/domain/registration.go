@@ -668,8 +668,8 @@ func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m an
 	// In domain format, look up the task when task_id is missing so import by
 	// domain name converges with create (task_id set when the task still exists).
 	idSegment := id
-	if i := strings.LastIndex(id, "/"); i != -1 {
-		idSegment = id[i+1:]
+	if _, after, ok := strings.CutLast(id, "/"); ok {
+		idSegment = after
 	}
 
 	switch {
