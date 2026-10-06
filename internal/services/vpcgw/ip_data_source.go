@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -37,11 +38,9 @@ func DataSourceVPCPublicGatewayIPRead(ctx context.Context, d *schema.ResourceDat
 	ipID, _ := d.GetOk("ip_id")
 
 	// Extract zone from ip_id if it contains localized format (zone/uuid)
-	if parsedZone, parsedID, err := locality.ParseLocalizedID(ipID.(string)); err == nil && parsedZone != "" {
-		if parsedZoneEnum, err := scw.ParseZone(parsedZone); err == nil {
-			zone = parsedZoneEnum
-			ipID = parsedID
-		}
+	if parsedZone, parsedID, err := zonal.ParseID(ipID.(string)); err == nil {
+		zone = parsedZone
+		ipID = parsedID
 	}
 
 	zonedID := datasource.NewZonedID(ipID, zone)
