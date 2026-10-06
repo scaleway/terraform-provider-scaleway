@@ -33,8 +33,8 @@ resource "scaleway_key_manager_key" "main" {
 }
 
 resource "scaleway_annotations_binding" "main" {
-  srn      = scaleway_key_manager_key.main.srn
-  value_id = scaleway_annotations_value.production.id
+  target_srn = scaleway_key_manager_key.main.srn
+  value_id   = scaleway_annotations_value.production.id
 }
 
 data "scaleway_annotations_binding" "main" {
@@ -53,6 +53,7 @@ data "scaleway_annotations_binding" "main" {
 The following attributes are exported:
 
 - `id` - The ID of the annotation binding
-- `srn` - Scaleway Resource Number associated to the binding
+- `srn` - The Scaleway Resource Number (SRN) of the binding.
+- `target_srn` - Scaleway Resource Number associated to the binding.
 - `value_id` - ID of the value associated to the binding
 - `key_id` - ID of the key associated to the binding

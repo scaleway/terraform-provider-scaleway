@@ -51,10 +51,11 @@ type AnnotationsBindingResource struct {
 }
 
 type annotationsBindingResourceModel struct {
-	ID      types.String `tfsdk:"id"`
-	Srn     types.String `tfsdk:"srn"`
-	ValueID types.String `tfsdk:"value_id"`
-	KeyID   types.String `tfsdk:"key_id"`
+	ID        types.String `tfsdk:"id"`
+	Srn       types.String `tfsdk:"srn"`
+	TargetSrn types.String `tfsdk:"target_srn"`
+	ValueID   types.String `tfsdk:"value_id"`
+	KeyID     types.String `tfsdk:"key_id"`
 }
 
 type annotationsBindingResourceIdentityModel = framework.GlobalIdentity
@@ -79,6 +80,13 @@ func (r *AnnotationsBindingResource) Schema(ctx context.Context, req resource.Sc
 				},
 			},
 			"srn": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The Scaleway Resource Number (SRN) of the binding.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"target_srn": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "Scaleway Resource Number to associate.",
 				PlanModifiers: []planmodifier.String{
@@ -132,8 +140,8 @@ func (r *AnnotationsBindingResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	createReq := &annotations.CreateBindingRequest{
-		Srn:     data.Srn.ValueString(),
-		ValueID: locality.ExpandID(data.ValueID.ValueString()),
+		TargetSrn: data.TargetSrn.ValueString(),
+		ValueID:   locality.ExpandID(data.ValueID.ValueString()),
 	}
 
 	binding, err := r.annotationsAPI.CreateBinding(createReq, scw.WithContext(ctx))
@@ -148,6 +156,7 @@ func (r *AnnotationsBindingResource) Create(ctx context.Context, req resource.Cr
 
 	data.ID = types.StringValue(binding.ID)
 	data.Srn = types.StringValue(binding.Srn)
+	data.TargetSrn = types.StringValue(binding.TargetSrn)
 	data.ValueID = types.StringValue(binding.Value.ID)
 	data.KeyID = types.StringValue(binding.Key.ID)
 
@@ -200,6 +209,7 @@ func (r *AnnotationsBindingResource) Read(ctx context.Context, req resource.Read
 
 	state.ID = types.StringValue(binding.ID)
 	state.Srn = types.StringValue(binding.Srn)
+	state.TargetSrn = types.StringValue(binding.TargetSrn)
 	state.ValueID = types.StringValue(binding.Value.ID)
 	state.KeyID = types.StringValue(binding.Key.ID)
 
@@ -211,7 +221,7 @@ func (r *AnnotationsBindingResource) Read(ctx context.Context, req resource.Read
 func (r *AnnotationsBindingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	resp.Diagnostics.AddError(
 		"Update not supported",
-		"Annotation bindings cannot be updated. Changes to srn or value_id require resource replacement.",
+		"Annotation bindings cannot be updated. Changes to target_srn or value_id require resource replacement.",
 	)
 }
 
@@ -258,6 +268,7 @@ func (r *AnnotationsBindingResource) ImportState(ctx context.Context, req resour
 
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), binding.ID)...)
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("srn"), binding.Srn)...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("target_srn"), binding.TargetSrn)...)
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("value_id"), binding.Value.ID)...)
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key_id"), binding.Key.ID)...)
 
