@@ -186,6 +186,10 @@ func TestSDKv2ProviderConfigSources_NoConfig(t *testing.T) {
 	t.Run("Test defaults when no config provided", func(t *testing.T) {
 		unsetEnv(true)
 
+		// Point the config path at a non-existent file in a temp dir so that no
+		// config from the user's environment (e.g. ~/.config/scw/config.yaml) is loaded.
+		t.Setenv("SCW_CONFIG_PATH", t.TempDir()+"/config.yaml")
+
 		// Test with no config - should get defaults
 		providerSchema := generateProviderSchema(t, map[string]any{})
 

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	secretSDK "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
@@ -297,6 +298,45 @@ func TestAccSecret_EphemeralPolicy(t *testing.T) {
 	})
 }
 
+func TestAccSecret_WithKMSKey(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_key_manager_key" "main" {
+				  name        = "tf-test-secret-kms-key"
+				  region      = "fr-par"
+				  usage       = "symmetric_encryption"
+				  algorithm   = "aes_256_gcm"
+				  unprotected = true
+				}
+
+				resource "scaleway_secret" "main" {
+				  name   = "test-secret-kms-secret"
+				  region = "fr-par"
+				  key_id = scaleway_key_manager_key.main.id
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+					testAccCheckSecretKMSKeyID("scaleway_secret.main", "scaleway_key_manager_key.main"),
+					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_secret.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccSecret_WithVersions(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -351,6 +391,26 @@ func TestAccSecret_WithVersions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckSecretKMSKeyID(secretName, keyName string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		secretRS, ok := state.RootModule().Resources[secretName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", secretName)
+		}
+
+		keyRS, ok := state.RootModule().Resources[keyName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", keyName)
+		}
+
+		if locality.ExpandID(secretRS.Primary.Attributes["key_id"]) != locality.ExpandID(keyRS.Primary.ID) {
+			return fmt.Errorf("secret key_id %q does not match key manager key id %q", secretRS.Primary.Attributes["key_id"], keyRS.Primary.ID)
+		}
+
+		return nil
+	}
 }
 
 func testAccCheckSecretExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {

@@ -52,6 +52,20 @@ func wafStageSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Mode defining WAF behavior (`disable`/`log_only`/`enable`)",
 		},
+		"exclusion_rules": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "List of OWASP CRS rule IDs excluded from the WAF",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"rule_id": {
+						Type:        schema.TypeInt,
+						Required:    true,
+						Description: "OWASP CRS rule ID excluded from the WAF",
+					},
+				},
+			},
+		},
 		"created_at": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -74,6 +88,7 @@ func ResourceWAFStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		BackendStageID: types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
 		ParanoiaLevel:  uint32(d.Get("paranoia_level").(int)),
 		Mode:           edgeservices.WafStageMode(d.Get("mode").(string)),
+		ExclusionRules: expandWafExclusionRules(d.Get("exclusion_rules")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -118,6 +133,7 @@ func setWAFStageState(d *schema.ResourceData, wafStage *edgeservices.WafStage) d
 	_ = d.Set("backend_stage_id", types.FlattenStringPtr(wafStage.BackendStageID))
 	_ = d.Set("paranoia_level", int(wafStage.ParanoiaLevel))
 	_ = d.Set("mode", wafStage.Mode.String())
+	_ = d.Set("exclusion_rules", flattenWafExclusionRules(wafStage.ExclusionRules))
 	_ = d.Set("created_at", types.FlattenTime(wafStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(wafStage.UpdatedAt))
 
@@ -145,6 +161,11 @@ func ResourceWAFStageUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 
 	if d.HasChange("backend_stage_id") {
 		updateRequest.BackendStageID = types.ExpandStringPtr(d.Get("backend_stage_id").(string))
+		hasChanged = true
+	}
+
+	if d.HasChange("exclusion_rules") {
+		updateRequest.ExclusionRules = expandUpdatedWafExclusionRules(d.Get("exclusion_rules"))
 		hasChanged = true
 	}
 
