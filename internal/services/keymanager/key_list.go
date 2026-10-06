@@ -2,6 +2,8 @@ package keymanager
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -17,6 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -62,6 +65,13 @@ func (r *KeyListResource) ListResourceConfigSchema(_ context.Context, _ list.Lis
 				Description: "Filter keys by deletion status",
 				Optional:    true,
 			},
+			"protection_level": schema.StringAttribute{
+				Description: fmt.Sprintf("Protection level of the key to filter for (%s)", strings.Join(verify.KnownValues[key_manager.KeyProtectionLevel](), ", ")),
+				Optional:    true,
+				Validators: []validator.String{
+					verify.ValidateEnumFramework[key_manager.KeyProtectionLevel](),
+				},
+			},
 		},
 	}
 }
@@ -80,6 +90,7 @@ type KeyListResourceModel struct {
 	Name                 types.String `tfsdk:"name"`
 	Usage                types.String `tfsdk:"usage"`
 	ScheduledForDeletion types.Bool   `tfsdk:"scheduled_for_deletion"`
+	ProtectionLevel      types.String `tfsdk:"protection_level"`
 }
 
 func (m *KeyListResourceModel) GetRegions() types.List  { return m.Regions }
@@ -112,6 +123,10 @@ func (r *KeyListResource) FetchKeys(ctx context.Context, region scw.Region, proj
 
 	if !data.ScheduledForDeletion.IsNull() && !data.ScheduledForDeletion.IsUnknown() {
 		request.ScheduledForDeletion = data.ScheduledForDeletion.ValueBool()
+	}
+
+	if !data.ProtectionLevel.IsNull() && !data.ProtectionLevel.IsUnknown() {
+		request.ProtectionLevel = key_manager.KeyProtectionLevel(data.ProtectionLevel.ValueString())
 	}
 
 	response, err := r.keyAPI.ListKeys(request, scw.WithContext(ctx), scw.WithAllPages())

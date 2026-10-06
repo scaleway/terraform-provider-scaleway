@@ -306,6 +306,72 @@ func TestAccListKeyManagerKeys_ByScheduledForDeletion(t *testing.T) {
 	})
 }
 
+func TestAccListKeyManagerKeys_ByProtectionLevel(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccListKeyManagerKeys_ByProtectionLevel because list resources are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			IsKeyManagerKeyDestroyed(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+
+					resource "scaleway_key_manager_key" "key1" {
+						name             = "tf-test-km-by-protection-1"
+						usage            = "symmetric_encryption"
+						algorithm        = "aes_256_gcm"
+						unprotected      = true
+						protection_level = "software"
+					}
+				`,
+			},
+			{
+				Config: `
+
+					resource "scaleway_key_manager_key" "key1" {
+						name             = "tf-test-km-by-protection-1"
+						usage            = "symmetric_encryption"
+						algorithm        = "aes_256_gcm"
+						unprotected      = true
+						protection_level = "software"
+					}
+
+					resource "scaleway_key_manager_key" "key2" {
+						name        = "tf-test-km-by-protection-2"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						unprotected = true
+					}
+				`,
+			},
+			{
+				Query: true,
+				Config: `
+					list "scaleway_key_manager_key" "by_protection_level" {
+						provider = scaleway
+
+						config {
+							project_ids      = [scaleway_key_manager_key.key1.project_id]
+							protection_level = "software"
+						}
+					}
+				`,
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					querycheck.ExpectLength("list.scaleway_key_manager_key.by_protection_level", 2),
+				},
+			},
+		},
+	})
+}
+
 func TestAccListKeyManagerKeys_ByRegions(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
 		t.Skip("Skipping TestAccListKeyManagerKeys_ByRegions because list resources are not yet supported on OpenTofu")

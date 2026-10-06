@@ -41,6 +41,42 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "description", "Test key"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "tags.0", "tf"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "tags.1", "test"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "protection_level", "software"),
+					resource.TestMatchResourceAttr("scaleway_key_manager_key.main", "srn", regexp.MustCompile(`^srn://key-manager\..+/regions/.+/keys/.+$`)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccKeyManagerKey_ProtectionLevel(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+			resource "scaleway_key_manager_key" "main" {
+			  name             = "tf-test-kms-key-protection-level"
+			  region           = "fr-par"
+			  usage            = "symmetric_encryption"
+			  algorithm        = "aes_256_gcm"
+			  description      = "Test key with protection level"
+			  tags             = ["tf", "test"]
+			  unprotected      = true
+			  protection_level = "hsm"
+			}
+			`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "name", "tf-test-kms-key-protection-level"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "region", "fr-par"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "usage", "symmetric_encryption"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "algorithm", "aes_256_gcm"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "description", "Test key with protection level"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "protection_level", "hsm"),
 					resource.TestMatchResourceAttr("scaleway_key_manager_key.main", "srn", regexp.MustCompile(`^srn://key-manager\..+/regions/.+/keys/.+$`)),
 				),
 			},

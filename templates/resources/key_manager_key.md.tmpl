@@ -91,6 +91,10 @@ The following arguments are supported:
 - `origin` (String, Optional) – The origin of the key. Valid values are:
     - `scaleway_kms` (default)
     - `external`
+- `protection_level` (String, Optional) – The protection level of the key. Valid values are:
+    - `software` (default) – Cryptographic operations are performed in software.
+    - `hsm` – Cryptographic operations are performed within a dedicated Hardware Security Module.
+    The protection level is immutable: changing it requires replacing the key.
 - `rotation_policy` (Block, Optional) – Rotation policy for the key:
     - `rotation_period` (String, Required) – The period between key rotations (e.g., `"720h"` for 30 days).
     - `next_rotation_at` (String, Optional) – The date and time of the next scheduled rotation, in RFC 3339 format. If not set, it is computed by the Key Manager API from `rotation_period`.
