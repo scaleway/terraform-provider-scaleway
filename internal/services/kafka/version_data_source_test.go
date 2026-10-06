@@ -1,0 +1,58 @@
+package kafka_test
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+)
+
+func TestAccDataSourceKafkaVersion_Basic(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	version := "4.0.0"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_kafka_version" "by_name" {
+						name = %q
+					}
+				`, version),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_kafka_version.by_name", "name", version),
+					resource.TestCheckResourceAttrSet("data.scaleway_kafka_version.by_name", "id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_kafka_version.by_name", "end_of_life_at"),
+					resource.TestCheckResourceAttr("data.scaleway_kafka_version.by_name", "available_settings.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceKafkaVersion_Latest(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					data "scaleway_kafka_version" "latest" {
+						name = "latest"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.scaleway_kafka_version.latest", "name"),
+					resource.TestCheckResourceAttrSet("data.scaleway_kafka_version.latest", "id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_kafka_version.latest", "end_of_life_at"),
+				),
+			},
+		},
+	})
+}

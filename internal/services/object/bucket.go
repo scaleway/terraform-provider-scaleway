@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -18,6 +19,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -196,9 +198,10 @@ func bucketSchema() map[string]*schema.Schema {
 									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
 								},
 								"expired_object_delete_marker": {
-									Type:        schema.TypeBool,
-									Optional:    true,
-									Description: "Specifies whether Scaleway Object will remove a delete marker with no noncurrent versions. If set to `true`, the delete marker will be expired; if set to `false` the policy takes no action",
+									Type:     schema.TypeBool,
+									Optional: true,
+									Description: "Specifies whether Scaleway Object will remove a delete marker with no noncurrent versions. " +
+										"If set to `true`, the delete marker will be expired; if set to `false` the policy takes no action, and is counted as empty by Terraform.",
 								},
 							},
 						},
@@ -483,28 +486,30 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		// Expiration
 		expiration := d.Get(fmt.Sprintf("lifecycle_rule.%d.expiration", i)).([]any)
 		if len(expiration) > 0 && expiration[0] != nil {
-			e := expiration[0].(map[string]any)
-			i := &s3Types.LifecycleExpiration{}
+			expirationMap := expiration[0].(map[string]any)
+			expirationS3 := &s3Types.LifecycleExpiration{}
 
-			if val, ok := e["days"].(int); ok && val > 0 {
+			if val, ok := expirationMap["days"].(int); ok && val > 0 {
 				days := int32(val)
-				i.Days = aws.Int32(days)
+				expirationS3.Days = aws.Int32(days)
 			}
 
-			if val, ok := e["date"].(string); ok && val != "" {
+			if val, ok := expirationMap["date"].(string); ok && val != "" {
 				date, err := time.Parse("2006-01-02", val)
 				if err != nil {
 					return fmt.Errorf("error while parsing expiration date '%s': %w", val, err)
 				}
 
-				i.Date = aws.Time(date)
+				expirationS3.Date = aws.Time(date)
 			}
 
-			if val, ok := e["expired_object_delete_marker"].(bool); ok {
-				i.ExpiredObjectDeleteMarker = aws.Bool(val)
+			if val, ok := meta.GetRawConfigForKey(
+				d, fmt.Sprintf("lifecycle_rule.%d.expiration.0.expired_object_delete_marker", i), cty.Bool,
+			); ok && val.(bool) { // We don't set the flag if it's "false"
+				expirationS3.ExpiredObjectDeleteMarker = aws.Bool(val.(bool))
 			}
 
-			rule.Expiration = i
+			rule.Expiration = expirationS3
 		}
 
 		// Transitions
@@ -746,7 +751,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	diags := setBucketState(ctx, d, bucketName, region, s3Client)
+	diags := setBucketState(ctx, d, m, bucketName, region, s3Client)
 
 	err = identity.SetRegionalIdentity(d, region, bucketName)
 	if err != nil {
@@ -756,7 +761,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	return diags
 }
 
-func setBucketState(ctx context.Context, d *schema.ResourceData, bucketName string, region scw.Region, s3Client *s3.Client) diag.Diagnostics {
+func setBucketState(ctx context.Context, d *schema.ResourceData, m any, bucketName string, region scw.Region, s3Client *s3.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	_ = d.Set("name", bucketName)
@@ -823,8 +828,10 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, bucketName stri
 
 	_ = d.Set("tags", flattenObjectBucketTags(tagsSet))
 
-	_ = d.Set("endpoint", objectBucketEndpointURL(bucketName, region))
-	_ = d.Set("api_endpoint", objectBucketAPIEndpointURL(region))
+	endpoint, apiEndpoint := ComputeObjectBucketURLs(d, m, bucketName, region)
+
+	_ = d.Set("endpoint", endpoint)
+	_ = d.Set("api_endpoint", apiEndpoint)
 
 	// Read the CORS
 	corsResponse, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
@@ -978,16 +985,22 @@ func resourceBucketLifecycleRulesExpirationRead(expiration *s3Types.LifecycleExp
 		return
 	}
 
+	// In the following block, we check the validity of pointers but also the
+	// value of their variables for empty values (e.g. 0 for int, IsZero() for
+	// date...).
+
 	e := make(map[string]any)
-	if expiration.Days != nil {
+
+	switch {
+	case expiration.Days != nil && aws.ToInt32(expiration.Days) > 0:
 		e["days"] = int(aws.ToInt32(expiration.Days))
-	}
 
-	if expiration.Date != nil {
+	case expiration.Date != nil && !expiration.Date.IsZero():
 		e["date"] = aws.ToString(new(expiration.Date.Format("2006-01-02")))
-	}
 
-	if expiration.ExpiredObjectDeleteMarker != nil {
+	case expiration.ExpiredObjectDeleteMarker != nil:
+		// The function "validateBucket" considers this field empty when it is set
+		// "false". This means we can set it here without risks.
 		e["expired_object_delete_marker"] = aws.ToBool(expiration.ExpiredObjectDeleteMarker)
 	}
 
@@ -1163,6 +1176,16 @@ func validateLifecycleExpiration(diff *schema.ResourceDiff, i int) error {
 
 	_, daysOk := diff.GetOk(prefix + "days")
 	_, dateOk := diff.GetOk(prefix + "date")
+
+	// Note: if "expired_object_delete_marker" is present in the config but set as
+	// "false", it will not be counted.
+	//
+	// Using "meta.GetRawConfigForKey" is more reliable to read the field from the
+	// Terraform configuration file, but the READ step, which retrieves data from
+	// the API, still reads "false" when should be "empty".
+	//
+	// Ignoring the field is a reasonable choice, considering its business logic.
+
 	_, markerOk := diff.GetOk(prefix + "expired_object_delete_marker")
 
 	// Implement "ExactlyOneOf"

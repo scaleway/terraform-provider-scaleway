@@ -19,7 +19,7 @@ func TestAccDomainValidation_Validation(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "validation-validation"
+	subDomainName := "tf-test-tem-validation"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -58,7 +58,7 @@ func TestAccDomainValidation_TimeoutError(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "validation-timeout"
+	subDomainName := "tf-test-tem-validation-timeout"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,

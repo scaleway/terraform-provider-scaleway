@@ -208,18 +208,32 @@ resource "scaleway_instance_ip" "server_ip" {
 }
 ```
 
-## Arguments Reference
-
-In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html) (e.g. `alias` and `version`), the following arguments are supported in the Scaleway provider block:
+## Scaleway Configuration Reference
 
 | Provider Argument | [Environment Variables](#environment-variables) | Description                                                                                                                                     | Mandatory |
 | ----------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
 | `access_key`      | `SCW_ACCESS_KEY`                                | [Scaleway access key](https://console.scaleway.com/project/credentials)                                                                         | ✅        |
 | `secret_key`      | `SCW_SECRET_KEY`                                | [Scaleway secret key](https://console.scaleway.com/project/credentials)                                                                         | ✅        |
 | `project_id`      | `SCW_DEFAULT_PROJECT_ID`                        | The [project ID](https://console.scaleway.com/project/settings) that will be used as default value for project-scoped resources.                | ✅        |
-| `organization_id` | `SCW_DEFAULT_ORGANIZATION_ID`                   | The [organization ID](https://console.scaleway.com/organization/settings) that will be used as default value for organization-scoped resources. |           |
+| `organization_id` | `SCW_DEFAULT_ORGANIZATION_ID`                   | The [organization ID](https://console.scaleway.com/organization/settings) that will be used as default value for organization-scoped resources. | ✅        |
 | `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. (`fr-par` if none specified)         |           |
 | `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. (`fr-par-1` if none specified)            |           |
+
+## Arguments Reference
+
+In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html)
+(e.g. `alias` and `version`), and [the configuration arguments](#scaleway-configuration-reference),
+the following arguments are supported in the Scaleway provider block:
+
+- `endpoints` - (Optional) Configuration block for customizing service endpoints.
+See the [Custom Service Endpoints Guide](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/custom_service_endpoints_guide) for more information.
+- `s3_use_path_style` - (Optional) Whether to enable the request to use path-style addressing, i.e.
+`API_ENDPOINT/BUCKET/KEY`. By default, the S3 client will use virtual hosted bucket addressing, i.e.
+`BUCKET.API_ENDPOINT/KEY`, when possible. Compatible with a custom S3 endpoint using `endpoints`.
+
+~> **Important**: Both path and virtual styles are supported by the Scaleway Object Storage API.
+When using a different endpoint for your own S3 API, make sure to adjust the `s3_use_path_style`
+flag according to what your endpoint supports.
 
 ## Store terraform state
 

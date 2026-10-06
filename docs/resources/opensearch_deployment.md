@@ -103,7 +103,7 @@ resource "scaleway_opensearch_deployment" "main" {
 The following arguments are supported:
 
 - `version` - (Required, Forces new resource) OpenSearch version to use (e.g., "2.0"). Changing this forces recreation of the deployment.
-- `node_count` - (Optional, Forces new resource) Number of nodes in the cluster. Changing this forces recreation of the deployment.
+- `node_count` - (Optional) Number of nodes in the cluster. Changing this value upgrades the deployment **in place** (no recreation, no data loss).
 - `node_amount` - (Optional, Forces new resource, **Deprecated**) Use `node_count` instead. Changing this forces recreation of the deployment.
 - `node_type` - (Required, Forces new resource) Type of node to use (e.g., "SEARCHDB-SHARED-2C-8G", "SEARCHDB-DEDICATED-2C-8G"). Changing this forces recreation of the deployment.
 - `volume` - (Required) Volume configuration for the cluster.
@@ -118,7 +118,7 @@ The following arguments are supported:
 - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the deployment is associated with.
 
-~> **Note:** Without `private_network`, a public endpoint is created for both the OpenSearch API and Dashboards. With `private_network`, the API is exposed on the private network; OpenSearch Dashboards may still be reachable on a public URL (see `public_dashboard_url`).
+~> **Note:** Without `private_network`, a public endpoint is created for both the OpenSearch API and Dashboards. Creating with `private_network` exposes the API on the private network; OpenSearch Dashboards may still be reachable on a public URL (see `public_dashboard_url`). Adding `private_network` to an **existing** deployment attaches a private endpoint but **does not remove the public one**, so the deployment stays reachable publicly. `endpoints` lists every endpoint returned by the API.
 
 ~> **Important:** The password must be at least 12 characters long. If not provided, you will need to reset it through the Scaleway console or API.
 
@@ -131,7 +131,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - Date and time of deployment creation (RFC 3339 format).
 - `updated_at` - Date and time of deployment last update (RFC 3339 format).
 - `public_dashboard_url` - URL of OpenSearch Dashboards when served on a **public** endpoint. With a private network for the API, the API endpoint is private but the dashboard may still be reachable at this public URL.
-- `endpoints` - List of endpoints for accessing the deployment.
+- `endpoints` - List of all endpoints returned by the API for accessing the deployment (public and private).
     - `id` - The ID of the endpoint.
     - `services` - List of services exposed on the endpoint.
         - `name` - Service name (e.g., "opensearch", "dashboards").
@@ -141,6 +141,10 @@ In addition to all arguments above, the following attributes are exported:
     - `private_network_id` - Private network ID if the endpoint is private.
 
 ## Upgrade Notes
+
+### In-place node count upgrade
+
+Changing `node_count` (the number of nodes) upgrades the deployment **in place** via the SearchDB upgrade API — no recreation, no data loss.
 
 ### Changing Resources
 

@@ -23,6 +23,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 var (
@@ -351,7 +352,9 @@ func (r *ZoneListResource) fetchDNSZones(
 		UpdatedBefore: timeFilters.UpdatedBefore,
 	}
 
-	response, err := r.domainAPI.ListDNSZones(request, scw.WithContext(ctx), scw.WithAllPages())
+	response, err := transport.RetryOn403Value(ctx, func() (*domainSDK.ListDNSZonesResponse, error) {
+		return r.domainAPI.ListDNSZones(request, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, err
 	}

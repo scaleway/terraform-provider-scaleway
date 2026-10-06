@@ -22,11 +22,21 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
-		DNSZone:       dnsZone,
-		Timeout:       new(timeout),
-		RetryInterval: new(retryInterval),
-	}, scw.WithContext(ctx))
+	var zone *domain.DNSZone
+
+	err := transport.RetryOn403(ctx, func() error {
+		var err error
+
+		zone, err = domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
+			DNSZone:       dnsZone,
+			Timeout:       new(timeout),
+			RetryInterval: new(retryInterval),
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return zone, err
 }
 
 func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, recordName string, recordType domain.RecordType, timeout time.Duration) (*domain.Record, error) {
@@ -35,13 +45,23 @@ func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, 
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return domainAPI.WaitForDNSRecordExist(&domain.WaitForDNSRecordExistRequest{
-		DNSZone:       dnsZone,
-		RecordName:    recordName,
-		RecordType:    recordType,
-		Timeout:       new(timeout),
-		RetryInterval: new(retryInterval),
-	}, scw.WithContext(ctx))
+	var record *domain.Record
+
+	err := transport.RetryOn403(ctx, func() error {
+		var err error
+
+		record, err = domainAPI.WaitForDNSRecordExist(&domain.WaitForDNSRecordExistRequest{
+			DNSZone:       dnsZone,
+			RecordName:    recordName,
+			RecordType:    recordType,
+			Timeout:       new(timeout),
+			RetryInterval: new(retryInterval),
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return record, err
 }
 
 func waitForDomainsRegistration(ctx context.Context, api *domain.RegistrarAPI, domainName string, timeout time.Duration) (*domain.Domain, error) {
@@ -50,11 +70,21 @@ func waitForDomainsRegistration(ctx context.Context, api *domain.RegistrarAPI, d
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForOrderDomain(&domain.WaitForOrderDomainRequest{
-		Domain:        domainName,
-		Timeout:       new(timeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	var registeredDomain *domain.Domain
+
+	err := transport.RetryOn403(ctx, func() error {
+		var err error
+
+		registeredDomain, err = api.WaitForOrderDomain(&domain.WaitForOrderDomainRequest{
+			Domain:        domainName,
+			Timeout:       new(timeout),
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return registeredDomain, err
 }
 
 func waitForAutoRenewStatus(ctx context.Context, api *domain.RegistrarAPI, domainName string, timeout time.Duration) (*domain.Domain, error) {
@@ -63,11 +93,21 @@ func waitForAutoRenewStatus(ctx context.Context, api *domain.RegistrarAPI, domai
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForAutoRenewStatus(&domain.WaitForAutoRenewStatusRequest{
-		Domain:        domainName,
-		Timeout:       new(timeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	var registeredDomain *domain.Domain
+
+	err := transport.RetryOn403(ctx, func() error {
+		var err error
+
+		registeredDomain, err = api.WaitForAutoRenewStatus(&domain.WaitForAutoRenewStatusRequest{
+			Domain:        domainName,
+			Timeout:       new(timeout),
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return registeredDomain, err
 }
 
 func waitForDNSSECStatus(ctx context.Context, api *domain.RegistrarAPI, domainName string, timeout time.Duration) (*domain.Domain, error) {
@@ -76,9 +116,19 @@ func waitForDNSSECStatus(ctx context.Context, api *domain.RegistrarAPI, domainNa
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForDNSSECStatus(&domain.WaitForDNSSECStatusRequest{
-		Domain:        domainName,
-		Timeout:       new(timeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	var registeredDomain *domain.Domain
+
+	err := transport.RetryOn403(ctx, func() error {
+		var err error
+
+		registeredDomain, err = api.WaitForDNSSECStatus(&domain.WaitForDNSSECStatusRequest{
+			Domain:        domainName,
+			Timeout:       new(timeout),
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return registeredDomain, err
 }

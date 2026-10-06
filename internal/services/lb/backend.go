@@ -287,6 +287,11 @@ func backendSchema() map[string]*schema.Schema {
 **NOTE** : Only the host part of the Scaleway S3 bucket website is expected.
 E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL is 'https://failover-website.s3-website.fr-par.scw.cloud/'.`,
 		},
+		"host": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "When connecting to backend servers, use this value as the HTTP `Host` header or TLS SNI. This allows routing to specific services on the backend server that are configured to respond to particular hostnames",
+		},
 		"ssl_bridging": {
 			Type:        schema.TypeBool,
 			Description: "Enables SSL between load balancer and backend servers",
@@ -407,6 +412,7 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m any)
 		TimeoutTunnel:         timeoutTunnel,
 		OnMarkedDownAction:    expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 		FailoverHost:          types.ExpandStringPtr(d.Get("failover_host")),
+		Host:                  types.ExpandStringPtr(d.Get("host")),
 		SslBridging:           types.ExpandBoolPtr(types.GetBool(d, "ssl_bridging")),
 		IgnoreSslServerVerify: types.ExpandBoolPtr(types.GetBool(d, "ignore_ssl_server_verify")),
 	}
@@ -525,6 +531,7 @@ func setBackendState(d *schema.ResourceData, backend *lbSDK.Backend, zone scw.Zo
 	_ = d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(backend.OnMarkedDownAction))
 	_ = d.Set("send_proxy_v2", types.FlattenBoolPtr(backend.SendProxyV2)) //nolint:staticcheck
 	_ = d.Set("failover_host", backend.FailoverHost)
+	_ = d.Set("host", types.FlattenStringPtr(backend.Host))
 	_ = d.Set("ssl_bridging", types.FlattenBoolPtr(backend.SslBridging))
 	_ = d.Set("ignore_ssl_server_verify", types.FlattenBoolPtr(backend.IgnoreSslServerVerify))
 	_ = d.Set("max_connections", types.FlattenInt32Ptr(backend.MaxConnections))
@@ -599,6 +606,7 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m any)
 		TimeoutTunnel:            timeoutTunnel,
 		OnMarkedDownAction:       expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 		FailoverHost:             types.ExpandStringPtr(d.Get("failover_host")),
+		Host:                     types.ExpandStringPtr(d.Get("host")),
 		SslBridging:              types.ExpandBoolPtr(types.GetBool(d, "ssl_bridging")),
 		IgnoreSslServerVerify:    types.ExpandBoolPtr(types.GetBool(d, "ignore_ssl_server_verify")),
 		MaxConnections:           types.ExpandInt32Ptr(d.Get("max_connections")),

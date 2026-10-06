@@ -37,6 +37,16 @@ func testSweepSecret(_ string) error {
 		}
 
 		for _, se := range listSecrets.Secrets {
+			if se.Protected {
+				_, err := secretAPI.UnprotectSecret(&secretSDK.UnprotectSecretRequest{
+					SecretID: se.ID,
+					Region:   region,
+				})
+				if err != nil {
+					logging.L.Warningf("error unprotecting secret in sweeper: %s", err)
+				}
+			}
+
 			err := secretAPI.DeleteSecret(&secretSDK.DeleteSecretRequest{
 				SecretID: se.ID,
 				Region:   region,

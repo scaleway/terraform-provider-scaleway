@@ -61,6 +61,7 @@ The following arguments are supported:
 - `failover_host` - (Optional) Scaleway S3 bucket website to be served if all backend servers are down.
 ~> **Note:** Only the host part of the Scaleway S3 bucket website is expected:
 e.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL is '<https://failover-website.s3-website.fr-par.scw.cloud/>'.
+- `host` - (Optional) Value used as the HTTP `Host` header (or the TLS SNI when `ssl_bridging` is enabled) when the Load Balancer connects to backend servers. This allows routing to a specific service on a backend server that is configured to respond to a particular hostname.
 - `ssl_bridging` - (Default: `false`) Enables SSL between the Load Balancer and its backend servers.
 - `ignore_ssl_server_verify` - (Default: `false`) Specifies whether the Load Balancer should check the backend server’s certificate before initiating a connection.
 - `max_connections` - (Optional) Maximum number of connections allowed per backend server.

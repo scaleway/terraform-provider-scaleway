@@ -19,6 +19,11 @@ on:
   schedule:
     - cron: '0 7 * * 2'
 
+concurrency:  
+  # Only cancel previous concurrent runs in one PR (not on main)
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   analyze:
     name: Analyze
@@ -45,6 +50,11 @@ jobs:
       # the head of the pull request instead of the merge commit.
       - run: git checkout HEAD^2
         if: ${{ github.event_name == 'pull_request' }}
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        if: matrix.language == 'go'
+        with:
+          go-version: stable
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL

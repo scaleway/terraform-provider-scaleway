@@ -3,6 +3,7 @@ package container_test
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/alexedwards/argon2id"
@@ -976,6 +977,169 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						name = "test-acc-container-pn-new"
 						vpc_id = scaleway_vpc.main.id
 					}`,
+			},
+		},
+	})
+}
+
+func TestAccContainer_DefaultPublicEndpoint(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isContainerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_container_namespace main {
+						name = "tf-acctest-default-public-endpoint"
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
+						enable_default_public_endpoint = true
+					}
+				`, defaultTestImage),
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "enable_default_public_endpoint", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "public_endpoint"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_container_namespace main {
+						name = "tf-acctest-default-public-endpoint"
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
+						enable_default_public_endpoint = false
+					}
+				`, defaultTestImage),
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "enable_default_public_endpoint", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccContainer_PrivateEndpoint(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isNamespaceDestroyed(tt),
+			isContainerDestroyed(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "tf-acctest-container-private-endpoint"
+					}
+
+					resource scaleway_vpc_private_network main {
+						name = "test-acc-container-private-endpoint"
+						vpc_id = scaleway_vpc.main.id
+					}
+
+					resource scaleway_container_namespace main {
+						name = "tf-acctest-container-private-endpoint"
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
+						private_network_id = scaleway_vpc_private_network.main.id
+						enable_private_endpoint = true
+					}
+				`, defaultTestImage),
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttrPair("scaleway_container.main", "private_network_id", "scaleway_vpc_private_network.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "enable_private_endpoint", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "private_endpoint"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "tf-acctest-container-private-endpoint"
+					}
+
+					resource scaleway_vpc_private_network main {
+						name = "test-acc-container-private-endpoint"
+						vpc_id = scaleway_vpc.main.id
+					}
+
+					resource scaleway_container_namespace main {
+						name = "tf-acctest-container-private-endpoint"
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
+						private_network_id = scaleway_vpc_private_network.main.id
+						enable_private_endpoint = false
+					}
+				`, defaultTestImage),
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "enable_private_endpoint", "false"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "private_endpoint", ""),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc main {
+						name = "tf-acctest-container-private-endpoint"
+					}
+
+					resource scaleway_vpc_private_network main {
+						name = "test-acc-container-private-endpoint"
+						vpc_id = scaleway_vpc.main.id
+					}
+				`,
+			},
+		},
+	})
+}
+
+func TestAccContainer_PrivateEndpointValidation(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isContainerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_container_namespace main {
+						name = "tf-acctest-private-endpoint-validation"
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
+						enable_private_endpoint = true
+					}
+				`, defaultTestImage),
+				ExpectError: regexp.MustCompile("private_network_id must be set when enable_private_endpoint is true"),
 			},
 		},
 	})

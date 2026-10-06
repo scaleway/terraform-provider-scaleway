@@ -25,6 +25,11 @@ page_title: "Scaleway: {{ .Name }}"
 The following arguments are supported:
 
 - `version` - (Optional) MongoDB® version of the instance.
+
+~> **Important** Updates to `version` may perform a blue/green upgrade. This can create a new instance, update the Terraform state with the new instance ID, and delete the old instance. The upgrade ensures minimal downtime.
+
+~> **Note** Terraform plans dependent resources before the blue/green upgrade returns the new instance ID. As a result, resources that reference the previous instance ID, such as `scaleway_mongodb_user`, may require a second `terraform apply` to fully reconcile their Terraform state with the upgraded instance.
+
 - `node_type` - (Required) The type of MongoDB® instance to create.
 - `user_name` - (Optional) Name of the user created when the instance is created.
 - `password` - (Optional) Password of the user. Only one of `password` or `password_wo` should be specified.

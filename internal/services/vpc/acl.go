@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -132,7 +133,11 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.Rules = expandedRules
 	}
 
-	_, err = vpcAPI.SetACL(req, scw.WithContext(ctx))
+	err = transport.RetryOn403(ctx, func() error {
+		_, err := vpcAPI.SetACL(req, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -151,11 +156,13 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	acl, err := vpcAPI.GetACL(&vpc.GetACLRequest{
-		VpcID:  locality.ExpandID(ID),
-		Region: region,
-		IsIPv6: d.Get("is_ipv6").(bool),
-	}, scw.WithContext(ctx))
+	acl, err := transport.RetryOn403Value(ctx, func() (*vpc.GetACLResponse, error) {
+		return vpcAPI.GetACL(&vpc.GetACLRequest{
+			VpcID:  locality.ExpandID(ID),
+			Region: region,
+			IsIPv6: d.Get("is_ipv6").(bool),
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -205,7 +212,11 @@ func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.Rules = expandedRules
 	}
 
-	_, err = vpcAPI.SetACL(req, scw.WithContext(ctx))
+	err = transport.RetryOn403(ctx, func() error {
+		_, err := vpcAPI.SetACL(req, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -219,11 +230,15 @@ func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcAPI.SetACL(&vpc.SetACLRequest{
-		VpcID:         locality.ExpandID(ID),
-		Region:        region,
-		DefaultPolicy: vpc.ActionAccept,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOn403(ctx, func() error {
+		_, err := vpcAPI.SetACL(&vpc.SetACLRequest{
+			VpcID:         locality.ExpandID(ID),
+			Region:        region,
+			DefaultPolicy: vpc.ActionAccept,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

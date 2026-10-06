@@ -19,6 +19,7 @@ import (
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	internaltypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -153,7 +154,9 @@ func (r *RouteListResource) FetchRoutes(ctx context.Context, region scw.Region, 
 		req.Contains = &ipNet
 	}
 
-	response, err := r.routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx), scw.WithAllPages())
+	response, err := transport.RetryOn403Value(ctx, func() (*vpc.ListRoutesWithNexthopResponse, error) {
+		return r.routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, err
 	}
