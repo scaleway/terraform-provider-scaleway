@@ -416,6 +416,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_s2s_vpn_routing_policy":                             s2svpn.DataSourceRoutingPolicy(),
 				"scaleway_secret":                                             secret.DataSourceSecret(),
 				"scaleway_secret_version":                                     secret.DataSourceVersion(),
+				"scaleway_sdb_sql_versions":                                   sdb.DataSourceVersions(),
 				"scaleway_tem_domain":                                         tem.DataSourceDomain(),
 				"scaleway_tem_offer_subscription":                             tem.DataSourceOfferSubscription(),
 				"scaleway_vpc":                                                vpc.DataSourceVPC(),

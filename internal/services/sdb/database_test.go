@@ -2,6 +2,7 @@ package sdb_test
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -33,6 +34,9 @@ func TestAccServerlessSQLDBDatabase_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "min_cpu", "0"),
 					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "max_cpu", "15"),
 					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "endpoint"),
+					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "version", "16"),
+					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "version_end_of_life_at"),
+					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "srn"),
 				),
 			},
 			{
@@ -69,6 +73,7 @@ func TestAccServerlessSQLDBDatabase_Basic(t *testing.T) {
 						name = "test-sdb-sql-database-basic-rename"
 						min_cpu = 4
 						max_cpu = 8
+						version = "16"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -76,6 +81,43 @@ func TestAccServerlessSQLDBDatabase_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_sdb_sql_database.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "min_cpu", "4"),
 					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "max_cpu", "8"),
+					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "version", "16"),
+					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "version_end_of_life_at"),
+					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "srn"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServerlessSQLDBVersionsDataSource_Basic(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					data "scaleway_sdb_sql_versions" "pg" {}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.scaleway_sdb_sql_versions.pg", "id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_sdb_sql_versions.pg", "region"),
+					resource.TestCheckResourceAttrWith("data.scaleway_sdb_sql_versions.pg", "versions.#", func(value string) error {
+						count, err := strconv.Atoi(value)
+						if err != nil {
+							return err
+						}
+
+						if count < 1 {
+							return fmt.Errorf("expected at least one version, got %d", count)
+						}
+
+						return nil
+					}),
+					resource.TestCheckResourceAttrSet("data.scaleway_sdb_sql_versions.pg", "versions.0.name"),
+					resource.TestCheckResourceAttrSet("data.scaleway_sdb_sql_versions.pg", "versions.0.srn"),
 				),
 			},
 		},
