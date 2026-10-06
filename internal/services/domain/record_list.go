@@ -22,6 +22,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 var (
@@ -285,9 +286,11 @@ func (r *RecordListResource) buildRecordListTargets(ctx context.Context, project
 }
 
 func (r *RecordListResource) listProjectDNSZoneNames(ctx context.Context, projectID string) ([]string, error) {
-	response, err := r.domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
-		ProjectID: &projectID,
-	}, scw.WithContext(ctx), scw.WithAllPages())
+	response, err := transport.RetryOn403Value(ctx, func() (*domainSDK.ListDNSZonesResponse, error) {
+		return r.domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
+			ProjectID: &projectID,
+		}, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -317,7 +320,9 @@ func (r *RecordListResource) fetchRecordRows(ctx context.Context, target recordL
 		}
 	}
 
-	response, err := r.domainAPI.ListDNSZoneRecords(request, scw.WithContext(ctx), scw.WithAllPages())
+	response, err := transport.RetryOn403Value(ctx, func() (*domainSDK.ListDNSZoneRecordsResponse, error) {
+		return r.domainAPI.ListDNSZoneRecords(request, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -345,10 +350,12 @@ func (r *RecordListResource) fetchRecordRows(ctx context.Context, target recordL
 }
 
 func (r *RecordListResource) isRootDNSZone(ctx context.Context, projectID, dnsZone string) (bool, error) {
-	response, err := r.domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
-		ProjectID: &projectID,
-		DNSZones:  []string{dnsZone},
-	}, scw.WithContext(ctx))
+	response, err := transport.RetryOn403Value(ctx, func() (*domainSDK.ListDNSZonesResponse, error) {
+		return r.domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
+			ProjectID: &projectID,
+			DNSZones:  []string{dnsZone},
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return false, err
 	}

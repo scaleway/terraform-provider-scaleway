@@ -79,7 +79,7 @@ func (r *DatabaseBackupListResource) ListResourceConfigSchema(_ context.Context,
 					listvalidator.ValueStringsAre(
 						stringvalidator.Any(
 							stringvalidator.OneOf("*"),
-							verify.IsStringUUIDOrUUIDWithLocality(),
+							verify.IsStringUUIDOrUUIDWithRegion(),
 						),
 					),
 				},

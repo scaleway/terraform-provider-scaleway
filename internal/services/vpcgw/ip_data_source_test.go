@@ -1,6 +1,7 @@
 package vpcgw_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -35,6 +36,7 @@ func TestAccDataSourceVPCPublicGatewayIP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_public_gateway_ip.ip_by_id", "ip_id",
 						"scaleway_vpc_public_gateway_ip.main", "id"),
+					resource.TestMatchResourceAttr("data.scaleway_vpc_public_gateway_ip.ip_by_id", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/ips/.+$`)),
 				),
 			},
 		},

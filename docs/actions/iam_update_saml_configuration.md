@@ -28,9 +28,11 @@ resource "scaleway_iam_saml" "sp" {
 
 # Configure your organization SAML with your configurations from your IdP
 action "scaleway_iam_update_saml_configuration" "main" {
-  organization_id    = scaleway_iam_saml.sp.organization_id
-  entity_id          = my_idp.main.entity_id
-  single_sign_on_url = my_idp.main.sso_url
+  config {
+    organization_id    = scaleway_iam_saml.sp.organization_id
+    entity_id          = my_idp.main.entity_id
+    single_sign_on_url = my_idp.main.sso_url
+  }
 }
 ```
 

@@ -11,7 +11,7 @@ resource "scaleway_vpc_private_network" "pn" {
 
 resource "scaleway_kafka_cluster" "main" {
   name              = "my-kafka-cluster"
-  version           = "3.9.0"
+  version           = "4.1.1"
   node_amount       = 1
   node_type         = "KAFK-PLAY-NANO"
   volume_type       = "sbs_5k"

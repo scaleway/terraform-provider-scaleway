@@ -7,6 +7,11 @@ on:
   release:
     types:
       - published
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   slack:
     runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"

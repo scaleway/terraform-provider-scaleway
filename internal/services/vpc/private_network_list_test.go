@@ -23,7 +23,9 @@ func TestAccListPrivateNetworks_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_account_project" "main" {}
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-vpc-private-network-list"
+					}
 
 					resource "scaleway_vpc" "main" {
 					  project_id = scaleway_account_project.main.id

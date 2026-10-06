@@ -104,7 +104,21 @@ func DataSourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	setSecretState(d, secretResponse)
+	versionsResponse, err := api.ListSecretVersions(&secret.ListSecretVersionsRequest{
+		Region:   region,
+		SecretID: secretID.(string),
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	setSecretState(d, secretResponse, versionsResponse)
 
 	return nil
 }

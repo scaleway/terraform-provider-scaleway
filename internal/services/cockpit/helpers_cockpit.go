@@ -3,7 +3,6 @@ package cockpit
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -53,6 +53,14 @@ func NewAPIWithRegionAndID(m any, id string) (*cockpit.RegionalAPI, scw.Region, 
 	return api, region, id, nil
 }
 
+func retryOn403(ctx context.Context, fn func() error) error {
+	return transport.RetryOn403(ctx, fn)
+}
+
+func retryOn403Value[T any](ctx context.Context, fn func() (T, error)) (T, error) {
+	return transport.RetryOn403Value(ctx, fn)
+}
+
 func waitForExporter(
 	ctx context.Context,
 	api *cockpit.RegionalAPI,
@@ -60,12 +68,14 @@ func waitForExporter(
 	exporterID string,
 	timeout time.Duration,
 ) (*cockpit.Exporter, error) {
-	return api.WaitForExporter(&cockpit.WaitForExporterRequest{
-		Region:        region,
-		ExporterID:    exporterID,
-		Timeout:       new(timeout),
-		RetryInterval: new(defaultCockpitRetryInterval),
-	}, scw.WithContext(ctx))
+	return retryOn403Value(ctx, func() (*cockpit.Exporter, error) {
+		return api.WaitForExporter(&cockpit.WaitForExporterRequest{
+			Region:        region,
+			ExporterID:    exporterID,
+			Timeout:       new(timeout),
+			RetryInterval: new(defaultCockpitRetryInterval),
+		}, scw.WithContext(ctx))
+	})
 }
 
 // NewAPIWithRegionAndProjectID returns a new cockpit API with region and project ID extracted from composite ID.
@@ -79,41 +89,6 @@ func NewAPIWithRegionAndProjectID(m any, id string) (*cockpit.RegionalAPI, scw.R
 	}
 
 	return api, scw.Region(parts[0]), parts[1], nil
-}
-
-// NewAPIGrafanaUserID returns a new cockpit API with the Grafana user ID and the project ID.
-func NewAPIGrafanaUserID(m any, id string) (*cockpit.GlobalAPI, string, uint32, error) {
-	projectID, resourceIDString, err := parseCockpitID(id)
-	if err != nil {
-		return nil, "", 0, err
-	}
-
-	grafanaUserID, err := strconv.ParseUint(resourceIDString, 10, 32)
-	if err != nil {
-		return nil, "", 0, err
-	}
-
-	api, err := NewGlobalAPI(m)
-	if err != nil {
-		return nil, "", 0, err
-	}
-
-	return api, projectID, uint32(grafanaUserID), nil
-}
-
-// cockpitIDWithProjectID returns a cockpit ID with a project ID.
-func cockpitIDWithProjectID(projectID string, id string) string {
-	return projectID + "/" + id
-}
-
-// parseCockpitID returns the project ID and the cockpit ID from a combined ID.
-func parseCockpitID(id string) (projectID string, cockpitID string, err error) {
-	parts := strings.Split(id, "/")
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("invalid cockpit ID: %s", id)
-	}
-
-	return parts[0], parts[1], nil
 }
 
 func cockpitTokenUpgradeV1SchemaType() cty.Type {

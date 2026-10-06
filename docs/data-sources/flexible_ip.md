@@ -9,7 +9,7 @@ Gets information about a Flexible IP.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by IP address
 data "scaleway_flexible_ip" "with_ip" {
   ip_address = "1.2.3.4"
@@ -29,7 +29,7 @@ data "scaleway_flexible_ip" "with_id" {
 - `flexible_ip_id` - (Optional) The IP ID.
   Only one of `ip_address` and `flexible_ip_id` should be specified.
 
-- `project_id` - (Optional. Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the Flexible IP is associated with.
+- `project_id` - (Optional. Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the Flexible IP is associated with.
 
 ## Attributes Reference
 

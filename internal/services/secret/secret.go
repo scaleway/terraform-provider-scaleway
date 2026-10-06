@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -176,6 +176,11 @@ func secretSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the secret",
+		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 	}
@@ -218,7 +223,15 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		}
 	}
 
-	secretResponse, err := api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
+	var secretResponse *secret.Secret
+
+	err = transport.RetryOn403(ctx, func() error {
+		var err error
+
+		secretResponse, err = api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -237,10 +250,13 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	secretResponse, err := api.GetSecret(&secret.GetSecretRequest{
-		Region:   region,
-		SecretID: id,
-	}, scw.WithContext(ctx))
+	// Retry on 404 to handle eventual consistency issues
+	secretResponse, err := transport.RetryOn404(ctx, func(ctx context.Context) (*secret.Secret, error) {
+		return api.GetSecret(&secret.GetSecretRequest{
+			Region:   region,
+			SecretID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -255,10 +271,13 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		_ = d.Set("tags", types.FlattenSliceString(secretResponse.Tags))
 	}
 
-	versions, err := api.ListSecretVersions(&secret.ListSecretVersionsRequest{
-		Region:   region,
-		SecretID: id,
-	}, scw.WithAllPages(), scw.WithContext(ctx))
+	// Retry on 404 to handle eventual consistency issues
+	versionsResponse, err := transport.RetryOn404(ctx, func(ctx context.Context) (*secret.ListSecretVersionsResponse, error) {
+		return api.ListSecretVersions(&secret.ListSecretVersionsRequest{
+			Region:   region,
+			SecretID: id,
+		}, scw.WithAllPages(), scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -269,28 +288,12 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	setSecretState(d, secretResponse)
+	setSecretState(d, secretResponse, versionsResponse)
 
 	err = identity.SetRegionalIdentity(d, region, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	versionsList := make([]map[string]any, 0, len(versions.Versions))
-	for _, version := range versions.Versions {
-		versionsList = append(versionsList, map[string]any{
-			"revision":    strconv.Itoa(int(version.Revision)),
-			"secret_id":   version.SecretID,
-			"status":      version.Status.String(),
-			"created_at":  types.FlattenTime(version.CreatedAt),
-			"updated_at":  types.FlattenTime(version.UpdatedAt),
-			"description": types.FlattenStringPtr(version.Description),
-			"latest":      types.FlattenBoolPtr(&version.Latest),
-		})
-	}
-
-	_ = d.Set("version_count", int(versions.TotalCount))
-	_ = d.Set("versions", versionsList)
 
 	return nil
 }
@@ -360,10 +363,12 @@ func ResourceSecretDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteSecret(&secret.DeleteSecretRequest{
-		Region:   region,
-		SecretID: id,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOn403(ctx, func() error {
+		return api.DeleteSecret(&secret.DeleteSecretRequest{
+			Region:   region,
+			SecretID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}

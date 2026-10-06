@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 )
 
@@ -203,6 +204,10 @@ func TestFrameworkProviderConfigSources_NoConfig(t *testing.T) {
 	t.Run("Test defaults when no config provided", func(t *testing.T) {
 		unsetEnv(true)
 
+		// Point the config path at a non-existent file in a temp dir so that no
+		// config from the user's environment (e.g. ~/.config/scw/config.yaml) is loaded.
+		t.Setenv("SCW_CONFIG_PATH", t.TempDir()+"/config.yaml")
+
 		// Test with no config - should get defaults
 		profile, _, err := meta.LoadProfileFromFrameworkConfig(
 			t.Context(),
@@ -256,6 +261,55 @@ func TestFrameworkProviderMetaInitialization(t *testing.T) {
 		if m.HTTPClient() == nil {
 			t.Fatal("meta.HTTPClient() is nil")
 		}
+
+		if m.Endpoints() != nil {
+			t.Fatal("meta.Endpoints() should be nil")
+		}
+
+		if m.S3UsePathStyle() {
+			t.Fatal("meta.S3UsePathStyle() should be false")
+		}
+	})
+	t.Run("Test that meta is properly initialized with filled config", func(t *testing.T) {
+		unsetEnv(true)
+
+		s3Endpoint := "https://my-s3-endpoint.com"
+
+		frameworkConfig := &meta.FrameworkProviderConfig{
+			Endpoints: map[string]string{
+				"s3": s3Endpoint,
+			},
+			S3UsePathStyle: types.ExpandBoolPtr(true),
+		}
+
+		m, err := meta.NewMetaFromFrameworkConfig(t.Context(), frameworkConfig, "1.0.0")
+		if err != nil {
+			t.Fatalf("NewMetaFromFrameworkConfig failed: %v", err)
+		}
+
+		if m == nil {
+			t.Fatal("meta is nil - NewMetaFromFrameworkConfig returned nil")
+		}
+
+		if m.ScwClient() == nil {
+			t.Fatal("meta.ScwClient() is nil")
+		}
+
+		if m.HTTPClient() == nil {
+			t.Fatal("meta.HTTPClient() is nil")
+		}
+
+		if m.Endpoints() == nil {
+			t.Fatal("meta.Endpoints() is nil")
+		}
+
+		if m.Endpoints()["s3"] != s3Endpoint {
+			t.Fatalf("meta.Endpoints()[\"s3\"] is '%s', expected '%s'", m.Endpoints()["s3"], s3Endpoint)
+		}
+
+		if !m.S3UsePathStyle() {
+			t.Fatal("meta.S3UsePathStyle() should be true")
+		}
 	})
 }
 
@@ -291,6 +345,20 @@ func TestFrameworkProviderConfigure(t *testing.T) {
 					},
 					"zone": schema.StringAttribute{
 						Optional: true,
+					},
+					"s3_use_path_style": schema.BoolAttribute{
+						Optional: true,
+					},
+				},
+				Blocks: map[string]schema.Block{
+					"endpoints": schema.SetNestedBlock{
+						NestedObject: schema.NestedBlockObject{
+							Attributes: map[string]schema.Attribute{
+								"s3": schema.StringAttribute{
+									Optional: true,
+								},
+							},
+						},
 					},
 				},
 			},
@@ -330,6 +398,14 @@ func TestFrameworkProviderConfigure(t *testing.T) {
 
 		if metaObj.HTTPClient() == nil {
 			t.Fatal("meta.HTTPClient() is nil")
+		}
+
+		if metaObj.Endpoints() != nil {
+			t.Fatal("meta.Endpoints() should be nil")
+		}
+
+		if metaObj.S3UsePathStyle() {
+			t.Fatal("meta.S3UsePathStyle() should be false")
 		}
 	})
 }

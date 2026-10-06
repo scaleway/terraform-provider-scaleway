@@ -1,6 +1,7 @@
 package rdb_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccUser_Basic(t *testing.T) {
@@ -202,10 +204,18 @@ func isUserPresent(tt *acctest.TestTools, instance string, user string) resource
 			return err
 		}
 
-		users, err := rdbAPI.ListUsers(&rdbSDK.ListUsersRequest{
-			InstanceID: instanceID,
-			Region:     region,
-			Name:       &userName,
+		var users *rdbSDK.ListUsersResponse
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			users, err = rdbAPI.ListUsers(&rdbSDK.ListUsersRequest{
+				InstanceID: instanceID,
+				Region:     region,
+				Name:       &userName,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

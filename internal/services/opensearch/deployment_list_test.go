@@ -27,13 +27,15 @@ func TestAccListOpenSearchDeployments_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "main" {}
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-opensearch-deployment-list"
+					}
 
 					resource "scaleway_opensearch_deployment" "main" {
 					  project_id  = scaleway_account_project.main.id
 					  name        = "tf-test-opensearch-list-1"
 					  version     = "%s"
-					  node_amount = 1
+					  node_count = 1
 					  node_type   = "%s"
 					  user_name   = "%s"
 					  password    = "ThisIsASecurePassword123!"
@@ -48,7 +50,7 @@ func TestAccListOpenSearchDeployments_Basic(t *testing.T) {
 					  project_id  = scaleway_account_project.main.id
 					  name        = "tf-test-opensearch-list-2"
 					  version     = "%s"
-					  node_amount = 1
+					  node_count = 1
 					  node_type   = "%s"
 					  user_name   = "%s"
 					  password    = "ThisIsASecurePassword123!"

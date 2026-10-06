@@ -3,6 +3,7 @@ package datawarehouse_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -34,6 +35,8 @@ resource "scaleway_datawarehouse_deployment" "main" {
   cpu_max        = 4
   ram_per_cpu    = 4
   password       = "password@1234567"
+
+  public_network {}
 }
 
 resource "scaleway_datawarehouse_database" "mydb" {
@@ -45,6 +48,7 @@ resource "scaleway_datawarehouse_database" "mydb" {
 					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
 					isDatabasePresent(tt, "scaleway_datawarehouse_database.mydb"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_database.mydb", "name", "testdb"),
+					resource.TestMatchResourceAttr("scaleway_datawarehouse_database.mydb", "srn", regexp.MustCompile(`^srn://datawarehouse\..+/regions/.+/databases/.+$`)),
 				),
 			},
 		},

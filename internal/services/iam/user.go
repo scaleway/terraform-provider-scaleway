@@ -151,6 +151,11 @@ func userSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Defines whether the user is locked",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the user",
+		},
 	}
 }
 
@@ -305,4 +310,5 @@ func setUserState(d *schema.ResourceData, user *iam.User) {
 	_ = d.Set("mfa", user.Mfa)
 	_ = d.Set("account_root_user_id", user.AccountRootUserID)
 	_ = d.Set("locked", user.Locked)
+	_ = d.Set("srn", user.Srn)
 }

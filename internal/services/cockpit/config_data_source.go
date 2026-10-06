@@ -57,9 +57,11 @@ func dataSourceCockpitConfigRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	resp, err := api.GetConfig(&cockpit.RegionalAPIGetConfigRequest{
-		Region: region,
-	}, scw.WithContext(ctx))
+	resp, err := retryOn403Value(ctx, func() (*cockpit.GetConfigResponse, error) {
+		return api.GetConfig(&cockpit.RegionalAPIGetConfigRequest{
+			Region: region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

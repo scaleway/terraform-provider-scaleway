@@ -2,6 +2,7 @@ package iam_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -44,6 +45,9 @@ func TestAccDataSourceUser_Basic(t *testing.T) {
 
 					resource.TestCheckResourceAttrSet("data.scaleway_iam_user.by_email", "user_id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iam_user.by_email", "email"),
+
+					resource.TestMatchResourceAttr("data.scaleway_iam_user.by_id", "srn", regexp.MustCompile(`^srn://iam\..+/users/.+$`)),
+					resource.TestMatchResourceAttr("data.scaleway_iam_user.by_email", "srn", regexp.MustCompile(`^srn://iam\..+/users/.+$`)),
 				),
 			},
 		},

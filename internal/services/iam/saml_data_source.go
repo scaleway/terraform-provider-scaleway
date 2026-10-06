@@ -65,6 +65,10 @@ func (d *SamlDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				MarkdownDescription: "The single sign-on URL of the SAML Identity Provider",
 				Computed:            true,
 			},
+			"srn": schema.StringAttribute{
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the SAML configuration",
+				Computed:            true,
+			},
 		},
 	}
 }
@@ -126,6 +130,7 @@ func (d *SamlDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	state.ServiceProvider = getServiceProviderObject(res.ServiceProvider, &resp.Diagnostics)
 	state.EntityID = types.StringValue(res.EntityID)
 	state.SingleSignOnURL = types.StringValue(res.SingleSignOnURL)
+	state.Srn = types.StringValue(res.Srn)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

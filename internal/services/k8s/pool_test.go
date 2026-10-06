@@ -52,6 +52,7 @@ func TestAccPool_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.2", "default"),
 					testAccCheckK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.minimal", "scaleway_k8s_pool.default", "scaleway_vpc_private_network.minimal"),
+					resource.TestMatchResourceAttr("scaleway_k8s_pool.default", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/pools/.+$`)),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "nodes.0.private_ips.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "nodes.0.private_ips.0.address"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "security_group_id"),
@@ -90,6 +91,12 @@ func TestAccPool_Basic(t *testing.T) {
 					testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.minimal"),
 					testAccCheckK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.minimal", "scaleway_k8s_pool.default", "scaleway_vpc_private_network.minimal"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_k8s_pool.default",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"wait_for_pool_ready", "size"},
 			},
 		},
 	})
@@ -852,6 +859,12 @@ func TestAccPool_TaintsAndLabels(t *testing.T) {
 							value = "value2"
 							effect = "NoExecute"
 						}
+
+						startup_taints {
+							key = "startup-key1"
+							value = "startup-value1"
+							effect = "NoSchedule"
+						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
@@ -871,7 +884,12 @@ func TestAccPool_TaintsAndLabels(t *testing.T) {
 						"value":  "value2",
 						"effect": "NoExecute",
 					}),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "startup_taints.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "startup_taints.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_pool.main", "startup_taints.*", map[string]string{
+						"key":    "startup-key1",
+						"value":  "startup-value1",
+						"effect": "NoSchedule",
+					}),
 				),
 			},
 			{
@@ -945,6 +963,136 @@ func TestAccPool_TaintsAndLabels(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "labels.%", "0"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "taints.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "startup_taints.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccPool_UserData(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.main"),
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: kapsuleClusterConfigForPoolTests("user-data", latestK8SVersion) + `
+					resource "scaleway_k8s_pool" "main" {
+					    name = "test-pool-user-data"
+						cluster_id = scaleway_k8s_cluster.main.id
+						size = 1
+						tags = [ "terraform-test", "scaleway_k8s_pool", "user-data" ]
+						node_type = "PRO2_XXS"
+						wait_for_pool_ready = false
+
+						user_data = {
+							"foo"   = "bar"
+							"hello" = "world"
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "user_data.%", "2"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "user_data.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "user_data.hello", "world"),
+				),
+			},
+			{
+				ResourceName:            "scaleway_k8s_pool.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"wait_for_pool_ready", "status"},
+			},
+		},
+	})
+}
+
+func TestAccPool_Version_Explicit(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+	previousK8SVersion := testAccK8SClusterGetPreviousK8SVersion(tt)
+	clusterID := ""
+	poolID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				// STEP 1: Cluster and pool in previous version
+				Config: kapsuleClusterConfigForPoolTestsNoUpgrade("version-explicit", previousK8SVersion) + fmt.Sprintf(`
+
+		resource "scaleway_k8s_pool" "main" {
+			name = "test-pool-version-explicit"
+			cluster_id = scaleway_k8s_cluster.main.id
+			size = 1
+			tags = [ "terraform-test", "scaleway_k8s_pool", "version-explicit" ]
+			node_type = "PRO2_XXS"
+			version = %q
+		}`, previousK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", previousK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "version", previousK8SVersion),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(clusterID)),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_pool.main", new(poolID)),
+				),
+			},
+			{
+				// STEP 2: Set cluster's version to latest, keep previous version for pool --> Upgrade cluster only
+				Config: kapsuleClusterConfigForPoolTestsNoUpgrade("version-explicit", latestK8SVersion) + fmt.Sprintf(`
+
+		resource "scaleway_k8s_pool" "main" {
+			name = "test-pool-version-explicit"
+			cluster_id = scaleway_k8s_cluster.main.id
+			size = 1
+			tags = [ "terraform-test", "scaleway_k8s_pool", "version-explicit" ]
+			node_type = "PRO2_XXS"
+			version = %q
+		}`, previousK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "version", previousK8SVersion),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(clusterID)),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_pool.main", new(poolID)),
+				),
+			},
+			{
+				// STEP 3: Set both cluster and pool in latest version --> Upgrade pool only
+				Config: kapsuleClusterConfigForPoolTestsNoUpgrade("version-explicit", latestK8SVersion) + fmt.Sprintf(`
+
+		resource "scaleway_k8s_pool" "main" {
+			name = "test-pool-version-explicit"
+			cluster_id = scaleway_k8s_cluster.main.id
+			size = 1
+			tags = [ "terraform-test", "scaleway_k8s_pool", "version" ]
+			node_type = "PRO2_XXS"
+			version = %q
+		}`, latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "version", latestK8SVersion),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(clusterID)),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_pool.main", new(poolID)),
 				),
 			},
 		},
@@ -1598,5 +1746,25 @@ func kapsuleClusterConfigForPoolTests(testName string, version string) string {
 			tags = [ "terraform-test", "scaleway_k8s_pool", "%[1]s" ]
 			delete_additional_resources = false
 			private_network_id = scaleway_vpc_private_network.main.id
+		}`, testName, version)
+}
+
+func kapsuleClusterConfigForPoolTestsNoUpgrade(testName string, version string) string {
+	return fmt.Sprintf(`
+		resource "scaleway_vpc" "main" {}
+
+		resource "scaleway_vpc_private_network" "main" {
+			name = "test-pool-%[1]s"
+			vpc_id = scaleway_vpc.main.id
+		}
+
+		resource "scaleway_k8s_cluster" "main" {
+		    name = "test-pool-%[1]s"
+			cni = "cilium"
+			version = "%[2]s"
+			tags = [ "terraform-test", "scaleway_k8s_pool", "%[1]s" ]
+			delete_additional_resources = false
+			private_network_id = scaleway_vpc_private_network.main.id
+			upgrade_pools = false
 		}`, testName, version)
 }

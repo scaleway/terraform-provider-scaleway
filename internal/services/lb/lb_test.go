@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
+	lbtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb/testfuncs"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
@@ -22,7 +22,7 @@ func TestAccLB_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isLbDestroyed(tt),
+		CheckDestroy:             lbtestfuncs.IsLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -86,7 +86,7 @@ func TestAccLB_Private(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isLbDestroyed(tt),
+		CheckDestroy:             lbtestfuncs.IsLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -102,7 +102,7 @@ func TestAccLB_Private(t *testing.T) {
 					isLbPresent(tt, "scaleway_lb.main"),
 					acctest.CheckResourceAttrUUID("scaleway_lb.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "assign_flexible_ip", "false"),
-					resource.TestCheckNoResourceAttr("scaleway_lb.main", "ip_address"),
+					acctest.CheckResourceAttrIPv4("scaleway_lb.main", "ip_address"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-basic"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "1"),
@@ -124,7 +124,7 @@ func TestAccLB_Private(t *testing.T) {
 					isLbPresent(tt, "scaleway_lb.main"),
 					acctest.CheckResourceAttrUUID("scaleway_lb.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "assign_flexible_ip", "false"),
-					resource.TestCheckNoResourceAttr("scaleway_lb.main", "ip_address"),
+					acctest.CheckResourceAttrIPv4("scaleway_lb.main", "ip_address"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-rename"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "description", "another description"),
@@ -141,7 +141,7 @@ func TestAccLB_AssignedIPs(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isLbDestroyed(tt),
+		CheckDestroy:             lbtestfuncs.IsLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -172,7 +172,7 @@ func TestAccLB_WithIPv6(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isLbDestroyed(tt),
+		CheckDestroy:             lbtestfuncs.IsLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -211,7 +211,7 @@ func TestAccLB_UpdateToIPv6(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isLbDestroyed(tt),
+		CheckDestroy:             lbtestfuncs.IsLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -259,7 +259,7 @@ func TestAccLB_Migrate(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isLbDestroyed(tt),
+		CheckDestroy:             lbtestfuncs.IsLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -372,7 +372,7 @@ func TestAccLB_WithPrivateNetworksIPAMIDs(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isLbDestroyed(tt),
+			lbtestfuncs.IsLbDestroyed(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
 		),
 		Steps: []resource.TestStep{
@@ -439,7 +439,7 @@ func TestAccLB_WithoutPNConfig(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isLbDestroyed(tt),
+		CheckDestroy:             lbtestfuncs.IsLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -480,7 +480,7 @@ func TestAccLB_DifferentLocalityIPID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isLbDestroyed(tt),
+		CheckDestroy:             lbtestfuncs.IsLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -551,38 +551,6 @@ func isLbPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		})
 		if err != nil {
 			return err
-		}
-
-		return nil
-	}
-}
-
-func isLbDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_lb" {
-				continue
-			}
-
-			lbAPI, zone, ID, err := lb.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = lbAPI.GetLB(&lbSDK.ZonedAPIGetLBRequest{
-				Zone: zone,
-				LBID: ID,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("load Balancer (%s) still exists", rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
 		}
 
 		return nil

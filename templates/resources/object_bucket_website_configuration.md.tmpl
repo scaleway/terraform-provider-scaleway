@@ -18,11 +18,11 @@ resource "scaleway_object_bucket" "test" {
   acl  = "public-read"
 }
 
-resource scaleway_object "some_file" {
-  bucket = scaleway_object_bucket.test.name
-  key = "index.html"
-  file = "index.html"
-  visibility = "public-read"
+resource "scaleway_object" "some_file" {
+  bucket       = scaleway_object_bucket.test.name
+  key          = "index.html"
+  file         = "index.html"
+  visibility   = "public-read"
   content_type = "text/html"
 }
 

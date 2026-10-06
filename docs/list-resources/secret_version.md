@@ -1,6 +1,6 @@
 ---
 page_title: "Scaleway: scaleway_secret_version"
-subcategory: "Secret"
+subcategory: "Secrets"
 description: |-
   Lists Scaleway Secret Versions.
 ---

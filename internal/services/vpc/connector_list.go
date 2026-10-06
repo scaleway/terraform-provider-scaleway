@@ -18,6 +18,7 @@ import (
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -58,14 +59,14 @@ func (r *ConnectorListResource) ListResourceConfigSchema(_ context.Context, _ li
 				Description: "Filter for connectors attached to this source VPC (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"target_vpc_id": schema.StringAttribute{
 				Description: "Filter for connectors attached to this target VPC (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 		},
@@ -108,7 +109,9 @@ func (r *ConnectorListResource) FetchConnectors(ctx context.Context, region scw.
 		TargetVpcID:    locality.ExpandFrameworkID(data.TargetVpcID),
 	}
 
-	response, err := r.vpcAPI.ListVPCConnectors(listRequest, scw.WithContext(ctx), scw.WithAllPages())
+	response, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCConnectorsResponse, error) {
+		return r.vpcAPI.ListVPCConnectors(listRequest, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, err
 	}

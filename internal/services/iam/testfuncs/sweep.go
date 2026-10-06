@@ -2,7 +2,6 @@ package iamtestfuncs
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
@@ -60,7 +59,9 @@ func testSweepUser(_ string) error {
 			OrganizationID: &orgID,
 		})
 		if err != nil {
-			return fmt.Errorf("failed to list users: %w", err)
+			logging.L.Warningf("failed to list users: %s", err)
+
+			return nil
 		}
 
 		for _, user := range listUsers.Users {
@@ -72,7 +73,7 @@ func testSweepUser(_ string) error {
 				UserID: user.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete user: %w", err)
+				logging.L.Warningf("failed to delete user: %s", err)
 			}
 		}
 
@@ -88,7 +89,9 @@ func testSweepSSHKey(_ string) error {
 
 		listSSHKeys, err := iamAPI.ListSSHKeys(&iamSDK.ListSSHKeysRequest{}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing SSH keys in sweeper: %w", err)
+			logging.L.Warningf("error listing SSH keys in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, sshKey := range listSSHKeys.SSHKeys {
@@ -100,7 +103,7 @@ func testSweepSSHKey(_ string) error {
 				SSHKeyID: sshKey.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting SSH key in sweeper: %w", err)
+				logging.L.Warningf("error deleting SSH key in sweeper: %s", err)
 			}
 		}
 
@@ -121,7 +124,9 @@ func testSweepIamPolicy(_ string) error {
 			OrganizationID: orgID,
 		})
 		if err != nil {
-			return fmt.Errorf("failed to list policies: %w", err)
+			logging.L.Warningf("failed to list policies: %s", err)
+
+			return nil
 		}
 
 		for _, pol := range listPols.Policies {
@@ -133,7 +138,7 @@ func testSweepIamPolicy(_ string) error {
 				PolicyID: pol.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete policy: %w", err)
+				logging.L.Warningf("failed to delete policy: %s", err)
 			}
 		}
 
@@ -154,7 +159,9 @@ func testSweepIamGroup(_ string) error {
 			OrganizationID: orgID,
 		})
 		if err != nil {
-			return fmt.Errorf("failed to list groups: %w", err)
+			logging.L.Warningf("failed to list groups: %s", err)
+
+			return nil
 		}
 
 		for _, group := range listApps.Groups {
@@ -166,7 +173,7 @@ func testSweepIamGroup(_ string) error {
 				GroupID: group.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete group: %w", err)
+				logging.L.Warningf("failed to delete group: %s", err)
 			}
 		}
 
@@ -187,7 +194,9 @@ func testSweepIamApplication(_ string) error {
 			OrganizationID: orgID,
 		})
 		if err != nil {
-			return fmt.Errorf("failed to list applications: %w", err)
+			logging.L.Warningf("failed to list applications: %s", err)
+
+			return nil
 		}
 
 		for _, app := range listApps.Applications {
@@ -199,7 +208,7 @@ func testSweepIamApplication(_ string) error {
 				ApplicationID: app.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete application: %w", err)
+				logging.L.Warningf("failed to delete application: %s", err)
 			}
 		}
 
@@ -222,7 +231,9 @@ func testSweepIamAPIKey(_ string) error {
 			OrganizationID: &orgID,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("failed to list api keys: %w", err)
+			logging.L.Warningf("failed to list api keys: %s", err)
+
+			return nil
 		}
 
 		for _, key := range listAPIKeys.APIKeys {
@@ -234,7 +245,7 @@ func testSweepIamAPIKey(_ string) error {
 				AccessKey: key.AccessKey,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete api key: %w", err)
+				logging.L.Warningf("failed to delete api key: %s", err)
 			}
 		}
 

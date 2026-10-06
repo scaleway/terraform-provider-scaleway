@@ -29,9 +29,19 @@ func ValidateEnumIgnoreCase[T EnumValues[T]]() schema.SchemaValidateDiagFunc {
 }
 
 func ValidateEnumFramework[T EnumValues[T]]() validator.String {
+	return FrameworkValidateEnum[T]()
+}
+
+func FrameworkValidateEnum[T EnumValues[T]]() validator.String {
 	values := filterUnknownValues(getValues[T]())
 
 	return stringvalidator.OneOf(values...)
+}
+
+func FrameworkValidateEnumIgnoreCase[T EnumValues[T]]() validator.String {
+	values := filterUnknownValues(getValues[T]())
+
+	return stringvalidator.OneOfCaseInsensitive(values...)
 }
 
 func getValues[T EnumValues[T]]() []string {

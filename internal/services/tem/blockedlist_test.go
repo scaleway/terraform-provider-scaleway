@@ -17,7 +17,7 @@ func TestAccBlockedList_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "test-blockedlist"
+	subDomainName := "tf-test-tem-blockedlist"
 
 	blockedEmail := "spam@example.com"
 

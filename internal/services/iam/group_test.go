@@ -3,6 +3,7 @@ package iam_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -37,6 +38,7 @@ func TestAccGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.0", "tf_tests"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.1", "tests"),
+					resource.TestMatchResourceAttr("scaleway_iam_group.main_basic", "srn", regexp.MustCompile(`^srn://iam\..+/groups/.+$`)),
 				),
 			},
 			{

@@ -17,7 +17,7 @@ If additional storage is required, you can enable the `extra_partition` option t
 
 ## Example Usage
 
-```hcl
+```terraform
 data "scaleway_baremetal_partition_schema" "default" {
   offer_id         = "11111111-1111-1111-1111-111111111111"
   os_id            = "22222222-2222-2222-2222-222222222222"
@@ -27,7 +27,7 @@ data "scaleway_baremetal_partition_schema" "default" {
 }
 ```
 
-```hcl
+```terraform
 data "scaleway_baremetal_offer" "my_offer" {
   zone = "fr-par-1"
   name = "EM-B220E-NVME"

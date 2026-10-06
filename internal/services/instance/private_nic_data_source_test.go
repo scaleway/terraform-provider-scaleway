@@ -5,6 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
+	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccDataSourcePrivateNIC_Basic(t *testing.T) {
@@ -13,8 +15,10 @@ func TestAccDataSourcePrivateNIC_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			isPrivateNICDestroyed(tt),
+			vpcchecks.CheckVPCDestroy(tt),
+			instancechecks.IsServerDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{

@@ -19,6 +19,7 @@ import (
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	internaltypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -61,28 +62,28 @@ func (r *RouteListResource) ListResourceConfigSchema(_ context.Context, _ list.L
 				Description: "Filter for routes belonging to this VPC (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"nexthop_resource_id": schema.StringAttribute{
 				Description: "Filter for routes with this nexthop resource ID (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"nexthop_private_network_id": schema.StringAttribute{
 				Description: "Filter for routes with this nexthop private network ID (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"nexthop_vpc_connector_id": schema.StringAttribute{
 				Description: "Filter for routes with this nexthop VPC connector ID (regional ID or plain UUID).",
 				Optional:    true,
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"nexthop_resource_type": schema.StringAttribute{
@@ -153,7 +154,9 @@ func (r *RouteListResource) FetchRoutes(ctx context.Context, region scw.Region, 
 		req.Contains = &ipNet
 	}
 
-	response, err := r.routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx), scw.WithAllPages())
+	response, err := transport.RetryOn403Value(ctx, func() (*vpc.ListRoutesWithNexthopResponse, error) {
+		return r.routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, err
 	}

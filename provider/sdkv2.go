@@ -4,9 +4,11 @@ import (
 	"context"
 	"maps"
 	"os"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -25,7 +27,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datawarehouse"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
@@ -55,6 +56,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/webhosting"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -118,12 +120,36 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Description:      "The Scaleway organization ID.",
 					ValidateDiagFunc: verify.IsUUID(),
 				},
-				"region": regional.Schema(),
-				"zone":   zonal.Schema(),
+				"region": regional.ProviderSchema(),
+				"zone":   zonal.ProviderSchema(),
 				"api_url": {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "The Scaleway API URL to use.",
+				},
+				"endpoints": {
+					Type:        schema.TypeSet,
+					Optional:    true,
+					Description: "Configuration block for customizing service endpoints.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"s3": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Use this to override the default service endpoint URL.",
+								ValidateFunc: validation.StringMatch(
+									regexp.MustCompile(`^https?://`),
+									"must start with 'https://' or 'http://'",
+								),
+							},
+						},
+					},
+				},
+				"s3_use_path_style": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     false,
+					Description: "Whether to enable the request to use path-style addressing.",
 				},
 			},
 
@@ -138,9 +164,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_baremetal_server":                                   baremetal.ResourceServer(),
 				"scaleway_block_snapshot":                                     block.ResourceSnapshot(),
 				"scaleway_block_volume":                                       block.ResourceVolume(),
-				"scaleway_cockpit":                                            cockpit.ResourceCockpit(),
 				"scaleway_cockpit_source":                                     cockpit.ResourceCockpitSource(),
-				"scaleway_cockpit_grafana_user":                               cockpit.ResourceCockpitGrafanaUser(),
 				"scaleway_cockpit_token":                                      cockpit.ResourceToken(),
 				"scaleway_cockpit_alert_manager":                              cockpit.ResourceCockpitAlertManager(),
 				"scaleway_cockpit_exporter":                                   cockpit.ResourceCockpitExporter(),
@@ -166,7 +190,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_edge_services_route_stage":                          edgeservices.ResourceRouteStage(),
 				"scaleway_edge_services_tls_stage":                            edgeservices.ResourceTLSStage(),
 				"scaleway_edge_services_waf_stage":                            edgeservices.ResourceWAFStage(),
-				"scaleway_file_filesystem":                                    file.ResourceFileSystem(),
 				"scaleway_flexible_ip":                                        flexibleip.ResourceIP(),
 				"scaleway_flexible_ip_mac_address":                            flexibleip.ResourceMACAddress(),
 				"scaleway_function":                                           function.ResourceFunction(),
@@ -230,6 +253,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_mongodb_user":                                       mongodb.ResourceUser(),
 				"scaleway_object":                                             object.ResourceObject(),
 				"scaleway_opensearch_deployment":                              opensearch.ResourceDeployment(),
+				"scaleway_opensearch_user":                                    opensearch.ResourceUser(),
 				"scaleway_object_bucket":                                      object.ResourceBucket(),
 				"scaleway_object_bucket_acl":                                  object.ResourceBucketACL(),
 				"scaleway_object_bucket_lock_configuration":                   object.ResourceLockConfiguration(),
@@ -261,6 +285,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_acl":                                            vpc.ResourceACL(),
 				"scaleway_vpc_connector":                                      vpc.ResourceConnector(),
 				"scaleway_vpc_gateway_network":                                vpcgw.ResourceNetwork(),
+				"scaleway_vpc_ingress_rule":                                   vpc.ResourceIngressRule(),
 				"scaleway_vpc_private_network":                                vpc.ResourcePrivateNetwork(),
 				"scaleway_vpc_public_gateway":                                 vpcgw.ResourcePublicGateway(),
 				"scaleway_vpc_public_gateway_dhcp":                            vpcgw.ResourceDHCP(),
@@ -290,7 +315,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_billing_invoices":                                   billing.DataSourceInvoices(),
 				"scaleway_block_snapshot":                                     block.DataSourceSnapshot(),
 				"scaleway_block_volume":                                       block.DataSourceVolume(),
-				"scaleway_cockpit":                                            cockpit.DataSourceCockpit(),
 				"scaleway_cockpit_config":                                     cockpit.DataSourceCockpitConfig(),
 				"scaleway_cockpit_grafana":                                    cockpit.DataSourceCockpitGrafana(),
 				"scaleway_cockpit_preconfigured_alert":                        cockpit.DataSourceCockpitPreconfiguredAlert(),
@@ -374,9 +398,13 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_rdb_acl":                                            rdb.DataSourceACL(),
 				"scaleway_rdb_database":                                       rdb.DataSourceDatabase(),
 				"scaleway_rdb_database_backup":                                rdb.DataSourceDatabaseBackup(),
+				"scaleway_rdb_database_engines":                               rdb.DataSourceDatabaseEngines(),
 				"scaleway_rdb_instance":                                       rdb.DataSourceInstance(),
+				"scaleway_rdb_node_types":                                     rdb.DataSourceNodeTypes(),
 				"scaleway_rdb_privilege":                                      rdb.DataSourcePrivilege(),
 				"scaleway_redis_cluster":                                      redis.DataSourceCluster(),
+				"scaleway_redis_cluster_versions":                             redis.DataSourceClusterVersions(),
+				"scaleway_redis_node_types":                                   redis.DataSourceNodeTypes(),
 				"scaleway_registry_image":                                     registry.DataSourceImage(),
 				"scaleway_registry_namespace":                                 registry.DataSourceNamespace(),
 				"scaleway_registry_image_tag":                                 registry.DataSourceImageTag(),
@@ -392,6 +420,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_acl":                                            vpc.DataSourceACL(),
 				"scaleway_vpc_connector":                                      vpc.DataSourceConnector(),
 				"scaleway_vpc_gateway_network":                                vpcgw.DataSourceNetwork(),
+				"scaleway_vpc_ingress_rule":                                   vpc.DataSourceIngressRule(),
 				"scaleway_vpc_private_network":                                vpc.DataSourcePrivateNetwork(),
 				"scaleway_vpc_public_gateway":                                 vpcgw.DataSourceVPCPublicGateway(),
 				"scaleway_vpc_public_gateway_dhcp":                            vpcgw.DataSourceDHCP(),
@@ -416,9 +445,27 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				return config.Meta, nil
 			}
 
+			var endpoints map[string]string
+
+			if rawEndpoints, ok := data.GetOk("endpoints"); ok {
+				endpointsSet := rawEndpoints.(*schema.Set)
+				endpoints = make(map[string]string)
+
+				for _, endpoint := range endpointsSet.List() {
+					endpointMap := endpoint.(map[string]any)
+					if s3, ok := endpointMap["s3"]; ok && s3 != "" {
+						endpoints["s3"] = s3.(string)
+					}
+				}
+			}
+
+			s3UsePathStyle := types.ExpandBoolPtr(types.GetBool(data, "s3_use_path_style"))
+
 			m, err := meta.NewMeta(ctx, &meta.Config{
 				ProviderSchema:   data,
 				TerraformVersion: terraformVersion,
+				Endpoints:        endpoints,
+				S3UsePathStyle:   s3UsePathStyle,
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
@@ -437,7 +484,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				return m, diags
 			}
 
-			if ok && err == nil {
+			if ok {
 				diags = append(diags, diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Multiple variable sources detected, please make sure the right credentials are used",

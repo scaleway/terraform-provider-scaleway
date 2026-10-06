@@ -5,25 +5,48 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
-const mnqNamespaceReadRetryTimeout = 30 * time.Second
-
 func retryMNQNamespaceRead(ctx context.Context, action func() error) error {
-	return retry.RetryContext(ctx, mnqNamespaceReadRetryTimeout, func() *retry.RetryError {
-		err := action()
-		if err == nil {
-			return nil
-		}
-
-		if isMNQNamespaceReadRetryableError(err) {
-			return retry.RetryableError(err)
-		}
-
-		return retry.NonRetryableError(err)
+	_, err := RetryMNQNamespaceReadValue(ctx, func() (struct{}, error) {
+		return struct{}{}, action()
 	})
+
+	return err
+}
+
+// RetryMNQNamespaceReadValue retries fn on transient MNQ namespace errors (IAM 403 propagation, 404).
+func RetryMNQNamespaceReadValue[T any](ctx context.Context, fn func() (T, error)) (T, error) {
+	var (
+		result  T
+		lastErr error
+	)
+
+	wait := transport.RetryOn403WaitTime
+	if transport.DefaultWaitRetryInterval != nil {
+		wait = *transport.DefaultWaitRetryInterval
+	}
+
+	deadline := time.Now().Add(transport.IAMPropagationTimeout)
+
+	for {
+		result, lastErr = fn()
+		if lastErr == nil {
+			return result, nil
+		}
+
+		if !isMNQNamespaceReadRetryableError(lastErr) || time.Now().After(deadline) {
+			return result, lastErr
+		}
+
+		select {
+		case <-ctx.Done():
+			return result, ctx.Err()
+		case <-time.After(wait):
+		}
+	}
 }
 
 func isMNQNamespaceReadRetryableError(err error) bool {
@@ -31,11 +54,9 @@ func isMNQNamespaceReadRetryableError(err error) bool {
 		return false
 	}
 
-	// Namespace propagation can briefly return 404 on fresh resources.
 	if httperrors.Is404(err) && strings.Contains(err.Error(), "resource namespace") {
 		return true
 	}
 
-	// Some MNQ read calls intermittently return permission denied on just-created resources.
-	return strings.Contains(err.Error(), "insufficient permissions: read namespace")
+	return httperrors.Is403(err)
 }

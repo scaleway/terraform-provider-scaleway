@@ -30,7 +30,7 @@ data "scaleway_interlink_partners" "at_pops" {
 ## Argument Reference
 
 - `pop_ids` - (Optional) Filter for partners present (offering a connection) in one of these PoPs.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) to list partners from.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) to list partners from.
 
 ## Attributes Reference
 

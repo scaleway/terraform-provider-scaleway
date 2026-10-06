@@ -21,6 +21,91 @@ func TestAccFileSystem_Basic(t *testing.T) {
 	fileSystemName := "TestAccFileSystem_Basic"
 	fileSystemNameUpdated := "TestAccFileSystem_BasicUpdate"
 	sizeInGB := 100
+	sizeInGBUpdated := 200
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_file_filesystem" "fs" {
+						name = "%s"
+						size_in_gb = %d
+					}
+				`, fileSystemName, sizeInGB),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
+					resource.TestMatchResourceAttr("scaleway_file_filesystem.fs", "srn", regexp.MustCompile(`^srn://file\..+/regions/.+/file-systems/.+$`)),
+					resource.TestMatchResourceAttr("scaleway_file_filesystem.fs", "created_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`)),
+					resource.TestMatchResourceAttr("scaleway_file_filesystem.fs", "updated_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`)),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_file_filesystem" "fs" {
+						name = "%s"
+						size_in_gb = %d
+					}
+				`, fileSystemNameUpdated, sizeInGB),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_file_filesystem" "fs" {
+						name = "%s"
+						size_in_gb = %d
+					}
+				`, fileSystemNameUpdated, sizeInGBUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGBUpdated)),
+				),
+			},
+			{
+				ResourceName:      "scaleway_file_filesystem.fs",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	fileSystemName := "TestAccFileSystem_SizeTooSmallFails"
+	sizeInGB := 24
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_file_filesystem" "fs" {
+						name = "%s"
+						size_in_gb = %d
+					}
+				`, fileSystemName, sizeInGB),
+				ExpectError: regexp.MustCompile(`Attribute size_in_gb value must be between 25 and 50000, got: 24`),
+			},
+		},
+	})
+}
+
+func TestAccFileSystem_SizeGranularity(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	fileSystemName := "TestAccFileSystem_InvalidSizeGranularityFails"
+	sizeInGB := 250
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -39,33 +124,16 @@ func TestAccFileSystem_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
 				),
 			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_file_filesystem" "fs" {
-						name = "%s"
-						size_in_gb = %d
-					}
-				`, fileSystemNameUpdated, sizeInGB),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
-				),
-			},
-			{
-				ResourceName:      "scaleway_file_filesystem.fs",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
 		},
 	})
 }
 
-func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
+func TestAccFileSystem_SizeTooLargeFails(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	fileSystemName := "TestAccFileSystem_SizeTooSmallFails"
-	sizeInGB := 10
+	fileSystemName := "TestAccFileSystem_SizeTooLargeFails"
+	sizeInGB := 50100 // Above 50 TB limit
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -78,31 +146,7 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 						size_in_gb = %d
 					}
 				`, fileSystemName, sizeInGB),
-				ExpectError: regexp.MustCompile("size must be greater or equal to 100000000000"),
-			},
-		},
-	})
-}
-
-func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	fileSystemName := "TestAccFileSystem_InvalidSizeGranularityFails"
-	sizeInGB := 250
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_file_filesystem" "fs" {
-						name = "%s"
-						size_in_gb = %d
-					}
-				`, fileSystemName, sizeInGB),
-				ExpectError: regexp.MustCompile("size does not respect constraint, size must be a multiple of 100000000000"),
+				ExpectError: regexp.MustCompile(`Attribute size_in_gb value must be between 25 and 50000, got: 50100`),
 			},
 		},
 	})

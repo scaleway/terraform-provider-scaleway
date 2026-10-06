@@ -1,6 +1,7 @@
 package vpcgw_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -66,7 +67,7 @@ func TestAccDataSourceVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					  name        = "Scaleway Instance"
 					  type        = "DEV1-S"
 					  image       = "debian_bullseye"
-					
+
 					  private_network {
 						pn_id = scaleway_vpc_private_network.pn01.id
 					  }
@@ -116,6 +117,7 @@ func TestAccDataSourceVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_public_gateway_pat_rule.main", "private_port",
 						"scaleway_vpc_public_gateway_pat_rule.main", "private_port"),
+					resource.TestMatchResourceAttr("data.scaleway_vpc_public_gateway_pat_rule.main", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/pat-rules/.+$`)),
 				),
 			},
 		},

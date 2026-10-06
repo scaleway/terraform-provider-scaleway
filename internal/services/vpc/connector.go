@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -85,6 +86,11 @@ func connectorSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the vpc connector",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the vpc connector",
+		},
 	}
 }
 
@@ -94,13 +100,15 @@ func ResourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	res, err := vpcAPI.CreateVPCConnector(&vpc.CreateVPCConnectorRequest{
-		Name:        types.ExpandOrGenerateString(d.Get("name"), "connector"),
-		VpcID:       regional.ExpandID(d.Get("vpc_id").(string)).ID,
-		TargetVpcID: regional.ExpandID(d.Get("target_vpc_id").(string)).ID,
-		Tags:        types.ExpandStrings(d.Get("tags")),
-		Region:      region,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.VPCConnector, error) {
+		return vpcAPI.CreateVPCConnector(&vpc.CreateVPCConnectorRequest{
+			Name:        types.ExpandOrGenerateString(d.Get("name"), "connector"),
+			VpcID:       regional.ExpandID(d.Get("vpc_id").(string)).ID,
+			TargetVpcID: regional.ExpandID(d.Get("target_vpc_id").(string)).ID,
+			Tags:        types.ExpandStrings(d.Get("tags")),
+			Region:      region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -119,10 +127,12 @@ func ResourceConnectorRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	res, err := vpcAPI.GetVPCConnector(&vpc.GetVPCConnectorRequest{
-		Region:         region,
-		VpcConnectorID: ID,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.VPCConnector, error) {
+		return vpcAPI.GetVPCConnector(&vpc.GetVPCConnectorRequest{
+			Region:         region,
+			VpcConnectorID: ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -154,6 +164,7 @@ func setConnectorState(d *schema.ResourceData, connector *vpc.VPCConnector) diag
 	_ = d.Set("status", connector.Status.String())
 	_ = d.Set("region", connector.Region)
 	_ = d.Set("tags", connector.Tags)
+	_ = d.Set("srn", connector.Srn)
 
 	return nil
 }
@@ -182,7 +193,11 @@ func ResourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	if hasChanged {
-		_, err = vpcAPI.UpdateVPCConnector(updateRequest, scw.WithContext(ctx))
+		err = transport.RetryOn403(ctx, func() error {
+			_, err := vpcAPI.UpdateVPCConnector(updateRequest, scw.WithContext(ctx))
+
+			return err
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -197,10 +212,12 @@ func ResourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	err = vpcAPI.DeleteVPCConnector(&vpc.DeleteVPCConnectorRequest{
-		Region:         region,
-		VpcConnectorID: ID,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOn403(ctx, func() error {
+		return vpcAPI.DeleteVPCConnector(&vpc.DeleteVPCConnectorRequest{
+			Region:         region,
+			VpcConnectorID: ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

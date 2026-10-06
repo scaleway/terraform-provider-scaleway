@@ -235,7 +235,7 @@ func (r *SecretListResource) List(ctx context.Context, req list.ListRequest, str
 			identitySetDiags := result.Identity.Set(ctx, *tfTypeIdentity)
 			result.Diagnostics.Append(identitySetDiags...)
 
-			setSecretState(resourceData, secret)
+			setSecretState(resourceData, secret, nil)
 
 			tfTypeResource, errTfTypeResourceState := resourceData.TfTypeResourceState()
 			if errTfTypeResourceState != nil {

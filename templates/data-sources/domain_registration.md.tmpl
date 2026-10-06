@@ -13,7 +13,7 @@ Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en
 
 ### Get task_id for import
 
-```hcl
+```terraform
 data "scaleway_domain_registration" "example" {
   domain_name = "example.com"
 }
@@ -25,7 +25,7 @@ output "import_command" {
 
 ### With project_id filter
 
-```hcl
+```terraform
 data "scaleway_domain_registration" "example" {
   domain_name = "example.com"
   project_id  = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"

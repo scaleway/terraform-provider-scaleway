@@ -1,6 +1,7 @@
 package rdb_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccPrivilege_UpdatePermission(t *testing.T) {
@@ -283,11 +285,19 @@ func isPrivilegePresent(tt *acctest.TestTools, instance string, database string,
 			return err
 		}
 
-		databases, err := rdbAPI.ListPrivileges(&rdbSDK.ListPrivilegesRequest{
-			Region:       region,
-			InstanceID:   instanceID,
-			DatabaseName: &databaseName,
-			UserName:     &userName,
+		var databases *rdbSDK.ListPrivilegesResponse
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			databases, err = rdbAPI.ListPrivileges(&rdbSDK.ListPrivilegesRequest{
+				Region:       region,
+				InstanceID:   instanceID,
+				DatabaseName: &databaseName,
+				UserName:     &userName,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

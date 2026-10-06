@@ -16,7 +16,7 @@ The following commands allow you to:
 - query a domain record specified by the DNS zone (`domain.tld`), the record name (`www`), the record type (`A`), and the record content (`1.2.3.4`).
 - query a domain record specified by the DNS zone (`domain.tld`) and the unique record ID (`11111111-1111-1111-1111-111111111111`).
 
-```hcl
+```terraform
 # Query record by DNS zone, record name, type and content
 data "scaleway_domain_record" "by_content" {
   dns_zone = "domain.tld"
@@ -46,7 +46,7 @@ This section lists the arguments that you can provide to the `scaleway_domain_re
 
 - `record_id` - (Optional) The unique identifier of the record. Cannot be used with `name`, `type`, and `data`.
 
-- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)). The ID of the Project associated with the domain.
+- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#arguments-reference)). The ID of the Project associated with the domain.
 
 ## Attributes Reference
 

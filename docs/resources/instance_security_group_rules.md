@@ -58,9 +58,9 @@ resource "scaleway_instance_security_group_rules" "main" {
   dynamic "inbound_rule" {
     for_each = local.trusted
     content {
-      action = "accept"
-      ip_range     = inbound_rule.value
-      port   = 80
+      action   = "accept"
+      ip_range = inbound_rule.value
+      port     = 80
     }
   }
 }
@@ -91,9 +91,9 @@ resource "scaleway_instance_security_group_rules" "main" {
   dynamic "inbound_rule" {
     for_each = local.trusted
     content {
-      action = "accept"
-      ip_range     = inbound_rule.value.ip_range
-      port   = inbound_rule.value.port
+      action   = "accept"
+      ip_range = inbound_rule.value.ip_range
+      port     = inbound_rule.value.port
     }
   }
 }

@@ -285,6 +285,18 @@ func TestNormalizeTargetFQDN(t *testing.T) {
 			dnsZone:  "example.com",
 			expected: "www.example.com.",
 		},
+		{
+			name:     "RFC 7505 null MX root is preserved",
+			target:   ".",
+			dnsZone:  "example.com",
+			expected: ".",
+		},
+		{
+			name:     "RFC 7505 null MX root is preserved with surrounding whitespace",
+			target:   "  .  ",
+			dnsZone:  "example.com",
+			expected: ".",
+		},
 	}
 
 	for _, tt := range tests {
@@ -324,6 +336,12 @@ func TestNormalizeRecordData(t *testing.T) {
 			data:       "mail.example.net",
 			recordType: domainSDK.RecordTypeMX,
 			expected:   "mail.example.net.",
+		},
+		{
+			name:       "MX RFC 7505 null MX is preserved",
+			data:       ".",
+			recordType: domainSDK.RecordTypeMX,
+			expected:   ".",
 		},
 		{
 			name:       "A record stays untouched",

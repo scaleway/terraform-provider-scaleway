@@ -165,6 +165,11 @@ func networkSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The status of the Public Gateway's connection to the Private Network",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the gateway network",
+		},
 		"zone": zonal.Schema(),
 	}
 }
@@ -281,6 +286,7 @@ func setGatewayNetworkState(d *schema.ResourceData, gn *vpcgw.GatewayNetwork) di
 			"ipam_ip_id":         gn.IpamIPID,
 		},
 	})
+	_ = d.Set("srn", gn.Srn)
 
 	return nil
 }

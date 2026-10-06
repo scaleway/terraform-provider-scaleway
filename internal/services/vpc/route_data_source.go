@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -75,10 +76,12 @@ func dataSourceRouteReadByID(ctx context.Context, d *schema.ResourceData, m any,
 	d.SetId(regionalID)
 	_ = d.Set("route_id", regionalID)
 
-	res, err := vpcAPI.GetRoute(&vpc.GetRouteRequest{
-		Region:  region,
-		RouteID: locality.ExpandID(routeID),
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.Route, error) {
+		return vpcAPI.GetRoute(&vpc.GetRouteRequest{
+			Region:  region,
+			RouteID: locality.ExpandID(routeID),
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,7 +113,9 @@ func dataSourceRouteReadByFilters(ctx context.Context, d *schema.ResourceData, m
 		req.IsIPv6 = types.ExpandBoolPtr(isIPv6)
 	}
 
-	res, err := routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListRoutesWithNexthopResponse, error) {
+		return routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -138,5 +143,20 @@ func dataSourceRouteReadByFilters(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(routeRegionalID)
 	_ = d.Set("route_id", routeRegionalID)
 
-	return setRouteState(d, route.Route)
+	vpcAPI, _, err := vpcAPIWithRegion(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	fullRoute, err := transport.RetryOn403Value(ctx, func() (*vpc.Route, error) {
+		return vpcAPI.GetRoute(&vpc.GetRouteRequest{
+			Region:  region,
+			RouteID: route.Route.ID,
+		}, scw.WithContext(ctx))
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setRouteState(d, fullRoute)
 }

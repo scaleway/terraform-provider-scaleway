@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"regexp"
 	"testing"
 	"time"
 
@@ -41,6 +42,7 @@ func TestAccFlexibleIP_Basic(t *testing.T) {
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
+					resource.TestMatchResourceAttr("scaleway_flexible_ip.main", "srn", regexp.MustCompile(`^srn://flexible-ip\..+/zones/.+/flexible-ips/.+$`)),
 				),
 			},
 			{

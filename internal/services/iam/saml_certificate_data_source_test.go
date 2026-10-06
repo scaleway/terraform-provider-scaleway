@@ -2,6 +2,7 @@ package iam_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -15,11 +16,6 @@ func TestAccDataSourceSamlCertificate_Basic(t *testing.T) {
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
 		t.Skip("No default organization ID found, skipping test")
-	}
-
-	certContent, err := generateTestCert()
-	if err != nil {
-		t.Error("Failed to generate test certificate")
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -47,7 +43,7 @@ func TestAccDataSourceSamlCertificate_Basic(t *testing.T) {
 					data "scaleway_iam_saml_certificate" "main" {
 						certificate_id = scaleway_iam_saml_certificate.main.id
 					}
-				`, orgID, certContent),
+				`, orgID, testSamlCertificateContent),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSamlCertificateResourceExists(tt, "scaleway_iam_saml_certificate.main"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_saml_certificate.main", "certificate_id", "scaleway_iam_saml_certificate.main", "id"),
@@ -55,6 +51,7 @@ func TestAccDataSourceSamlCertificate_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_saml_certificate.main", "type", "scaleway_iam_saml_certificate.main", "type"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iam_saml_certificate.main", "origin"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iam_saml_certificate.main", "expires_at"),
+					resource.TestMatchResourceAttr("data.scaleway_iam_saml_certificate.main", "srn", regexp.MustCompile(`^srn://iam\..+/saml-certificates/.+$`)),
 				),
 			},
 		},
@@ -68,11 +65,6 @@ func TestAccDataSourceSamlCertificate_WithDefaultOrganizationID(t *testing.T) {
 	_, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
 		t.Skip("No default organization ID found, skipping test")
-	}
-
-	certContent, err := generateTestCert()
-	if err != nil {
-		t.Error("Failed to generate test certificate")
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -98,7 +90,7 @@ func TestAccDataSourceSamlCertificate_WithDefaultOrganizationID(t *testing.T) {
 						certificate_id = scaleway_iam_saml_certificate.main.id
 						depends_on = [scaleway_iam_saml_certificate.main]
 					}
-				`, certContent),
+				`, testSamlCertificateContent),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSamlCertificateResourceExists(tt, "scaleway_iam_saml_certificate.main"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_saml_certificate.main", "certificate_id", "scaleway_iam_saml_certificate.main", "id"),
@@ -106,6 +98,7 @@ func TestAccDataSourceSamlCertificate_WithDefaultOrganizationID(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_saml_certificate.main", "type", "scaleway_iam_saml_certificate.main", "type"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iam_saml_certificate.main", "origin"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iam_saml_certificate.main", "expires_at"),
+					resource.TestMatchResourceAttr("data.scaleway_iam_saml_certificate.main", "srn", regexp.MustCompile(`^srn://iam\..+/saml-certificates/.+$`)),
 				),
 			},
 		},

@@ -1,0 +1,1 @@
+Create an annotation value to define a specific label instance that can be attached to Scaleway resources. Annotation values are associated with annotation keys and represent concrete tag values (e.g., "production" as a value for an "environment" key).

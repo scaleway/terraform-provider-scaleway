@@ -1,0 +1,802 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 324
+        host: api.scaleway.com
+        body: '{"name":"test-jobs-job-definition-retry-policy","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","startup_command":[],"args":[],"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","environment_variables":{},"description":"","retry_policy":{"max_retries":5}}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 516
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:16:59.636565Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"retry_policy":{"max_retries":5},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "516"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:16:59 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 265dc518-77f9-4a52-a78b-88bc8b03a86d
+        status: 200 OK
+        code: 200
+        duration: 139.201529ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 516
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:16:59.636565Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"retry_policy":{"max_retries":5},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "516"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:16:59 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 53f50e64-f170-485b-9197-558be5a33c06
+        status: 200 OK
+        code: 200
+        duration: 57.505589ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            job_definition_id:
+                - 77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/secrets?job_definition_id=77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 30
+        body: '{"secrets":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:16:59 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - f0afb9e0-a302-4251-91b3-4d4c63054104
+        status: 200 OK
+        code: 200
+        duration: 49.194332ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 516
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:16:59.636565Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"retry_policy":{"max_retries":5},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "516"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:16:59 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - db34e284-cad2-43eb-b157-cb6a86df5294
+        status: 200 OK
+        code: 200
+        duration: 80.108233ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 516
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:16:59.636565Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"retry_policy":{"max_retries":5},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "516"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:00 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - ca92c709-fd51-4fec-bdaa-b26a29efde3b
+        status: 200 OK
+        code: 200
+        duration: 40.961393ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            job_definition_id:
+                - 77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/secrets?job_definition_id=77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 30
+        body: '{"secrets":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:00 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 591d583d-c9ca-4d2d-9a32-558557e7d704
+        status: 200 OK
+        code: 200
+        duration: 45.165272ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 516
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:16:59.636565Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"retry_policy":{"max_retries":5},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "516"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:00 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - b786be9d-b2e3-4a7e-ad5d-f5242f669202
+        status: 200 OK
+        code: 200
+        duration: 40.910397ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            job_definition_id:
+                - 77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/secrets?job_definition_id=77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 30
+        body: '{"secrets":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:00 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - dd4f01c6-9708-4805-af1b-4177031616de
+        status: 200 OK
+        code: 200
+        duration: 41.743365ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 34
+        host: api.scaleway.com
+        body: '{"retry_policy":{"max_retries":0}}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: PATCH
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 516
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:17:00.662345Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"retry_policy":{"max_retries":0},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "516"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:00 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 039551d5-c141-4622-a461-475338578c6a
+        status: 200 OK
+        code: 200
+        duration: 78.729058ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 516
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:17:00.662345Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"retry_policy":{"max_retries":0},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "516"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:00 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - fcad6ea5-912a-45b9-8215-4b85fc1a2090
+        status: 200 OK
+        code: 200
+        duration: 42.470171ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            job_definition_id:
+                - 77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/secrets?job_definition_id=77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 30
+        body: '{"secrets":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:00 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 171fb513-be2b-4355-8758-a7752aee9075
+        status: 200 OK
+        code: 200
+        duration: 36.247725ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 516
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:17:00.662345Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"retry_policy":{"max_retries":0},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "516"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:00 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 77bfb20c-1132-40f8-bfee-755d97aec56c
+        status: 200 OK
+        code: 200
+        duration: 40.953648ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 516
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:17:00.662345Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"retry_policy":{"max_retries":0},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "516"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:01 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 2a1590d3-a8cb-4a4c-a18f-155d53d16a96
+        status: 200 OK
+        code: 200
+        duration: 37.656887ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            job_definition_id:
+                - 77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/secrets?job_definition_id=77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 30
+        body: '{"secrets":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:01 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 8bb486ed-4860-426a-a5a1-8a493c6deec8
+        status: 200 OK
+        code: 200
+        duration: 27.55987ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 516
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:17:00.662345Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"retry_policy":{"max_retries":0},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "516"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:01 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 0f1efe95-474c-4476-90eb-40a2bb1285f4
+        status: 200 OK
+        code: 200
+        duration: 39.963756ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            job_definition_id:
+                - 77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/secrets?job_definition_id=77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 30
+        body: '{"secrets":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:01 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 57259dba-a0b0-471b-ae56-2cbfa937c557
+        status: 200 OK
+        code: 200
+        duration: 26.843913ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 37
+        host: api.scaleway.com
+        body: '{"retry_policy":{"max_retries":null}}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: PATCH
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 483
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:17:01.618814Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "483"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:01 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 192bd426-ca58-4618-910a-27cdd5b5eac4
+        status: 200 OK
+        code: 200
+        duration: 50.769306ms
+    - id: 17
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 483
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:17:01.618814Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "483"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:01 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 2429de49-d1db-4895-a231-347ec7ffa1cd
+        status: 200 OK
+        code: 200
+        duration: 40.471652ms
+    - id: 18
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            job_definition_id:
+                - 77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/secrets?job_definition_id=77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 30
+        body: '{"secrets":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:01 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 4944b498-d904-4f17-839e-e9beebad4696
+        status: 200 OK
+        code: 200
+        duration: 44.463612ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 483
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:17:01.618814Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "483"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:01 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 9cba4383-d05f-4caf-bd03-8347fd1cb996
+        status: 200 OK
+        code: 200
+        duration: 37.843798ms
+    - id: 20
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 483
+        body: '{"id":"77df1889-c5b1-4e48-9a93-d03b2e5d3ccc","name":"test-jobs-job-definition-retry-policy","project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","created_at":"2026-07-02T14:16:59.636565Z","updated_at":"2026-07-02T14:17:01.618814Z","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","environment_variables":{},"job_timeout":"86400s","description":"","cron_schedule":null,"startup_command":[],"args":[],"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "483"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:02 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - eca8a69e-5eb0-4ff1-8887-d24e4171aedf
+        status: 200 OK
+        code: 200
+        duration: 44.848296ms
+    - id: 21
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            job_definition_id:
+                - 77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/secrets?job_definition_id=77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 30
+        body: '{"secrets":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:02 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - 3d47d856-b5d8-4830-ba73-632367aded12
+        status: 200 OK
+        code: 200
+        duration: 36.17105ms
+    - id: 22
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:02 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - f1ec1670-8c98-4438-bb3e-863a88857e37
+        status: 204 No Content
+        code: 204
+        duration: 72.888159ms
+    - id: 23
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/77df1889-c5b1-4e48-9a93-d03b2e5d3ccc
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 41
+        body: '{"message":"job definition is not found"}'
+        headers:
+            Content-Length:
+                - "41"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 02 Jul 2026 14:17:02 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge01)
+            X-Request-Id:
+                - d46b35de-3edf-480d-8ca6-8621db96e3e1
+        status: 404 Not Found
+        code: 404
+        duration: 20.535915ms

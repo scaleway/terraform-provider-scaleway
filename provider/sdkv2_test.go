@@ -142,7 +142,6 @@ func TestAccProvider_SSHKeys(t *testing.T) {
 
 func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 	exceptions := []string{
-		"scaleway_account_project",
 		"scaleway_account_ssh_key",
 		"scaleway_autoscaling_instance_group",
 		"scaleway_autoscaling_instance_policy",
@@ -167,7 +166,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_function_namespace",
 		"scaleway_function_token",
 		"scaleway_function_trigger",
-		"scaleway_iam_api_key",
 		"scaleway_iam_group_membership",
 		"scaleway_iam_policy",
 		"scaleway_inference_deployment",
@@ -180,9 +178,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_ipam_ip",
 		"scaleway_ipam_ip_reverse_dns",
 		"scaleway_job_definition",
-		"scaleway_k8s_acl",
-		"scaleway_k8s_cluster",
-		"scaleway_k8s_pool",
 		"scaleway_key_manager_key",
 		"scaleway_mnq_nats_account",
 		"scaleway_mnq_nats_credentials",
@@ -207,8 +202,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_rdb_snapshot",
 		"scaleway_registry_namespace",
 		"scaleway_sdb_sql_database",
-		"scaleway_secret",
-		"scaleway_secret_version",
 		"scaleway_vpc_public_gateway_dhcp",
 		"scaleway_vpc_public_gateway_dhcp_reservation",
 	}
@@ -236,7 +229,6 @@ func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
 		"scaleway_apple_silicon_server",
 		"scaleway_autoscaling_instance_template",
 		"scaleway_cockpit_alert_manager",
-		"scaleway_cockpit_grafana_user",
 		"scaleway_cockpit_token",
 		"scaleway_container_cron",
 		"scaleway_container_domain",
@@ -278,6 +270,7 @@ func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
 		"scaleway_object_bucket_acl",
 		"scaleway_object_bucket_lock_configuration",
 		"scaleway_object_bucket_website_configuration",
+		"scaleway_opensearch_user",
 		"scaleway_rdb_read_replica",
 		"scaleway_rdb_snapshot",
 		"scaleway_rdb_user",

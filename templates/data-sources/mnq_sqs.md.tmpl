@@ -11,7 +11,7 @@ Gets information about SQS for a Project
 
 ### Basic
 
-```hcl
+```terraform
 // For default project
 data "scaleway_mnq_sqs" "main" {}
 
@@ -25,9 +25,9 @@ data "scaleway_mnq_sqs" "for_project" {
 
 The following arguments are supported:
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which SQS is enabled.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which SQS is enabled.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project in which SQS is enabled.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project in which SQS is enabled.
 
 ## Attributes Reference
 

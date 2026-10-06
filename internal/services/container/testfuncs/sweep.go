@@ -1,8 +1,6 @@
 package containertestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -37,7 +35,9 @@ func testSweepTrigger(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing trigger in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing trigger in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, trigger := range listTriggers.Triggers {
@@ -46,9 +46,7 @@ func testSweepTrigger(_ string) error {
 				Region:    region,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting trigger in sweeper: %w", err)
+				logging.L.Warningf("error deleting trigger in sweeper: %s", err)
 			}
 		}
 
@@ -67,7 +65,9 @@ func testSweepContainer(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing containers in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing containers in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, cont := range listNamespaces.Containers {
@@ -76,9 +76,7 @@ func testSweepContainer(_ string) error {
 				Region:      region,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting container in sweeper: %w", err)
+				logging.L.Warningf("error deleting container in sweeper: %s", err)
 			}
 		}
 
@@ -97,7 +95,9 @@ func testSweepNamespace(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing namespaces in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, ns := range listNamespaces.Namespaces {
@@ -106,9 +106,7 @@ func testSweepNamespace(_ string) error {
 				Region:      region,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting namespace in sweeper: %w", err)
+				logging.L.Warningf("error deleting namespace in sweeper: %s", err)
 			}
 		}
 

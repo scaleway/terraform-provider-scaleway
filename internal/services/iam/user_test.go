@@ -1,6 +1,7 @@
 package iam_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -40,6 +41,7 @@ func TestAccUser_Member(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "tags.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "type", "member"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "mfa", "false"),
+					resource.TestMatchResourceAttr("scaleway_iam_user.member_user", "srn", regexp.MustCompile(`^srn://iam\..+/users/.+$`)),
 				),
 			},
 			// Add tag and update email, username, last name, phone number and locale.

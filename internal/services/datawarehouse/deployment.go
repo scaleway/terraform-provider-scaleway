@@ -128,12 +128,16 @@ func deploymentSchema() map[string]*schema.Schema {
 		},
 		"public_network": {
 			Type:        schema.TypeList,
+			Optional:    true,
 			Computed:    true,
-			Description: "Public endpoint configuration. A public endpoint is created by default.",
+			MaxItems:    1,
+			ForceNew:    true,
+			Description: "Public endpoint configuration. A public endpoint is created only when this block is defined.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
 						Type:        schema.TypeString,
+						Optional:    true,
 						Computed:    true,
 						Description: "ID of the public endpoint",
 					},
@@ -229,6 +233,11 @@ func deploymentSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Date and time of deployment last update (RFC 3339 format)",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the deployment",
+		},
 	}
 }
 
@@ -265,11 +274,12 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		req.Tags = types.ExpandStrings(v)
 	}
 
-	// Always create a public endpoint by default
-	req.Endpoints = []*datawarehouseapi.EndpointSpec{
-		{
+	// A public endpoint is only created when the public_network block is
+	// defined in the configuration.
+	if publicNetworkRaw := d.GetRawConfig().GetAttr("public_network"); !publicNetworkRaw.IsNull() && publicNetworkRaw.LengthInt() > 0 {
+		req.Endpoints = append(req.Endpoints, &datawarehouseapi.EndpointSpec{
 			Public: &datawarehouseapi.EndpointSpecPublicDetails{},
-		},
+		})
 	}
 
 	// Add private network endpoint if configured
@@ -280,7 +290,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 			privateNetworkID := locality.ExpandID(pn["pn_id"].(string))
 
 			req.Endpoints = append(req.Endpoints, &datawarehouseapi.EndpointSpec{
-				PrivateNetwork: &datawarehouseapi.EndpointSpecPrivateNetworkDetails{
+				PrivateNetwork: &datawarehouseapi.EndpointSpecPrivateNetworkSummary{
 					PrivateNetworkID: privateNetworkID,
 				},
 			})
@@ -303,7 +313,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, deployment.ID))
+	d.SetId(regional.NewIDString(deployment.Region, deployment.ID))
 
 	return resourceDeploymentRead(ctx, d, meta)
 }
@@ -347,6 +357,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 	_ = d.Set("status", string(deployment.Status))
 	_ = d.Set("created_at", deployment.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", deployment.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("srn", deployment.Srn)
 
 	publicBlock, hasPublic := flattenPublicNetwork(deployment.Endpoints, deployment.Region)
 	if hasPublic {

@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -41,7 +43,35 @@ func ResourcePool() *schema.Resource {
 		DeleteContext: ResourceK8SPoolDelete,
 		CustomizeDiff: ResourceK8SPoolCustomDiff,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+				// user_data is create-only and the pool's Read only fetches it when it
+				// is already non-empty in state. A passthrough import leaves it empty,
+				// so an imported pool with user data would never record it and a spurious
+				// replacement would be planned. Fetch it explicitly during import.
+				k8sAPI, region, poolID, err := NewAPIWithRegionAndID(m, d.Id())
+				if err != nil {
+					return nil, err
+				}
+
+				pool, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
+					Region: region,
+					PoolID: poolID,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return nil, err
+				}
+
+				userData, err := fetchPoolUserData(ctx, k8sAPI, pool)
+				if err != nil {
+					return nil, err
+				}
+
+				if err := d.Set("user_data", userData); err != nil {
+					return nil, err
+				}
+
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultK8SPoolTimeout),
@@ -50,6 +80,7 @@ func ResourcePool() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    poolSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -63,7 +94,7 @@ func poolSchema() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			ForceNew:    true,
 			Description: "The name of the pool",
 		},
@@ -241,6 +272,15 @@ func poolSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"user_data": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "User data applied and reconciled with the pool, as a map of key to content",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
 		"zone":   zonal.Schema(),
 		"region": regional.Schema(),
 		// Computed elements
@@ -256,6 +296,7 @@ func poolSchema() map[string]*schema.Schema {
 		},
 		"version": {
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
 			Description: "The Kubernetes version of the pool",
 		},
@@ -317,6 +358,11 @@ func poolSchema() map[string]*schema.Schema {
 							},
 						},
 					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the node",
+					},
 				},
 			},
 		},
@@ -331,6 +377,11 @@ func poolSchema() map[string]*schema.Schema {
 			Optional:         true,
 			Description:      "The ID of the security group",
 			DiffSuppressFunc: dsf.Locality,
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the pool",
 		},
 	}
 }
@@ -422,7 +473,14 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if startupTaints, ok := d.GetOk("startup_taints"); ok {
-		req.Taints = expandCoreV1Taints(startupTaints)
+		req.StartupTaints = expandCoreV1Taints(startupTaints)
+	}
+
+	if rawUserData, ok := d.GetOk("user_data"); ok {
+		req.UserData = make(map[string][]byte)
+		for key, value := range rawUserData.(map[string]any) {
+			req.UserData[key] = []byte(value.(string))
+		}
 	}
 
 	// Validate pool configuration
@@ -459,7 +517,10 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return append(diags, diag.FromErr(err)...)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
 		_, err = waitPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
@@ -506,7 +567,19 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("cluster_id", regional.NewIDString(region, pool.ClusterID))
+	diags := setPoolState(ctx, d, m, pool, k8sAPI, nodes)
+	diags = append(diags, setPoolUserData(ctx, d, k8sAPI, pool, false)...)
+
+	err = identity.SetRegionalIdentity(d, pool.Region, pool.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPoolState(ctx context.Context, d *schema.ResourceData, m any, pool *k8s.Pool, k8sAPI *k8s.API, nodes []map[string]any) diag.Diagnostics {
+	_ = d.Set("cluster_id", regional.NewIDString(pool.Region, pool.ClusterID))
 	_ = d.Set("name", pool.Name)
 	_ = d.Set("node_type", pool.NodeType)
 	_ = d.Set("autoscaling", pool.Autoscaling)
@@ -532,7 +605,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("updated_at", pool.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("status", pool.Status)
 	_ = d.Set("kubelet_args", flattenKubeletArgs(pool.KubeletArgs))
-	_ = d.Set("region", region)
+	_ = d.Set("region", pool.Region)
 	_ = d.Set("zone", pool.Zone)
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)
@@ -545,6 +618,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("labels", flattenLabels(pool.Labels))
 	_ = d.Set("taints", flattenCoreV1Taints(pool.Taints))
 	_ = d.Set("startup_taints", flattenCoreV1Taints(pool.StartupTaints))
+	_ = d.Set("srn", pool.Srn)
 
 	// Get nodes' private IPs (if possible)
 	diags := diag.Diagnostics{}
@@ -574,7 +648,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 				ProjectID:    &projectID,
 			}
 
-			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, pool.Region, opts)
 
 			switch {
 			case err == nil:
@@ -604,6 +678,60 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("nodes", nodes)
 
 	return diags
+}
+
+// fetchPoolUserData fetches the pool's user data from the API: it lists the user data
+// keys and then reads the content of each one.
+func fetchPoolUserData(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) (map[string]any, error) {
+	listResp, err := k8sAPI.ListUserData(&k8s.ListUserDataRequest{
+		Region: pool.Region,
+		PoolID: pool.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	userData := make(map[string]any, len(listResp.UserData))
+	for _, summary := range listResp.UserData {
+		file, err := k8sAPI.GetUserData(&k8s.GetUserDataRequest{
+			Region: pool.Region,
+			PoolID: pool.ID,
+			Key:    summary.Key,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
+
+		content, err := io.ReadAll(file.Content)
+		if err != nil {
+			return nil, err
+		}
+
+		userData[summary.Key] = string(content)
+	}
+
+	return userData, nil
+}
+
+// setPoolUserData reads the pool's user data from the API and stores it in state.
+// Unless alwaysFetch is true, it only performs the fetch when the pool is known to
+// have user data (i.e. user_data is non-empty in state or config), so pools without
+// user data do not trigger extra API calls. This enables drift detection: because
+// user_data is ForceNew and the API exposes no update endpoint, any change detected
+// here forces a pool replacement. The data source passes alwaysFetch, as it must
+// always expose the pool's user data.
+func setPoolUserData(ctx context.Context, d *schema.ResourceData, k8sAPI *k8s.API, pool *k8s.Pool, alwaysFetch bool) diag.Diagnostics {
+	existing, _ := d.Get("user_data").(map[string]any)
+	if !alwaysFetch && len(existing) == 0 {
+		return nil
+	}
+
+	userData, err := fetchPoolUserData(ctx, k8sAPI, pool)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diag.FromErr(d.Set("user_data", userData))
 }
 
 func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -721,6 +849,31 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if poolVersion, poolVersionSet := meta.GetRawConfigForKey(d, "version", cty.String); poolVersionSet {
+		if d.HasChange("version") {
+			_, err = k8sAPI.UpgradePool(&k8s.UpgradePoolRequest{
+				Region:  region,
+				PoolID:  poolID,
+				Version: poolVersion.(string),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	} else {
+		poolVersion = d.Get("version") // read computed value in state
+		if poolVersion != cluster.Version {
+			_, err = k8sAPI.UpgradePool(&k8s.UpgradePoolRequest{
+				Region:  region,
+				PoolID:  poolID,
+				Version: cluster.Version,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 

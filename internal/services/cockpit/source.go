@@ -99,13 +99,15 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	res, err := api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
-		Region:        region,
-		ProjectID:     d.Get("project_id").(string),
-		Name:          d.Get("name").(string),
-		Type:          cockpit.DataSourceType(d.Get("type").(string)),
-		RetentionDays: new(uint32(d.Get("retention_days").(int))),
-	}, scw.WithContext(ctx))
+	res, err := retryOn403Value(ctx, func() (*cockpit.DataSource, error) {
+		return api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
+			Region:        region,
+			ProjectID:     d.Get("project_id").(string),
+			Name:          d.Get("name").(string),
+			Type:          cockpit.DataSourceType(d.Get("type").(string)),
+			RetentionDays: new(uint32(d.Get("retention_days").(int))),
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -123,10 +125,12 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	res, err := api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
-		Region:       region,
-		DataSourceID: id,
-	}, scw.WithContext(ctx))
+	res, err := retryOn403Value(ctx, func() (*cockpit.DataSource, error) {
+		return api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
+			Region:       region,
+			DataSourceID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -181,7 +185,9 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChanges("retention_days", "name") {
-		_, err = api.UpdateDataSource(updateRequest, scw.WithContext(ctx))
+		_, err = retryOn403Value(ctx, func() (*cockpit.DataSource, error) {
+			return api.UpdateDataSource(updateRequest, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -196,10 +202,12 @@ func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteDataSource(&cockpit.RegionalAPIDeleteDataSourceRequest{
-		DataSourceID: id,
-		Region:       region,
-	}, scw.WithContext(ctx))
+	err = retryOn403(ctx, func() error {
+		return api.DeleteDataSource(&cockpit.RegionalAPIDeleteDataSourceRequest{
+			DataSourceID: id,
+			Region:       region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}

@@ -1,0 +1,41 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "Object Storage"
+description: |-
+  Lists Scaleway Object Storage Buckets.
+---
+
+# Resource: {{ .Name }}
+
+Lists Scaleway Object Storage Buckets.
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/storage/object/concepts/).
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+{{ end -}}
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `project_ids` - (Optional) Project IDs to filter for. Use '*' to list across all projects. If not specified, the provider default project ID is used.
+- `regions` - (Optional) Regions to target. Use '*' to list from all regions. If not specified, the provider default region is used.
+- `name` - (Optional) Filter by bucket name.
+- `tags` - (Optional) Filter by tags.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each Bucket:
+
+- `id` - The regional ID of the bucket.
+- `name` - The name of the bucket.
+- `region` - The region of the bucket.
+- `project_id` - The project ID the bucket belongs to.
+- `endpoint` - The endpoint URL of the bucket.
+- `api_endpoint` - The API endpoint URL of the bucket.
+

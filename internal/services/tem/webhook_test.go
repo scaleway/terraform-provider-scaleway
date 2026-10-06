@@ -19,7 +19,7 @@ const (
 	updatedWebhookName = "terraform-webhook-updated"
 	organizationID     = "105bdce1-64c0-48ab-899d-868455867ecf"
 	webhookDomainName  = "scaleway-terraform.com"
-	DomainZone         = "webhook-test"
+	DomainZone         = "tf-test-tem-webhook"
 )
 
 func TestAccWebhook_BasicAndUpdate(t *testing.T) {

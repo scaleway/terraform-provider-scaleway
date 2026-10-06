@@ -20,7 +20,10 @@ import (
 
 const SSHKeyBaremetal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 
-var jsonConfigPartitioning = "{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912},{\"label\":\"swap\",\"number\":2,\"size\":4294967296},{\"label\":\"boot\",\"number\":3,\"size\":1073741824},{\"label\":\"root\",\"number\":4,\"size\":1017827045376}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"swap\",\"number\":1,\"size\":4294967296},{\"label\":\"boot\",\"number\":2,\"size\":1073741824},{\"label\":\"root\",\"number\":3,\"size\":1017827045376}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/md0\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/md1\",\"format\":\"ext4\",\"mountpoint\":\"/\"}],\"raids\":[{\"devices\":[\"/dev/nvme0n1p3\",\"/dev/nvme1n1p2\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md0\"},{\"devices\":[\"/dev/nvme0n1p4\",\"/dev/nvme1n1p3\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md1\"}],\"zfs\":{\"pools\":[]}}"
+var (
+	jsonConfigPartitioning         = "{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912},{\"label\":\"swap\",\"number\":2,\"size\":4294967296},{\"label\":\"boot\",\"number\":3,\"size\":1073741824},{\"label\":\"root\",\"number\":4,\"size\":1017827045376}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"swap\",\"number\":1,\"size\":4294967296},{\"label\":\"boot\",\"number\":2,\"size\":1073741824},{\"label\":\"root\",\"number\":3,\"size\":1017827045376}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/md0\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/md1\",\"format\":\"ext4\",\"mountpoint\":\"/\"}],\"raids\":[{\"devices\":[\"/dev/nvme0n1p3\",\"/dev/nvme1n1p2\"],\"level\":\"raid_level_0\",\"name\":\"/dev/md0\"},{\"devices\":[\"/dev/nvme0n1p4\",\"/dev/nvme1n1p3\"],\"level\":\"raid_level_0\",\"name\":\"/dev/md1\"}],\"zfs\":{\"pools\":[]}}"
+	jsonConfigPartitioningToUpdate = "{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912},{\"label\":\"swap\",\"number\":2,\"size\":4294967296},{\"label\":\"boot\",\"number\":3,\"size\":1073741824},{\"label\":\"root\",\"number\":4,\"size\":1017827045376}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"swap\",\"number\":1,\"size\":4294967296},{\"label\":\"boot\",\"number\":2,\"size\":1073741824},{\"label\":\"root\",\"number\":3,\"size\":1017827045376}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/md0\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/md1\",\"format\":\"ext4\",\"mountpoint\":\"/\"}],\"raids\":[{\"devices\":[\"/dev/nvme0n1p3\",\"/dev/nvme1n1p2\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md0\"},{\"devices\":[\"/dev/nvme0n1p4\",\"/dev/nvme1n1p3\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md1\"}],\"zfs\":{\"pools\":[]}}"
+)
 
 func TestAccServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -399,6 +402,45 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.2", "minimal"),
 					testAccCheckPartitioning(tt, "scaleway_baremetal_server.base", jsonConfigPartitioning),
+					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+						name        = "%s"
+						zone        = "%s"
+						description = "test a description"
+						offer       = "%s"
+						os    = data.scaleway_baremetal_os.my_os.os_id
+						partitioning = "%s"
+						reinstall_on_config_changes = true
+						
+						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone, OfferName, strings.ReplaceAll(jsonConfigPartitioningToUpdate, "\"", "\\\"")),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", Zone+"/96e5f0f2-d216-4de2-8a15-68730d877885"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.2", "minimal"),
+					testAccCheckPartitioning(tt, "scaleway_baremetal_server.base", jsonConfigPartitioningToUpdate),
 					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
 				),
 			},

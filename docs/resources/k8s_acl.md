@@ -22,7 +22,7 @@ resource "scaleway_vpc_private_network" "acl_basic" {}
 
 resource "scaleway_k8s_cluster" "acl_basic" {
   name                        = "acl-basic"
-  version                     = "1.32.2"
+  version                     = "1.35.3"
   cni                         = "cilium"
   delete_additional_resources = true
   private_network_id          = scaleway_vpc_private_network.acl_basic.id
@@ -48,7 +48,7 @@ resource "scaleway_vpc_private_network" "acl_basic" {}
 
 resource "scaleway_k8s_cluster" "acl_basic" {
   name                        = "acl-basic"
-  version                     = "1.32.2"
+  version                     = "1.35.3"
   cni                         = "cilium"
   delete_additional_resources = true
   private_network_id          = scaleway_vpc_private_network.acl_basic.id
@@ -79,7 +79,7 @@ The following arguments are supported:
 
 ~> **Important:** This block cannot be defined if the `no_ip_allowed` field is set to true.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the ACL rule should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the ACL rule should be created.
 
 The `acl_rules` block supports:
 
@@ -103,6 +103,7 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** Kubernetes ACLs' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `acl_rules.#.id` - The ID of each individual ACL rule.
+- `acl_rules.#.srn` - The Scaleway Resource Name (SRN) of each individual ACL rule.
 
 ## Import
 

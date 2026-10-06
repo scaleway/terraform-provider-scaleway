@@ -34,6 +34,7 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "name", publicGatewayName),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "type", "VPC-GW-S"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "status", vpcgwSDK.GatewayStatusRunning.String()),
+					resource.TestMatchResourceAttr("scaleway_vpc_public_gateway.main", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/gateways/.+$`)),
 				),
 			},
 			{

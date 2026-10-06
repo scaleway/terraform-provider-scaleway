@@ -1,8 +1,6 @@
 package inferencetestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -34,7 +32,9 @@ func testSweepDeployment(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing deployment in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing deployment in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, deployment := range listDeployments.Deployments {
@@ -43,9 +43,7 @@ func testSweepDeployment(_ string) error {
 				Region:       region,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting deployment in sweeper: %w", err)
+				logging.L.Warningf("error deleting deployment in sweeper: %s", err)
 			}
 		}
 
@@ -63,7 +61,9 @@ func testSweepModel(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing models in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing models in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, model := range listModels.Models {
@@ -72,9 +72,7 @@ func testSweepModel(_ string) error {
 				ModelID: model.ID,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting model in sweeper: %w", err)
+				logging.L.Warningf("error deleting model in sweeper: %s", err)
 			}
 		}
 

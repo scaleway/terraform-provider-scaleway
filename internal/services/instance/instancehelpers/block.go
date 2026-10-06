@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -33,16 +34,19 @@ func InstanceAndBlockAPIWithZoneAndID(m any, zonedID string) (*BlockAndInstanceA
 
 type BlockAndInstanceAPI struct {
 	*instance.API
-	BlockAPI *block.API
+	InstanceV2API *instanceV2.API
+	BlockAPI      *block.API
 }
 
 func NewBlockAndInstanceAPI(client *scw.Client) *BlockAndInstanceAPI {
 	instanceAPI := instance.NewAPI(client)
+	instanceV2API := instanceV2.NewAPI(client)
 	blockAPI := block.NewAPI(client)
 
 	return &BlockAndInstanceAPI{
-		API:      instanceAPI,
-		BlockAPI: blockAPI,
+		API:           instanceAPI,
+		InstanceV2API: instanceV2API,
+		BlockAPI:      blockAPI,
 	}
 }
 

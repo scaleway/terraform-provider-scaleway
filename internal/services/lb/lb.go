@@ -249,7 +249,7 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	createReq := &lbSDK.ZonedAPICreateLBRequest{
 		Zone:                  zone,
 		IPIDs:                 types.ExpandSliceIDs(d.Get("ip_ids")),
-		IPID:                  types.ExpandStringPtr(locality.ExpandID(d.Get("ip_id"))),
+		IPID:                  types.ExpandStringPtr(locality.ExpandID(d.Get("ip_id"))), //nolint:staticcheck
 		ProjectID:             types.ExpandStringPtr(d.Get("project_id")),
 		Name:                  types.ExpandOrGenerateString(d.Get("name"), "lb"),
 		Description:           d.Get("description").(string),

@@ -2,10 +2,8 @@ package mnq
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -16,8 +14,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
-
-const natsCredentialsCreateRetryTimeout = 30 * time.Second
 
 func ResourceNatsCredentials() *schema.Resource {
 	return &schema.Resource{
@@ -71,19 +67,8 @@ func ResourceMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceDat
 		Name:          types.ExpandOrGenerateString(d.Get("name").(string), "nats-credentials"),
 	}
 
-	var credentials *mnq.NatsCredentials
-
-	err = retry.RetryContext(ctx, natsCredentialsCreateRetryTimeout, func() *retry.RetryError {
-		credentials, err = api.CreateNatsCredentials(req, scw.WithContext(ctx))
-		if err == nil {
-			return nil
-		}
-
-		if isMNQNamespaceReadRetryableError(err) {
-			return retry.RetryableError(err)
-		}
-
-		return retry.NonRetryableError(err)
+	credentials, err := RetryMNQNamespaceReadValue(ctx, func() (*mnq.NatsCredentials, error) {
+		return api.CreateNatsCredentials(req, scw.WithContext(ctx))
 	})
 	if err != nil {
 		return diag.FromErr(err)
