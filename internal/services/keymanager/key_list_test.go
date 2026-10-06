@@ -323,8 +323,12 @@ func TestAccListKeyManagerKeys_ByProtectionLevel(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-protection-level"
+					}
 
 					resource "scaleway_key_manager_key" "key1" {
+						project_id       = scaleway_account_project.main.id
 						name             = "tf-test-km-by-protection-1"
 						usage            = "symmetric_encryption"
 						algorithm        = "aes_256_gcm"
@@ -335,8 +339,12 @@ func TestAccListKeyManagerKeys_ByProtectionLevel(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-protection-level"
+					}
 
 					resource "scaleway_key_manager_key" "key1" {
+						project_id       = scaleway_account_project.main.id
 						name             = "tf-test-km-by-protection-1"
 						usage            = "symmetric_encryption"
 						algorithm        = "aes_256_gcm"
@@ -345,10 +353,11 @@ func TestAccListKeyManagerKeys_ByProtectionLevel(t *testing.T) {
 					}
 
 					resource "scaleway_key_manager_key" "key2" {
-						name        = "tf-test-km-by-protection-2"
-						usage       = "symmetric_encryption"
-						algorithm   = "aes_256_gcm"
-						unprotected = true
+						project_id   = scaleway_account_project.main.id
+						name         = "tf-test-km-by-protection-2"
+						usage        = "symmetric_encryption"
+						algorithm    = "aes_256_gcm"
+						unprotected  = true
 					}
 				`,
 			},
@@ -359,7 +368,7 @@ func TestAccListKeyManagerKeys_ByProtectionLevel(t *testing.T) {
 						provider = scaleway
 
 						config {
-							project_ids      = [scaleway_key_manager_key.key1.project_id]
+							project_ids      = [scaleway_account_project.main.id]
 							protection_level = "software"
 						}
 					}
