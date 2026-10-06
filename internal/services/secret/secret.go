@@ -2,6 +2,7 @@ package secret
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"path/filepath"
 
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/secret.md
+var secretDescription string
+
 func ResourceSecret() *schema.Resource {
 	return &schema.Resource{
+		Description:   secretDescription,
 		CreateContext: ResourceSecretCreate,
 		ReadContext:   ResourceSecretRead,
 		UpdateContext: ResourceSecretUpdate,
