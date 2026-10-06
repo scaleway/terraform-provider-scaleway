@@ -431,8 +431,8 @@ func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, do
 // resolved from the API. Domain formats are detected by the presence of a dot.
 func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *domain.RegistrarAPI) ([]string, error) {
 	taskOrDomains := id
-	if i := strings.LastIndex(id, "/"); i != -1 {
-		taskOrDomains = id[i+1:]
+	if _, after, ok := strings.CutLast(id, "/"); ok {
+		taskOrDomains = after
 	}
 
 	if taskOrDomains == "" {
