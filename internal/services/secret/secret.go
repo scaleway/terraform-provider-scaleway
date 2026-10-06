@@ -2,6 +2,7 @@ package secret
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"path/filepath"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -19,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/secret.md
+var secretDescription string
+
 func ResourceSecret() *schema.Resource {
 	return &schema.Resource{
+		Description:   secretDescription,
 		CreateContext: ResourceSecretCreate,
 		ReadContext:   ResourceSecretRead,
 		UpdateContext: ResourceSecretUpdate,
@@ -99,6 +105,16 @@ func secretSchema() map[string]*schema.Schema {
 			Optional:         true,
 			Default:          secret.SecretTypeOpaque,
 			ValidateDiagFunc: verify.ValidateEnum[secret.SecretType](),
+		},
+		"key_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of the Scaleway Key Manager key used to encrypt and decrypt secret versions. Can be a UUID or a localized ID (region/UUID). If not set, Secret Manager will use a Key Manager internal key.",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+				return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
+			},
 		},
 		"protected": {
 			Type:        schema.TypeBool,
@@ -213,6 +229,11 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	rawPath, pathExist := d.GetOk("path")
 	if pathExist {
 		secretCreateRequest.Path = types.ExpandStringPtr(rawPath)
+	}
+
+	rawKeyID, keyIDExist := d.GetOk("key_id")
+	if keyIDExist {
+		secretCreateRequest.KeyID = types.ExpandStringPtr(locality.ExpandID(rawKeyID))
 	}
 
 	rawEphemeralPolicy, policyExists := d.GetOk("ephemeral_policy")
