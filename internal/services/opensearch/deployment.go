@@ -71,10 +71,9 @@ func deploymentSchema() map[string]*schema.Schema {
 		"node_count": {
 			Type:          schema.TypeInt,
 			Optional:      true,
-			ForceNew:      true,
 			ConflictsWith: []string{"node_amount"},
 			ExactlyOneOf:  []string{"node_amount"},
-			Description:   "Number of nodes",
+			Description:   "Number of nodes. Changing this value upgrades the deployment in place.",
 		},
 		"node_type": {
 			Type:        schema.TypeString,
@@ -392,6 +391,13 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
+	// Changing the number of nodes is an in-place upgrade via the SearchDB
+	// upgrade API, not a replacement.
+	diags := upgradeDeploymentNodeCount(ctx, api, d, region, id)
+	if diags.HasError() {
+		return diags
+	}
+
 	if d.HasChange("private_network") {
 		deployment, err := waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
@@ -495,6 +501,32 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	return resourceDeploymentRead(ctx, d, meta)
+}
+
+// upgradeDeploymentNodeCount scales the number of nodes in place via the SearchDB
+// upgrade API. It is a no-op when node_count did not change.
+func upgradeDeploymentNodeCount(ctx context.Context, api *searchdbapi.API, d *schema.ResourceData, region scw.Region, id string) diag.Diagnostics {
+	if !d.HasChange("node_count") {
+		return nil
+	}
+
+	nodeCount := uint32(deploymentNodeCountFromConfig(d))
+
+	_, err := api.UpgradeDeployment(&searchdbapi.UpgradeDeploymentRequest{
+		Region:       region,
+		DeploymentID: id,
+		NodeCount:    &nodeCount,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }
 
 func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
