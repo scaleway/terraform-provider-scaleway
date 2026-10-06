@@ -13,9 +13,10 @@ This might mean that your PR will take a bit longer to merge, but it most defini
 
 ## Running an Acceptance Test
 
-Acceptance tests can be run using the `testacc` target in the Terraform `Makefile`.
+Acceptance tests can be run with the `test:provider` task of [`mise.toml`](../../mise.toml).
 The individual tests to run can be controlled using a regular expression.
-Prior to running the tests, provider configuration details such as access keys must be made available as environment variables.
+By default the tests run against the recorded mocks; add `--cassettes` to hit the real API and record new cassettes.
+Prior to running the tests, provider configuration details such as access keys must be made available (the provider reads the `scw` CLI config in `~/.config/scw/config.yaml`, falling back to the `SCW_*` environment variables below).
 
 For example, to run an acceptance test against the Scaleway provider, the following environment variables must be set:
 
@@ -32,50 +33,17 @@ export SCW_DEFAULT_ZONE=...
 Please note that the default zone for the testing is `fr-par-1` and the default region is `fr-par`.
 If needed, you can override via the `SCW_DEFAULT_REGION`, `SCW_DEFAULT_ZONE` environment variable.
 
-Tests can then be run by specifying the target provider and a regular expression defining the tests to run:
+Tests can then be run by specifying a regular expression defining the tests to run:
 
 ```sh
-$ make testacc TEST=./scaleway TESTARGS='-run=TestAccScalewayInstanceServerBasic1'
-==> Checking that code complies with gofmt requirements...
-TF_ACC=1 go test ./scaleway -v -run=TestAccScalewayInstanceServerBasic1 -timeout=120m -parallel=10
-2020/04/07 16:18:31 [INFO] reading value from SCW_ACCESS_KEY
-2020/04/07 16:18:31 [INFO] reading value from SCW_SECRET_KEY
-2020/04/07 16:18:31 [INFO] reading value from SCW_DEFAULT_ORGANIZATION_ID
-=== RUN   TestAccScalewayInstanceServerBasic1
-=== PAUSE TestAccScalewayInstanceServerBasic1
-=== CONT  TestAccScalewayInstanceServerBasic1
---- PASS: TestAccScalewayInstanceServerBasic1 (227.43s)
-PASS
-ok  	github.com/scaleway/terraform-provider-scaleway/scaleway	227.747s
-
+$ mise run test:provider --acceptance --run 'TestAccScalewayInstanceServerBasic1'
 ```
 
 Entire resource test suites can be targeted by using the naming convention to write the regular expression.
 For example, to run all tests of the `scaleway_instance_security_group` resource rather than just the update test, you can start testing like this:
 
 ```sh
-$ make testacc TEST=./scaleway TESTARGS='-run=TestAccScalewayInstanceSecurityGroup'
-==> Checking that code complies with gofmt requirements...
-TF_ACC=1 go test ./scaleway -v -run=TestAccScalewayInstanceSecurityGroup -timeout=120m -parallel=10
-2020/04/07 16:23:57 [INFO] reading value from SCW_ACCESS_KEY
-2020/04/07 16:23:57 [INFO] reading value from SCW_SECRET_KEY
-2020/04/07 16:23:57 [INFO] reading value from SCW_DEFAULT_ORGANIZATION_ID
-=== RUN   TestAccScalewayInstanceSecurityGroupRules
---- PASS: TestAccScalewayInstanceSecurityGroupRules (14.05s)
-=== RUN   TestAccScalewayInstanceSecurityGroup
---- PASS: TestAccScalewayInstanceSecurityGroup (10.36s)
-=== RUN   TestAccScalewayInstanceSecurityGroupICMP
---- PASS: TestAccScalewayInstanceSecurityGroupICMP (7.14s)
-=== RUN   TestAccScalewayInstanceSecurityGroupANY
---- PASS: TestAccScalewayInstanceSecurityGroupANY (5.99s)
-=== RUN   TestAccScalewayInstanceSecurityGroupNoPort
---- PASS: TestAccScalewayInstanceSecurityGroupNoPort (4.82s)
-=== RUN   TestAccScalewayInstanceSecurityGroupRemovePort
---- PASS: TestAccScalewayInstanceSecurityGroupRemovePort (6.34s)
-=== RUN   TestAccScalewayInstanceSecurityGroupPortRange
---- PASS: TestAccScalewayInstanceSecurityGroupPortRange (7.13s)
-PASS
-ok  	github.com/scaleway/terraform-provider-scaleway/scaleway	56.210s
+$ mise run test:provider --acceptance --run 'TestAccScalewayInstanceSecurityGroup'
 ```
 
 #### Writing an Acceptance Test
