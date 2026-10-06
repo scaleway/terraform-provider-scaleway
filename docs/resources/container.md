@@ -276,6 +276,10 @@ The following arguments are supported:
 
 - `private_network_id` (Optional) The ID of the Private Network the container is connected to.
 
+- `enable_default_public_endpoint` (Optional) Whether the default public_endpoint is enabled or not (default: true).
+
+- `enable_private_endpoint` (Optional) Where the private_endpoint is enabled or not (default: false).
+
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/#configuration-restrictions) section.
 
 ## Attributes Reference
@@ -297,6 +301,8 @@ The `scaleway_container` resource exports certain attributes once the Container 
 - ~> **Important:** `domain_name` is deprecated and will be removed in the future. Please use `public_endpoint` instead.
 
 - `public_endpoint` - The scheme and domain of the container (e.g., `https://example.com`).
+
+- `private_endpoint` - Private URL of the container. This endpoint is only accessible from the private_network on which the container is attached.
 
 ## Import
 
