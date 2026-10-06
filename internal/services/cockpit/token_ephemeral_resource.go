@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -14,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -80,11 +82,17 @@ func (r *TokenEphemeralResource) Schema(ctx context.Context, req ephemeral.Schem
 			},
 			"project_id": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "ID of the Scaleway project the token belongs to",
+				Validators: []validator.String{
+					verify.IsStringUUID(),
+					stringvalidator.LengthAtLeast(36),
+				},
 			},
 			"region": regional.SchemaAttribute("Region of the token. If not set, the region is derived from the provider configuration."),
 			"scopes": schema.ListNestedAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Token permission scopes. If not set, defaults to write_metrics and write_logs.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -202,26 +210,16 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 	}
 
 	// Expand scopes
-	var tokenScopes []cockpit.TokenScope
-
+	var scopesList []any
 	if !data.Scopes.IsNull() && !data.Scopes.IsUnknown() {
-		var scopesMap []map[string]bool
-
-		diags := data.Scopes.ElementsAs(ctx, &scopesMap, false)
+		diags := data.Scopes.ElementsAs(ctx, &scopesList, false)
 		resp.Diagnostics.Append(diags...)
-
 		if diags.HasError() {
 			return
 		}
-
-		if len(scopesMap) > 0 {
-			for key, tokenScope := range scopeMapping {
-				if value, ok := scopesMap[0][key]; ok && value {
-					tokenScopes = append(tokenScopes, tokenScope)
-				}
-			}
-		}
 	}
+
+	tokenScopes := expandCockpitTokenScopes(scopesList)
 
 	// Default scopes if none specified
 	if len(tokenScopes) == 0 {
