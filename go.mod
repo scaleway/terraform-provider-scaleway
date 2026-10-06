@@ -13,7 +13,6 @@ require (
 	github.com/aws/smithy-go v1.28.2
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.7.0
-	github.com/hashicorp/aws-sdk-go-base v1.1.0
 	github.com/hashicorp/aws-sdk-go-base/v2 v2.0.0-beta.74
 	github.com/hashicorp/awspolicyequivalence v1.7.0
 	github.com/hashicorp/go-cty v1.5.0
@@ -55,7 +54,6 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.55.5 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.20 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.19.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.4 // indirect
