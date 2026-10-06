@@ -3,7 +3,6 @@ package secret_test
 import (
 	"fmt"
 	"regexp"
-	"strings"
 	"testing"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	secretSDK "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
@@ -405,12 +405,7 @@ func testAccCheckSecretKMSKeyID(secretName, keyName string) resource.TestCheckFu
 			return fmt.Errorf("resource not found: %s", keyName)
 		}
 
-		parts := strings.Split(keyRS.Primary.ID, "/")
-		if len(parts) != 2 {
-			return fmt.Errorf("unexpected key manager key id format: %s", keyRS.Primary.ID)
-		}
-
-		if secretRS.Primary.Attributes["key_id"] != parts[1] {
+		if locality.ExpandID(secretRS.Primary.Attributes["key_id"]) != locality.ExpandID(keyRS.Primary.ID) {
 			return fmt.Errorf("secret key_id %q does not match key manager key id %q", secretRS.Primary.Attributes["key_id"], keyRS.Primary.ID)
 		}
 
