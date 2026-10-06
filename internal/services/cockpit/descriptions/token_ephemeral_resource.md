@@ -2,4 +2,4 @@ The [`scaleway_cockpit_token`](https://registry.terraform.io/providers/scaleway/
 
 Each `terraform apply` will create a new token. The token is automatically deleted when Terraform finishes using it. This ensures no tokens persist between runs.
 
-For more information, see [our guide to using Ephemeral Resources](https://developer.hashicorp.com/terraform/language/resources/ephemeral), the [Cockpit documentation](https://www.scaleway.com/en/docs/observability/cockpit/), and the [API documentation](https://www.scaleway.com/en/developers/api/cockpit/).
+For more information, see [our guide to using Ephemeral Resources](https://developer.hashicorp.com/terraform/language/resources/ephemeral), the [Cockpit documentation](https://www.scaleway.com/en/docs/observability/cockpit/), and the [API documentation](https://www.scaleway.com/en/docs/cockpit/api-cli/).
