@@ -27,7 +27,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datawarehouse"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
@@ -165,7 +164,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_baremetal_server":                                   baremetal.ResourceServer(),
 				"scaleway_block_snapshot":                                     block.ResourceSnapshot(),
 				"scaleway_block_volume":                                       block.ResourceVolume(),
-				"scaleway_cockpit":                                            cockpit.ResourceCockpit(),
 				"scaleway_cockpit_source":                                     cockpit.ResourceCockpitSource(),
 				"scaleway_cockpit_token":                                      cockpit.ResourceToken(),
 				"scaleway_cockpit_alert_manager":                              cockpit.ResourceCockpitAlertManager(),
@@ -192,7 +190,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_edge_services_route_stage":                          edgeservices.ResourceRouteStage(),
 				"scaleway_edge_services_tls_stage":                            edgeservices.ResourceTLSStage(),
 				"scaleway_edge_services_waf_stage":                            edgeservices.ResourceWAFStage(),
-				"scaleway_file_filesystem":                                    file.ResourceFileSystem(),
 				"scaleway_flexible_ip":                                        flexibleip.ResourceIP(),
 				"scaleway_flexible_ip_mac_address":                            flexibleip.ResourceMACAddress(),
 				"scaleway_function":                                           function.ResourceFunction(),
@@ -318,7 +315,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_billing_invoices":                                   billing.DataSourceInvoices(),
 				"scaleway_block_snapshot":                                     block.DataSourceSnapshot(),
 				"scaleway_block_volume":                                       block.DataSourceVolume(),
-				"scaleway_cockpit":                                            cockpit.DataSourceCockpit(),
 				"scaleway_cockpit_config":                                     cockpit.DataSourceCockpitConfig(),
 				"scaleway_cockpit_grafana":                                    cockpit.DataSourceCockpitGrafana(),
 				"scaleway_cockpit_preconfigured_alert":                        cockpit.DataSourceCockpitPreconfiguredAlert(),

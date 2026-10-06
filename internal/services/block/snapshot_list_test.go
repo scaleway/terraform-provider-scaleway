@@ -113,7 +113,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 
 						config {
 							zones       = ["*"]
-							project_ids = ["*"]
+							project_ids = [scaleway_block_snapshot.snap1.project_id]
 							volume_ids  = ["*"]
 						}
 					}
@@ -130,8 +130,8 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 						provider = scaleway
 
 						config {
-							zones       = [scaleway_block_volume.vol1.zone]
-							project_ids = [scaleway_block_volume.vol1.project_id]
+							zones       = [scaleway_block_snapshot.snap1.zone]
+							project_ids = [scaleway_block_snapshot.snap1.project_id]
 							volume_ids  = [scaleway_block_volume.vol1.id]
 						}
 					}
@@ -149,7 +149,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 
 						config {
 							volume_ids  = ["*"]
-							project_ids = ["*"]
+							project_ids = [scaleway_block_snapshot.snap1.project_id]
 							zones       = ["pl-waw-2"]
 						}
 					}
@@ -167,7 +167,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 
 						config {
 							volume_ids  = ["*"]
-							project_ids = ["*"]
+							project_ids = [scaleway_block_snapshot.snap1.project_id]
 							zones       = ["%s"]
 						}
 					}
@@ -185,7 +185,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 
 						config {
 							zones       = ["*"]
-							project_ids = ["*"]
+							project_ids = [scaleway_block_snapshot.snap1.project_id]
 							volume_ids  = ["*"]
 							name        = "test-snapshot-list-1"
 						}
@@ -204,7 +204,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 
 						config {
 							zones       = ["*"]
-							project_ids = ["*"]
+							project_ids = [scaleway_block_snapshot.snap1.project_id]
 							volume_ids  = ["*"]
 							tags        = ["test-tag"]
 						}

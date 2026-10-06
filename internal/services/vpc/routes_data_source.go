@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -148,7 +149,9 @@ func DataSourceRoutesRead(ctx context.Context, d *schema.ResourceData, m any) di
 		req.IsIPv6 = types.ExpandBoolPtr(isipv6)
 	}
 
-	res, err := routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx))
+	res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListRoutesWithNexthopResponse, error) {
+		return routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

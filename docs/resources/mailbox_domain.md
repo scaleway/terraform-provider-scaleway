@@ -1,0 +1,106 @@
+---
+subcategory: "Mailbox"
+page_title: "Scaleway: scaleway_mailbox_domain"
+---
+
+# Resource: scaleway_mailbox_domain
+
+Creates and manages a [Scaleway Mailbox](https://www.scaleway.com/en/developers/api/mailbox/) domain.
+
+A **domain** is the prerequisite for creating mailboxes. After creation the resource exposes
+all required DNS records in the `dns_records` attribute so you can delegate them to your DNS
+provider. The domain `status` reflects validation progress.
+
+~> **Note** This resource is in **alpha** and the API is subject to change.
+
+## Example Usage
+
+### Minimal domain
+
+```terraform
+resource "scaleway_mailbox_domain" "main" {
+  name = "mail.example.com"
+}
+```
+
+### Domain with DNS records configured via Scaleway DNS
+
+```terraform
+variable "domain_name" {
+  type = string
+}
+
+resource "scaleway_mailbox_domain" "main" {
+  name = var.domain_name
+}
+
+# Iterate over required DNS records and create them in Scaleway DNS.
+resource "scaleway_domain_record" "mailbox_dns" {
+  for_each = {
+    for rec in scaleway_mailbox_domain.main.dns_records :
+    "${rec.dns_type}-${rec.dns_name}" => rec
+    if rec.level == "required"
+  }
+
+  dns_zone = var.domain_name
+  name     = each.value.dns_name
+  type     = each.value.dns_type
+  data     = each.value.dns_value
+}
+```
+
+### Domain in a specific project
+
+```terraform
+resource "scaleway_account_project" "mail_project" {
+  name = "mail-project"
+}
+
+resource "scaleway_mailbox_domain" "project_domain" {
+  name       = "mail.example.com"
+  project_id = scaleway_account_project.mail_project.id
+}
+```
+
+## Argument Reference
+
+- `name` - (Required, Forces new resource) Fully qualified domain name (e.g. `mail.example.com`).
+- `project_id` - (Optional, Computed, Forces new resource, Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the domain is associated with. Changing this forces a new domain.
+
+~> **Note** Mailbox domains cannot be updated in place. Changes to `name` or `project_id` force resource replacement.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - Unique identifier of the domain (UUID).
+- `status` - Current status of the domain:
+    - `creating` – domain is being registered.
+    - `waiting_validation` – DNS records must be configured and validated.
+    - `validating` – validation is in progress.
+    - `validation_failed` – validation failed; check `dns_records[*].error`.
+    - `provisioning` – domain is being provisioned.
+    - `ready` – domain is ready and mailboxes can be created.
+    - `deleting` – domain is being deleted.
+- `mailbox_total_count` - Number of mailboxes currently provisioned on this domain.
+- `webmail_url` - URL of the domain's webmail interface.
+- `imap_url` - IMAP server URL for configuring email clients.
+- `pop3_url` - POP3 server URL for configuring email clients.
+- `smtp_url` - SMTP server URL for configuring email clients.
+- `dns_records` - List of DNS records to configure in your DNS zone. Each entry has:
+    - `dns_type` – Record type (TXT, MX, CNAME, SRV…).
+    - `dns_name` – Fully qualified name for this record.
+    - `dns_value` – Value to set for this record.
+    - `status` – Validation status (`valid`, `invalid`, `not_found`, `validating`).
+    - `level` – Requirement level (`required`, `recommended`, `optional`).
+    - `error` – Error detail when the record is invalid or not found.
+- `created_at` - Date and time of domain creation (RFC 3339 format).
+- `updated_at` - Date and time of last update (RFC 3339 format).
+
+## Import
+
+Mailbox domains can be imported using their UUID:
+
+```bash
+terraform import scaleway_mailbox_domain.example 11111111-1111-1111-1111-111111111111
+```
