@@ -89,8 +89,8 @@ type KeyListResourceModel struct {
 	Tags                 types.List   `tfsdk:"tags"`
 	Name                 types.String `tfsdk:"name"`
 	Usage                types.String `tfsdk:"usage"`
-	ScheduledForDeletion types.Bool   `tfsdk:"scheduled_for_deletion"`
 	ProtectionLevel      types.String `tfsdk:"protection_level"`
+	ScheduledForDeletion types.Bool   `tfsdk:"scheduled_for_deletion"`
 }
 
 func (m *KeyListResourceModel) GetRegions() types.List  { return m.Regions }
