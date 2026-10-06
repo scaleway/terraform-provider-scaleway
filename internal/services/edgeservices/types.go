@@ -365,6 +365,69 @@ func expandRuleHTTPMatchHostFilter(raw any) *edge_services.RuleHTTPMatchHostFilt
 	}
 }
 
+func expandWafExclusionRuleList(raw any) []*edge_services.WafExclusionRule {
+	if raw == nil {
+		return []*edge_services.WafExclusionRule{}
+	}
+
+	rawRules, ok := raw.([]any)
+	if !ok {
+		return []*edge_services.WafExclusionRule{}
+	}
+
+	rules := make([]*edge_services.WafExclusionRule, 0, len(rawRules))
+
+	for _, rawRule := range rawRules {
+		ruleMap, ok := rawRule.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		rules = append(rules, &edge_services.WafExclusionRule{
+			RuleID: uint32(ruleMap["rule_id"].(int)),
+		})
+	}
+
+	return rules
+}
+
+func expandWafExclusionRules(raw any) *edge_services.WafExclusionRules {
+	rules := expandWafExclusionRuleList(raw)
+	if len(rules) == 0 {
+		return nil
+	}
+
+	return &edge_services.WafExclusionRules{Rules: rules}
+}
+
+func expandUpdatedWafExclusionRules(raw any) *edge_services.WafExclusionRules {
+	return &edge_services.WafExclusionRules{Rules: expandWafExclusionRuleList(raw)}
+}
+
+func flattenWafExclusionRules(rules []*edge_services.WafExclusionRule) []any {
+	if len(rules) == 0 {
+		return nil
+	}
+
+	result := make([]any, 0, len(rules))
+
+	for _, rule := range rules {
+		if rule == nil {
+			continue
+		}
+
+		result = append(result, map[string]any{
+			"rule_id": int(rule.RuleID),
+		})
+	}
+
+	if len(result) == 0 {
+		return nil
+	}
+
+	return result
+}
+
 func flattenRuleHTTPMatchHostFilter(hostFilter *edge_services.RuleHTTPMatchHostFilter) []any {
 	if hostFilter == nil {
 		return nil
