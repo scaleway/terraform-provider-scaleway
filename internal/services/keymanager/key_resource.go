@@ -2,6 +2,7 @@ package keymanager
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/key_resource.md
+var keyResourceDescription string
+
 func ResourceKeyManagerKey() *schema.Resource {
 	return &schema.Resource{
+		Description:   keyResourceDescription,
 		CreateContext: resourceKeyManagerKeyCreate,
 		ReadContext:   resourceKeyManagerKeyRead,
 		UpdateContext: resourceKeyManagerKeyUpdate,
