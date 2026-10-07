@@ -31,6 +31,7 @@ func TestAccTokenEphemeralResource_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: factories,
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004
 				Config: fmt.Sprintf(`
 					ephemeral "scaleway_cockpit_token" "main" {
 						name = "%[1]s"
