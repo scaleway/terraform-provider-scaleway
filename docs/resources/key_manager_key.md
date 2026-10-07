@@ -5,14 +5,52 @@ page_title: "Scaleway: scaleway_key_manager_key"
 
 # Resource: scaleway_key_manager_key
 
-Provides a Scaleway Key Manager Key resource.  
-This resource allows you to create and manage cryptographic keys in Scaleway Key Manager (KMS).
+The `scaleway_key_manager_key` resource allows you to create and manage cryptographic keys in Scaleway Key Manager (KMS).
+
+
 
 ## Example Usage
 
-### Symmetric Encryption Key
+```terraform
+# Create an asymmetric encryption key with RSA-4096.
+
+resource "scaleway_key_manager_key" "rsa_4096" {
+  name        = "rsa-4096-key"
+  region      = "fr-par"
+  usage       = "asymmetric_encryption"
+  algorithm   = "rsa_oaep_4096_sha256"
+  description = "Key for encrypting large files with RSA-4096"
+  unprotected = true
+}
+```
 
 ```terraform
+# Create an asymmetric signing key.
+
+resource "scaleway_key_manager_key" "signing" {
+  name        = "signing-key"
+  region      = "fr-par"
+  usage       = "asymmetric_signing"
+  algorithm   = "rsa_pss_2048_sha256"
+  description = "Key for signing documents"
+  unprotected = true
+}
+```
+
+```terraform
+# Create a basic key
+
+resource "scaleway_key_manager_key" "main" {
+  name        = "my-kms-key"
+  usage       = "symmetric_encryption"
+  algorithm   = "aes_256_gcm"
+  unprotected = true
+}
+```
+
+```terraform
+# Create a symmetric encryption key with a rotation policy of 30 days.
+
 resource "scaleway_key_manager_key" "symmetric" {
   name        = "my-kms-key"
   region      = "fr-par"
@@ -29,31 +67,21 @@ resource "scaleway_key_manager_key" "symmetric" {
 }
 ```
 
-### Asymmetric Encryption Key with RSA-4096
-
 ```terraform
-resource "scaleway_key_manager_key" "rsa_4096" {
-  name        = "rsa-4096-key"
-  region      = "fr-par"
-  usage       = "asymmetric_encryption"
-  algorithm   = "rsa_oaep_4096_sha256"
-  description = "Key for encrypting large files with RSA-4096"
-  unprotected = true
+# Create a key with a dedicated protection level.
+# In the example below, the key's cryptographic operations are performed within a dedicated Hardware Security Module (HSM).
+
+resource "scaleway_key_manager_key" "hsm" {
+  name             = "my-kms-key-hsm"
+  usage            = "symmetric_encryption"
+  algorithm        = "aes_256_gcm"
+  protection_level = "hsm"
+  unprotected      = true
 }
 ```
 
-### Asymmetric Signing Key
 
-```terraform
-resource "scaleway_key_manager_key" "signing" {
-  name        = "signing-key"
-  region      = "fr-par"
-  usage       = "asymmetric_signing"
-  algorithm   = "rsa_pss_2048_sha256"
-  description = "Key for signing documents"
-  unprotected = true
-}
-```
+
 
 ## Argument Reference
 
@@ -90,6 +118,10 @@ The following arguments are supported:
 - `origin` (String, Optional) – The origin of the key. Valid values are:
     - `scaleway_kms` (default)
     - `external`
+- `protection_level` (String, Optional) – The protection level of the key. Valid values are:
+    - `software` (default) – Cryptographic operations are performed in software.
+    - `hsm` – Cryptographic operations are performed within a dedicated Hardware Security Module.
+    The protection level is immutable: changing it requires replacing the key.
 - `rotation_policy` (Block, Optional) – Rotation policy for the key:
     - `rotation_period` (String, Required) – The period between key rotations (e.g., `"720h"` for 30 days).
     - `next_rotation_at` (String, Optional) – The date and time of the next scheduled rotation, in RFC 3339 format. If not set, it is computed by the Key Manager API from `rotation_period`.

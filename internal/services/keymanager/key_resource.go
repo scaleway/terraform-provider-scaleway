@@ -2,6 +2,7 @@ package keymanager
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/key_resource.md
+var keyResourceDescription string
+
 func ResourceKeyManagerKey() *schema.Resource {
 	return &schema.Resource{
+		Description:   keyResourceDescription,
 		CreateContext: resourceKeyManagerKeyCreate,
 		ReadContext:   resourceKeyManagerKeyRead,
 		UpdateContext: resourceKeyManagerKeyUpdate,
@@ -123,6 +128,14 @@ func keySchema() map[string]*schema.Schema {
 			}, false),
 			Description: "Origin of the key material. Possible values: scaleway_kms (Key Manager generates the key material), external (key material comes from an external source).",
 		},
+		"protection_level": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.ValidateEnum[key_manager.KeyProtectionLevel](),
+			Description:      "Protection level of the key. Possible values: software (cryptographic operations are performed in software), hsm (cryptographic operations are performed within a dedicated Hardware Security Module). Defaults to software.",
+		},
 		// Computed fields
 		"id":             {Type: schema.TypeString, Computed: true, Description: "ID of the key."},
 		"state":          {Type: schema.TypeString, Computed: true, Description: "State of the key. See the Key.State enum for possible values."},
@@ -169,6 +182,10 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	if v, ok := d.GetOk("origin"); ok {
 		createReq.Origin = key_manager.KeyOrigin(v.(string))
+	}
+
+	if v, ok := d.GetOk("protection_level"); ok {
+		createReq.ProtectionLevel = key_manager.KeyProtectionLevel(v.(string))
 	}
 
 	usage := d.Get("usage").(string)
