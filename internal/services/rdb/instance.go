@@ -857,35 +857,7 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI
 
 	_ = d.Set("certificate", string(certContent))
 
-	// set settings — only persist keys listed in HCL (avoids perpetual diffs on defaults)
-	allSettings, ok := flattenInstanceSettings(res.Settings).(map[string]string)
-	if !ok {
-		allSettings = map[string]string{}
-	}
-
-	configKeys, managed := rawConfigSettingsKeys(d)
-	raw := d.GetRawConfig()
-	rawKnown := !raw.IsNull() && raw.IsKnown()
-
-	switch {
-	case managed:
-		_ = d.Set("settings", FilterInstanceSettings(allSettings, configKeys))
-	case rawKnown:
-		// HCL is known and has no settings block — clear legacy computed defaults from state.
-		_ = d.Set("settings", nil)
-	default:
-		// Raw config unavailable (some create Read paths): fall back to GetOk keys only.
-		if v, ok := d.GetOk("settings"); ok {
-			fallbackKeys := make(map[string]bool)
-			for key := range v.(map[string]any) {
-				fallbackKeys[key] = true
-			}
-
-			_ = d.Set("settings", FilterInstanceSettings(allSettings, fallbackKeys))
-		} else {
-			_ = d.Set("settings", nil)
-		}
-	}
+	setInstanceSettingsState(d, res.Settings)
 
 	_ = d.Set("init_settings", flattenInstanceSettings(res.InitSettings))
 
@@ -1296,6 +1268,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	////////////////////
 	if d.HasChange("settings") {
 		oldRaw, newRaw := d.GetChange("settings")
+
 		err = applyInstanceSettings(
 			ctx,
 			rdbAPI,

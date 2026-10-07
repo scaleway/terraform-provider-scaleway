@@ -188,6 +188,38 @@ func rawConfigSettingsKeys(d *schema.ResourceData) (map[string]bool, bool) {
 	return keys, true
 }
 
+// setInstanceSettingsState persists only HCL-managed settings keys into state.
+func setInstanceSettingsState(d *schema.ResourceData, settings []*rdb.InstanceSetting) {
+	allSettings, ok := flattenInstanceSettings(settings).(map[string]string)
+	if !ok {
+		allSettings = map[string]string{}
+	}
+
+	configKeys, managed := rawConfigSettingsKeys(d)
+	raw := d.GetRawConfig()
+	rawKnown := !raw.IsNull() && raw.IsKnown()
+
+	switch {
+	case managed:
+		_ = d.Set("settings", FilterInstanceSettings(allSettings, configKeys))
+	case rawKnown:
+		// HCL is known and has no settings block — clear legacy computed defaults from state.
+		_ = d.Set("settings", nil)
+	default:
+		// Raw config unavailable (some create Read paths): fall back to GetOk keys only.
+		if v, ok := d.GetOk("settings"); ok {
+			fallbackKeys := make(map[string]bool)
+			for key := range v.(map[string]any) {
+				fallbackKeys[key] = true
+			}
+
+			_ = d.Set("settings", FilterInstanceSettings(allSettings, fallbackKeys))
+		} else {
+			_ = d.Set("settings", nil)
+		}
+	}
+}
+
 func isTimeoutErr(err error) bool {
 	if err == nil {
 		return false

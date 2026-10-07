@@ -3,6 +3,7 @@ package rdb
 import (
 	"errors"
 	"fmt"
+	"maps"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -79,9 +80,7 @@ func instanceSettingsEqual(a, b map[string]string) bool {
 // Keys present in oldManaged but absent from newManaged are dropped from the result.
 func MergeInstanceSettings(current, oldManaged, newManaged map[string]string) map[string]string {
 	merged := make(map[string]string, len(current)+len(newManaged))
-	for key, value := range current {
-		merged[key] = value
-	}
+	maps.Copy(merged, current)
 
 	for key := range oldManaged {
 		if _, ok := newManaged[key]; !ok {
@@ -89,9 +88,7 @@ func MergeInstanceSettings(current, oldManaged, newManaged map[string]string) ma
 		}
 	}
 
-	for key, value := range newManaged {
-		merged[key] = value
-	}
+	maps.Copy(merged, newManaged)
 
 	return merged
 }
