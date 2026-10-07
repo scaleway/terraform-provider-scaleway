@@ -44,8 +44,16 @@ func expandCockpitTokenScopes(raw any) []cockpit.TokenScope {
 		return expandedScopes
 	}
 
+	return expandCockpitTokenScopesFromFlags(scopesMap)
+}
+
+// expandCockpitTokenScopesFromFlags expands a name→enabled map using scopeMapping.
+// Shared by the managed resource (SDKv2) and the ephemeral resource (Framework).
+func expandCockpitTokenScopesFromFlags(flags map[string]any) []cockpit.TokenScope {
+	var expandedScopes []cockpit.TokenScope
+
 	for key, tokenScope := range scopeMapping {
-		if value, ok := scopesMap[key].(bool); ok && value {
+		if value, ok := flags[key].(bool); ok && value {
 			expandedScopes = append(expandedScopes, tokenScope)
 		}
 	}

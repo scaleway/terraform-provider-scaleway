@@ -131,39 +131,39 @@ func (r *TokenEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaReq
 					Attributes: map[string]schema.Attribute{
 						"query_metrics": schema.BoolAttribute{
 							Optional:    true,
-							Description: "Query metrics",
+							Description: "Query metrics. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"write_metrics": schema.BoolAttribute{
 							Optional:    true,
-							Description: "Write metrics",
+							Description: "Write metrics. Defaults to true (same as scaleway_cockpit_token).",
 						},
 						"setup_metrics_rules": schema.BoolAttribute{
 							Optional:    true,
-							Description: "Setup metrics rules",
+							Description: "Setup metrics rules. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"query_logs": schema.BoolAttribute{
 							Optional:    true,
-							Description: "Query logs",
+							Description: "Query logs. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"write_logs": schema.BoolAttribute{
 							Optional:    true,
-							Description: "Write logs",
+							Description: "Write logs. Defaults to true (same as scaleway_cockpit_token).",
 						},
 						"setup_logs_rules": schema.BoolAttribute{
 							Optional:    true,
-							Description: "Setup logs rules",
+							Description: "Setup logs rules. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"setup_alerts": schema.BoolAttribute{
 							Optional:    true,
-							Description: "Setup alerts",
+							Description: "Setup alerts. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"query_traces": schema.BoolAttribute{
 							Optional:    true,
-							Description: "Query traces",
+							Description: "Query traces. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"write_traces": schema.BoolAttribute{
 							Optional:    true,
-							Description: "Write traces",
+							Description: "Write traces. Defaults to false (same as scaleway_cockpit_token).",
 						},
 					},
 				},
@@ -195,30 +195,28 @@ func expandTokenEphemeralScopes(ctx context.Context, scopes types.List) ([]cockp
 	}
 
 	s := scopeModels[0]
-	flagByName := map[string]types.Bool{
-		"query_metrics":       s.QueryMetrics,
-		"write_metrics":       s.WriteMetrics,
-		"setup_metrics_rules": s.SetupMetricsRules,
-		"query_logs":          s.QueryLogs,
-		"write_logs":          s.WriteLogs,
-		"setup_logs_rules":    s.SetupLogsRules,
-		"setup_alerts":        s.SetupAlerts,
-		"query_traces":        s.QueryTraces,
-		"write_traces":        s.WriteTraces,
+	// Defaults match the managed scaleway_cockpit_token resource (write_metrics / write_logs = true).
+	flags := map[string]any{
+		"query_metrics":       ephemeralScopeBool(s.QueryMetrics, false),
+		"write_metrics":       ephemeralScopeBool(s.WriteMetrics, true),
+		"setup_metrics_rules": ephemeralScopeBool(s.SetupMetricsRules, false),
+		"query_logs":          ephemeralScopeBool(s.QueryLogs, false),
+		"write_logs":          ephemeralScopeBool(s.WriteLogs, true),
+		"setup_logs_rules":    ephemeralScopeBool(s.SetupLogsRules, false),
+		"setup_alerts":        ephemeralScopeBool(s.SetupAlerts, false),
+		"query_traces":        ephemeralScopeBool(s.QueryTraces, false),
+		"write_traces":        ephemeralScopeBool(s.WriteTraces, false),
 	}
 
-	var expanded []cockpit.TokenScope
+	return expandCockpitTokenScopesFromFlags(flags), diags
+}
 
-	for key, tokenScope := range scopeMapping {
-		flag, ok := flagByName[key]
-		if !ok || flag.IsNull() || flag.IsUnknown() || !flag.ValueBool() {
-			continue
-		}
-
-		expanded = append(expanded, tokenScope)
+func ephemeralScopeBool(value types.Bool, defaultValue bool) bool {
+	if value.IsNull() || value.IsUnknown() {
+		return defaultValue
 	}
 
-	return expanded, diags
+	return value.ValueBool()
 }
 
 func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRequest, resp *ephemeral.OpenResponse) {
@@ -349,9 +347,6 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 		data.SecretKey = types.StringNull()
 	}
 
-	// Keep config scopes as-is: nested block bools are not Computed, so API
-	// defaults must not be written back into unset attributes.
-
 	resp.Diagnostics.Append(resp.Result.Set(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -406,8 +401,9 @@ func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseR
 
 	region := scw.Region(regionStr)
 
+	// Do not retryOn403 here: Cockpit returns 403 when the token is already gone,
+	// which must not be treated as IAM propagation.
 	err := r.deleteToken(ctx, region, tokenID)
-	// Cockpit may return 403 when the token is already gone.
 	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		resp.Diagnostics.AddError(
 			"Error closing Cockpit Token",
@@ -417,10 +413,8 @@ func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseR
 }
 
 func (r *TokenEphemeralResource) deleteToken(ctx context.Context, region scw.Region, tokenID string) error {
-	return retryOn403(ctx, func() error {
-		return r.cockpitAPI.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
-			Region:  region,
-			TokenID: tokenID,
-		}, scw.WithContext(ctx))
-	})
+	return r.cockpitAPI.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
+		Region:  region,
+		TokenID: tokenID,
+	}, scw.WithContext(ctx))
 }

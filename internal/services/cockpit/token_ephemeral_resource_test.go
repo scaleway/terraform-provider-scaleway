@@ -1,16 +1,16 @@
 package cockpit_test
 
 import (
-	"encoding/base64"
-	"errors"
 	"fmt"
+	"maps"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/echoprovider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
-	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
 func TestAccTokenEphemeralResource_Basic(t *testing.T) {
@@ -22,10 +22,13 @@ func TestAccTokenEphemeralResource_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	tokenName := "tf-tests-cpt-tok-eph-basic"
+	dataPath := tfjsonpath.New("data")
+
+	factories := maps.Clone(tt.ProviderFactories)
+	factories["echo"] = echoprovider.NewProviderServer()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		ProtoV6ProviderFactories: factories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -37,66 +40,20 @@ func TestAccTokenEphemeralResource_Basic(t *testing.T) {
 						}
 					}
 
-					resource "scaleway_secret" "main" {
-						name = "%[1]s"
+					provider "echo" {
+						data = ephemeral.scaleway_cockpit_token.main
 					}
 
-					resource "scaleway_secret_version" "secret_key" {
-						description = "%[1]s"
-						secret_id   = scaleway_secret.main.id
-						data_wo     = ephemeral.scaleway_cockpit_token.main.secret_key
-					}
-
-					data "scaleway_secret_version" "secret_key" {
-						secret_id  = scaleway_secret.main.id
-						revision   = "1"
-						depends_on = [scaleway_secret_version.secret_key]
-					}
-
-					resource "scaleway_secret_version" "name" {
-						description = "%[1]s"
-						secret_id   = scaleway_secret.main.id
-						data_wo     = ephemeral.scaleway_cockpit_token.main.name
-						depends_on  = [scaleway_secret_version.secret_key]
-					}
-
-					data "scaleway_secret_version" "name" {
-						secret_id  = scaleway_secret.main.id
-						revision   = "2"
-						depends_on = [scaleway_secret_version.name]
-					}
+					resource "echo" "token" {}
 				`, tokenName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEphemeralCockpitTokenSecretKeySet("data.scaleway_secret_version.secret_key"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.name", "data", secret.Base64Encoded([]byte(tokenName))),
-					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_cockpit_token.main"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.token", dataPath.AtMapKey("name"), knownvalue.StringExact(tokenName)),
+					statecheck.ExpectKnownValue("echo.token", dataPath.AtMapKey("secret_key"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("echo.token", dataPath.AtMapKey("project_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("echo.token", dataPath.AtMapKey("region"), knownvalue.NotNull()),
+				},
+				Check: acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_cockpit_token.main"),
 			},
 		},
 	})
-}
-
-func testAccCheckEphemeralCockpitTokenSecretKeySet(dataSourceName string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		rs, ok := state.RootModule().Resources[dataSourceName]
-		if !ok {
-			return fmt.Errorf("data source not found: %s", dataSourceName)
-		}
-
-		encoded := rs.Primary.Attributes["data"]
-		if encoded == "" {
-			return fmt.Errorf("secret version data is empty for %s", dataSourceName)
-		}
-
-		decoded, err := base64.StdEncoding.DecodeString(encoded)
-		if err != nil {
-			return fmt.Errorf("failed to decode secret version data: %w", err)
-		}
-
-		if len(decoded) == 0 {
-			return errors.New("decoded cockpit token secret_key is empty")
-		}
-
-		return nil
-	}
 }

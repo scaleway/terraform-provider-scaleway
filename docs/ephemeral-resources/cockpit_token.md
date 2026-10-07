@@ -53,15 +53,15 @@ ephemeral "scaleway_cockpit_token" "main" {
 
 Optional:
 
-- `query_logs` (Boolean) Query logs
-- `query_metrics` (Boolean) Query metrics
-- `query_traces` (Boolean) Query traces
-- `setup_alerts` (Boolean) Setup alerts
-- `setup_logs_rules` (Boolean) Setup logs rules
-- `setup_metrics_rules` (Boolean) Setup metrics rules
-- `write_logs` (Boolean) Write logs
-- `write_metrics` (Boolean) Write metrics
-- `write_traces` (Boolean) Write traces
+- `query_logs` (Boolean) Query logs. Defaults to false (same as scaleway_cockpit_token).
+- `query_metrics` (Boolean) Query metrics. Defaults to false (same as scaleway_cockpit_token).
+- `query_traces` (Boolean) Query traces. Defaults to false (same as scaleway_cockpit_token).
+- `setup_alerts` (Boolean) Setup alerts. Defaults to false (same as scaleway_cockpit_token).
+- `setup_logs_rules` (Boolean) Setup logs rules. Defaults to false (same as scaleway_cockpit_token).
+- `setup_metrics_rules` (Boolean) Setup metrics rules. Defaults to false (same as scaleway_cockpit_token).
+- `write_logs` (Boolean) Write logs. Defaults to true (same as scaleway_cockpit_token).
+- `write_metrics` (Boolean) Write metrics. Defaults to true (same as scaleway_cockpit_token).
+- `write_traces` (Boolean) Write traces. Defaults to false (same as scaleway_cockpit_token).
 
 
 
