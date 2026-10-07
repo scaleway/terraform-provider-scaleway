@@ -214,6 +214,7 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 	if !data.Scopes.IsNull() && !data.Scopes.IsUnknown() {
 		diags := data.Scopes.ElementsAs(ctx, &scopesList, false)
 		resp.Diagnostics.Append(diags...)
+
 		if diags.HasError() {
 			return
 		}
