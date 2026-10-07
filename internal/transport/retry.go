@@ -84,12 +84,6 @@ func NewRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 	return &RetryableTransport{c}
 }
 
-// NewRetryableTransport creates a http transport with retry capability.
-// TODO Retry logic should be moved in the SDK
-func NewRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
-	return NewRetryableTransportWithOptions(defaultTransport, RetryableTransportOptions{})
-}
-
 // RetryableTransport client is a bridge between scw.httpClient interface and retryablehttp.Client
 type RetryableTransport struct {
 	*retryablehttp.Client
