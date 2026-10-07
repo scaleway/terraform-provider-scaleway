@@ -1,6 +1,7 @@
 package keymanager_test
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccKeyManagerKey_Basic(t *testing.T) {
@@ -145,9 +147,11 @@ func IsKeyManagerKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			key, err := client.GetKey(&key_manager.GetKeyRequest{
-				Region: region,
-				KeyID:  keyID,
+			key, err := transport.RetryOn403Value(context.Background(), func() (*key_manager.Key, error) {
+				return client.GetKey(&key_manager.GetKeyRequest{
+					Region: region,
+					KeyID:  keyID,
+				})
 			})
 			if err == nil {
 				if key.DeletionRequestedAt != nil {

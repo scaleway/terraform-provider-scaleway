@@ -26,10 +26,15 @@ func TestAccListKeyManagerKeys_ByProjectIDs(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-project-ids"
+					}
+
 					resource "scaleway_key_manager_key" "key1" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-proj-id-1"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						unprotected = true
 					}
 				`,
@@ -41,7 +46,7 @@ func TestAccListKeyManagerKeys_ByProjectIDs(t *testing.T) {
 						provider = scaleway
 
 						config {
-							project_ids = [scaleway_key_manager_key.key1.project_id]
+							project_ids = [scaleway_account_project.main.id]
 						}
 					}
 				`,
@@ -70,27 +75,38 @@ func TestAccListKeyManagerKeys_ByName(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-name"
+					}
+
 					resource "scaleway_key_manager_key" "key1" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-name-1"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						unprotected = true
 					}
 				`,
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-name"
+					}
+
 					resource "scaleway_key_manager_key" "key1" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-name-1"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						unprotected = true
 					}
 
 					resource "scaleway_key_manager_key" "key2" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-name-2"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						unprotected = true
 					}
 				`,
@@ -102,7 +118,7 @@ func TestAccListKeyManagerKeys_ByName(t *testing.T) {
 						provider = scaleway
 
 						config {
-							project_ids = [scaleway_key_manager_key.key1.project_id]
+							project_ids = [scaleway_account_project.main.id]
 							name        = "tf-test-km-by-name-1"
 						}
 					}
@@ -132,10 +148,15 @@ func TestAccListKeyManagerKeys_ByUsage(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-usage"
+					}
+
 					resource "scaleway_key_manager_key" "symmetric_key" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-usage-1"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						unprotected = true
 					}
 				`,
@@ -143,17 +164,23 @@ func TestAccListKeyManagerKeys_ByUsage(t *testing.T) {
 			{
 				Config: `
 
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-usage"
+					}
+
 					resource "scaleway_key_manager_key" "symmetric_key" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-usage-1"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						unprotected = true
 					}
 
 					resource "scaleway_key_manager_key" "asymmetric_key" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-usage-2"
-						usage        = "asymmetric_encryption"
-						algorithm    = "rsa_oaep_4096_sha256"
+						usage       = "asymmetric_encryption"
+						algorithm   = "rsa_oaep_4096_sha256"
 						unprotected = true
 					}
 				`,
@@ -165,7 +192,7 @@ func TestAccListKeyManagerKeys_ByUsage(t *testing.T) {
 						provider = scaleway
 
 						config {
-							project_ids = [scaleway_key_manager_key.asymmetric_key.project_id]
+							project_ids = [scaleway_account_project.main.id]
 							usage        = "asymmetric_encryption"
 						}
 					}
@@ -195,10 +222,15 @@ func TestAccListKeyManagerKeys_ByTags(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-tags"
+					}
+
 					resource "scaleway_key_manager_key" "key_with_tags" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-tags-1"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						tags        = ["env:test", "team:test"]
 						unprotected = true
 					}
@@ -206,18 +238,24 @@ func TestAccListKeyManagerKeys_ByTags(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-tags"
+					}
+
 					resource "scaleway_key_manager_key" "key_with_tags" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-tags-1"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						tags        = ["env:test", "team:test"]
 						unprotected = true
 					}
 
 					resource "scaleway_key_manager_key" "key_without_tags" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-tags-2"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						unprotected = true
 					}
 				`,
@@ -229,7 +267,7 @@ func TestAccListKeyManagerKeys_ByTags(t *testing.T) {
 						provider = scaleway
 
 						config {
-							project_ids = [scaleway_key_manager_key.key_with_tags.project_id]
+							project_ids = [scaleway_account_project.main.id]
 							tags        = ["env:test"]
 						}
 					}
@@ -260,10 +298,15 @@ func TestAccListKeyManagerKeys_ByScheduledForDeletion(t *testing.T) {
 			{
 				Config: `
 
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-scheduled-for-deletion"
+					}
+
 					resource "scaleway_key_manager_key" "key1" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-scheduled-1"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						unprotected = true
 					}
 				`,
@@ -271,17 +314,23 @@ func TestAccListKeyManagerKeys_ByScheduledForDeletion(t *testing.T) {
 			{
 				Config: `
 
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-scheduled-for-deletion"
+					}
+
 					resource "scaleway_key_manager_key" "key1" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-scheduled-1"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						unprotected = true
 					}
 
 					resource "scaleway_key_manager_key" "key2" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-km-by-scheduled-2"
-						usage        = "symmetric_encryption"
-						algorithm    = "aes_256_gcm"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
 						unprotected = true
 					}
 				`,
@@ -293,7 +342,7 @@ func TestAccListKeyManagerKeys_ByScheduledForDeletion(t *testing.T) {
 						provider = scaleway
 
 						config {
-							project_ids           = [scaleway_key_manager_key.key1.project_id]
+							project_ids            = [scaleway_account_project.main.id]
 							scheduled_for_deletion = false
 						}
 					}
@@ -391,11 +440,19 @@ func TestAccListKeyManagerKeys_ByRegions(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			IsKeyManagerKeyDestroyed(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-keymanager-key-list-regions"
+					}
+
 					resource "scaleway_key_manager_key" "key1" {
+						project_id  = scaleway_account_project.main.id
 						name        = "tf-test-key-by-region"
 						usage       = "symmetric_encryption"
 						algorithm   = "aes_256_gcm"
@@ -410,7 +467,7 @@ func TestAccListKeyManagerKeys_ByRegions(t *testing.T) {
 						provider = scaleway
 
 						config {
-							project_ids = [scaleway_key_manager_key.key1.project_id]
+							project_ids = [scaleway_account_project.main.id]
 							regions 	= [scaleway_key_manager_key.key1.region]
 						}
 					}

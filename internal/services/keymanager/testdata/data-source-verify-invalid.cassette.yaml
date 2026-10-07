@@ -204,6 +204,44 @@ interactions:
         proto_minor: 1
         content_length: 0
         host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/secret-manager/v1beta1/regions/fr-par/secrets/fd7ff6e2-322b-4b3f-9ff1-cc94c4f4e571
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 449
+        body: '{"srn":"","id":"fd7ff6e2-322b-4b3f-9ff1-cc94c4f4e571","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test-verify-secret-invalid","status":"ready","created_at":"2026-10-07T08:33:43.392925Z","updated_at":"2026-10-07T08:33:43.392925Z","tags":[],"version_count":0,"description":"","managed":false,"type":"opaque","protected":false,"path":"/","ephemeral_policy":null,"used_by":[],"deletion_requested_at":null,"key_id":null,"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "449"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 08:33:43 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "44"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - c941daff-2327-4425-8bc5-b83356a1dd8c
+        status: 200 OK
+        code: 200
+        duration: 36.193817ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
         form:
             page:
                 - "1"
@@ -359,6 +397,47 @@ interactions:
         code: 200
         duration: 93.951823ms
     - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 496
+        host: api.scaleway.com
+        body: '{"data":"UXcvZE5Xc05iaGxuQ0haVFluWmdwdGlwNEZ5ZmlOcFlxdHZidmhlU05kK29DS3Q1RFJ2dHZCSXJTcndMZHp2VmJxb1V1MlVGK2sxQzhDZmpyTzdhTmtmYkVuUHJ2LzM2QWIrM0NxN3dlb0M5Rkc2ciswUTVvRkM4MDBUYzJsdExvR2kweEw3anI2emJCaHh4Y3Z6Ly9xbkRNaWR5Q0NnamNPKy9ocDdvMkJ0d0E5OWhydkIrSFptT0Y1U0hmYjZFejY1MXdZQnpQclN1ZHc2Rk5BS3AyTURabDRNRFhxYTNIc2xWMU93MUlPT2RLODNwZjFteEYrVWJ1enFRbkdPNTdTelNPMWtHMUtMZmN2YTBiV2h0QmZuY3dDRiszQlRxWGV5S1d5dGxUeTlZL1pJOTlQL2xzZmZoNDRZZXRUY0FGRlFGY01LSnFYS3FIOXZwaVRKMWFRPT0=","description":"version1"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/secret-manager/v1beta1/regions/fr-par/secrets/fd7ff6e2-322b-4b3f-9ff1-cc94c4f4e571/versions
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 311
+        body: '{"srn":"","revision":1,"secret_id":"fd7ff6e2-322b-4b3f-9ff1-cc94c4f4e571","status":"enabled","created_at":"2026-10-07T08:33:44.149143Z","updated_at":"2026-10-07T08:33:44.149143Z","deleted_at":null,"description":"version1","latest":true,"ephemeral_properties":null,"deletion_requested_at":null,"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "311"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 08:33:44 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - a6b3945c-59db-4aaf-8843-0fa5c29f66d8
+        status: 200 OK
+        code: 200
+        duration: 366.27687ms
+    - id: 10
       request:
         proto: HTTP/1.1
         proto_major: 1

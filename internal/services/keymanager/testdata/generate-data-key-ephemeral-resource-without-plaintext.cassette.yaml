@@ -206,8 +206,6 @@ interactions:
         host: api.scaleway.com
         body: '{"algorithm":"aes_256_gcm","without_plaintext":true}'
         headers:
-            Content-Type:
-                - application/json
             User-Agent:
                 - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/49df857a-ff13-4557-ba84-b947b0cd871b/generate-data-key
@@ -397,6 +395,44 @@ interactions:
         code: 200
         duration: 150.541775ms
     - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/secret-manager/v1beta1/regions/fr-par/secrets/0efd9295-face-4396-878d-e19126dbe241/versions/1
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 311
+        body: '{"srn":"","revision":1,"secret_id":"0efd9295-face-4396-878d-e19126dbe241","status":"enabled","created_at":"2026-10-07T08:33:42.903079Z","updated_at":"2026-10-07T08:33:42.903079Z","deleted_at":null,"description":"version1","latest":true,"ephemeral_properties":null,"deletion_requested_at":null,"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "311"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 08:33:43 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 57e64f92-636d-4aa2-8120-3999b799f75c
+        status: 200 OK
+        code: 200
+        duration: 52.772017ms
+    - id: 11
       request:
         proto: HTTP/1.1
         proto_major: 1
