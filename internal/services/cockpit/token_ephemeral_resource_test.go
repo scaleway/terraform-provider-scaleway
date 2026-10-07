@@ -2,6 +2,7 @@ package cockpit_test
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -93,7 +94,7 @@ func testAccCheckEphemeralCockpitTokenSecretKeySet(dataSourceName string) resour
 		}
 
 		if len(decoded) == 0 {
-			return fmt.Errorf("decoded cockpit token secret_key is empty")
+			return errors.New("decoded cockpit token secret_key is empty")
 		}
 
 		return nil

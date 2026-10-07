@@ -185,6 +185,7 @@ func expandTokenEphemeralScopes(ctx context.Context, scopes types.List) ([]cockp
 	var scopeModels []tokenEphemeralScopesModel
 
 	diags.Append(scopes.ElementsAs(ctx, &scopeModels, false)...)
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -195,42 +196,27 @@ func expandTokenEphemeralScopes(ctx context.Context, scopes types.List) ([]cockp
 
 	s := scopeModels[0]
 
+	flags := []struct {
+		scope   cockpit.TokenScope
+		enabled types.Bool
+	}{
+		{cockpit.TokenScopeReadOnlyMetrics, s.QueryMetrics},
+		{cockpit.TokenScopeWriteOnlyMetrics, s.WriteMetrics},
+		{cockpit.TokenScopeFullAccessMetricsRules, s.SetupMetricsRules},
+		{cockpit.TokenScopeReadOnlyLogs, s.QueryLogs},
+		{cockpit.TokenScopeWriteOnlyLogs, s.WriteLogs},
+		{cockpit.TokenScopeFullAccessLogsRules, s.SetupLogsRules},
+		{cockpit.TokenScopeFullAccessAlertManager, s.SetupAlerts},
+		{cockpit.TokenScopeReadOnlyTraces, s.QueryTraces},
+		{cockpit.TokenScopeWriteOnlyTraces, s.WriteTraces},
+	}
+
 	var expanded []cockpit.TokenScope
 
-	if !s.QueryMetrics.IsNull() && !s.QueryMetrics.IsUnknown() && s.QueryMetrics.ValueBool() {
-		expanded = append(expanded, cockpit.TokenScopeReadOnlyMetrics)
-	}
-
-	if !s.WriteMetrics.IsNull() && !s.WriteMetrics.IsUnknown() && s.WriteMetrics.ValueBool() {
-		expanded = append(expanded, cockpit.TokenScopeWriteOnlyMetrics)
-	}
-
-	if !s.SetupMetricsRules.IsNull() && !s.SetupMetricsRules.IsUnknown() && s.SetupMetricsRules.ValueBool() {
-		expanded = append(expanded, cockpit.TokenScopeFullAccessMetricsRules)
-	}
-
-	if !s.QueryLogs.IsNull() && !s.QueryLogs.IsUnknown() && s.QueryLogs.ValueBool() {
-		expanded = append(expanded, cockpit.TokenScopeReadOnlyLogs)
-	}
-
-	if !s.WriteLogs.IsNull() && !s.WriteLogs.IsUnknown() && s.WriteLogs.ValueBool() {
-		expanded = append(expanded, cockpit.TokenScopeWriteOnlyLogs)
-	}
-
-	if !s.SetupLogsRules.IsNull() && !s.SetupLogsRules.IsUnknown() && s.SetupLogsRules.ValueBool() {
-		expanded = append(expanded, cockpit.TokenScopeFullAccessLogsRules)
-	}
-
-	if !s.SetupAlerts.IsNull() && !s.SetupAlerts.IsUnknown() && s.SetupAlerts.ValueBool() {
-		expanded = append(expanded, cockpit.TokenScopeFullAccessAlertManager)
-	}
-
-	if !s.QueryTraces.IsNull() && !s.QueryTraces.IsUnknown() && s.QueryTraces.ValueBool() {
-		expanded = append(expanded, cockpit.TokenScopeReadOnlyTraces)
-	}
-
-	if !s.WriteTraces.IsNull() && !s.WriteTraces.IsUnknown() && s.WriteTraces.ValueBool() {
-		expanded = append(expanded, cockpit.TokenScopeWriteOnlyTraces)
+	for _, flag := range flags {
+		if !flag.enabled.IsNull() && !flag.enabled.IsUnknown() && flag.enabled.ValueBool() {
+			expanded = append(expanded, flag.scope)
+		}
 	}
 
 	return expanded, diags
@@ -242,15 +228,6 @@ func flattenTokenEphemeralTime(t *time.Time) types.String {
 	}
 
 	return types.StringValue(t.Format(time.RFC3339))
-}
-
-func (r *TokenEphemeralResource) deleteToken(ctx context.Context, region scw.Region, tokenID string) error {
-	return retryOn403(ctx, func() error {
-		return r.cockpitAPI.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
-			Region:  region,
-			TokenID: tokenID,
-		}, scw.WithContext(ctx))
-	})
 }
 
 func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRequest, resp *ephemeral.OpenResponse) {
@@ -385,6 +362,7 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 	// defaults must not be written back into unset attributes.
 
 	resp.Diagnostics.Append(resp.Result.Set(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		cleanup()
 	}
@@ -445,4 +423,13 @@ func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseR
 			fmt.Sprintf("Failed to delete Cockpit token %s in region %s: %s", tokenID, region, err),
 		)
 	}
+}
+
+func (r *TokenEphemeralResource) deleteToken(ctx context.Context, region scw.Region, tokenID string) error {
+	return retryOn403(ctx, func() error {
+		return r.cockpitAPI.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
+			Region:  region,
+			TokenID: tokenID,
+		}, scw.WithContext(ctx))
+	})
 }
