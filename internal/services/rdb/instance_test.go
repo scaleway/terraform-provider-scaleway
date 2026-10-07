@@ -248,6 +248,98 @@ func TestAccInstance_Settings(t *testing.T) {
 	})
 }
 
+func TestAccInstance_SettingsPartialOverride(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "tf-tests-rdb-settings-partial"
+						node_type = "db-dev-s"
+						disable_backup = true
+						engine = %q
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						settings = {
+							max_connections = "200"
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "settings.max_connections", "200"),
+					resource.TestCheckNoResourceAttr("scaleway_rdb_instance.main", "settings.work_mem"),
+					testAccCheckInstanceAPISettingsPreserved(tt, "scaleway_rdb_instance.main", "max_connections", "200"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "tf-tests-rdb-settings-partial"
+						node_type = "db-dev-s"
+						disable_backup = true
+						engine = %q
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						settings = {
+							max_connections = "250"
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "settings.max_connections", "250"),
+					testAccCheckInstanceAPISettingsPreserved(tt, "scaleway_rdb_instance.main", "max_connections", "250"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckInstanceAPISettingsPreserved(tt *acctest.TestTools, n, wantName, wantValue string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		rdbAPI, region, id, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		inst, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+			Region:     region,
+			InstanceID: id,
+		}, scw.WithContext(tt.T.Context()))
+		if err != nil {
+			return err
+		}
+
+		if len(inst.Settings) < 2 {
+			return fmt.Errorf("expected defaults preserved on API, got %d settings", len(inst.Settings))
+		}
+
+		for _, setting := range inst.Settings {
+			if setting.Name == wantName {
+				if setting.Value != wantValue {
+					return fmt.Errorf("API setting %q: want %q, got %q", wantName, wantValue, setting.Value)
+				}
+
+				return nil
+			}
+		}
+
+		return fmt.Errorf("API setting %q not found", wantName)
+	}
+}
+
 func TestAccInstance_InitSettings(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

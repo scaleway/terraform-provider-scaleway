@@ -150,8 +150,7 @@ func instanceSchema() map[string]*schema.Schema {
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
-			Description: "Map of engine settings to be set on a running instance.",
-			Computed:    true,
+			Description: "Map of engine settings to set on the instance. Only listed keys are overridden; other engine defaults are preserved.",
 			Optional:    true,
 		},
 		"init_settings": {
@@ -648,18 +647,9 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 	}
-	// Configure Instance settings
+	// Configure Instance settings (merge onto defaults — do not wipe unlisted keys)
 	if settings, ok := d.GetOk("settings"); ok {
-		res, err := waitForRDBInstance(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
-			InstanceID: res.ID,
-			Region:     region,
-			Settings:   expandInstanceSettings(settings),
-		})
+		err = applyInstanceSettings(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutCreate), nil, instanceSettingsMapFromInterface(settings))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -867,8 +857,36 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI
 
 	_ = d.Set("certificate", string(certContent))
 
-	// set settings
-	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
+	// set settings — only persist keys listed in HCL (avoids perpetual diffs on defaults)
+	allSettings, ok := flattenInstanceSettings(res.Settings).(map[string]string)
+	if !ok {
+		allSettings = map[string]string{}
+	}
+
+	configKeys, managed := rawConfigSettingsKeys(d)
+	raw := d.GetRawConfig()
+	rawKnown := !raw.IsNull() && raw.IsKnown()
+
+	switch {
+	case managed:
+		_ = d.Set("settings", FilterInstanceSettings(allSettings, configKeys))
+	case rawKnown:
+		// HCL is known and has no settings block — clear legacy computed defaults from state.
+		_ = d.Set("settings", nil)
+	default:
+		// Raw config unavailable (some create Read paths): fall back to GetOk keys only.
+		if v, ok := d.GetOk("settings"); ok {
+			fallbackKeys := make(map[string]bool)
+			for key := range v.(map[string]any) {
+				fallbackKeys[key] = true
+			}
+
+			_ = d.Set("settings", FilterInstanceSettings(allSettings, fallbackKeys))
+		} else {
+			_ = d.Set("settings", nil)
+		}
+	}
+
 	_ = d.Set("init_settings", flattenInstanceSettings(res.InitSettings))
 
 	// set logs policy
@@ -1277,17 +1295,17 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	// Change settings
 	////////////////////
 	if d.HasChange("settings") {
-		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+		oldRaw, newRaw := d.GetChange("settings")
+		err = applyInstanceSettings(
+			ctx,
+			rdbAPI,
+			region,
+			ID,
+			d.Timeout(schema.TimeoutUpdate),
+			instanceSettingsMapFromInterface(oldRaw),
+			instanceSettingsMapFromInterface(newRaw),
+		)
 		if err != nil && !httperrors.Is404(err) {
-			return diag.FromErr(err)
-		}
-
-		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
-			InstanceID: ID,
-			Region:     region,
-			Settings:   expandInstanceSettings(d.Get("settings")),
-		}, scw.WithContext(ctx))
-		if err != nil {
 			return diag.FromErr(err)
 		}
 	}

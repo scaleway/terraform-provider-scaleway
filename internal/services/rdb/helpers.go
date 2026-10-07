@@ -135,6 +135,59 @@ func retryRDBReadOnTransient[T any](ctx context.Context, api *rdb.API, region sc
 	)
 }
 
+// applyInstanceSettings merges user settings onto the instance defaults then calls SetInstanceSettings.
+// Unlike a bare Set of the config map, this preserves engine defaults not listed in Terraform.
+func applyInstanceSettings(ctx context.Context, api *rdb.API, region scw.Region, instanceID string, timeout time.Duration, oldManaged, newManaged map[string]string) error {
+	res, err := waitForRDBInstance(ctx, api, region, instanceID, timeout)
+	if err != nil {
+		return err
+	}
+
+	current, ok := flattenInstanceSettings(res.Settings).(map[string]string)
+	if !ok {
+		return errors.New("unexpected type for instance settings")
+	}
+
+	// Legacy state mirrored all API defaults as "settings"; treat that as unmanaged.
+	if instanceSettingsEqual(oldManaged, current) {
+		oldManaged = nil
+	}
+
+	merged := MergeInstanceSettings(current, oldManaged, newManaged)
+
+	_, err = api.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+		InstanceID: instanceID,
+		Region:     region,
+		Settings:   expandInstanceSettingsFromMap(merged),
+	}, scw.WithContext(ctx))
+
+	return err
+}
+
+func rawConfigSettingsKeys(d *schema.ResourceData) (map[string]bool, bool) {
+	raw := d.GetRawConfig()
+	if raw.IsNull() || !raw.IsKnown() {
+		return nil, false
+	}
+
+	attr := raw.GetAttr("settings")
+	if attr.IsNull() {
+		return nil, false
+	}
+
+	valueMap := attr.AsValueMap()
+	if len(valueMap) == 0 {
+		return nil, false
+	}
+
+	keys := make(map[string]bool, len(valueMap))
+	for key := range valueMap {
+		keys[key] = true
+	}
+
+	return keys, true
+}
+
 func isTimeoutErr(err error) bool {
 	if err == nil {
 		return false

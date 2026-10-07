@@ -34,6 +34,80 @@ func expandInstanceSettings(i any) []*rdb.InstanceSetting {
 	return res
 }
 
+func expandInstanceSettingsFromMap(m map[string]string) []*rdb.InstanceSetting {
+	raw := make(map[string]any, len(m))
+	for key, value := range m {
+		raw[key] = value
+	}
+
+	return expandInstanceSettings(raw)
+}
+
+func instanceSettingsMapFromInterface(i any) map[string]string {
+	if i == nil {
+		return nil
+	}
+
+	raw, ok := i.(map[string]any)
+	if !ok || len(raw) == 0 {
+		return nil
+	}
+
+	out := make(map[string]string, len(raw))
+	for key, value := range raw {
+		out[key] = value.(string)
+	}
+
+	return out
+}
+
+func instanceSettingsEqual(a, b map[string]string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for key, value := range a {
+		if b[key] != value {
+			return false
+		}
+	}
+
+	return true
+}
+
+// MergeInstanceSettings overlays user-managed settings onto the current API settings.
+// Keys present in oldManaged but absent from newManaged are dropped from the result.
+func MergeInstanceSettings(current, oldManaged, newManaged map[string]string) map[string]string {
+	merged := make(map[string]string, len(current)+len(newManaged))
+	for key, value := range current {
+		merged[key] = value
+	}
+
+	for key := range oldManaged {
+		if _, ok := newManaged[key]; !ok {
+			delete(merged, key)
+		}
+	}
+
+	for key, value := range newManaged {
+		merged[key] = value
+	}
+
+	return merged
+}
+
+// FilterInstanceSettings keeps only keys present in configKeys (from raw Terraform config).
+func FilterInstanceSettings(all map[string]string, configKeys map[string]bool) map[string]string {
+	out := make(map[string]string, len(configKeys))
+	for key := range configKeys {
+		if value, ok := all[key]; ok {
+			out[key] = value
+		}
+	}
+
+	return out
+}
+
 func expandPrivateNetwork(data any, exist bool, ipamConfig *bool, staticConfig *string) ([]*rdb.EndpointSpec, diag.Diagnostics) {
 	if data == nil || !exist {
 		return nil, nil

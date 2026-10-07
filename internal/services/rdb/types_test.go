@@ -9,6 +9,62 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestMergeInstanceSettings(t *testing.T) {
+	t.Parallel()
+
+	current := map[string]string{
+		"max_connections":      "100",
+		"work_mem":             "4",
+		"effective_cache_size": "1300",
+	}
+
+	t.Run("create overlay preserves defaults", func(t *testing.T) {
+		t.Parallel()
+
+		got := rdb.MergeInstanceSettings(current, nil, map[string]string{
+			"max_connections": "200",
+		})
+		require.Equal(t, "200", got["max_connections"])
+		require.Equal(t, "4", got["work_mem"])
+		require.Equal(t, "1300", got["effective_cache_size"])
+	})
+
+	t.Run("removing a previously managed key drops it from the merge", func(t *testing.T) {
+		t.Parallel()
+
+		oldManaged := map[string]string{
+			"max_connections": "200",
+			"work_mem":        "8",
+		}
+		newManaged := map[string]string{
+			"max_connections": "200",
+		}
+		api := map[string]string{
+			"max_connections":      "200",
+			"work_mem":             "8",
+			"effective_cache_size": "1300",
+		}
+
+		got := rdb.MergeInstanceSettings(api, oldManaged, newManaged)
+		require.Equal(t, "200", got["max_connections"])
+		require.Equal(t, "1300", got["effective_cache_size"])
+		_, hasWorkMem := got["work_mem"]
+		require.False(t, hasWorkMem)
+	})
+}
+
+func TestFilterInstanceSettings(t *testing.T) {
+	t.Parallel()
+
+	all := map[string]string{
+		"max_connections": "200",
+		"work_mem":        "4",
+	}
+	got := rdb.FilterInstanceSettings(all, map[string]bool{"max_connections": true})
+	require.Equal(t, map[string]string{"max_connections": "200"}, got)
+	require.Empty(t, rdb.FilterInstanceSettings(all, map[string]bool{}))
+}
+
 func TestFlattenInstanceMaintenances(t *testing.T) {
 	t.Parallel()
 
