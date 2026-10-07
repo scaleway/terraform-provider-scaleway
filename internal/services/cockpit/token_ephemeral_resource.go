@@ -3,16 +3,19 @@ package cockpit
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -33,7 +36,7 @@ func NewTokenEphemeralResource() ephemeral.EphemeralResource {
 	return &TokenEphemeralResource{}
 }
 
-func (r *TokenEphemeralResource) Configure(ctx context.Context, req ephemeral.ConfigureRequest, resp *ephemeral.ConfigureResponse) {
+func (r *TokenEphemeralResource) Configure(_ context.Context, req ephemeral.ConfigureRequest, resp *ephemeral.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -48,12 +51,11 @@ func (r *TokenEphemeralResource) Configure(ctx context.Context, req ephemeral.Co
 		return
 	}
 
-	client := m.ScwClient()
-	r.cockpitAPI = cockpit.NewRegionalAPI(client)
+	r.cockpitAPI = cockpit.NewRegionalAPI(m.ScwClient())
 	r.meta = m
 }
 
-func (r *TokenEphemeralResource) Metadata(ctx context.Context, req ephemeral.MetadataRequest, resp *ephemeral.MetadataResponse) {
+func (r *TokenEphemeralResource) Metadata(_ context.Context, req ephemeral.MetadataRequest, resp *ephemeral.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_cockpit_token"
 }
 
@@ -68,10 +70,22 @@ type TokenEphemeralResourceModel struct {
 	UpdatedAt types.String `tfsdk:"updated_at"`
 }
 
+type tokenEphemeralScopesModel struct {
+	QueryMetrics      types.Bool `tfsdk:"query_metrics"`
+	WriteMetrics      types.Bool `tfsdk:"write_metrics"`
+	SetupMetricsRules types.Bool `tfsdk:"setup_metrics_rules"`
+	QueryLogs         types.Bool `tfsdk:"query_logs"`
+	WriteLogs         types.Bool `tfsdk:"write_logs"`
+	SetupLogsRules    types.Bool `tfsdk:"setup_logs_rules"`
+	SetupAlerts       types.Bool `tfsdk:"setup_alerts"`
+	QueryTraces       types.Bool `tfsdk:"query_traces"`
+	WriteTraces       types.Bool `tfsdk:"write_traces"`
+}
+
 //go:embed descriptions/token_ephemeral_resource.md
 var tokenEphemeralResourceDescription string
 
-func (r *TokenEphemeralResource) Schema(ctx context.Context, req ephemeral.SchemaRequest, resp *ephemeral.SchemaResponse) {
+func (r *TokenEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaRequest, resp *ephemeral.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description:         tokenEphemeralResourceDescription,
 		MarkdownDescription: tokenEphemeralResourceDescription,
@@ -86,15 +100,34 @@ func (r *TokenEphemeralResource) Schema(ctx context.Context, req ephemeral.Schem
 				Description: "ID of the Scaleway project the token belongs to",
 				Validators: []validator.String{
 					verify.IsStringUUID(),
-					stringvalidator.LengthAtLeast(36),
 				},
 			},
-			"region": regional.SchemaAttribute("Region of the token. If not set, the region is derived from the provider configuration."),
-			"scopes": schema.ListNestedAttribute{
+			"region": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
+				Description: "Region of the token. If not set, the region is derived from the provider configuration.",
+				Validators: []validator.String{
+					verify.IsStringOneOfWithWarning(regional.AllRegions()),
+				},
+			},
+			"secret_key": schema.StringAttribute{
+				Computed:    true,
+				Description: "The secret key of the token",
+				Sensitive:   true,
+			},
+			"created_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The date and time of the creation of the Cockpit Token (Format ISO 8601)",
+			},
+			"updated_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The date and time of the last update of the Cockpit Token (Format ISO 8601)",
+			},
+		},
+		Blocks: map[string]schema.Block{
+			"scopes": schema.ListNestedBlock{
 				Description: "Token permission scopes. If not set, defaults to write_metrics and write_logs.",
-				NestedObject: schema.NestedAttributeObject{
+				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"query_metrics": schema.BoolAttribute{
 							Optional:    true,
@@ -138,21 +171,86 @@ func (r *TokenEphemeralResource) Schema(ctx context.Context, req ephemeral.Schem
 					listvalidator.SizeAtMost(1),
 				},
 			},
-			"secret_key": schema.StringAttribute{
-				Computed:    true,
-				Description: "The secret key of the token",
-				Sensitive:   true,
-			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The date and time of the creation of the Cockpit Token (Format ISO 8601)",
-			},
-			"updated_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The date and time of the last update of the Cockpit Token (Format ISO 8601)",
-			},
 		},
 	}
+}
+
+func expandTokenEphemeralScopes(ctx context.Context, scopes types.List) ([]cockpit.TokenScope, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if scopes.IsNull() || scopes.IsUnknown() {
+		return nil, diags
+	}
+
+	var scopeModels []tokenEphemeralScopesModel
+
+	diags.Append(scopes.ElementsAs(ctx, &scopeModels, false)...)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	if len(scopeModels) == 0 {
+		return nil, diags
+	}
+
+	s := scopeModels[0]
+
+	var expanded []cockpit.TokenScope
+
+	if !s.QueryMetrics.IsNull() && !s.QueryMetrics.IsUnknown() && s.QueryMetrics.ValueBool() {
+		expanded = append(expanded, cockpit.TokenScopeReadOnlyMetrics)
+	}
+
+	if !s.WriteMetrics.IsNull() && !s.WriteMetrics.IsUnknown() && s.WriteMetrics.ValueBool() {
+		expanded = append(expanded, cockpit.TokenScopeWriteOnlyMetrics)
+	}
+
+	if !s.SetupMetricsRules.IsNull() && !s.SetupMetricsRules.IsUnknown() && s.SetupMetricsRules.ValueBool() {
+		expanded = append(expanded, cockpit.TokenScopeFullAccessMetricsRules)
+	}
+
+	if !s.QueryLogs.IsNull() && !s.QueryLogs.IsUnknown() && s.QueryLogs.ValueBool() {
+		expanded = append(expanded, cockpit.TokenScopeReadOnlyLogs)
+	}
+
+	if !s.WriteLogs.IsNull() && !s.WriteLogs.IsUnknown() && s.WriteLogs.ValueBool() {
+		expanded = append(expanded, cockpit.TokenScopeWriteOnlyLogs)
+	}
+
+	if !s.SetupLogsRules.IsNull() && !s.SetupLogsRules.IsUnknown() && s.SetupLogsRules.ValueBool() {
+		expanded = append(expanded, cockpit.TokenScopeFullAccessLogsRules)
+	}
+
+	if !s.SetupAlerts.IsNull() && !s.SetupAlerts.IsUnknown() && s.SetupAlerts.ValueBool() {
+		expanded = append(expanded, cockpit.TokenScopeFullAccessAlertManager)
+	}
+
+	if !s.QueryTraces.IsNull() && !s.QueryTraces.IsUnknown() && s.QueryTraces.ValueBool() {
+		expanded = append(expanded, cockpit.TokenScopeReadOnlyTraces)
+	}
+
+	if !s.WriteTraces.IsNull() && !s.WriteTraces.IsUnknown() && s.WriteTraces.ValueBool() {
+		expanded = append(expanded, cockpit.TokenScopeWriteOnlyTraces)
+	}
+
+	return expanded, diags
+}
+
+func flattenTokenEphemeralTime(t *time.Time) types.String {
+	if t == nil {
+		return types.StringNull()
+	}
+
+	return types.StringValue(t.Format(time.RFC3339))
+}
+
+func (r *TokenEphemeralResource) deleteToken(ctx context.Context, region scw.Region, tokenID string) error {
+	return retryOn403(ctx, func() error {
+		return r.cockpitAPI.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
+			Region:  region,
+			TokenID: tokenID,
+		}, scw.WithContext(ctx))
+	})
 }
 
 func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRequest, resp *ephemeral.OpenResponse) {
@@ -163,6 +261,136 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 		return
 	}
 
+	if r.cockpitAPI == nil || r.meta == nil {
+		resp.Diagnostics.AddError(
+			"Unconfigured cockpitAPI",
+			"The ephemeral resource was not properly configured. The Scaleway client is missing. "+
+				"This is usually a bug in the provider. Please report it to the maintainers.",
+		)
+
+		return
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(data.ProjectID, r.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Missing project_id",
+			"Please provide a project_id explicitly or configure a default project in the provider.",
+		)
+
+		return
+	}
+
+	region, err := meta.ExtractFrameworkRegion(data.Region, r.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Missing region",
+			"Please provide a region explicitly or configure a default region in the provider.",
+		)
+
+		return
+	}
+
+	tokenScopes, diags := expandTokenEphemeralScopes(ctx, data.Scopes)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if len(tokenScopes) == 0 {
+		tokenScopes = []cockpit.TokenScope{
+			cockpit.TokenScopeWriteOnlyMetrics,
+			cockpit.TokenScopeWriteOnlyLogs,
+		}
+	}
+
+	name := data.Name.ValueString()
+
+	res, err := retryOn403Value(ctx, func() (*cockpit.Token, error) {
+		return r.cockpitAPI.CreateToken(&cockpit.RegionalAPICreateTokenRequest{
+			Region:      region,
+			ProjectID:   projectID,
+			Name:        name,
+			TokenScopes: tokenScopes,
+		}, scw.WithContext(ctx))
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating Cockpit Token",
+			fmt.Sprintf("Failed to create Cockpit token %q in region %s: %s", name, region, err),
+		)
+
+		return
+	}
+
+	cleanup := func() {
+		_ = r.deleteToken(ctx, res.Region, res.ID)
+	}
+
+	tokenIDPrivate, err := json.Marshal(res.ID)
+	if err != nil {
+		cleanup()
+		resp.Diagnostics.AddError(
+			"Error storing private data",
+			fmt.Sprintf("Failed to encode token ID for later cleanup: %s", err),
+		)
+
+		return
+	}
+
+	if err := resp.Private.SetKey(ctx, "token_id", tokenIDPrivate); err != nil {
+		cleanup()
+		resp.Diagnostics.AddError(
+			"Error storing private data",
+			fmt.Sprintf("Failed to store token ID for later cleanup: %s", err),
+		)
+
+		return
+	}
+
+	regionPrivate, err := json.Marshal(res.Region.String())
+	if err != nil {
+		cleanup()
+		resp.Diagnostics.AddError(
+			"Error storing private data",
+			fmt.Sprintf("Failed to encode region for later cleanup: %s", err),
+		)
+
+		return
+	}
+
+	if err := resp.Private.SetKey(ctx, "region", regionPrivate); err != nil {
+		cleanup()
+		resp.Diagnostics.AddError(
+			"Error storing private data",
+			fmt.Sprintf("Failed to store region for later cleanup: %s", err),
+		)
+
+		return
+	}
+
+	data.ProjectID = types.StringValue(res.ProjectID)
+	data.Region = types.StringValue(res.Region.String())
+	data.CreatedAt = flattenTokenEphemeralTime(res.CreatedAt)
+	data.UpdatedAt = flattenTokenEphemeralTime(res.UpdatedAt)
+
+	if res.SecretKey != nil {
+		data.SecretKey = types.StringValue(*res.SecretKey)
+	} else {
+		data.SecretKey = types.StringNull()
+	}
+
+	// Keep config scopes as-is: nested block bools are not Computed, so API
+	// defaults must not be written back into unset attributes.
+
+	resp.Diagnostics.Append(resp.Result.Set(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		cleanup()
+	}
+}
+
+func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseRequest, resp *ephemeral.CloseResponse) {
 	if r.cockpitAPI == nil {
 		resp.Diagnostics.AddError(
 			"Unconfigured cockpitAPI",
@@ -173,112 +401,7 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 		return
 	}
 
-	// Extract project_id
-	var projectID string
-	if !data.ProjectID.IsNull() && !data.ProjectID.IsUnknown() {
-		projectID = data.ProjectID.ValueString()
-	} else {
-		var exists bool
-
-		projectID, exists = r.meta.ScwClient().GetDefaultProjectID()
-		if !exists {
-			resp.Diagnostics.AddError(
-				"Missing project_id",
-				"Please provide a project_id explicitly or configure a default project in the provider.",
-			)
-
-			return
-		}
-	}
-
-	// Extract region
-	var region scw.Region
-	if !data.Region.IsNull() && !data.Region.IsUnknown() && data.Region.ValueString() != "" {
-		region = scw.Region(data.Region.ValueString())
-	} else {
-		var exists bool
-
-		region, exists = r.meta.ScwClient().GetDefaultRegion()
-		if !exists {
-			resp.Diagnostics.AddError(
-				"Missing region",
-				"Please provide a region explicitly or configure a default region in the provider.",
-			)
-
-			return
-		}
-	}
-
-	// Expand scopes
-	var scopesList []any
-	if !data.Scopes.IsNull() && !data.Scopes.IsUnknown() {
-		diags := data.Scopes.ElementsAs(ctx, &scopesList, false)
-		resp.Diagnostics.Append(diags...)
-
-		if diags.HasError() {
-			return
-		}
-	}
-
-	tokenScopes := expandCockpitTokenScopes(scopesList)
-
-	// Default scopes if none specified
-	if len(tokenScopes) == 0 {
-		tokenScopes = []cockpit.TokenScope{
-			cockpit.TokenScopeWriteOnlyMetrics,
-			cockpit.TokenScopeWriteOnlyLogs,
-		}
-	}
-
-	name := data.Name.ValueString()
-
-	// Create the token
-	res, err := r.cockpitAPI.CreateToken(&cockpit.RegionalAPICreateTokenRequest{
-		Region:      region,
-		ProjectID:   projectID,
-		Name:        name,
-		TokenScopes: tokenScopes,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating Cockpit Token",
-			fmt.Sprintf("Failed to create Cockpit token %q in region %s: %s", name, region, err),
-		)
-
-		return
-	}
-
-	data.CreatedAt = types.StringValue(res.CreatedAt.Format("2006-01-02T15:04:05Z07:00"))
-	data.UpdatedAt = types.StringValue(res.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"))
-	data.SecretKey = types.StringValue(*res.SecretKey)
-
-	// Store token ID in Private so Close() can delete it
-	// Private data lives only in memory for the duration of a single phase
-	// (plan or apply) and is never persisted to state or plan files.
-	if err := resp.Private.SetKey(ctx, "token_id", []byte(res.ID)); err != nil {
-		resp.Diagnostics.AddError(
-			"Error storing private data",
-			fmt.Sprintf("Failed to store token ID for later cleanup: %s", err),
-		)
-
-		return
-	}
-
-	if err := resp.Private.SetKey(ctx, "region", []byte(string(res.Region))); err != nil {
-		resp.Diagnostics.AddError(
-			"Error storing private data",
-			fmt.Sprintf("Failed to store region for later cleanup: %s", err),
-		)
-
-		return
-	}
-
-	resp.Diagnostics.Append(resp.Result.Set(ctx, &data)...)
-}
-
-func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseRequest, resp *ephemeral.CloseResponse) {
 	tokenIDBytes, diags := req.Private.GetKey(ctx, "token_id")
-
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -286,21 +409,37 @@ func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseR
 	}
 
 	regionBytes, diags := req.Private.GetKey(ctx, "region")
-
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	tokenID := string(tokenIDBytes)
-	region := scw.Region(string(regionBytes))
+	var tokenID string
+	if err := json.Unmarshal(tokenIDBytes, &tokenID); err != nil {
+		resp.Diagnostics.AddError(
+			"Error reading private data",
+			fmt.Sprintf("Failed to decode token ID for cleanup: %s", err),
+		)
 
-	// Delete the token
-	if err := r.cockpitAPI.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
-		Region:  region,
-		TokenID: tokenID,
-	}, scw.WithContext(ctx)); err != nil {
+		return
+	}
+
+	var regionStr string
+	if err := json.Unmarshal(regionBytes, &regionStr); err != nil {
+		resp.Diagnostics.AddError(
+			"Error reading private data",
+			fmt.Sprintf("Failed to decode region for cleanup: %s", err),
+		)
+
+		return
+	}
+
+	region := scw.Region(regionStr)
+
+	err := r.deleteToken(ctx, region, tokenID)
+	// Cockpit may return 403 when the token is already gone.
+	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		resp.Diagnostics.AddError(
 			"Error closing Cockpit Token",
 			fmt.Sprintf("Failed to delete Cockpit token %s in region %s: %s", tokenID, region, err),

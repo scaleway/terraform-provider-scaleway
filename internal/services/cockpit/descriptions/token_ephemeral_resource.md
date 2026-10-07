@@ -1,5 +1,7 @@
-The [`scaleway_cockpit_token`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resource/cockpit_token) Ephemeral Resource is used to create temporary Scaleway Cockpit tokens. Unlike the regular [`scaleway_cockpit_token` Resource](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/cockpit_token), this ephemeral resource is not stored in Terraform state and is deleted at the end of each Terraform run (plan or apply).
+The [`scaleway_cockpit_token`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resources/cockpit_token) Ephemeral Resource creates a temporary Scaleway Cockpit token that is never stored in Terraform state.
 
-Each `terraform apply` will create a new token. The token is automatically deleted when Terraform finishes using it. This ensures no tokens persist between runs.
+Unlike the regular [`scaleway_cockpit_token` Resource](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/cockpit_token), this ephemeral resource creates a token during plan/apply, exposes `secret_key` for use in ephemeral contexts (for example write-only attributes), and deletes the token when Terraform finishes using it (`Close`).
 
-For more information, see [our guide to using Ephemeral Resources](https://developer.hashicorp.com/terraform/language/resources/ephemeral), the [Cockpit documentation](https://www.scaleway.com/en/docs/observability/cockpit/), and the [API documentation](https://www.scaleway.com/en/docs/cockpit/api-cli/).
+Each Terraform run creates a new token. No token persists between runs when `Close` succeeds.
+
+For more information, see [our guide to using Ephemeral Resources](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-ephemeral-resources), the [Cockpit documentation](https://www.scaleway.com/en/docs/observability/cockpit/), and the [API documentation](https://www.scaleway.com/en/docs/cockpit/api-cli/).
