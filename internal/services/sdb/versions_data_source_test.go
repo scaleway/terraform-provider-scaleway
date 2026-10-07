@@ -1,6 +1,7 @@
 package sdb_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -10,6 +11,9 @@ import (
 func TestAccServerlessSQLDBVersionsDataSource_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	versions := fetchAvailableVersions(tt)
+	filterVersion := versions[0]
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -22,7 +26,17 @@ func TestAccServerlessSQLDBVersionsDataSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_sdb_sql_versions.pg", "id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_sdb_sql_versions.pg", "region"),
 					resource.TestCheckResourceAttrSet("data.scaleway_sdb_sql_versions.pg", "versions.0.name"),
-					resource.TestCheckResourceAttrSet("data.scaleway_sdb_sql_versions.pg", "versions.0.srn"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_sdb_sql_versions" "pg" {
+						name = %q
+					}
+				`, filterVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.scaleway_sdb_sql_versions.pg", "id"),
+					resource.TestCheckResourceAttr("data.scaleway_sdb_sql_versions.pg", "versions.0.name", filterVersion),
 				),
 			},
 		},

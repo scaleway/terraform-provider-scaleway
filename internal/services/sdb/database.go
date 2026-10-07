@@ -137,9 +137,6 @@ func ResourceDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) di
 	if database.Version != nil {
 		_ = d.Set("version", database.Version.Name)
 		_ = d.Set("version_end_of_life_at", types.FlattenTime(database.Version.EndOfLifeAt))
-	} else {
-		_ = d.Set("version", "")
-		_ = d.Set("version_end_of_life_at", "")
 	}
 
 	_ = d.Set("srn", database.Srn)

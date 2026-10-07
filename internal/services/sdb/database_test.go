@@ -33,9 +33,7 @@ func TestAccServerlessSQLDBDatabase_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "min_cpu", "0"),
 					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "max_cpu", "15"),
 					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "endpoint"),
-					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "version", "16"),
-					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "version_end_of_life_at"),
-					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "srn"),
+					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "version"),
 				),
 			},
 			{
@@ -72,7 +70,6 @@ func TestAccServerlessSQLDBDatabase_Basic(t *testing.T) {
 						name = "test-sdb-sql-database-basic-rename"
 						min_cpu = 4
 						max_cpu = 8
-						version = "16"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -80,9 +77,54 @@ func TestAccServerlessSQLDBDatabase_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_sdb_sql_database.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "min_cpu", "4"),
 					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "max_cpu", "8"),
-					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "version", "16"),
-					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "version_end_of_life_at"),
-					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "srn"),
+					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "version"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServerlessSQLDBDatabase_Version(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	versions := fetchAvailableVersions(tt)
+	if len(versions) < 2 {
+		t.Skip("need at least two sdb versions to test ForceNew on version")
+	}
+
+	versionA := versions[0]
+	versionB := versions[1]
+	databaseID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckServerlessSQLDBDatabaseDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_sdb_sql_database" "main" {
+						name    = "tf-tests-sdb-sql-database-version"
+						version = %q
+					}
+				`, versionA),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckServerlessSQLDBDatabaseExists(tt, "scaleway_sdb_sql_database.main"),
+					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "version", versionA),
+					acctest.CheckResourceIDPersisted("scaleway_sdb_sql_database.main", &databaseID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_sdb_sql_database" "main" {
+						name    = "tf-tests-sdb-sql-database-version"
+						version = %q
+					}
+				`, versionB),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckServerlessSQLDBDatabaseExists(tt, "scaleway_sdb_sql_database.main"),
+					resource.TestCheckResourceAttr("scaleway_sdb_sql_database.main", "version", versionB),
+					acctest.CheckResourceIDChanged("scaleway_sdb_sql_database.main", &databaseID),
 				),
 			},
 		},
