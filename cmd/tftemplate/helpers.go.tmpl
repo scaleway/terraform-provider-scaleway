@@ -1,0 +1,32 @@
+{{- /*gotype: tftemplate/models.ResourceTemplate*/ -}}
+package {{.API}}
+
+import (
+    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+    "github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+// NewAPIWith{{.LocalityUpper}} returns a new {{.API}} API and the {{.Locality}} for a Create request
+func NewAPIWith{{.LocalityUpper}}(d *schema.ResourceData, m interface{}) (*{{.API}}.API, scw.{{.LocalityUpper}}, error) {
+    {{.API}}API := {{.API}}.NewAPI(meta.ExtractScwClient(m))
+
+    {{.Locality}}, err := meta.Extract{{.LocalityUpper}}(d, m)
+    if err != nil {
+        return nil, "", err
+    }
+
+    return {{.API}}API, {{.Locality}}, nil
+}
+
+// NewAPIWith{{.LocalityUpper}}AndID returns a new {{.API }} API with {{.Locality}} and ID extracted from the state
+func NewAPIWith{{.LocalityUpper}}AndID(m interface{}, {{.LocalityAdjective}}ID string) (*{{.API}}.API, scw.{{.LocalityUpper}}, string, error) {
+    {{.API}}API := {{.API}}.NewAPI(meta.ExtractScwClient(m))
+
+    {{.Locality}}, ID, err := {{.LocalityAdjective}}.ParseID({{.LocalityAdjective}}ID)
+    if err != nil {
+        return nil, "", "", err
+    }
+
+    return {{.API}}API, {{.Locality}}, ID, nil
+}
+
