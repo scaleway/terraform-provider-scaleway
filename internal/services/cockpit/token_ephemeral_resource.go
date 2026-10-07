@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -18,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -195,39 +195,30 @@ func expandTokenEphemeralScopes(ctx context.Context, scopes types.List) ([]cockp
 	}
 
 	s := scopeModels[0]
-
-	flags := []struct {
-		scope   cockpit.TokenScope
-		enabled types.Bool
-	}{
-		{cockpit.TokenScopeReadOnlyMetrics, s.QueryMetrics},
-		{cockpit.TokenScopeWriteOnlyMetrics, s.WriteMetrics},
-		{cockpit.TokenScopeFullAccessMetricsRules, s.SetupMetricsRules},
-		{cockpit.TokenScopeReadOnlyLogs, s.QueryLogs},
-		{cockpit.TokenScopeWriteOnlyLogs, s.WriteLogs},
-		{cockpit.TokenScopeFullAccessLogsRules, s.SetupLogsRules},
-		{cockpit.TokenScopeFullAccessAlertManager, s.SetupAlerts},
-		{cockpit.TokenScopeReadOnlyTraces, s.QueryTraces},
-		{cockpit.TokenScopeWriteOnlyTraces, s.WriteTraces},
+	flagByName := map[string]types.Bool{
+		"query_metrics":       s.QueryMetrics,
+		"write_metrics":       s.WriteMetrics,
+		"setup_metrics_rules": s.SetupMetricsRules,
+		"query_logs":          s.QueryLogs,
+		"write_logs":          s.WriteLogs,
+		"setup_logs_rules":    s.SetupLogsRules,
+		"setup_alerts":        s.SetupAlerts,
+		"query_traces":        s.QueryTraces,
+		"write_traces":        s.WriteTraces,
 	}
 
 	var expanded []cockpit.TokenScope
 
-	for _, flag := range flags {
-		if !flag.enabled.IsNull() && !flag.enabled.IsUnknown() && flag.enabled.ValueBool() {
-			expanded = append(expanded, flag.scope)
+	for key, tokenScope := range scopeMapping {
+		flag, ok := flagByName[key]
+		if !ok || flag.IsNull() || flag.IsUnknown() || !flag.ValueBool() {
+			continue
 		}
+
+		expanded = append(expanded, tokenScope)
 	}
 
 	return expanded, diags
-}
-
-func flattenTokenEphemeralTime(t *time.Time) types.String {
-	if t == nil {
-		return types.StringNull()
-	}
-
-	return types.StringValue(t.Format(time.RFC3339))
 }
 
 func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRequest, resp *ephemeral.OpenResponse) {
@@ -349,8 +340,8 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 
 	data.ProjectID = types.StringValue(res.ProjectID)
 	data.Region = types.StringValue(res.Region.String())
-	data.CreatedAt = flattenTokenEphemeralTime(res.CreatedAt)
-	data.UpdatedAt = flattenTokenEphemeralTime(res.UpdatedAt)
+	data.CreatedAt = types.StringValue(scwtypes.FlattenTime(res.CreatedAt).(string))
+	data.UpdatedAt = types.StringValue(scwtypes.FlattenTime(res.UpdatedAt).(string))
 
 	if res.SecretKey != nil {
 		data.SecretKey = types.StringValue(*res.SecretKey)

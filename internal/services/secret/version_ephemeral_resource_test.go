@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
@@ -132,9 +131,9 @@ func TestAccEphemeralResourceSecretVersion_Basic(t *testing.T) {
 					testAccCheckAttributeNotInState("scaleway_secret_version.v1", "data"),
 					testAccCheckAttributeNotInState("scaleway_secret_version.v2", "data_wo"),
 					testAccCheckAttributeNotInState("scaleway_secret_version.v2", "data"),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_v1"),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_v2"),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_latest"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_v1"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_v2"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_latest"),
 				),
 			},
 		},
@@ -228,20 +227,10 @@ func TestAccEphemeralResourceSecretVersion_ByNameSecret(t *testing.T) {
 					// Ensure data_wo (and data) and ephemeral secret_version are not in state
 					testAccCheckAttributeNotInState("scaleway_secret_version.v1_from_ephemeral", "data_wo"),
 					testAccCheckAttributeNotInState("scaleway_secret_version.v1_from_ephemeral", "data"),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_by_name"),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_by_name_latest"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_by_name"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_by_name_latest"),
 				),
 			},
 		},
 	})
-}
-
-func testAccCheckEphemeralResourceNotInState(resource string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		if _, ok := state.RootModule().Resources[resource]; ok {
-			return fmt.Errorf("ephemeral resource %s should not be persisted in state", resource)
-		}
-
-		return nil
-	}
 }

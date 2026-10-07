@@ -69,7 +69,7 @@ func TestAccTokenEphemeralResource_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEphemeralCockpitTokenSecretKeySet("data.scaleway_secret_version.secret_key"),
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.name", "data", secret.Base64Encoded([]byte(tokenName))),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_cockpit_token.main"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_cockpit_token.main"),
 				),
 			},
 		},
@@ -95,16 +95,6 @@ func testAccCheckEphemeralCockpitTokenSecretKeySet(dataSourceName string) resour
 
 		if len(decoded) == 0 {
 			return errors.New("decoded cockpit token secret_key is empty")
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckEphemeralResourceNotInState(resourceName string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		if _, ok := state.RootModule().Resources[resourceName]; ok {
-			return fmt.Errorf("ephemeral resource %s should not be persisted in state", resourceName)
 		}
 
 		return nil
