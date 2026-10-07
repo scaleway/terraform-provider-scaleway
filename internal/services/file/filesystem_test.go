@@ -18,7 +18,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	skipUnlessDefaultProjectID(t, tt)
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	fileSystemName := "TestAccFileSystem_Basic"
 	fileSystemNameUpdated := "TestAccFileSystem_BasicUpdate"
@@ -106,7 +106,7 @@ func TestAccFileSystem_SizeGranularity(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	skipUnlessDefaultProjectID(t, tt)
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	fileSystemName := "TestAccFileSystem_InvalidSizeGranularityFails"
 	sizeInGB := 250
