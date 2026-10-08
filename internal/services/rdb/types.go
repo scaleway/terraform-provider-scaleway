@@ -62,20 +62,6 @@ func instanceSettingsMapFromInterface(i any) map[string]string {
 	return out
 }
 
-func instanceSettingsEqual(a, b map[string]string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for key, value := range a {
-		if b[key] != value {
-			return false
-		}
-	}
-
-	return true
-}
-
 // MergeInstanceSettings overlays user-managed settings onto the current API settings.
 // Keys present in oldManaged but absent from newManaged are dropped from the result.
 func MergeInstanceSettings(current, oldManaged, newManaged map[string]string) map[string]string {

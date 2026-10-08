@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"strings"
 	"time"
 
@@ -149,7 +150,7 @@ func applyInstanceSettings(ctx context.Context, api *rdb.API, region scw.Region,
 	}
 
 	// Legacy state mirrored all API defaults as "settings"; treat that as unmanaged.
-	if instanceSettingsEqual(oldManaged, current) {
+	if maps.Equal(oldManaged, current) {
 		oldManaged = nil
 	}
 
