@@ -415,7 +415,7 @@ func ResourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m any
 		hasChanged = true
 	}
 
-	if d.HasChange("secret_id") || d.HasChange("secret_version") {
+	if d.HasChanges("secret_id", "secret_version") {
 		req.SecretID, req.SecretRevision = expandConnectionSecretUpdate(d.Get("secret_id"), d.Get("secret_version"))
 		hasChanged = true
 	}
