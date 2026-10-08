@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	annotationsSDK "github.com/scaleway/scaleway-sdk-go/api/annotations/v1"
 	baremetalSDK "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	flexibleipSDK "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -411,6 +412,84 @@ func testAccCheckFlexibleIPAttachedToBaremetalServer(tt *acctest.TestTools, ipRe
 
 		if ip.ServerID == nil || server.ID != *ip.ServerID {
 			return fmt.Errorf("IDs should be the same in %s and %s: %v is different than %v", ipResource, serverResource, server.ID, ip.ServerID)
+		}
+
+		return nil
+	}
+}
+
+func TestAccFlexibleIP_DefaultAnnotations(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	tt.Meta.SetDefaultAnnotations(map[string]string{
+		"env":  "dev",
+		"team": "scaleway",
+	})
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFlexibleIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_flexible_ip" "main" {}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
+					testAccCheckFlexibleIPDefaultBindings(tt, "scaleway_flexible_ip.main", map[string]string{
+						"env":  "dev",
+						"team": "scaleway",
+					}),
+				),
+			},
+			{
+				ResourceName:            "scaleway_flexible_ip.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"is_ipv6"},
+			},
+		},
+	})
+}
+
+func testAccCheckFlexibleIPDefaultBindings(tt *acctest.TestTools, resourceName string, expected map[string]string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		srn := rs.Primary.Attributes["srn"]
+		if srn == "" {
+			return fmt.Errorf("srn is empty for resource %s", resourceName)
+		}
+
+		api := annotationsSDK.NewAPI(tt.Meta.ScwClient())
+
+		resp, err := api.ListBindings(&annotationsSDK.ListBindingsRequest{
+			Srn: &srn,
+		})
+		if err != nil {
+			return fmt.Errorf("listing bindings for %q: %w", srn, err)
+		}
+
+		got := make(map[string]string)
+
+		for _, binding := range resp.Bindings {
+			if binding.Key != nil && binding.Value != nil {
+				got[binding.Key.Name] = binding.Value.Name
+			}
+		}
+
+		for key, value := range expected {
+			if got[key] != value {
+				return fmt.Errorf("expected binding %q=%q on %q, got %q=%q", key, value, srn, key, got[key])
+			}
+		}
+
+		if len(got) != len(expected) {
+			return fmt.Errorf("expected %d bindings on %q, got %d", len(expected), srn, len(got))
 		}
 
 		return nil
