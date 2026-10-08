@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral/schema"
@@ -131,38 +132,47 @@ func (r *TokenEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaReq
 					Attributes: map[string]schema.Attribute{
 						"query_metrics": schema.BoolAttribute{
 							Optional:    true,
+							Computed:    true,
 							Description: "Query metrics. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"write_metrics": schema.BoolAttribute{
 							Optional:    true,
+							Computed:    true,
 							Description: "Write metrics. Defaults to true (same as scaleway_cockpit_token).",
 						},
 						"setup_metrics_rules": schema.BoolAttribute{
 							Optional:    true,
+							Computed:    true,
 							Description: "Setup metrics rules. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"query_logs": schema.BoolAttribute{
 							Optional:    true,
+							Computed:    true,
 							Description: "Query logs. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"write_logs": schema.BoolAttribute{
 							Optional:    true,
+							Computed:    true,
 							Description: "Write logs. Defaults to true (same as scaleway_cockpit_token).",
 						},
 						"setup_logs_rules": schema.BoolAttribute{
 							Optional:    true,
+							Computed:    true,
 							Description: "Setup logs rules. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"setup_alerts": schema.BoolAttribute{
 							Optional:    true,
+							Computed:    true,
 							Description: "Setup alerts. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"query_traces": schema.BoolAttribute{
 							Optional:    true,
+							Computed:    true,
 							Description: "Query traces. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"write_traces": schema.BoolAttribute{
 							Optional:    true,
+							Computed:    true,
 							Description: "Write traces. Defaults to false (same as scaleway_cockpit_token).",
 						},
 					},
@@ -178,8 +188,11 @@ func (r *TokenEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaReq
 func expandTokenEphemeralScopes(ctx context.Context, scopes types.List) ([]cockpit.TokenScope, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
+	// Omitting the scopes block (or an empty list) applies the same defaults as the
+	// managed resource. An explicitly set block must not fall back to those defaults
+	// when every flag is false — that would ignore the config.
 	if scopes.IsNull() || scopes.IsUnknown() {
-		return nil, diags
+		return defaultCockpitTokenScopes(), diags
 	}
 
 	var scopeModels []tokenEphemeralScopesModel
@@ -191,11 +204,12 @@ func expandTokenEphemeralScopes(ctx context.Context, scopes types.List) ([]cockp
 	}
 
 	if len(scopeModels) == 0 {
-		return nil, diags
+		return defaultCockpitTokenScopes(), diags
 	}
 
 	s := scopeModels[0]
-	// Defaults match the managed scaleway_cockpit_token resource (write_metrics / write_logs = true).
+	// Per-attribute defaults match the managed scaleway_cockpit_token resource
+	// (write_metrics / write_logs = true when the attribute is unset inside the block).
 	flags := map[string]any{
 		"query_metrics":       ephemeralScopeBool(s.QueryMetrics, false),
 		"write_metrics":       ephemeralScopeBool(s.WriteMetrics, true),
@@ -217,6 +231,48 @@ func ephemeralScopeBool(value types.Bool, defaultValue bool) bool {
 	}
 
 	return value.ValueBool()
+}
+
+func tokenEphemeralScopesObjectType() types.ObjectType {
+	return types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"query_metrics":       types.BoolType,
+			"write_metrics":       types.BoolType,
+			"setup_metrics_rules": types.BoolType,
+			"query_logs":          types.BoolType,
+			"write_logs":          types.BoolType,
+			"setup_logs_rules":    types.BoolType,
+			"setup_alerts":        types.BoolType,
+			"query_traces":        types.BoolType,
+			"write_traces":        types.BoolType,
+		},
+	}
+}
+
+func flattenTokenEphemeralScopes(ctx context.Context, scopes []cockpit.TokenScope) (types.List, diag.Diagnostics) {
+	flat := flattenCockpitTokenScopes(scopes)
+	if len(flat) == 0 {
+		return types.ListNull(tokenEphemeralScopesObjectType()), nil
+	}
+
+	m, ok := flat[0].(map[string]any)
+	if !ok {
+		return types.ListNull(tokenEphemeralScopesObjectType()), nil
+	}
+
+	model := tokenEphemeralScopesModel{
+		QueryMetrics:      types.BoolValue(m["query_metrics"].(bool)),
+		WriteMetrics:      types.BoolValue(m["write_metrics"].(bool)),
+		SetupMetricsRules: types.BoolValue(m["setup_metrics_rules"].(bool)),
+		QueryLogs:         types.BoolValue(m["query_logs"].(bool)),
+		WriteLogs:         types.BoolValue(m["write_logs"].(bool)),
+		SetupLogsRules:    types.BoolValue(m["setup_logs_rules"].(bool)),
+		SetupAlerts:       types.BoolValue(m["setup_alerts"].(bool)),
+		QueryTraces:       types.BoolValue(m["query_traces"].(bool)),
+		WriteTraces:       types.BoolValue(m["write_traces"].(bool)),
+	}
+
+	return types.ListValueFrom(ctx, tokenEphemeralScopesObjectType(), []tokenEphemeralScopesModel{model})
 }
 
 func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRequest, resp *ephemeral.OpenResponse) {
@@ -262,13 +318,6 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 
 	if resp.Diagnostics.HasError() {
 		return
-	}
-
-	if len(tokenScopes) == 0 {
-		tokenScopes = []cockpit.TokenScope{
-			cockpit.TokenScopeWriteOnlyMetrics,
-			cockpit.TokenScopeWriteOnlyLogs,
-		}
 	}
 
 	name := data.Name.ValueString()
@@ -346,6 +395,17 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 	} else {
 		data.SecretKey = types.StringNull()
 	}
+
+	scopesList, scopesDiags := flattenTokenEphemeralScopes(ctx, res.Scopes)
+	resp.Diagnostics.Append(scopesDiags...)
+
+	if resp.Diagnostics.HasError() {
+		cleanup()
+
+		return
+	}
+
+	data.Scopes = scopesList
 
 	resp.Diagnostics.Append(resp.Result.Set(ctx, &data)...)
 

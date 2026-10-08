@@ -159,14 +159,7 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m a
 	var scopes []cockpit.TokenScope
 
 	if !scopesSet || len(rawScopes.([]any)) == 0 {
-		schema := resourceCockpitTokenScopes().Schema
-		for key, val := range schema {
-			if defaultVal, ok := val.Default.(bool); ok && defaultVal {
-				if scopeConst, found := scopeMapping[key]; found {
-					scopes = append(scopes, scopeConst)
-				}
-			}
-		}
+		scopes = defaultCockpitTokenScopes()
 	} else {
 		scopes = expandCockpitTokenScopes(rawScopes)
 	}

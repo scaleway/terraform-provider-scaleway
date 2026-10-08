@@ -31,6 +31,15 @@ func createCockpitPushURL(sourceType cockpit.DataSourceType, url string) (string
 	}
 }
 
+// defaultCockpitTokenScopes returns the scopes used when the scopes block is omitted
+// (write_metrics and write_logs), matching the managed scaleway_cockpit_token defaults.
+func defaultCockpitTokenScopes() []cockpit.TokenScope {
+	return []cockpit.TokenScope{
+		cockpit.TokenScopeWriteOnlyMetrics,
+		cockpit.TokenScopeWriteOnlyLogs,
+	}
+}
+
 func expandCockpitTokenScopes(raw any) []cockpit.TokenScope {
 	var expandedScopes []cockpit.TokenScope
 
