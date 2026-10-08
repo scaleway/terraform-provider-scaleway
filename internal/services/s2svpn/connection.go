@@ -163,7 +163,6 @@ func connectionSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
-			ForceNew:         true,
 			Description:      "The ID of a Secret Manager secret containing the PSK. Prefer creating a scaleway_secret (and scaleway_secret_version) yourself so Terraform manages its lifecycle",
 			DiffSuppressFunc: dsf.Locality,
 			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
@@ -172,7 +171,6 @@ func connectionSchema() map[string]*schema.Schema {
 			Type:         schema.TypeInt,
 			Optional:     true,
 			Computed:     true,
-			ForceNew:     true,
 			RequiredWith: []string{"secret_id"},
 			Description:  "The version of the secret containing the PSK. Requires secret_id. If omitted, the latest version is used",
 		},
@@ -414,6 +412,11 @@ func ResourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m any
 
 	if d.HasChange("esp_ciphers") {
 		req.EspCiphers = expandConnectionCiphers(d.Get("esp_ciphers"))
+		hasChanged = true
+	}
+
+	if d.HasChange("secret_id") || d.HasChange("secret_version") {
+		req.SecretID, req.SecretRevision = expandConnectionSecretUpdate(d.Get("secret_id"), d.Get("secret_version"))
 		hasChanged = true
 	}
 
