@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -81,6 +82,9 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			"iops": schema.Int64Attribute{
 				Required:    true,
 				Description: "The maximum IO/s expected, must match available options",
+				Validators: []validator.Int64{
+					int64validator.OneOf(5000, 15000),
+				},
 			},
 			"size_in_gb": schema.Int64Attribute{
 				Optional:    true,
