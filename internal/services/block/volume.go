@@ -59,8 +59,8 @@ func volumeSchema() map[string]*schema.Schema {
 		"size_in_gb": {
 			Type:        schema.TypeInt,
 			Optional:    true,
-			Computed:    true,
-			Description: "The volume size in GB",
+			Default:     5,
+			Description: "The volume size in GB. Defaults to 5, which is the minimal volume size",
 		},
 		"snapshot_id": {
 			Type:             schema.TypeString,

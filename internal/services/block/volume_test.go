@@ -37,6 +37,33 @@ func TestAccVolume_Basic(t *testing.T) {
 	})
 }
 
+func TestAccVolume_BasicWithoutSizeInGB(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						name = "test-block-volume-basic-without-size"
+						iops = 5000
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "test-block-volume-basic-without-size"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "5"),
+					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccVolume_UpdateSize(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
