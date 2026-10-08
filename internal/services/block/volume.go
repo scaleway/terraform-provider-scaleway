@@ -2,7 +2,9 @@ package block
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,6 +45,32 @@ func ResourceVolume() *schema.Resource {
 	}
 }
 
+func validate5000Or15000(i interface{}, path cty.Path) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	val, ok := i.(int)
+	if !ok {
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       "Invalid type",
+			Detail:        fmt.Sprintf("Expected an integer, but got %T", i),
+			AttributePath: path,
+		})
+		return diags
+	}
+
+	if val != 5000 && val != 15000 {
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       "Invalid value for field",
+			Detail:        fmt.Sprintf("Value must be either 5000 or 15000. Got: %d", val),
+			AttributePath: path,
+		})
+	}
+
+	return diags
+}
+
 func volumeSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"name": {
@@ -52,9 +80,10 @@ func volumeSchema() map[string]*schema.Schema {
 			Description: "The volume name",
 		},
 		"iops": {
-			Type:        schema.TypeInt,
-			Required:    true,
-			Description: "The maximum IO/s expected, must match available options",
+			Type:             schema.TypeInt,
+			Required:         true,
+			ValidateDiagFunc: validate5000Or15000,
+			Description:      "The maximum IO/s expected, must match available options",
 		},
 		"size_in_gb": {
 			Type:        schema.TypeInt,
