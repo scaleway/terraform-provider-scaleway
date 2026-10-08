@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/tags"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -31,6 +32,7 @@ func ResourcePlacementGroup() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    placementGroupSchema,
 		Identity:      identity.DefaultZonal(),
+		CustomizeDiff: tags.CustomizeDiffTagsAll,
 	}
 }
 
@@ -71,6 +73,7 @@ func placementGroupSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the placement group",
 		},
+		"tags_all":   tags.TagsAllSchema(),
 		"zone":       zonal.Schema(),
 		"project_id": account.ProjectIDSchema(),
 	}
@@ -87,7 +90,7 @@ func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.Resourc
 		Name:       types.ExpandOrGenerateString(d.Get("name"), "pg"),
 		ProjectID:  d.Get("project_id").(string),
 		PolicyType: instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
-		Tags:       types.ExpandStrings(d.Get("tags")),
+		Tags:       tags.ExpandTagsAll(d, m),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -119,17 +122,17 @@ func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	return setPlacementGroupState(d, pg, pgV1)
+	return setPlacementGroupState(d, m, pg, pgV1)
 }
 
-func setPlacementGroupState(d *schema.ResourceData, pg *instance.PlacementGroup, pgV1 *instanceV1.PlacementGroup) diag.Diagnostics {
+func setPlacementGroupState(d *schema.ResourceData, m any, pg *instance.PlacementGroup, pgV1 *instanceV1.PlacementGroup) diag.Diagnostics {
 	_ = d.Set("name", pg.Name)
 	_ = d.Set("zone", pg.Zone)
 	_ = d.Set("project_id", pg.ProjectID)
 	_ = d.Set("policy_mode", pgV1.PolicyMode.String())
 	_ = d.Set("policy_type", pg.PolicyType.String())
 	_ = d.Set("policy_respected", pgV1.PolicyRespected)
-	_ = d.Set("tags", pg.Tags)
+	tags.SetTagsAllAndTags(d, m, pg.Tags)
 
 	return nil
 }
@@ -164,7 +167,7 @@ func ResourceInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	return setPlacementGroupState(d, pg, pgV1)
+	return setPlacementGroupState(d, m, pg, pgV1)
 }
 
 func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -206,8 +209,8 @@ func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.Resourc
 		hasChanged = true
 	}
 
-	if d.HasChange("tags") {
-		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	if d.HasChange("tags_all") {
+		req.Tags = tags.ExpandTagsAllUpdatedPtr(d, m)
 		hasChanged = true
 	}
 

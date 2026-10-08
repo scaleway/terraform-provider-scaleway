@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/tags"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -31,8 +32,9 @@ func ResourceSecurityGroup() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultInstanceSecurityGroupTimeout),
 		},
-		SchemaFunc: securityGroupSchema,
-		Identity:   identity.DefaultZonal(),
+		SchemaFunc:    securityGroupSchema,
+		CustomizeDiff: tags.CustomizeDiffTagsAll,
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -104,6 +106,7 @@ func securityGroupSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the security group",
 		},
+		"tags_all":        tags.TagsAllSchema(),
 		"zone":            zonal.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -126,10 +129,10 @@ func ResourceInstanceSecurityGroupCreate(ctx context.Context, d *schema.Resource
 		OutboundDefaultPolicy: instanceSDK.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
 		EnableDefaultSecurity: types.ExpandBoolPtr(d.Get("enable_default_security")),
 	}
-	tags := types.ExpandStrings(d.Get("tags"))
+	allTags := tags.ExpandTagsAll(d, m)
 
-	if len(tags) > 0 {
-		req.Tags = tags
+	if len(allTags) > 0 {
+		req.Tags = allTags
 	}
 
 	res, err := instanceAPI.CreateSecurityGroup(req, scw.WithContext(ctx))
@@ -143,13 +146,13 @@ func ResourceInstanceSecurityGroupCreate(ctx context.Context, d *schema.Resource
 	}
 
 	if d.Get("external_rules").(bool) {
-		return setSecurityGroupState(ctx, instanceAPI, d, res.SecurityGroup)
+		return setSecurityGroupState(ctx, instanceAPI, d, m, res.SecurityGroup)
 	}
 	// We call update instead of read as it will take care of creating rules.
 	return ResourceInstanceSecurityGroupUpdate(ctx, d, m)
 }
 
-func setSecurityGroupState(ctx context.Context, instanceAPI *instanceSDK.API, d *schema.ResourceData, sg *instanceSDK.SecurityGroup) diag.Diagnostics {
+func setSecurityGroupState(ctx context.Context, instanceAPI *instanceSDK.API, d *schema.ResourceData, m any, sg *instanceSDK.SecurityGroup) diag.Diagnostics {
 	_ = d.Set("zone", sg.Zone)
 	_ = d.Set("organization_id", sg.Organization)
 	_ = d.Set("project_id", sg.Project)
@@ -159,7 +162,7 @@ func setSecurityGroupState(ctx context.Context, instanceAPI *instanceSDK.API, d 
 	_ = d.Set("inbound_default_policy", sg.InboundDefaultPolicy.String())
 	_ = d.Set("outbound_default_policy", sg.OutboundDefaultPolicy.String())
 	_ = d.Set("enable_default_security", sg.EnableDefaultSecurity)
-	_ = d.Set("tags", sg.Tags)
+	tags.SetTagsAllAndTags(d, m, sg.Tags)
 
 	if !d.Get("external_rules").(bool) {
 		inboundRules, outboundRules, err := getSecurityGroupRules(ctx, instanceAPI, sg.Zone, sg.ID, d)
@@ -199,7 +202,7 @@ func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	return setSecurityGroupState(ctx, instanceAPI, d, res.SecurityGroup)
+	return setSecurityGroupState(ctx, instanceAPI, d, m, res.SecurityGroup)
 }
 
 func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) ([]any, []any, error) {
@@ -309,12 +312,7 @@ func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.Resource
 		Description:           types.ExpandStringPtr(description),
 		InboundDefaultPolicy:  inboundDefaultPolicy,
 		OutboundDefaultPolicy: outboundDefaultPolicy,
-		Tags:                  new([]string{}),
-	}
-
-	tags := types.ExpandStrings(d.Get("tags"))
-	if len(tags) > 0 {
-		updateReq.Tags = new(types.ExpandStrings(d.Get("tags")))
+		Tags:                  tags.ExpandTagsAllUpdatedPtr(d, m),
 	}
 
 	if d.HasChange("enable_default_security") {

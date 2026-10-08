@@ -37,6 +37,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/tags"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -71,6 +72,7 @@ func ResourceServer() *schema.Resource {
 			customDiffInstanceServerImage,
 			customDiffInstanceRootVolumeSize,
 			customDiffInstanceServerPublicIPs,
+			tags.CustomizeDiffTagsAll,
 		),
 	}
 }
@@ -116,6 +118,7 @@ func serverSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the server",
 		},
+		"tags_all": tags.TagsAllSchema(),
 		"security_group_id": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -437,7 +440,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		CommercialType:    commercialType,
 		SecurityGroup:     types.ExpandStringPtr(zonal.ExpandID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: new(d.Get("enable_dynamic_ip").(bool)),
-		Tags:              types.ExpandStrings(d.Get("tags")),
+		Tags:              tags.ExpandTagsAll(d, m),
 		Protected:         d.Get("protected").(bool),
 	}
 
@@ -680,9 +683,7 @@ func setServerState(ctx context.Context, d *schema.ResourceData, m any, api *ins
 	_ = d.Set("boot_type", server.BootType)
 
 	_ = d.Set("type", server.CommercialType)
-	if len(server.Tags) > 0 {
-		_ = d.Set("tags", server.Tags)
-	}
+	tags.SetTagsAllAndTags(d, m, server.Tags)
 
 	if server.Filesystems != nil {
 		_ = d.Set("filesystems", flattenServerFileSystem(server.Zone, server.Filesystems))
@@ -952,9 +953,9 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		updateRequest.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 
-	if d.HasChange("tags") {
+	if d.HasChange("tags_all") {
 		serverShouldUpdate = true
-		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+		updateRequest.Tags = tags.ExpandTagsAllUpdatedPtr(d, m)
 	}
 
 	if d.HasChange("security_group_id") {

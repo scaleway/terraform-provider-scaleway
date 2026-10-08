@@ -2,8 +2,11 @@ package provider
 
 import (
 	"context"
+	"os"
 	"regexp"
+	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -65,6 +68,10 @@ type EndpointModel struct {
 	S3 types.String `tfsdk:"s3"`
 }
 
+type DefaultTagsModel struct {
+	Tags types.List `tfsdk:"tags"`
+}
+
 func NewFrameworkProvider(m *meta.Meta) func() provider.Provider {
 	return func() provider.Provider {
 		return &ScalewayProvider{providerMeta: m}
@@ -76,16 +83,17 @@ func (p *ScalewayProvider) Metadata(_ context.Context, _ provider.MetadataReques
 }
 
 type ScalewayProviderModel struct {
-	AccessKey      types.String `tfsdk:"access_key"`
-	SecretKey      types.String `tfsdk:"secret_key"`
-	Profile        types.String `tfsdk:"profile"`
-	ProjectID      types.String `tfsdk:"project_id"`
-	OrganizationID types.String `tfsdk:"organization_id"`
-	APIURL         types.String `tfsdk:"api_url"`
-	Region         types.String `tfsdk:"region"`
-	Zone           types.String `tfsdk:"zone"`
-	Endpoints      types.Set    `tfsdk:"endpoints"`
-	S3UsePathStyle types.Bool   `tfsdk:"s3_use_path_style"`
+	AccessKey      types.String       `tfsdk:"access_key"`
+	SecretKey      types.String       `tfsdk:"secret_key"`
+	Profile        types.String       `tfsdk:"profile"`
+	ProjectID      types.String       `tfsdk:"project_id"`
+	OrganizationID types.String       `tfsdk:"organization_id"`
+	APIURL         types.String       `tfsdk:"api_url"`
+	Region         types.String       `tfsdk:"region"`
+	Zone           types.String       `tfsdk:"zone"`
+	Endpoints      types.Set          `tfsdk:"endpoints"`
+	S3UsePathStyle types.Bool         `tfsdk:"s3_use_path_style"`
+	DefaultTags    []DefaultTagsModel `tfsdk:"default_tags"`
 }
 
 func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
@@ -142,6 +150,22 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 									"must start with 'https://' or 'http://'",
 								),
 							},
+						},
+					},
+				},
+			},
+			"default_tags": schema.ListNestedBlock{
+				Description: "Configuration block with resource tags to default across all resources.",
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(1),
+				},
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"tags": schema.ListAttribute{
+							ElementType: types.StringType,
+							Optional:    true,
+							Description: "Resource tags to default across all resources. " +
+								"Can also be configured using the `SCW_DEFAULT_TAGS` environment variable (comma-separated).",
 						},
 					},
 				},
@@ -204,6 +228,8 @@ func modelToFrameworkConfig(ctx context.Context, model *ScalewayProviderModel) *
 		s3UsePathStyle := model.S3UsePathStyle.ValueBool()
 		config.S3UsePathStyle = &s3UsePathStyle
 	}
+
+	config.DefaultTags = expandFrameworkDefaultTags(ctx, model.DefaultTags)
 
 	return config
 }
@@ -408,4 +434,38 @@ func (p *ScalewayProvider) Functions(_ context.Context) []func() function.Functi
 		functions.NewRegionFromID,
 		functions.NewIDFromRegionalID,
 	}
+}
+
+// expandFrameworkDefaultTags builds the list of default tags from the
+// provider configuration block and the SCW_DEFAULT_TAGS environment variable.
+// Environment variable tags are merged first; tags defined in the
+// configuration block are appended after.
+func expandFrameworkDefaultTags(ctx context.Context, blocks []DefaultTagsModel) []string {
+	tags := make([]string, 0)
+
+	// SCW_DEFAULT_TAGS environment variable (comma-separated).
+	if envTags := os.Getenv("SCW_DEFAULT_TAGS"); envTags != "" {
+		for _, t := range strings.Split(envTags, ",") {
+			t = strings.TrimSpace(t)
+			if t != "" {
+				tags = append(tags, t)
+			}
+		}
+	}
+
+	// Tags from the configuration block.
+	if len(blocks) > 0 {
+		block := blocks[0]
+		if !block.Tags.IsNull() && !block.Tags.IsUnknown() {
+			var tagSlice []string
+			_ = block.Tags.ElementsAs(ctx, &tagSlice, false)
+			tags = append(tags, tagSlice...)
+		}
+	}
+
+	if len(tags) == 0 {
+		return nil
+	}
+
+	return tags
 }

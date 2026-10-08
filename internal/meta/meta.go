@@ -55,6 +55,9 @@ type Meta struct {
 	// It is a pointer so that we can distinguish between "not set" (nil)
 	// and "explicitly set to false".
 	s3UsePathStyle *bool
+	// defaultTags are tags defined at the provider level that are
+	// automatically merged into every tag-compatible resource.
+	defaultTags []string
 }
 
 // NewMeta creates the Meta object containing the SDK client.
@@ -99,7 +102,7 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	// Return scaleway client
 	////
 
-	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, config.TerraformVersion, config.HTTPClient)
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, config.TerraformVersion, config.HTTPClient, config.DefaultTags)
 }
 
 // NewMetaFromFrameworkConfig creates a Meta object from FrameworkProviderConfig
@@ -109,10 +112,10 @@ func NewMetaFromFrameworkConfig(ctx context.Context, config *FrameworkProviderCo
 		return nil, err
 	}
 
-	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, terraformVersion, nil)
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, terraformVersion, nil, config.DefaultTags)
 }
 
-func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, endpoints map[string]string, s3UsePathStyle *bool, terraformVersion string, httpClient *http.Client) (*Meta, error) {
+func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, endpoints map[string]string, s3UsePathStyle *bool, terraformVersion string, httpClient *http.Client, defaultTags []string) (*Meta, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
 	}
@@ -134,6 +137,7 @@ func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSo
 		credentialsSource: credentialsSource,
 		endpoints:         endpoints,
 		s3UsePathStyle:    s3UsePathStyle,
+		defaultTags:       defaultTags,
 	}, nil
 }
 
@@ -189,6 +193,23 @@ func (m Meta) S3UsePathStyleOk() (bool, bool) {
 	}
 
 	return *m.s3UsePathStyle, true
+}
+
+// DefaultTags returns the provider-level default tags, or nil if none are
+// configured.
+func (m Meta) DefaultTags() []string {
+	if len(m.defaultTags) == 0 {
+		return nil
+	}
+
+	return m.defaultTags
+}
+
+// SetDefaultTags sets the provider-level default tags on the Meta.
+// This is primarily used in acceptance tests to inject default tags
+// without going through the provider configuration.
+func (m *Meta) SetDefaultTags(tags []string) {
+	m.defaultTags = tags
 }
 
 // HasMultipleVariableSources return an informative message during the Provider initialization
@@ -251,6 +272,7 @@ type Config struct {
 	ForceOrganizationID string
 	ForceAccessKey      string
 	ForceSecretKey      string
+	DefaultTags         []string
 }
 
 func customizeUserAgent(providerVersion string, terraformVersion string) string {
@@ -274,6 +296,7 @@ type FrameworkProviderConfig struct {
 	Region         string
 	Zone           string
 	APIURL         string
+	DefaultTags    []string
 }
 
 func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {
