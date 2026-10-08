@@ -8,17 +8,16 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -26,9 +25,8 @@ import (
 )
 
 var (
-	_ list.ListResource                 = (*SnapshotListResource)(nil)
-	_ list.ListResourceWithConfigure    = (*SnapshotListResource)(nil)
-	_ list.ListResourceWithRawV6Schemas = (*SnapshotListResource)(nil)
+	_ list.ListResource              = (*SnapshotListResource)(nil)
+	_ list.ListResourceWithConfigure = (*SnapshotListResource)(nil)
 )
 
 type SnapshotListResource struct {
@@ -86,13 +84,6 @@ func (r *SnapshotListResource) ListResourceConfigSchema(_ context.Context, _ lis
 			},
 		},
 	}
-}
-
-func (r *SnapshotListResource) RawV6Schemas(ctx context.Context, _ list.RawV6SchemaRequest, resp *list.RawV6SchemaResponse) {
-	snapshotResource := ResourceSnapshot()
-
-	resp.ProtoV6Schema = translate.Schema(snapshotResource.ProtoSchema(ctx)())
-	resp.ProtoV6IdentitySchema = translate.ResourceIdentitySchema(snapshotResource.ProtoIdentitySchema(ctx)())
 }
 
 type SnapshotListResourceModel struct {
@@ -224,46 +215,33 @@ func (r *SnapshotListResource) List(ctx context.Context, req list.ListRequest, s
 			result := req.NewListResult(ctx)
 			result.DisplayName = row.Snapshot.Name
 
-			snapshotResource := ResourceSnapshot()
-			resourceData := snapshotResource.Data(&terraform.InstanceState{})
+			identityDiags := result.Identity.Set(ctx, identityfw.SetZonalIdentity(row.Zone, row.Snapshot.ID))
+			result.Diagnostics.Append(identityDiags...)
 
-			err := identity.SetZonalIdentity(resourceData, row.Zone, row.Snapshot.ID)
-			if err != nil {
-				result.Diagnostics.AddError(
-					"Retrieving identity data",
-					"An error was encountered when retrieving the identity data: "+err.Error(),
-				)
+			if req.IncludeResource {
+				resourceModel := flattenBlockSnapshot(ctx, row.Snapshot, &data, &result.Diagnostics)
 
-				if !push(result) {
-					return
+				if row.Snapshot.ParentVolume != nil {
+					resourceModel.VolumeID = types.StringValue(
+						zonal.NewIDString(row.Snapshot.Zone, row.Snapshot.ParentVolume.ID),
+					)
 				}
 
-				continue
+				// Even though empty, set the correct type for Import and Export blocks
+				blockType := types.ObjectType{
+					AttrTypes: map[string]attr.Type{
+						"bucket": types.StringType,
+						"key":    types.StringType,
+					},
+				}
+				fixedList := types.ListNull(blockType)
+
+				resourceModel.Import = fixedList
+				resourceModel.Export = fixedList
+
+				resourceDiags := result.Resource.Set(ctx, &resourceModel)
+				result.Diagnostics.Append(resourceDiags...)
 			}
-
-			tfTypeIdentity, errIdentityState := resourceData.TfTypeIdentityState()
-			if errIdentityState != nil {
-				result.Diagnostics.AddError(
-					"Converting identity data",
-					"An error was encountered when converting the identity data: "+errIdentityState.Error(),
-				)
-			}
-
-			identitySetDiags := result.Identity.Set(ctx, *tfTypeIdentity)
-			result.Diagnostics.Append(identitySetDiags...)
-
-			setSnapshotState(resourceData, row.Snapshot)
-
-			tfTypeResource, errTfTypeResourceState := resourceData.TfTypeResourceState()
-			if errTfTypeResourceState != nil {
-				result.Diagnostics.AddError(
-					"Converting resource state",
-					"An error was encountered when converting the resource state: "+errTfTypeResourceState.Error(),
-				)
-			}
-
-			resourceSetDiags := result.Resource.Set(ctx, *tfTypeResource)
-			result.Diagnostics.Append(resourceSetDiags...)
 
 			if !push(result) {
 				return
