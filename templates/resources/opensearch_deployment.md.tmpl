@@ -32,7 +32,7 @@ For more information refer to the [product documentation](https://www.scaleway.c
 The following arguments are supported:
 
 - `version` - (Required, Forces new resource) OpenSearch version to use (e.g., "2.0"). Changing this forces recreation of the deployment.
-- `node_count` - (Optional, Forces new resource) Number of nodes in the cluster. Changing this forces recreation of the deployment.
+- `node_count` - (Optional) Number of nodes in the cluster. Changing this value upgrades the deployment **in place** (no recreation, no data loss).
 - `node_amount` - (Optional, Forces new resource, **Deprecated**) Use `node_count` instead. Changing this forces recreation of the deployment.
 - `node_type` - (Required, Forces new resource) Type of node to use (e.g., "SEARCHDB-SHARED-2C-8G", "SEARCHDB-DEDICATED-2C-8G"). Changing this forces recreation of the deployment.
 - `volume` - (Required) Volume configuration for the cluster.
@@ -70,6 +70,10 @@ In addition to all arguments above, the following attributes are exported:
     - `private_network_id` - Private network ID if the endpoint is private.
 
 ## Upgrade Notes
+
+### In-place node count upgrade
+
+Changing `node_count` (the number of nodes) upgrades the deployment **in place** via the SearchDB upgrade API — no recreation, no data loss.
 
 ### Changing Resources
 

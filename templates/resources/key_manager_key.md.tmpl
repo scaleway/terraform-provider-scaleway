@@ -6,55 +6,18 @@ page_title: "Scaleway: scaleway_key_manager_key"
 
 # Resource: scaleway_key_manager_key
 
-Provides a Scaleway Key Manager Key resource.  
-This resource allows you to create and manage cryptographic keys in Scaleway Key Manager (KMS).
+{{ .Description }}
 
+{{ if .HasExamples }}
 ## Example Usage
 
-### Symmetric Encryption Key
+{{ range .ExampleFiles -}}
+{{ tffile . }}
 
-```terraform
-resource "scaleway_key_manager_key" "symmetric" {
-  name        = "my-kms-key"
-  region      = "fr-par"
-  project_id  = "your-project-id" # optional, will use provider default if omitted
-  usage       = "symmetric_encryption"
-  algorithm   = "aes_256_gcm"
-  description = "Key for encrypting secrets"
-  tags        = ["env:prod", "kms"]
-  unprotected = true
+{{ end }}
 
-  rotation_policy {
-    rotation_period = "720h" # 30 days
-  }
-}
-```
 
-### Asymmetric Encryption Key with RSA-4096
-
-```terraform
-resource "scaleway_key_manager_key" "rsa_4096" {
-  name        = "rsa-4096-key"
-  region      = "fr-par"
-  usage       = "asymmetric_encryption"
-  algorithm   = "rsa_oaep_4096_sha256"
-  description = "Key for encrypting large files with RSA-4096"
-  unprotected = true
-}
-```
-
-### Asymmetric Signing Key
-
-```terraform
-resource "scaleway_key_manager_key" "signing" {
-  name        = "signing-key"
-  region      = "fr-par"
-  usage       = "asymmetric_signing"
-  algorithm   = "rsa_pss_2048_sha256"
-  description = "Key for signing documents"
-  unprotected = true
-}
-```
+{{ end -}}
 
 ## Argument Reference
 
@@ -91,6 +54,10 @@ The following arguments are supported:
 - `origin` (String, Optional) – The origin of the key. Valid values are:
     - `scaleway_kms` (default)
     - `external`
+- `protection_level` (String, Optional) – The protection level of the key. Valid values are:
+    - `software` (default) – Cryptographic operations are performed in software.
+    - `hsm` – Cryptographic operations are performed within a dedicated Hardware Security Module.
+    The protection level is immutable: changing it requires replacing the key.
 - `rotation_policy` (Block, Optional) – Rotation policy for the key:
     - `rotation_period` (String, Required) – The period between key rotations (e.g., `"720h"` for 30 days).
     - `next_rotation_at` (String, Optional) – The date and time of the next scheduled rotation, in RFC 3339 format. If not set, it is computed by the Key Manager API from `rotation_period`.
