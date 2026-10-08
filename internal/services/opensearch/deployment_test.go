@@ -81,6 +81,69 @@ resource "scaleway_opensearch_deployment" "main" {
 	})
 }
 
+// TestAccDeployment_UpdateNodeCount verifies that changing node_count upgrades
+// the deployment in place (SearchDB UpgradeDeployment API) instead of
+// recreating it: the resource ID must persist across steps.
+func TestAccDeployment_UpdateNodeCount(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestVersion(tt)
+	nodeType := fetchAvailableDedicatedNodeType(tt)
+
+	var deploymentID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_opensearch_deployment" "main" {
+  name       = "tf-test-opensearch-update-node-count"
+  version    = "%s"
+  node_count = 1
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_count", "1"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_type", nodeType),
+					acctest.CheckResourceIDPersisted("scaleway_opensearch_deployment.main", &deploymentID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_opensearch_deployment" "main" {
+  name       = "tf-test-opensearch-update-node-count"
+  version    = "%s"
+  node_count = 3
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_count", "3"),
+					acctest.CheckResourceIDPersisted("scaleway_opensearch_deployment.main", &deploymentID),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDeployment_WithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
