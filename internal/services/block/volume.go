@@ -256,6 +256,7 @@ func (r *VolumeResource) Create(
 			if createReq.FromSnapshot != nil {
 				snapshot, err := r.api.WaitForSnapshot(&block.WaitForSnapshotRequest{
 					SnapshotID: createReq.FromSnapshot.SnapshotID,
+					Zone:       createReq.Zone,
 				})
 				if err != nil {
 					resp.Diagnostics.AddError("Failed to wait for snapshot", err.Error())
