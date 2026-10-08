@@ -247,6 +247,25 @@ func (r *VolumeResource) Create(
 					Size: volumeSizeInBytes,
 				}
 			}
+		} else {
+			// size_in_gb was not specified, we set 5GB or the snapshot's size
+			if createReq.FromSnapshot != nil {
+				snapshot, err := r.api.WaitForSnapshot(&block.WaitForSnapshotRequest{
+					SnapshotID: createReq.FromSnapshot.SnapshotID,
+				})
+				if err != nil {
+					resp.Diagnostics.AddError("Failed to wait for snapshot", err.Error())
+
+					return
+				}
+
+				createReq.FromSnapshot.Size = &snapshot.Size // Already in bytes from the API
+			} else {
+				volumeSizeInBytes := scw.Size(5) * scw.GB
+				createReq.FromEmpty = &block.CreateVolumeRequestFromEmpty{
+					Size: volumeSizeInBytes,
+				}
+			}
 		}
 
 		volume, err = r.api.CreateVolume(createReq, scw.WithContext(ctx))
