@@ -18,7 +18,7 @@ func TestAccUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	skipUnlessDefaultProjectID(t, tt)
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
@@ -98,7 +98,7 @@ func TestAccUser_PasswordWO(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	skipUnlessDefaultProjectID(t, tt)
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)

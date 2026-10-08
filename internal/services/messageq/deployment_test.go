@@ -21,7 +21,7 @@ func TestAccDeployment_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	skipUnlessDefaultProjectID(t, tt)
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
@@ -93,7 +93,7 @@ func TestAccDeployment_Upgrade(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	skipUnlessDefaultProjectID(t, tt)
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
@@ -153,7 +153,7 @@ func TestAccDeployment_WithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	skipUnlessDefaultProjectID(t, tt)
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
@@ -285,7 +285,7 @@ func TestAccDeployment_UpdatePrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	skipUnlessDefaultProjectID(t, tt)
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
