@@ -87,9 +87,10 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				},
 			},
 			"size_in_gb": schema.Int64Attribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The volume size in GB",
+				Optional: true,
+				Computed: true,
+				Description: "The volume size in GB. Defaults to 5GB, or to the snapshot's size " +
+					"if `snapshot_id` is specified",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplaceIf(
