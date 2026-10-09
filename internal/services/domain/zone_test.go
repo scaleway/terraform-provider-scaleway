@@ -87,6 +87,37 @@ func TestAccDomainZone_RootZone(t *testing.T) {
 	})
 }
 
+// A zone created right after its project must neither fail on the project being unknown yet
+// nor on the zone being missing from the project-filtered list.
+func TestAccDomainZone_NewProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainZoneDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "main" {
+						name = "tf-tests-domain-zone-new-project"
+					}
+
+					resource "scaleway_domain_zone" "test" {
+						domain     = "%s"
+						subdomain  = "tf-test-new-project"
+						project_id = scaleway_account_project.main.id
+					}
+				`, acctest.TestDomain),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainZoneExists(tt, "scaleway_domain_zone.test"),
+					resource.TestCheckResourceAttrPair("scaleway_domain_zone.test", "project_id", "scaleway_account_project.main", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckDomainZoneExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
