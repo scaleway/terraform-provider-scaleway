@@ -20,6 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -48,7 +49,7 @@ func ResourceInstance() *schema.Resource {
 		Importer:         identity.DefaultRegionalImporter(),
 		SchemaVersion:    0,
 		SchemaFunc:       instanceSchema,
-		CustomizeDiff:    cdf.LocalityCheck("private_network.#.pn_id"),
+		CustomizeDiff:    cdf.LocalityCheck("clone_from", "private_network.#.pn_id"),
 		Identity:         identity.DefaultRegional(),
 		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
 	}
@@ -76,15 +77,29 @@ func instanceSchema() map[string]*schema.Schema {
 			DiffSuppressFunc: dsf.IgnoreCase,
 			ConflictsWith: []string{
 				"snapshot_id",
+				"clone_from",
 			},
 		},
 		"snapshot_id": {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
-			Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` attribute.",
+			Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` and `clone_from` attributes.",
 			ConflictsWith: []string{
 				"engine",
+				"clone_from",
+			},
+		},
+		"clone_from": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of an existing Database Instance to clone. The clone includes all databases, users, and permissions. Conflicts with the `engine` and `snapshot_id` attributes.",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+			ConflictsWith: []string{
+				"engine",
+				"snapshot_id",
 			},
 		},
 		"is_ha_cluster": {
@@ -462,7 +477,80 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 
 	var id string
 
-	if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
+	if _, ok := d.GetOk("clone_from"); ok {
+		cloneReq := &rdb.CloneInstanceRequest{
+			Region:     region,
+			InstanceID: locality.ExpandID(d.Get("clone_from")),
+			Name:       types.ExpandOrGenerateString(d.Get("name"), "rdb"),
+			NodeType:   types.ExpandStringPtr(d.Get("node_type")),
+		}
+
+		res, err := rdbAPI.CloneInstance(cloneReq, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// Set ID early so a later endpoint failure does not leave a billed instance out of state.
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
+		id = res.ID
+
+		_, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		rawTag, tagExist := d.GetOk("tags")
+		if tagExist {
+			updateReq := &rdb.UpdateInstanceRequest{
+				Region:     region,
+				InstanceID: res.ID,
+			}
+			updateReq.Tags = new(types.ExpandStrings(rawTag))
+
+			_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		// CloneInstance always provisions a default load-balancer endpoint and has no
+		// InitEndpoints field. Keep the inherited LB when load_balancer is set; never create a second one.
+		_, wantPrivateNetwork := d.GetOk("private_network")
+		_, wantLoadBalancer := d.GetOk("load_balancer")
+
+		if wantLoadBalancer {
+			if wantPrivateNetwork {
+				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+					return diag.FromErr(err)
+				}
+
+				if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+					return diags
+				}
+
+				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		} else {
+			if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+				return diags
+			}
+
+			if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
+				return diags
+			}
+
+			if wantPrivateNetwork {
+				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	} else if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
 		_, snapshotID, err := regional.ParseID(regionalSnapshotID.(string))
 		if err != nil {
 			return diag.FromErr(err)
