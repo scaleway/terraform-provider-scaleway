@@ -25,4 +25,3 @@ Refer to the Redis [documentation](https://www.scaleway.com/en/docs/managed-data
 - `zone` (String) Zone of the Redis cluster. If not set, derived from cluster_id when possible or from the provider configuration.
 
 
-
