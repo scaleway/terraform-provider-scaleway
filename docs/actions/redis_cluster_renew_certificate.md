@@ -24,3 +24,5 @@ Refer to the Redis [documentation](https://www.scaleway.com/en/docs/managed-data
 - `wait` (Boolean) Wait for the certificate renewal to complete before returning.
 - `zone` (String) Zone of the Redis cluster. If not set, derived from cluster_id when possible or from the provider configuration.
 
+
+
