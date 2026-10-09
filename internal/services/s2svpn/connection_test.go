@@ -249,6 +249,356 @@ func TestAccConnection_SecretLatestVersion(t *testing.T) {
 	})
 }
 
+func TestAccConnection_UpdateSecret(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	connectionID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckConnectionDestroy(tt),
+			testAccCheckVPNGatewayDestroy(tt),
+			testAccCheckCustomerGatewayDestroy(tt),
+			testAccCheckRoutingPolicyDestroy(tt),
+			secrettestfuncs.CheckSecretDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_secret" "psk" {
+						name   = "tf-test-connection-secret-update-psk"
+						region = "fr-par"
+					}
+
+					resource "scaleway_secret_version" "v1" {
+						secret_id = scaleway_secret.psk.id
+						data      = "tf_test_s2s_vpn.psk_v1"
+						region    = "fr-par"
+					}
+
+					resource "scaleway_secret_version" "v2" {
+						secret_id  = scaleway_secret.psk.id
+						data       = "tf_test_s2s_vpn.psk_v2"
+						region     = "fr-par"
+						depends_on = [scaleway_secret_version.v1]
+					}
+
+					resource "scaleway_secret" "psk_other" {
+						name   = "tf-test-connection-secret-update-psk-other"
+						region = "fr-par"
+					}
+
+					resource "scaleway_secret_version" "other" {
+						secret_id = scaleway_secret.psk_other.id
+						data      = "tf_test_s2s_vpn.psk_other"
+						region    = "fr-par"
+					}
+
+					resource "scaleway_vpc" "main" {
+						name = "tf-test-vpc-connection-secret-update"
+					}
+
+					resource "scaleway_vpc_private_network" "main" {
+						vpc_id = scaleway_vpc.main.id
+						ipv4_subnet {
+							subnet = "10.0.0.0/24"
+						}
+					}
+
+					resource "scaleway_instance_ip" "customer_ip" {}
+
+					resource "scaleway_s2s_vpn_gateway" "main" {
+						name               = "tf-test-vpn-gateway-connection-secret-update"
+						gateway_type       = "VGW-S"
+						private_network_id = scaleway_vpc_private_network.main.id
+						region             = "fr-par"
+						zone               = "fr-par-1"
+					}
+
+					resource "scaleway_s2s_vpn_customer_gateway" "main" {
+						name        = "tf-test-customer-gateway-connection-secret-update"
+						ipv4_public = scaleway_instance_ip.customer_ip.address
+						asn         = 65000
+						region      = "fr-par"
+					}
+
+					resource "scaleway_s2s_vpn_routing_policy" "main" {
+						name              = "tf-test-routing-policy-connection-secret-update"
+						prefix_filter_in  = ["10.0.1.0/24"]
+						prefix_filter_out = ["10.0.0.0/24"]
+						region            = "fr-par"
+					}
+
+					resource "scaleway_s2s_vpn_connection" "main" {
+						name                     = "tf-test-connection-secret-update"
+						vpn_gateway_id           = scaleway_s2s_vpn_gateway.main.id
+						customer_gateway_id      = scaleway_s2s_vpn_customer_gateway.main.id
+						initiation_policy        = "customer_gateway"
+						enable_route_propagation = true
+						secret_id                = scaleway_secret.psk.id
+						secret_version           = scaleway_secret_version.v1.revision
+						region                   = "fr-par"
+
+						bgp_config_ipv4 {
+							routing_policy_id = scaleway_s2s_vpn_routing_policy.main.id
+							private_ip        = "169.254.5.1/30"
+							peer_private_ip   = "169.254.5.2/30"
+						}
+
+						ikev2_ciphers {
+							encryption = "aes256"
+							integrity  = "sha256"
+							dh_group   = "modp2048"
+						}
+
+						esp_ciphers {
+							encryption = "aes256"
+							integrity  = "sha256"
+							dh_group   = "modp2048"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckConnectionExists(tt, "scaleway_s2s_vpn_connection.main"),
+					testAccCheckConnectionIDStable(&connectionID),
+					resource.TestCheckResourceAttrPair("scaleway_s2s_vpn_connection.main", "secret_id", "scaleway_secret.psk", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_s2s_vpn_connection.main", "secret_version", "scaleway_secret_version.v1", "revision"),
+					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "secret_version", "1"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_secret" "psk" {
+						name   = "tf-test-connection-secret-update-psk"
+						region = "fr-par"
+					}
+
+					resource "scaleway_secret_version" "v1" {
+						secret_id = scaleway_secret.psk.id
+						data      = "tf_test_s2s_vpn.psk_v1"
+						region    = "fr-par"
+					}
+
+					resource "scaleway_secret_version" "v2" {
+						secret_id  = scaleway_secret.psk.id
+						data       = "tf_test_s2s_vpn.psk_v2"
+						region     = "fr-par"
+						depends_on = [scaleway_secret_version.v1]
+					}
+
+					resource "scaleway_secret" "psk_other" {
+						name   = "tf-test-connection-secret-update-psk-other"
+						region = "fr-par"
+					}
+
+					resource "scaleway_secret_version" "other" {
+						secret_id = scaleway_secret.psk_other.id
+						data      = "tf_test_s2s_vpn.psk_other"
+						region    = "fr-par"
+					}
+
+					resource "scaleway_vpc" "main" {
+						name = "tf-test-vpc-connection-secret-update"
+					}
+
+					resource "scaleway_vpc_private_network" "main" {
+						vpc_id = scaleway_vpc.main.id
+						ipv4_subnet {
+							subnet = "10.0.0.0/24"
+						}
+					}
+
+					resource "scaleway_instance_ip" "customer_ip" {}
+
+					resource "scaleway_s2s_vpn_gateway" "main" {
+						name               = "tf-test-vpn-gateway-connection-secret-update"
+						gateway_type       = "VGW-S"
+						private_network_id = scaleway_vpc_private_network.main.id
+						region             = "fr-par"
+						zone               = "fr-par-1"
+					}
+
+					resource "scaleway_s2s_vpn_customer_gateway" "main" {
+						name        = "tf-test-customer-gateway-connection-secret-update"
+						ipv4_public = scaleway_instance_ip.customer_ip.address
+						asn         = 65000
+						region      = "fr-par"
+					}
+
+					resource "scaleway_s2s_vpn_routing_policy" "main" {
+						name              = "tf-test-routing-policy-connection-secret-update"
+						prefix_filter_in  = ["10.0.1.0/24"]
+						prefix_filter_out = ["10.0.0.0/24"]
+						region            = "fr-par"
+					}
+
+					resource "scaleway_s2s_vpn_connection" "main" {
+						name                     = "tf-test-connection-secret-update"
+						vpn_gateway_id           = scaleway_s2s_vpn_gateway.main.id
+						customer_gateway_id      = scaleway_s2s_vpn_customer_gateway.main.id
+						initiation_policy        = "customer_gateway"
+						enable_route_propagation = true
+						secret_id                = scaleway_secret.psk.id
+						secret_version           = scaleway_secret_version.v2.revision
+						region                   = "fr-par"
+
+						bgp_config_ipv4 {
+							routing_policy_id = scaleway_s2s_vpn_routing_policy.main.id
+							private_ip        = "169.254.5.1/30"
+							peer_private_ip   = "169.254.5.2/30"
+						}
+
+						ikev2_ciphers {
+							encryption = "aes256"
+							integrity  = "sha256"
+							dh_group   = "modp2048"
+						}
+
+						esp_ciphers {
+							encryption = "aes256"
+							integrity  = "sha256"
+							dh_group   = "modp2048"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckConnectionExists(tt, "scaleway_s2s_vpn_connection.main"),
+					testAccCheckConnectionIDStable(&connectionID),
+					resource.TestCheckResourceAttrPair("scaleway_s2s_vpn_connection.main", "secret_id", "scaleway_secret.psk", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_s2s_vpn_connection.main", "secret_version", "scaleway_secret_version.v2", "revision"),
+					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "secret_version", "2"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_secret" "psk" {
+						name   = "tf-test-connection-secret-update-psk"
+						region = "fr-par"
+					}
+
+					resource "scaleway_secret_version" "v1" {
+						secret_id = scaleway_secret.psk.id
+						data      = "tf_test_s2s_vpn.psk_v1"
+						region    = "fr-par"
+					}
+
+					resource "scaleway_secret_version" "v2" {
+						secret_id  = scaleway_secret.psk.id
+						data       = "tf_test_s2s_vpn.psk_v2"
+						region     = "fr-par"
+						depends_on = [scaleway_secret_version.v1]
+					}
+
+					resource "scaleway_secret" "psk_other" {
+						name   = "tf-test-connection-secret-update-psk-other"
+						region = "fr-par"
+					}
+
+					resource "scaleway_secret_version" "other" {
+						secret_id = scaleway_secret.psk_other.id
+						data      = "tf_test_s2s_vpn.psk_other"
+						region    = "fr-par"
+					}
+
+					resource "scaleway_vpc" "main" {
+						name = "tf-test-vpc-connection-secret-update"
+					}
+
+					resource "scaleway_vpc_private_network" "main" {
+						vpc_id = scaleway_vpc.main.id
+						ipv4_subnet {
+							subnet = "10.0.0.0/24"
+						}
+					}
+
+					resource "scaleway_instance_ip" "customer_ip" {}
+
+					resource "scaleway_s2s_vpn_gateway" "main" {
+						name               = "tf-test-vpn-gateway-connection-secret-update"
+						gateway_type       = "VGW-S"
+						private_network_id = scaleway_vpc_private_network.main.id
+						region             = "fr-par"
+						zone               = "fr-par-1"
+					}
+
+					resource "scaleway_s2s_vpn_customer_gateway" "main" {
+						name        = "tf-test-customer-gateway-connection-secret-update"
+						ipv4_public = scaleway_instance_ip.customer_ip.address
+						asn         = 65000
+						region      = "fr-par"
+					}
+
+					resource "scaleway_s2s_vpn_routing_policy" "main" {
+						name              = "tf-test-routing-policy-connection-secret-update"
+						prefix_filter_in  = ["10.0.1.0/24"]
+						prefix_filter_out = ["10.0.0.0/24"]
+						region            = "fr-par"
+					}
+
+					resource "scaleway_s2s_vpn_connection" "main" {
+						name                     = "tf-test-connection-secret-update"
+						vpn_gateway_id           = scaleway_s2s_vpn_gateway.main.id
+						customer_gateway_id      = scaleway_s2s_vpn_customer_gateway.main.id
+						initiation_policy        = "customer_gateway"
+						enable_route_propagation = true
+						secret_id                = scaleway_secret.psk_other.id
+						secret_version           = scaleway_secret_version.other.revision
+						region                   = "fr-par"
+
+						bgp_config_ipv4 {
+							routing_policy_id = scaleway_s2s_vpn_routing_policy.main.id
+							private_ip        = "169.254.5.1/30"
+							peer_private_ip   = "169.254.5.2/30"
+						}
+
+						ikev2_ciphers {
+							encryption = "aes256"
+							integrity  = "sha256"
+							dh_group   = "modp2048"
+						}
+
+						esp_ciphers {
+							encryption = "aes256"
+							integrity  = "sha256"
+							dh_group   = "modp2048"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckConnectionExists(tt, "scaleway_s2s_vpn_connection.main"),
+					testAccCheckConnectionIDStable(&connectionID),
+					resource.TestCheckResourceAttrPair("scaleway_s2s_vpn_connection.main", "secret_id", "scaleway_secret.psk_other", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_s2s_vpn_connection.main", "secret_version", "scaleway_secret_version.other", "revision"),
+					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "secret_version", "1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckConnectionIDStable(connectionID *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources["scaleway_s2s_vpn_connection.main"]
+		if !ok {
+			return errors.New("resource not found: scaleway_s2s_vpn_connection.main")
+		}
+
+		if *connectionID == "" {
+			*connectionID = rs.Primary.ID
+
+			return nil
+		}
+
+		if rs.Primary.ID != *connectionID {
+			return fmt.Errorf("connection was recreated, id changed from %s to %s", *connectionID, rs.Primary.ID)
+		}
+
+		return nil
+	}
+}
+
 func testAccCheckConnectionExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

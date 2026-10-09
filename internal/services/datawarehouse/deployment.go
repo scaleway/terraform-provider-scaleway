@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	datawarehouseapi "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -98,6 +99,13 @@ func deploymentSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Required:    true,
 			Description: "RAM per CPU (GB)",
+		},
+		"move_factor": {
+			Type:         schema.TypeFloat,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.FloatBetween(0, 1),
+			Description:  "For the tiered storage policy, fraction of free space on the hot volume below which data is moved to cold storage. Value between 0 and 1 (API default 0.1).",
 		},
 		"started": {
 			Type:        schema.TypeBool,
@@ -270,6 +278,11 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		req.ShardCount = new(uint32(v.(int)))
 	}
 
+	if moveFactorRaw := d.GetRawConfig().GetAttr("move_factor"); !moveFactorRaw.IsNull() && moveFactorRaw.IsKnown() {
+		f, _ := moveFactorRaw.AsBigFloat().Float64()
+		req.MoveFactor = &f
+	}
+
 	if v, ok := d.GetOk("tags"); ok {
 		req.Tags = types.ExpandStrings(v)
 	}
@@ -353,6 +366,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 	_ = d.Set("cpu_min", int(deployment.CPUMin))
 	_ = d.Set("cpu_max", int(deployment.CPUMax))
 	_ = d.Set("ram_per_cpu", int(deployment.RAMPerCPU))
+	_ = d.Set("move_factor", deployment.MoveFactor)
 	_ = d.Set("started", deploymentStatusIsRunning(deployment.Status))
 	_ = d.Set("status", string(deployment.Status))
 	_ = d.Set("created_at", deployment.CreatedAt.Format(time.RFC3339))
@@ -436,6 +450,11 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	if d.HasChange("replica_count") {
 		req.ReplicaCount = new(uint32(d.Get("replica_count").(int)))
+		changed = true
+	}
+
+	if d.HasChange("move_factor") {
+		req.MoveFactor = new(d.Get("move_factor").(float64))
 		changed = true
 	}
 
