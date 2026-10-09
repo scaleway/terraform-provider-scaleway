@@ -2,6 +2,7 @@ package autoscaling_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -78,6 +79,7 @@ func TestAccAutoScalingGroupResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "status"),
+					resource.TestMatchResourceAttr("scaleway_autoscaling_group.main", "srn", regexp.MustCompile(`^srn://autoscaling\..+/zones/.+/groups/.+$`)),
 				),
 			},
 			{

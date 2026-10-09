@@ -57,6 +57,11 @@ func domainSchema() map[string]*schema.Schema {
 			Description: "URL used to query the container",
 			Deprecated:  "URL won't be displayed on v1",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the container domain",
+		},
 		"region": regional.Schema(),
 	}
 }
@@ -116,6 +121,7 @@ func ResourceContainerDomainRead(ctx context.Context, d *schema.ResourceData, m 
 	_ = d.Set("hostname", domain.Hostname)
 	_ = d.Set("container_id", domain.ContainerID)
 	_ = d.Set("region", region)
+	_ = d.Set("srn", domain.Srn)
 
 	return nil
 }

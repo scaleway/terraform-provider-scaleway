@@ -2,6 +2,7 @@ package function_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -77,6 +78,7 @@ func TestAccFunctionTrigger_SQS(t *testing.T) {
 					testAccCheckFunctionTriggerExists(tt, "scaleway_function_trigger.main"),
 					acctest.CheckResourceAttrUUID("scaleway_function_trigger.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_function_trigger.main", "name", "test-function-trigger-sqs"),
+					resource.TestMatchResourceAttr("scaleway_function_trigger.main", "srn", regexp.MustCompile(`^srn://functions\..+/regions/.+/triggers/.+$`)),
 					testAccCheckFunctionTriggerStatusReady(tt, "scaleway_function_trigger.main"),
 				),
 			},

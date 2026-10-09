@@ -91,6 +91,11 @@ func namespaceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The ID of the registry namespace",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the function namespace",
+		},
 		"region":          regional.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -159,6 +164,7 @@ func ResourceFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("registry_endpoint", ns.RegistryEndpoint)
 	_ = d.Set("registry_namespace_id", ns.RegistryNamespaceID)
 	_ = d.Set("secret_environment_variables", flattenFunctionSecrets(ns.SecretEnvironmentVariables))
+	_ = d.Set("srn", ns.Srn)
 
 	return nil
 }

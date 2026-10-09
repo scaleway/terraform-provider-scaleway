@@ -136,6 +136,11 @@ func triggerSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the function trigger",
+		},
 		"region": regional.Schema(),
 	}
 }
@@ -207,6 +212,7 @@ func ResourceFunctionTriggerRead(ctx context.Context, d *schema.ResourceData, m 
 
 	_ = d.Set("name", trigger.Name)
 	_ = d.Set("description", trigger.Description)
+	_ = d.Set("srn", trigger.Srn)
 
 	diags := diag.Diagnostics(nil)
 

@@ -2,6 +2,7 @@ package container_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -52,6 +53,7 @@ func TestAccDomain_Basic(t *testing.T) {
 			`, defaultTestImage, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
 					isDomainPresent(tt, "scaleway_container_domain.app"),
+					resource.TestMatchResourceAttr("scaleway_container_domain.app", "srn", regexp.MustCompile(`^srn://containers\..+/regions/.+/domains/.+$`)),
 				),
 			},
 		},
