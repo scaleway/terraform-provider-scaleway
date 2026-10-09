@@ -53,6 +53,7 @@ func snapshotsItemAttrTypes() map[string]attr.Type {
 		"srn":        types.StringType,
 		"zone":       types.StringType,
 		"project_id": types.StringType,
+		"status":     types.StringType,
 	}
 }
 
@@ -136,6 +137,10 @@ func (d *SnapshotsDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 						"project_id": schema.StringAttribute{
 							Computed:            true,
 							MarkdownDescription: "The project ID the snapshot belongs to",
+						},
+						"status": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "The current status of the snapshot (available, in_use, error, ...)",
 						},
 					},
 				},
@@ -243,8 +248,10 @@ func flattenSnapshotsList(ctx context.Context, snapshots []*block.Snapshot, diag
 		diags.Append(d...)
 
 		volumeID := types.StringNull()
+
 		if snapshot.ParentVolume != nil {
-			volumeID = types.StringValue(snapshot.ParentVolume.ID)
+			volumeZoneID := zonal.NewIDString(snapshot.Zone, snapshot.ParentVolume.ID)
+			volumeID = types.StringValue(volumeZoneID)
 		}
 
 		attrValues := map[string]attr.Value{
@@ -255,6 +262,7 @@ func flattenSnapshotsList(ctx context.Context, snapshots []*block.Snapshot, diag
 			"srn":        types.StringValue(snapshot.Srn),
 			"zone":       types.StringValue(string(snapshot.Zone)),
 			"project_id": types.StringValue(snapshot.ProjectID),
+			"status":     types.StringValue(snapshot.Status.String()),
 		}
 
 		obj, d := types.ObjectValue(itemType.AttrTypes, attrValues)

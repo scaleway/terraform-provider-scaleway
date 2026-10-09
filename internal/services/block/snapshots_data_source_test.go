@@ -88,6 +88,7 @@ func TestAccDataSourceSnapshots_Basic(t *testing.T) {
 						"scaleway_block_snapshot.main", "project_id", "data.scaleway_block_snapshots.by_name", "snapshots.0.project_id",
 					),
 					resource.TestCheckResourceAttr("data.scaleway_block_snapshots.by_name", "snapshots.0.tags.#", "2"),
+					resource.TestCheckResourceAttr("data.scaleway_block_snapshots.by_name", "snapshots.0.status", "available"),
 					resource.TestMatchResourceAttr("data.scaleway_block_snapshots.by_name", "snapshots.0.srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
 
 					resource.TestCheckResourceAttr("data.scaleway_block_snapshots.by_tags", "snapshots.#", "2"),
