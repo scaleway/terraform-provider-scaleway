@@ -18,6 +18,10 @@ func TestAccActionRedisClusterRenewCertificate_Basic(t *testing.T) {
 		t.Skip("Skipping TestAccActionRedisClusterRenewCertificate_Basic because action are not yet supported on OpenTofu")
 	}
 
+	// API documents RenewClusterCertificate, but the backend currently returns HTTP 501 Not Implemented
+	// (reproduced 2026-10-09 on fr-par-1). Re-enable and record a cassette once the endpoint works.
+	t.Skip("Skipping until Redis RenewClusterCertificate API is implemented (currently returns 501 Not Implemented)")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
