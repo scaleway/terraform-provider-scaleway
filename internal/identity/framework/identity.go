@@ -4,8 +4,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 type GlobalIdentity struct {
@@ -78,14 +76,14 @@ func CompositeRegional(partKeys ...string) identityschema.Schema {
 
 func SetRegionalIdentity(region scw.Region, id string) RegionalIdentity {
 	return RegionalIdentity{
-		ID:     types.StringValue(regional.NewIDString(region, id)),
+		ID:     types.StringValue(id),
 		Region: types.StringValue(region.String()),
 	}
 }
 
 func SetZonalIdentity(zone scw.Zone, id string) ZonalIdentity {
 	return ZonalIdentity{
-		ID:   types.StringValue(zonal.NewIDString(zone, id)),
+		ID:   types.StringValue(id),
 		Zone: types.StringValue(zone.String()),
 	}
 }

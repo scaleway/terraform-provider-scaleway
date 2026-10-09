@@ -479,16 +479,26 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	resourceID := state.ID.ValueString()
+	var (
+		id     string
+		region scw.Region
+	)
+
 	if identityAvailable {
-		resourceID = identity.ID.ValueString()
-	}
+		id = identity.ID.ValueString()
+		region = scw.Region(identity.Region.ValueString())
+	} else {
+		resourceID := state.ID.ValueString()
 
-	region, id, err := regional.ParseID(resourceID)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse MessageQ deployment ID", err.Error())
+		tmpRegion, tmpId, err := regional.ParseID(resourceID)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse MessageQ deployment ID", err.Error())
 
-		return
+			return
+		}
+
+		id = tmpId
+		region = tmpRegion
 	}
 
 	deployment, err := waitForDeployment(ctx, r.api, region, id, defaultDeploymentReadTimeout)
