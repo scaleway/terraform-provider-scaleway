@@ -63,70 +63,67 @@ jobs:
           - webhosting
     runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
-      # Checkout should always be before setup-go to ensure caching is working
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
-      - name: Install Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version: stable
-      - name: Run Acceptance Tests
-        run: go tool gotestsum --format github-actions --jsonfile ${{ matrix.products }}.jsonl --junitfile ${{ matrix.products }}.xml -- -v ./internal/services/${{ matrix.products }} -timeout=4h
-        env:
-          TF_LOG: DEBUG
-          # https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html#running-acceptance-tests
-          TF_ACC: 1
-          # Enable recording with the cassette system. By doing so, we ensure that real HTTPS requests are made.
-          TF_UPDATE_CASSETTES: true
-          TF_TEST_DOMAIN: scaleway-terraform.com
-          TF_TEST_DOMAIN_ZONE: tf
-          SCW_DEBUG: 1
-          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
-          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
-          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
-          SCW_PARTNER_ORGANIZATION_ID: ${{ secrets.SCW_PARTNER_ORGANIZATION_ID }}
-          SCW_PARTNER_ACCESS_KEY: ${{ secrets.SCW_PARTNER_ACCESS_KEY }}
-          SCW_PARTNER_SECRET_KEY: ${{ secrets.SCW_PARTNER_SECRET_KEY }}
-          # Having long retry intervals will ensure that we have few requests done while waiting on call to complete (using time.ParseDuration)
-          TF_RETRY_DELAY: 30s
-      - name: Ping on failure
-        if: ${{ failure() }}
+      - name: Set git to use LF to avoid problem with goldens on windows
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{
-          	"blocks": [
-              {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "'"Terraform Nightly workflow failed: <https://github.com/scaleway/terraform-provider-scaleway/actions/runs/${GITHUB_RUN_ID}|${FAILED_PRODUCT}>"'"
-                  }
-              }
-            ]
-          }' \
-          ${SLACK_WEBHOOK_NIGHTLY};
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          version: 2026.9.3
+          cache: true
+          cache_save: false
+          experimental: true
+      - name: Run Acceptance Tests
+        run: mise run test:provider --format github-actions --timeout 4h --acceptance --cassettes ./internal/services/${{ matrix.products }}/...
         env:
-          SLACK_WEBHOOK_NIGHTLY: ${{ secrets.SLACK_WEBHOOK_NIGHTLY }}
-          FAILED_PRODUCT: ${{ matrix.products }}
-      - name: Upload JSON test results
-        if: success() || failure() # If the job is not cancelled, run it regardless of the result of the previous step
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+           SCW_PARTNER_ACCESS_KEY: ${{ secrets.SCW_PARTNER_ACCESS_KEY }}
+           SCW_PARTNER_SECRET_KEY: ${{ secrets.SCW_PARTNER_SECRET_KEY }}
+           TF_RETRY_DELAY: 30s
+           TF_LOG: DEBUG
+      - name: Ping on failure
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        if: ${{ failure() }}
         with:
-          name: ${{ matrix.products }} gotestsum JSONL
-          path: ${{ matrix.products }}.jsonl
-      - name: Upload JUnit XML test results
-        if: success() || failure() # If the job is not cancelled, run it regardless of the result of the previous step
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+          webhook: ${{ secrets.SLACK_WEBHOOK_NIGHTLY }}
+          webhook-type: incoming-webhook
+          payload: |
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "${{ github.repository }} nightly workflow failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ matrix.products }}>"
+
+  acceptance:
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        tool:
+          - terraform
+          - opentofu
+    steps:
+      - name: Set git to use LF to avoid problem with goldens on windows
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          name: ${{ matrix.products }}-junit-xml.xml
-          path: ${{ matrix.products }}.xml
-          retention-days: 30
-      - name: Run acceptance test for cassettes
-        if: success() || failure() # If the job is not cancelled, run it regardless of the result of the previous step
-        run: go test -v github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest -run TestAccCassettes_Validator
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          version: 2026.9.3
+          cache: true
+          experimental: true
+      - run: mise run test:provider --acceptance --tool ${{ matrix.tool }}
 
   # sweeper needs to run after nightly completed
   # no matter what are the results of the jobs
@@ -135,20 +132,34 @@ jobs:
     needs: nightly
     if: always()
     steps:
-      # Checkout should always be before setup-go to ensure caching is working
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      - name: Set git to use LF to avoid problem with goldens on windows
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          go-version: stable
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
-      - name: Run sweepers
-        run: make sweep
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          version: 2026.9.3
+          cache: true
+          experimental: true
+      - run: mise run sweep
         env:
-          TF_TEST_DOMAIN: scaleway-terraform.com
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
           SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
           SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+      - name: Ping on failure
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        if: ${{ failure() }}
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_NIGHTLY }}
+          webhook-type: incoming-webhook
+          payload: |
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "${{ github.repository }} nightly workflow failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|sweeper>"
