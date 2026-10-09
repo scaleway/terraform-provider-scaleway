@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/echoprovider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
@@ -14,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
+	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
 func TestAccApiKey_WithApplication(t *testing.T) {
@@ -130,6 +132,74 @@ func TestAccApiKey_WithApplicationChange(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"secret_key"},
+			},
+		},
+	})
+}
+
+func TestAccApiKey_WithSecret(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+
+	tt.ProviderFactories["echo"] = echoprovider.NewProviderServer()
+
+	config := `
+			resource "scaleway_secret" "main" {
+				name = "tf_tests_api_key_secret"
+			}
+
+			resource "scaleway_iam_application" "main" {
+				name = "tf_tests_app_key_secret"
+			}
+
+			resource "scaleway_iam_api_key" "main" {
+				application_id = scaleway_iam_application.main.id
+				description    = "tf_tests_api_key_with_secret"
+				secret_id      = scaleway_secret.main.id
+			}
+		`
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckIamAPIKeyDestroy(tt),
+			testAccCheckIamApplicationDestroy(tt),
+			secrettestfuncs.CheckSecretDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				// lintignore:AT004
+				Config: config + `
+					ephemeral "scaleway_secret_version" "main" {
+						secret_id  = scaleway_secret.main.id
+						depends_on = [scaleway_iam_api_key.main]
+					}
+
+					provider "echo" {
+						data = ephemeral.scaleway_secret_version.main
+					}
+
+					resource "echo" "test_secret_version" {}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_api_key_with_secret"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "secret_id", "scaleway_secret.main", "id"),
+					resource.TestCheckNoResourceAttr("scaleway_iam_api_key.main", "secret_key"),
+					resource.TestCheckResourceAttrPair("echo.test_secret_version", "data.secret_id", "scaleway_secret.main", "id"),
+					resource.TestCheckResourceAttrPair("echo.test_secret_version", "data.description", "scaleway_iam_api_key.main", "description"),
+					resource.TestMatchResourceAttr("echo.test_secret_version", "data.data", regexp.MustCompile(`^[A-Za-z0-9+/]{40,}={0,2}$`)),
+				),
+			},
+			{
+				ResourceName:            "scaleway_iam_api_key.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret_key", "secret_id"},
+				Config:                  config,
 			},
 		},
 	})
