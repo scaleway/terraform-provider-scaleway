@@ -3,7 +3,9 @@ package iam
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -14,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -21,6 +24,7 @@ import (
 var (
 	_ ephemeral.EphemeralResource              = (*ApiKeyEphemeralResource)(nil)
 	_ ephemeral.EphemeralResourceWithConfigure = (*ApiKeyEphemeralResource)(nil)
+	_ ephemeral.EphemeralResourceWithClose     = (*ApiKeyEphemeralResource)(nil)
 )
 
 type ApiKeyEphemeralResource struct {
@@ -57,17 +61,17 @@ func (r *ApiKeyEphemeralResource) Metadata(ctx context.Context, req ephemeral.Me
 }
 
 type ApiKeyEphemeralResourceModel struct {
-	Description   types.String `tfsdk:"description"`
-	CreatedAt     types.String `tfsdk:"created_at"`
-	UpdatedAt     types.String `tfsdk:"updated_at"`
-	ExpiresAt     types.String `tfsdk:"expires_at"`
-	ApplicationID types.String `tfsdk:"application_id"`
-	UserID        types.String `tfsdk:"user_id"`
-	// Output
+	Description      types.String `tfsdk:"description"`
+	CreatedAt        types.String `tfsdk:"created_at"`
+	UpdatedAt        types.String `tfsdk:"updated_at"`
+	ExpiresAt        types.String `tfsdk:"expires_at"`
+	ApplicationID    types.String `tfsdk:"application_id"`
+	UserID           types.String `tfsdk:"user_id"`
 	AccessKey        types.String `tfsdk:"access_key"`
 	SecretKey        types.String `tfsdk:"secret_key"`
 	CreationIP       types.String `tfsdk:"creation_ip"`
 	DefaultProjectID types.String `tfsdk:"default_project_id"`
+	DeleteOnClose    types.Bool   `tfsdk:"delete_on_close"`
 }
 
 //go:embed descriptions/api_key_ephemeral_resource.md
@@ -93,6 +97,7 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 			"expires_at": schema.StringAttribute{
 				Description: "The date and time (UTC) of the expiration of the iam api key. Cannot be changed afterwards",
 				Optional:    true,
+				Computed:    true,
 			},
 			"access_key": schema.StringAttribute{
 				Computed:    true,
@@ -131,6 +136,11 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 					verify.IsStringUUID(),
 				},
 			},
+			"delete_on_close": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Whether the API key should be deleted when the ephemeral resource is closed. Defaults to true. When set to false, the key is not deleted on close and must be managed manually (or let to expire via `expires_at`).",
+			},
 		},
 	}
 }
@@ -157,7 +167,7 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 		ApplicationID:    data.ApplicationID.ValueStringPointer(),
 		UserID:           data.UserID.ValueStringPointer(),
 		DefaultProjectID: data.DefaultProjectID.ValueStringPointer(),
-		Description:      data.Description.String(),
+		Description:      data.Description.ValueString(),
 	}
 
 	var err error
@@ -189,10 +199,95 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 	data.CreatedAt = types.StringValue(res.CreatedAt.Format(time.RFC3339))
 	data.UpdatedAt = types.StringValue(res.UpdatedAt.Format(time.RFC3339))
 	data.AccessKey = types.StringValue(res.AccessKey)
+
 	data.SecretKey = types.StringValue(*res.SecretKey)
-	data.ExpiresAt = types.StringValue(res.ExpiresAt.Format(time.RFC3339))
+	if data.ExpiresAt.IsNull() && res.ExpiresAt != nil {
+		data.ExpiresAt = types.StringValue(res.ExpiresAt.UTC().Format(time.RFC3339))
+	}
+
 	data.CreationIP = types.StringValue(res.CreationIP)
-	data.DefaultProjectID = types.StringValue(res.DefaultProjectID)
+	if data.DefaultProjectID.IsNull() {
+		data.DefaultProjectID = types.StringValue(res.DefaultProjectID)
+	}
+
+	accessKeyBytes, err := json.Marshal(res.AccessKey)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error encoding private state",
+			fmt.Sprintf("Unable to encode access key in private state: %s", err),
+		)
+
+		return
+	}
+
+	resp.Private.SetKey(ctx, "access_key", accessKeyBytes)
+
+	deleteOnClose := true
+	if !data.DeleteOnClose.IsNull() {
+		deleteOnClose = data.DeleteOnClose.ValueBool()
+	}
+
+	data.DeleteOnClose = types.BoolValue(deleteOnClose)
+	resp.Private.SetKey(ctx, "delete_on_close", []byte(strconv.FormatBool(deleteOnClose)))
 
 	resp.Result.Set(ctx, &data)
+}
+
+func (r *ApiKeyEphemeralResource) Close(ctx context.Context, req ephemeral.CloseRequest, resp *ephemeral.CloseResponse) {
+	if r.iamAPI == nil {
+		resp.Diagnostics.AddError(
+			"Unconfigured iamAPI",
+			"The ephemeral resource was not properly configured. The Scaleway client is missing. "+
+				"This is usually a bug in the provider. Please report it to the maintainers.",
+		)
+
+		return
+	}
+
+	deleteOnClose, diags := req.Private.GetKey(ctx, "delete_on_close")
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if string(deleteOnClose) == "false" {
+		return
+	}
+
+	accessKey, diags := req.Private.GetKey(ctx, "access_key")
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if len(accessKey) == 0 {
+		resp.Diagnostics.AddError(
+			"Missing access key in private state",
+			"The access key was not found in the private state. This is usually a bug in the provider. Please report it to the maintainers.",
+		)
+
+		return
+	}
+
+	var accessKeyStr string
+	if err := json.Unmarshal(accessKey, &accessKeyStr); err != nil {
+		resp.Diagnostics.AddError(
+			"Error decoding private state",
+			fmt.Sprintf("Unable to decode access key from private state: %s", err),
+		)
+
+		return
+	}
+
+	err := r.iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
+		AccessKey: accessKeyStr,
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
+		resp.Diagnostics.AddError(
+			"Error executing IAM Api Key Delete",
+			fmt.Sprintf("%s", err),
+		)
+	}
 }
