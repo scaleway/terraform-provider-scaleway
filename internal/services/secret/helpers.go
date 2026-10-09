@@ -1,6 +1,7 @@
 package secret
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -94,6 +96,44 @@ func NewVersionAPIWithRegionAndID(m any, id string) (*secret.API, scw.Region, st
 	api := secret.NewAPI(meta.ExtractScwClient(m))
 
 	return api, scw.Region(region), id, revision, nil
+}
+
+// CreateSecretVersion creates a new version of the secret referenced by secretID,
+// containing value. secretID can be a UUID or a regional ID (region/UUID); when
+// it is a raw UUID, the client default region is used. The secret itself must
+// already exist and is not managed by this function: the created version is
+// removed when the secret is deleted.
+// This function is specifically used to allow setting a sensitive value in a secret
+// instead of in the terraform state.
+func CreateSecretVersion(ctx context.Context, m any, secretID string, value string, description string) (*secret.SecretVersion, error) {
+	client := meta.ExtractScwClient(m)
+
+	region, id, err := regional.ParseID(secretID)
+	if err != nil {
+		id = secretID
+
+		if defaultRegion, hasDefaultRegion := client.GetDefaultRegion(); hasDefaultRegion {
+			region = defaultRegion
+		} else {
+			return nil, fmt.Errorf("cannot determine the region of the secret %s: use a regional ID (region/uuid) or set a default region in the provider configuration", secretID)
+		}
+	}
+
+	api := secret.NewAPI(client)
+
+	version, err := transport.RetryOn403Value(ctx, func() (*secret.SecretVersion, error) {
+		return api.CreateSecretVersion(&secret.CreateSecretVersionRequest{
+			Region:      region,
+			SecretID:    id,
+			Data:        []byte(value),
+			Description: &description,
+		}, scw.WithContext(ctx))
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error creating a new version of the secret %s: %w", secretID, err)
+	}
+
+	return version, nil
 }
 
 func isBase64Encoded(data []byte) bool {

@@ -108,6 +108,7 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 			},
 			"revision": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The revision of the secret version. Defaults to `latest`",
 			},
 			"region": regional.SchemaAttribute("The region of the secret version. If not set, the region is derived from the secret_id when possible or from the provider configuration."),

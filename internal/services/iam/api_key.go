@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -66,6 +68,14 @@ func apiKeySchema() map[string]*schema.Schema {
 			Description: "The secret Key of the iam api key",
 			Sensitive:   true,
 		},
+		"secret_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of a [Secret Manager](https://www.scaleway.com/en/secret-manager/) secret. If set, the secret_key of the API key is stored as a new version of this secret and is not stored in the Terraform state. The secret itself is not managed by this resource. Can be a UUID or a regional ID (region/UUID), in which case the region of the secret is derived from it.",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+		},
 		"application_id": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -114,7 +124,17 @@ func resourceIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("secret_key", res.SecretKey)
+	if secretID, ok := d.GetOk("secret_id"); ok {
+		if res.SecretKey == nil {
+			return diag.FromErr(fmt.Errorf("the IAM API key was created without a secret key, cannot store it in the secret %s", secretID))
+		}
+
+		if _, err := secret.CreateSecretVersion(ctx, m, secretID.(string), *res.SecretKey, res.Description); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		_ = d.Set("secret_key", res.SecretKey)
+	}
 
 	err = identity.SetGlobalIdentity(d, res.AccessKey)
 	if err != nil {
