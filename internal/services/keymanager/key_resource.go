@@ -225,11 +225,13 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	// Retry on 404 to handle eventual consistency issues
-	key, err := transport.RetryOn404(ctx, func(ctx context.Context) (*key_manager.Key, error) {
-		return client.GetKey(&key_manager.GetKeyRequest{
-			Region: region,
-			KeyID:  keyID,
+	// Retry on 403 while IAM permissions propagate, and on 404 to handle eventual consistency issues
+	key, err := transport.RetryOn403Value(ctx, func() (*key_manager.Key, error) {
+		return transport.RetryOn404(ctx, func(_ context.Context) (*key_manager.Key, error) {
+			return client.GetKey(&key_manager.GetKeyRequest{
+				Region: region,
+				KeyID:  keyID,
+			})
 		})
 	})
 	if err != nil {
@@ -290,7 +292,11 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
-	_, err = client.UpdateKey(updateReq)
+	err = transport.RetryOn403(ctx, func() error {
+		_, err := client.UpdateKey(updateReq)
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
