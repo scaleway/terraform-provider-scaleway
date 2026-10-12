@@ -177,7 +177,7 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Invalid expires_at value",
-				fmt.Sprintf("The start_date attribute must be a valid RFC3339 timestamp. Got %q: %s", data.ExpiresAt.ValueString(), err),
+				fmt.Sprintf("The expires_at attribute must be a valid RFC3339 timestamp. Got %q: %s", data.ExpiresAt.ValueString(), err),
 			)
 
 			return
