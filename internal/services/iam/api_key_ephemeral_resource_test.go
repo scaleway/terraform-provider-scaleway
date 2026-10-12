@@ -1,7 +1,6 @@
 package iam_test
 
 import (
-	"context"
 	"fmt"
 	"regexp"
 	"testing"
@@ -255,7 +254,7 @@ func testAccCheckEphemeralIamAPIKeyDeleted(tt *acctest.TestTools, name string) r
 		}
 
 		iamAPI := iam.NewAPI(tt.Meta)
-		ctx := context.Background()
+		ctx := tt.T.Context()
 
 		return retry.RetryContext(ctx, iamchecks.DestroyWaitTimeout, func() *retry.RetryError {
 			_, err := iamAPI.GetAPIKey(&iamSDK.GetAPIKeyRequest{
