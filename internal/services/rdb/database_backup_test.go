@@ -172,13 +172,13 @@ func isBackupPresent(tt *acctest.TestTools, databaseBackup string) resource.Test
 			return err
 		}
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := rdbAPI.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
 				Region:           region,
 				DatabaseBackupID: id,
 			})
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to get database backup: %w", err)

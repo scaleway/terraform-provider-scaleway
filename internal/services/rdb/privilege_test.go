@@ -287,7 +287,7 @@ func isPrivilegePresent(tt *acctest.TestTools, instance string, database string,
 
 		var databases *rdbSDK.ListPrivilegesResponse
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			databases, err = rdbAPI.ListPrivileges(&rdbSDK.ListPrivilegesRequest{
@@ -297,7 +297,7 @@ func isPrivilegePresent(tt *acctest.TestTools, instance string, database string,
 				UserName:     &userName,
 			})
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return err

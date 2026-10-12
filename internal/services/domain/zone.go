@@ -100,7 +100,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 	zoneName := BuildZoneName(subdomainName, domainName)
 
 	// Check if a zone with the same name already exists in the project
-	zones, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZonesResponse, error) {
+	zones, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZonesResponse, error) {
 		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 			DNSZones:  []string{zoneName},
@@ -134,7 +134,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	dnsZone, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.DNSZone, error) {
+	dnsZone, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.DNSZone, error) {
 		return domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
 			ProjectID: projectID,
 			Domain:    domainName,
@@ -170,7 +170,7 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	var zone *domain.DNSZone
 
-	zones, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZonesResponse, error) {
+	zones, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZonesResponse, error) {
 		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 			DNSZones:  []string{d.Id()},
@@ -216,7 +216,7 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 // readZoneIntoState fetches zone data and sets schema attributes without Identity (for data sources).
 func readZoneIntoState(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, zoneName string) diag.Diagnostics {
-	zones, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZonesResponse, error) {
+	zones, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZonesResponse, error) {
 		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 			DNSZones:  []string{zoneName},
@@ -265,7 +265,7 @@ func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 			return diag.FromErr(extractErr)
 		}
 
-		_, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.DNSZone, error) {
+		_, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.DNSZone, error) {
 			return domainAPI.UpdateDNSZone(&domain.UpdateDNSZoneRequest{
 				ProjectID:  projectID,
 				DNSZone:    d.Id(),
@@ -302,7 +302,7 @@ func resourceZoneDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(extractErr)
 	}
 
-	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.DeleteDNSZoneResponse, error) {
+	_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.DeleteDNSZoneResponse, error) {
 		return domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
 			ProjectID: projectID,
 			DNSZone:   d.Id(),
@@ -334,7 +334,7 @@ func resourceZoneCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m
 	zoneName := BuildZoneName(subdomainName, domainName)
 
 	// Check if a zone with the same name already exists in the project
-	zones, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZonesResponse, error) {
+	zones, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZonesResponse, error) {
 		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 			ProjectID: types.ExpandStringPtr(diff.Get("project_id")),
 			DNSZones:  []string{zoneName},

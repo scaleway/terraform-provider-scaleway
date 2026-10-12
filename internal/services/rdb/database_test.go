@@ -130,7 +130,7 @@ func isDatabasePresent(tt *acctest.TestTools, instance string, database string) 
 
 		var databases *rdbSDK.ListDatabasesResponse
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			databases, err = rdbAPI.ListDatabases(&rdbSDK.ListDatabasesRequest{
@@ -142,7 +142,7 @@ func isDatabasePresent(tt *acctest.TestTools, instance string, database string) 
 				OrderBy:    "",
 			})
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return err

@@ -24,7 +24,7 @@ func waitForDeployment(
 
 	var deployment *searchdbapi.Deployment
 
-	_, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		var err error
 
 		deployment, err = api.WaitForDeployment(&searchdbapi.WaitForDeploymentRequest{
@@ -34,7 +34,7 @@ func waitForDeployment(
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
 
-		return struct{}{}, err
+		return err
 	})
 
 	return deployment, err
@@ -74,7 +74,7 @@ func waitForEndpointsDeleted(
 	for {
 		var deployment *searchdbapi.Deployment
 
-		_, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			deployment, err = api.GetDeployment(&searchdbapi.GetDeploymentRequest{
@@ -82,7 +82,7 @@ func waitForEndpointsDeleted(
 				DeploymentID: deploymentID,
 			}, scw.WithContext(ctx))
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return err

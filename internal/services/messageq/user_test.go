@@ -213,21 +213,21 @@ func isUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 		api := messageq.NewAPI(tt.Meta)
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			res, err := api.ListUsers(&messageqSDK.ListUsersRequest{
 				Region:       region,
 				DeploymentID: deploymentID,
 				Name:         &userName,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return struct{}{}, err
+				return err
 			}
 
 			if len(res.Users) == 0 {
-				return struct{}{}, fmt.Errorf("user %s not found on deployment %s", userName, deploymentID)
+				return fmt.Errorf("user %s not found on deployment %s", userName, deploymentID)
 			}
 
-			return struct{}{}, nil
+			return nil
 		})
 
 		return err
@@ -248,21 +248,21 @@ func isUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			api := messageq.NewAPI(tt.Meta)
 
-			_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+			err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 				res, err := api.ListUsers(&messageqSDK.ListUsersRequest{
 					Region:       region,
 					DeploymentID: deploymentID,
 					Name:         &userName,
 				}, scw.WithContext(ctx))
 				if err != nil {
-					return struct{}{}, err
+					return err
 				}
 
 				if len(res.Users) > 0 {
-					return struct{}{}, fmt.Errorf("user %s still exists", userName)
+					return fmt.Errorf("user %s still exists", userName)
 				}
 
-				return struct{}{}, nil
+				return nil
 			})
 			if err != nil && !httperrors.Is404(err) {
 				return err

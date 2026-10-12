@@ -48,7 +48,7 @@ func dataSourceCockpitGrafanaRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	grafana, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Grafana, error) {
+	grafana, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Grafana, error) {
 		return api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
 			ProjectID: projectID,
 		}, scw.WithContext(ctx))

@@ -103,7 +103,7 @@ func isDatabaseRestored(tt *acctest.TestTools, instanceResourceName, databaseNam
 
 		var databases *rdbSDK.ListDatabasesResponse
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			databases, err = api.ListDatabases(&rdbSDK.ListDatabasesRequest{
@@ -112,7 +112,7 @@ func isDatabaseRestored(tt *acctest.TestTools, instanceResourceName, databaseNam
 				Name:       new(databaseName),
 			}, scw.WithContext(ctx))
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list databases: %w", err)

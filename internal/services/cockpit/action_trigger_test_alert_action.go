@@ -137,8 +137,8 @@ func (a *TriggerTestAlertAction) Invoke(ctx context.Context, req action.InvokeRe
 		region = defaultRegion
 	}
 
-	_, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
-		return struct{}{}, a.regionalAPI.TriggerTestAlert(&cockpit.RegionalAPITriggerTestAlertRequest{
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return a.regionalAPI.TriggerTestAlert(&cockpit.RegionalAPITriggerTestAlertRequest{
 			ProjectID: data.ProjectID.ValueString(),
 			Region:    region,
 		}, scw.WithContext(ctx))

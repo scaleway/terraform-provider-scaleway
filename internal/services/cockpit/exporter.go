@@ -239,7 +239,7 @@ func ResourceCockpitExporterCreate(ctx context.Context, d *schema.ResourceData, 
 		req.OtlpDestination = dest
 	}
 
-	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
 		return api.CreateExporter(req, scw.WithContext(ctx))
 	})
 	if err != nil {
@@ -264,7 +264,7 @@ func ResourceCockpitExporterRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
 		return api.GetExporter(&cockpit.RegionalAPIGetExporterRequest{
 			Region:     region,
 			ExporterID: id,
@@ -293,7 +293,7 @@ func ResourceCockpitExporterRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("exported_products", types.FlattenSliceString(res.ExportedProducts))
 
-	ds, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
+	ds, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
 		return api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
 			Region:       region,
 			DataSourceID: res.DatasourceID,
@@ -389,7 +389,7 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChangesExcept("datasource_id", "status", "created_at", "updated_at", "project_id", "region") {
-		_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
+		_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
 			return api.UpdateExporter(req, scw.WithContext(ctx))
 		})
 		if err != nil {
@@ -416,8 +416,8 @@ func ResourceCockpitExporterDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
-		return struct{}{}, api.DeleteExporter(&cockpit.RegionalAPIDeleteExporterRequest{
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return api.DeleteExporter(&cockpit.RegionalAPIDeleteExporterRequest{
 			Region:     region,
 			ExporterID: id,
 		}, scw.WithContext(ctx))

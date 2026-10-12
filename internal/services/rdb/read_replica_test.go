@@ -600,13 +600,13 @@ func isReadReplicaPresent(tt *acctest.TestTools, readReplica string) resource.Te
 			return err
 		}
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := rdbAPI.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
 				Region:        region,
 				ReadReplicaID: ID,
 			})
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return err

@@ -153,7 +153,7 @@ func (d *GrafanaProductDashboardDataSource) Read(ctx context.Context, req dataso
 
 	dashboardName := state.DashboardName.ValueString()
 
-	dashboard, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.GrafanaProductDashboard, error) {
+	dashboard, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.GrafanaProductDashboard, error) {
 		return d.globalAPI.GetGrafanaProductDashboard(&cockpit.GlobalAPIGetGrafanaProductDashboardRequest{
 			ProjectID:     projectID,
 			DashboardName: dashboardName,

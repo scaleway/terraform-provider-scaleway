@@ -154,7 +154,7 @@ func (r *RouteListResource) FetchRoutes(ctx context.Context, region scw.Region, 
 		req.Contains = &ipNet
 	}
 
-	response, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListRoutesWithNexthopResponse, error) {
+	response, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListRoutesWithNexthopResponse, error) {
 		return r.routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {

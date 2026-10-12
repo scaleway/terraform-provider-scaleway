@@ -2005,13 +2005,13 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
 						}
 
-						_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 							_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
 								Region:     region,
 								InstanceID: oldInstanceID,
 							})
 
-							return struct{}{}, err
+							return err
 						})
 						if err == nil {
 							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
@@ -2116,7 +2116,7 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 
 						var instance *rdbSDK.Instance
 
-						_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 							var err error
 
 							instance, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
@@ -2124,7 +2124,7 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 								InstanceID: newInstanceID,
 							})
 
-							return struct{}{}, err
+							return err
 						})
 						if err != nil {
 							return err
@@ -2134,13 +2134,13 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 							return fmt.Errorf("expected upgraded instance %s to keep HA enabled", newInstanceID)
 						}
 
-						_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 							_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
 								Region:     region,
 								InstanceID: oldInstanceID,
 							})
 
-							return struct{}{}, err
+							return err
 						})
 						if err == nil {
 							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
@@ -2298,7 +2298,7 @@ func checkInstanceACLRules(tt *acctest.TestTools, instanceResource string, expec
 
 		var res *rdbSDK.ListInstanceACLRulesResponse
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			res, err = rdbAPI.ListInstanceACLRules(&rdbSDK.ListInstanceACLRulesRequest{
@@ -2306,7 +2306,7 @@ func checkInstanceACLRules(tt *acctest.TestTools, instanceResource string, expec
 				InstanceID: instanceID,
 			}, scw.WithAllPages())
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return fmt.Errorf("listing ACL rules: %w", err)
@@ -2339,13 +2339,13 @@ func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
 				InstanceID: ID,
 				Region:     region,
 			})
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return err

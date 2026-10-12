@@ -177,7 +177,7 @@ func (d *GrafanaProductDashboardsDataSource) Read(ctx context.Context, req datas
 		listReq.Tags = tags
 	}
 
-	apiResp, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListGrafanaProductDashboardsResponse, error) {
+	apiResp, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListGrafanaProductDashboardsResponse, error) {
 		return d.globalAPI.ListGrafanaProductDashboards(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {

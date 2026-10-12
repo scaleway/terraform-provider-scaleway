@@ -246,12 +246,12 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	var secretResponse *secret.Secret
 
-	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		var err error
 
 		secretResponse, err = api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
 
-		return struct{}{}, err
+		return err
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -272,7 +272,7 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	// Retry on 404 to handle eventual consistency issues
-	secretResponse, err := transport.RetryOnStatus(ctx, transport.NotFound, func(ctx context.Context) (*secret.Secret, error) {
+	secretResponse, err := transport.RetryOnStatusValue(ctx, transport.NotFound, func(ctx context.Context) (*secret.Secret, error) {
 		return api.GetSecret(&secret.GetSecretRequest{
 			Region:   region,
 			SecretID: id,
@@ -293,7 +293,7 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	// Retry on 404 to handle eventual consistency issues
-	versionsResponse, err := transport.RetryOnStatus(ctx, transport.NotFound, func(ctx context.Context) (*secret.ListSecretVersionsResponse, error) {
+	versionsResponse, err := transport.RetryOnStatusValue(ctx, transport.NotFound, func(ctx context.Context) (*secret.ListSecretVersionsResponse, error) {
 		return api.ListSecretVersions(&secret.ListSecretVersionsRequest{
 			Region:   region,
 			SecretID: id,
@@ -384,8 +384,8 @@ func ResourceSecretDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
-		return struct{}{}, api.DeleteSecret(&secret.DeleteSecretRequest{
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return api.DeleteSecret(&secret.DeleteSecretRequest{
 			Region:   region,
 			SecretID: id,
 		}, scw.WithContext(ctx))

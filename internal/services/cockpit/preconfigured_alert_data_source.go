@@ -131,7 +131,7 @@ func dataSourceCockpitPreconfiguredAlertRead(ctx context.Context, d *schema.Reso
 		req.RuleStatus = new(cockpit.AlertStatus(ruleStatus.(string)))
 	}
 
-	response, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListAlertsResponse, error) {
+	response, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListAlertsResponse, error) {
 		return api.ListAlerts(req, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {

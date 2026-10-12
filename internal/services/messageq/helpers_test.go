@@ -73,13 +73,13 @@ func isDeploymentPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc
 			return err
 		}
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			_, err = api.GetDeployment(&messageqSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
 			}, scw.WithContext(ctx))
 
-			return struct{}{}, err
+			return err
 		})
 
 		return err

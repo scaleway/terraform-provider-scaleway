@@ -80,7 +80,7 @@ func isReadReplicaReset(tt *acctest.TestTools, readReplicaResourceName string) r
 
 		var readReplica *rdbSDK.ReadReplica
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			readReplica, err = api.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
@@ -88,7 +88,7 @@ func isReadReplicaReset(tt *acctest.TestTools, readReplicaResourceName string) r
 				ReadReplicaID: id,
 			}, scw.WithContext(ctx))
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to get read replica: %w", err)

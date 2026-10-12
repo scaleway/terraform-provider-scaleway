@@ -89,7 +89,7 @@ func isBackupExported(tt *acctest.TestTools, resourceName string) resource.TestC
 
 		var backup *rdbSDK.DatabaseBackup
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			backup, err = api.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
@@ -97,7 +97,7 @@ func isBackupExported(tt *acctest.TestTools, resourceName string) resource.TestC
 				DatabaseBackupID: id,
 			}, scw.WithContext(ctx))
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to get backup: %w", err)

@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	// IAMPropagationTimeout bounds how long RetryOnStatus keeps retrying a transient HTTP 403 while IAM
+	// IAMPropagationTimeout bounds how long RetryOnStatusValue keeps retrying a transient HTTP 403 while IAM
 	// permissions propagate. IAM is eventually consistent and its cache is per-instance, so a freshly
 	// granted permission can intermittently 403 even after a prior 200.
 	IAMPropagationTimeout = 2 * time.Minute
@@ -23,7 +23,7 @@ const (
 	// IAMPropagationWaitTime is the delay between retries on HTTP 403.
 	IAMPropagationWaitTime = 2 * time.Second
 
-	// NotFoundTimeout bounds how long RetryOnStatus keeps retrying a transient HTTP 404, typically
+	// NotFoundTimeout bounds how long RetryOnStatusValue keeps retrying a transient HTTP 404, typically
 	// to wait for consistency resolution in Secret/KM APIs.
 	NotFoundTimeout = 30 * time.Second
 
@@ -151,10 +151,10 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	return c.Do(req)
 }
 
-// RetryOnStatus retries fn while it returns an HTTP error with one of the policy.StatusCodes,
+// RetryOnStatusValue retries fn while it returns an HTTP error with one of the policy.StatusCodes,
 // up to policy.Timeout. Any other error (including a matching status code that outlives the
 // window) is returned to the caller without further retries.
-func RetryOnStatus[T any](ctx context.Context, policy RetryPolicy, fn func(context.Context) (T, error)) (T, error) {
+func RetryOnStatusValue[T any](ctx context.Context, policy RetryPolicy, fn func(context.Context) (T, error)) (T, error) {
 	var (
 		result  T
 		lastErr error
@@ -185,6 +185,15 @@ func RetryOnStatus[T any](ctx context.Context, policy RetryPolicy, fn func(conte
 		case <-time.After(wait):
 		}
 	}
+}
+
+// Error-only variant of RetryOnStatusValue, for functions that return no value.
+func RetryOnStatus(ctx context.Context, policy RetryPolicy, fn func(context.Context) error) error {
+	_, err := RetryOnStatusValue(ctx, policy, func(ctx context.Context) (struct{}, error) {
+		return struct{}{}, fn(ctx)
+	})
+
+	return err
 }
 
 func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) {

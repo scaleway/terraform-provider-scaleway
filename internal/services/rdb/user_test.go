@@ -206,7 +206,7 @@ func isUserPresent(tt *acctest.TestTools, instance string, user string) resource
 
 		var users *rdbSDK.ListUsersResponse
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			users, err = rdbAPI.ListUsers(&rdbSDK.ListUsersRequest{
@@ -215,7 +215,7 @@ func isUserPresent(tt *acctest.TestTools, instance string, user string) resource
 				Name:       &userName,
 			})
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return err

@@ -352,7 +352,7 @@ func (r *ZoneListResource) fetchDNSZones(
 		UpdatedBefore: timeFilters.UpdatedBefore,
 	}
 
-	response, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domainSDK.ListDNSZonesResponse, error) {
+	response, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domainSDK.ListDNSZonesResponse, error) {
 		return r.domainAPI.ListDNSZones(request, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {

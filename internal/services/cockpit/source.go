@@ -100,7 +100,7 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
 		return api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
 			Region:        region,
 			ProjectID:     d.Get("project_id").(string),
@@ -126,7 +126,7 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
 		return api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
 			Region:       region,
 			DataSourceID: id,
@@ -186,7 +186,7 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChanges("retention_days", "name") {
-		_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
+		_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
 			return api.UpdateDataSource(updateRequest, scw.WithContext(ctx))
 		})
 		if err != nil {
@@ -203,8 +203,8 @@ func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
-		return struct{}{}, api.DeleteDataSource(&cockpit.RegionalAPIDeleteDataSourceRequest{
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return api.DeleteDataSource(&cockpit.RegionalAPIDeleteDataSourceRequest{
 			DataSourceID: id,
 			Region:       region,
 		}, scw.WithContext(ctx))

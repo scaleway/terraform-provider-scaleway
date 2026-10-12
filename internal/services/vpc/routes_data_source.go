@@ -149,7 +149,7 @@ func DataSourceRoutesRead(ctx context.Context, d *schema.ResourceData, m any) di
 		req.IsIPv6 = types.ExpandBoolPtr(isipv6)
 	}
 
-	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListRoutesWithNexthopResponse, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListRoutesWithNexthopResponse, error) {
 		return routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx))
 	})
 	if err != nil {

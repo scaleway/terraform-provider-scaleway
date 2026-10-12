@@ -74,7 +74,7 @@ func isInstanceLogsPurged(tt *acctest.TestTools, instanceResourceName string) re
 
 		var instance *rdbSDK.Instance
 
-		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			instance, err = api.GetInstance(&rdbSDK.GetInstanceRequest{
@@ -82,7 +82,7 @@ func isInstanceLogsPurged(tt *acctest.TestTools, instanceResourceName string) re
 				InstanceID: id,
 			}, scw.WithContext(ctx))
 
-			return struct{}{}, err
+			return err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to get instance: %w", err)

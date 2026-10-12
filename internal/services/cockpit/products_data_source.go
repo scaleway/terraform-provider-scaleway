@@ -57,7 +57,7 @@ func dataSourceCockpitProductsRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	resp, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListProductsResponse, error) {
+	resp, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListProductsResponse, error) {
 		return api.ListProducts(&cockpit.RegionalAPIListProductsRequest{
 			Region:  region,
 			OrderBy: cockpit.ListProductsRequestOrderByDisplayNameAsc,

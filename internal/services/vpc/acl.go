@@ -133,10 +133,10 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.Rules = expandedRules
 	}
 
-	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		_, err := vpcAPI.SetACL(req, scw.WithContext(ctx))
 
-		return struct{}{}, err
+		return err
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -156,7 +156,7 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	acl, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.GetACLResponse, error) {
+	acl, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.GetACLResponse, error) {
 		return vpcAPI.GetACL(&vpc.GetACLRequest{
 			VpcID:  locality.ExpandID(ID),
 			Region: region,
@@ -212,10 +212,10 @@ func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.Rules = expandedRules
 	}
 
-	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		_, err := vpcAPI.SetACL(req, scw.WithContext(ctx))
 
-		return struct{}{}, err
+		return err
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -230,14 +230,14 @@ func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		_, err := vpcAPI.SetACL(&vpc.SetACLRequest{
 			VpcID:         locality.ExpandID(ID),
 			Region:        region,
 			DefaultPolicy: vpc.ActionAccept,
 		}, scw.WithContext(ctx))
 
-		return struct{}{}, err
+		return err
 	})
 	if err != nil {
 		return diag.FromErr(err)
