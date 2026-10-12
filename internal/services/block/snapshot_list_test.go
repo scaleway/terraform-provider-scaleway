@@ -5,7 +5,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
+	"github.com/hashicorp/terraform-plugin-testing/querycheck/queryfilter"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 )
@@ -138,6 +141,32 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 				`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
 					querycheck.ExpectLength("list.scaleway_block_snapshot.by_volume", 1),
+				},
+			},
+
+			{
+				Query: true,
+				Config: `
+					list "scaleway_block_snapshot" "by_volume_with_resource" {
+						provider = scaleway
+						include_resource = true
+
+						config {
+							zones       = [scaleway_block_snapshot.snap1.zone]
+							project_ids = [scaleway_block_snapshot.snap1.project_id]
+							volume_ids  = [scaleway_block_volume.vol1.id]
+						}
+					}
+				`,
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					querycheck.ExpectLength("list.scaleway_block_snapshot.by_volume_with_resource", 1),
+					querycheck.ExpectResourceKnownValues(
+						"scaleway_block_snapshot.by_volume_with_resource",
+						queryfilter.ByDisplayName(knownvalue.StringExact("test-snapshot-list-1")),
+						[]querycheck.KnownValueCheck{
+							{Path: tfjsonpath.New("volume_id"), KnownValue: knownvalue.NotNull()},
+						},
+					),
 				},
 			},
 
