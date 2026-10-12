@@ -24,7 +24,7 @@ func RetryMNQNamespaceReadValue[T any](ctx context.Context, fn func() (T, error)
 		lastErr error
 	)
 
-	wait := transport.RetryOn403WaitTime
+	wait := transport.IAMPropagationWaitTime
 	if transport.DefaultWaitRetryInterval != nil {
 		wait = *transport.DefaultWaitRetryInterval
 	}
