@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -209,7 +210,17 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 		data.DefaultProjectID = types.StringValue(res.DefaultProjectID)
 	}
 
-	resp.Private.SetKey(ctx, "access_key", []byte(res.AccessKey))
+	accessKeyBytes, err := json.Marshal(res.AccessKey)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error encoding private state",
+			fmt.Sprintf("Unable to encode access key in private state: %s", err),
+		)
+
+		return
+	}
+
+	resp.Private.SetKey(ctx, "access_key", accessKeyBytes)
 
 	deleteOnClose := true
 	if !data.DeleteOnClose.IsNull() {
@@ -260,8 +271,18 @@ func (r *ApiKeyEphemeralResource) Close(ctx context.Context, req ephemeral.Close
 		return
 	}
 
+	var accessKeyStr string
+	if err := json.Unmarshal(accessKey, &accessKeyStr); err != nil {
+		resp.Diagnostics.AddError(
+			"Error decoding private state",
+			fmt.Sprintf("Unable to decode access key from private state: %s", err),
+		)
+
+		return
+	}
+
 	err := r.iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
-		AccessKey: string(accessKey),
+		AccessKey: accessKeyStr,
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
 		resp.Diagnostics.AddError(
