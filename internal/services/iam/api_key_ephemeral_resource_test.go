@@ -245,27 +245,11 @@ func TestAccApiKeyEphemeralResource_DeleteOnCloseFalse(t *testing.T) {
 	})
 }
 
-// getAccessKeyFromEchoResource returns the access key echoed by the given
-// echo resource instance from the "data.access_key" attribute of its state.
-func getAccessKeyFromEchoResource(s *terraform.State, name string) (string, error) {
-	rs, ok := s.RootModule().Resources[name]
-	if !ok {
-		return "", fmt.Errorf("resource not found: %s", name)
-	}
-
-	accessKey := rs.Primary.Attributes["data.access_key"]
-	if accessKey == "" {
-		return "", fmt.Errorf("echo resource %s has an empty access key", name)
-	}
-
-	return accessKey, nil
-}
-
 // testAccCheckEphemeralIamAPIKeyDeleted asserts that the ephemeral API key
 // echoed by the given echo resource instance has been deleted.
 func testAccCheckEphemeralIamAPIKeyDeleted(tt *acctest.TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		accessKey, err := getAccessKeyFromEchoResource(s, name)
+		accessKey, err := acctest.GetResourceAttributeValue(s, name, "data.access_key")
 		if err != nil {
 			return err
 		}
@@ -295,24 +279,14 @@ func testAccCheckEphemeralIamAPIKeyDeleted(tt *acctest.TestTools, name string) r
 // resource in state.
 func testAccCheckEchoAttributeMatches(echoResource, echoAttribute, expectedResource, expectedAttribute string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		echoRs, ok := state.RootModule().Resources[echoResource]
-		if !ok {
-			return fmt.Errorf("echo resource not found: %s", echoResource)
+		echoValue, err := acctest.GetResourceAttributeValue(state, echoResource, "data."+echoAttribute)
+		if err != nil {
+			return err
 		}
 
-		expectedRs, ok := state.RootModule().Resources[expectedResource]
-		if !ok {
-			return fmt.Errorf("expected resource not found: %s", expectedResource)
-		}
-
-		echoValue := echoRs.Primary.Attributes["data."+echoAttribute]
-		if echoValue == "" {
-			return fmt.Errorf("echo resource attribute data.%s is empty", echoAttribute)
-		}
-
-		expectedValue := expectedRs.Primary.Attributes[expectedAttribute]
-		if expectedValue == "" {
-			return fmt.Errorf("expected attribute %s is empty", expectedAttribute)
+		expectedValue, err := acctest.GetResourceAttributeValue(state, expectedResource, expectedAttribute)
+		if err != nil {
+			return err
 		}
 
 		if echoValue != expectedValue {
@@ -325,7 +299,7 @@ func testAccCheckEchoAttributeMatches(echoResource, echoAttribute, expectedResou
 
 func testAccCheckEphemeralIamAPIKeyExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		key, err := getAccessKeyFromEchoResource(s, name)
+		key, err := acctest.GetResourceAttributeValue(s, name, "data.access_key")
 		if err != nil {
 			return err
 		}
