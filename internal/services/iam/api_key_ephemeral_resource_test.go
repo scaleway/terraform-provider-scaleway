@@ -65,7 +65,7 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 					}
 
 					resource "echo" "test_api_key" {}
-					`, description, expiresAt),
+				`, description, expiresAt),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("access_key"), knownvalue.StringRegexp(accessKeyPattern)),
 					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("description"), knownvalue.StringExact(description)),
@@ -119,14 +119,14 @@ func TestAccApiKeyEphemeralResource_DefaultProject(t *testing.T) {
 						expires_at = "%[2]s"
 						default_project_id = "%[3]s"
 						delete_on_close = false
-						}
+					}
 
 					provider "echo" {
 						data = ephemeral.scaleway_iam_api_key.main
 					}
 
 					resource "echo" "test_api_key" {}
-					`, description, expiresAt, projectID),
+				`, description, expiresAt, projectID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("access_key"), knownvalue.StringRegexp(accessKeyPattern)),
 					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("description"), knownvalue.StringExact(description)),
@@ -180,7 +180,7 @@ func TestAccApiKeyEphemeralResource_DeleteOnCloseDefault(t *testing.T) {
 					}
 
 					resource "echo" "test_api_key" {}
-					`, description, expiresAt),
+				`, description, expiresAt),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Default delete_on_close = true
 					// we rely on CheckDestroy to verify it was deleted.
@@ -232,7 +232,7 @@ func TestAccApiKeyEphemeralResource_DeleteOnCloseFalse(t *testing.T) {
 					}
 
 					resource "echo" "test_api_key" {}
-					`, description, expiresAt),
+				`, description, expiresAt),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("access_key"), knownvalue.StringRegexp(accessKeyPattern)),
 					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("description"), knownvalue.StringExact(description)),
