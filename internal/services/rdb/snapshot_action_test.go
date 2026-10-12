@@ -82,16 +82,16 @@ func isSnapshotCreated(tt *acctest.TestTools, instanceResourceName, snapshotName
 
 		var snapshots *rdbSDK.ListSnapshotsResponse
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			var err error
 
 			snapshots, err = api.ListSnapshots(&rdbSDK.ListSnapshotsRequest{
 				Region:     region,
 				InstanceID: new(id),
 				Name:       new(snapshotName),
-			}, scw.WithContext(context.Background()))
+			}, scw.WithContext(ctx))
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list snapshots: %w", err)

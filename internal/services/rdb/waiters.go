@@ -17,7 +17,7 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 
 	var instance *rdb.Instance
 
-	err := transport.RetryOn403(ctx, func() error {
+	_, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 		var err error
 
 		instance, err = api.WaitForInstance(&rdb.WaitForInstanceRequest{
@@ -27,7 +27,7 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
 
-		return err
+		return struct{}{}, err
 	})
 
 	return instance, err
@@ -41,7 +41,7 @@ func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Regi
 
 	var backup *rdb.DatabaseBackup
 
-	err := transport.RetryOn403(ctx, func() error {
+	_, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 		var err error
 
 		backup, err = api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
@@ -51,7 +51,7 @@ func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Regi
 			RetryInterval:    &retryInterval,
 		}, scw.WithContext(ctx))
 
-		return err
+		return struct{}{}, err
 	})
 
 	return backup, err
@@ -65,7 +65,7 @@ func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region,
 
 	var replica *rdb.ReadReplica
 
-	err := transport.RetryOn403(ctx, func() error {
+	_, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 		var err error
 
 		replica, err = api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
@@ -75,7 +75,7 @@ func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region,
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
 
-		return err
+		return struct{}{}, err
 	})
 
 	return replica, err
@@ -89,7 +89,7 @@ func waitForRDBSnapshot(ctx context.Context, api *rdb.API, region scw.Region, sn
 
 	var snapshot *rdb.Snapshot
 
-	err := transport.RetryOn403(ctx, func() error {
+	_, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 		var err error
 
 		snapshot, err = api.WaitForSnapshot(&rdb.WaitForSnapshotRequest{
@@ -99,7 +99,7 @@ func waitForRDBSnapshot(ctx context.Context, api *rdb.API, region scw.Region, sn
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
 
-		return err
+		return struct{}{}, err
 	})
 
 	return snapshot, err

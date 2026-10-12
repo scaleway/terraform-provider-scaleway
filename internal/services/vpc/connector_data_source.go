@@ -65,7 +65,7 @@ func dataSourceConnectorReadByID(ctx context.Context, d *schema.ResourceData, m 
 	id := locality.ExpandID(connectorID)
 	d.SetId(regional.NewIDString(region, id))
 
-	connector, err := transport.RetryOn403Value(ctx, func() (*vpc.VPCConnector, error) {
+	connector, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.VPCConnector, error) {
 		return vpcAPI.GetVPCConnector(&vpc.GetVPCConnectorRequest{
 			Region:         region,
 			VpcConnectorID: id,
@@ -99,7 +99,7 @@ func dataSourceConnectorReadByFilters(ctx context.Context, d *schema.ResourceDat
 		req.TargetVpcID = new(locality.ExpandID(targetVpcID.(string)))
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCConnectorsResponse, error) {
+	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListVPCConnectorsResponse, error) {
 		return vpcAPI.ListVPCConnectors(req, scw.WithContext(ctx))
 	})
 	if err != nil {

@@ -1,6 +1,7 @@
 package messageq_test
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -449,13 +450,13 @@ func testAccCheckMessageQAPIHasPrivateEndpoint(tt *acctest.TestTools, resourceNa
 
 		var deployment *messageqSDK.Deployment
 
-		err = transport.RetryOn403(tt.T.Context(), func() error {
+		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			deployment, err = api.GetDeployment(&messageqSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return err
@@ -485,13 +486,13 @@ func testAccCheckMessageQAPIHasNoPrivateEndpoint(tt *acctest.TestTools, resource
 
 		var deployment *messageqSDK.Deployment
 
-		err = transport.RetryOn403(tt.T.Context(), func() error {
+		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			deployment, err = api.GetDeployment(&messageqSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return err
@@ -528,13 +529,13 @@ func testAccCheckMessageQAPIPrivateNetworkID(tt *acctest.TestTools, resourceName
 
 		var deployment *messageqSDK.Deployment
 
-		err = transport.RetryOn403(tt.T.Context(), func() error {
+		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			deployment, err = api.GetDeployment(&messageqSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return err
@@ -578,13 +579,13 @@ func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			err = transport.RetryOn403(tt.T.Context(), func() error {
+			_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 				_, err = api.GetDeployment(&messageqSDK.GetDeploymentRequest{
 					Region:       region,
 					DeploymentID: id,
-				}, scw.WithContext(tt.T.Context()))
+				}, scw.WithContext(ctx))
 
-				return err
+				return struct{}{}, err
 			})
 			if err == nil {
 				return fmt.Errorf("deployment %s still exists", id)

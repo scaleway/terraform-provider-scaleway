@@ -8,6 +8,7 @@ import (
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -56,7 +57,7 @@ func dataSourceCockpitProductsRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	resp, err := retryOn403Value(ctx, func() (*cockpit.ListProductsResponse, error) {
+	resp, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListProductsResponse, error) {
 		return api.ListProducts(&cockpit.RegionalAPIListProductsRequest{
 			Region:  region,
 			OrderBy: cockpit.ListProductsRequestOrderByDisplayNameAsc,

@@ -1,6 +1,7 @@
 package keymanager_test
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"testing"
@@ -146,7 +147,7 @@ func IsKeyManagerKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			key, err := transport.RetryOn403Value(tt.T.Context(), func() (*key_manager.Key, error) {
+			key, err := transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (*key_manager.Key, error) {
 				return client.GetKey(&key_manager.GetKeyRequest{
 					Region: region,
 					KeyID:  keyID,

@@ -97,7 +97,7 @@ func (r *PrivateNetworkListResource) FetchPrivateNetworks(ctx context.Context, r
 		VpcID:          locality.ExpandFrameworkID(data.VpcID),
 	}
 
-	response, err := transport.RetryOn403Value(ctx, func() (*vpc.ListPrivateNetworksResponse, error) {
+	response, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListPrivateNetworksResponse, error) {
 		return r.vpcAPI.ListPrivateNetworks(listRequest, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {

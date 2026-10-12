@@ -108,7 +108,7 @@ func (r *VPCListResource) FetchVPCs(ctx context.Context, region scw.Region, proj
 		RoutingEnabled: data.RoutingEnabled.ValueBoolPointer(),
 	}
 
-	response, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCsResponse, error) {
+	response, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListVPCsResponse, error) {
 		return r.vpcAPI.ListVPCs(listRequest, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {

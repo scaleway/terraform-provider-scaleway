@@ -75,15 +75,15 @@ func isInstanceCertificateRenewed(tt *acctest.TestTools, instanceResourceName st
 
 		var instance *rdbSDK.Instance
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			var err error
 
 			instance, err = api.GetInstance(&rdbSDK.GetInstanceRequest{
 				Region:     region,
 				InstanceID: id,
-			}, scw.WithContext(context.Background()))
+			}, scw.WithContext(ctx))
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to get instance: %w", err)

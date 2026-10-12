@@ -219,13 +219,13 @@ func isSourcePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			_, err := api.GetDataSource(&cockpitSDK.RegionalAPIGetDataSourceRequest{
 				Region:       region,
 				DataSourceID: ID,
 			})
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return err

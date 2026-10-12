@@ -150,12 +150,12 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 
 	var secretResponse *secret.SecretVersion
 
-	err = transport.RetryOn403(ctx, func() error {
+	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 		var err error
 
 		secretResponse, err = api.CreateSecretVersion(secretCreateVersionRequest, scw.WithContext(ctx))
 
-		return err
+		return struct{}{}, err
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -188,7 +188,7 @@ func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	// Retry on 404 to handle eventual consistency issues
-	secretResponse, err := transport.RetryOn404(ctx, func(ctx context.Context) (*secret.SecretVersion, error) {
+	secretResponse, err := transport.RetryOnStatus(ctx, transport.NotFound, func(ctx context.Context) (*secret.SecretVersion, error) {
 		return api.GetSecretVersion(&secret.GetSecretVersionRequest{
 			Region:   region,
 			SecretID: id,
@@ -254,8 +254,8 @@ func ResourceVersionDelete(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	err = transport.RetryOn403(ctx, func() error {
-		return api.DeleteSecretVersion(&secret.DeleteSecretVersionRequest{
+	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		return struct{}{}, api.DeleteSecretVersion(&secret.DeleteSecretVersionRequest{
 			Region:   region,
 			SecretID: id,
 			Revision: revision,

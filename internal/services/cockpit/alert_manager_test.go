@@ -279,14 +279,14 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 
 		var contactPoints *cockpit.ListContactPointsResponse
 
-		err := transport.RetryOn403(context.Background(), func() error {
+		_, err := transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			var err error
 
 			contactPoints, err = api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 				ProjectID: projectID,
 			})
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return err
@@ -548,7 +548,7 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 
 		var alerts *cockpit.ListAlertsResponse
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			var err error
 
 			alerts, err = api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
@@ -557,7 +557,7 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 				IsPreconfigured: new(true),
 			}, scw.WithAllPages())
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list alerts: %w", err)
@@ -597,7 +597,7 @@ func testAccCheckManagedAlertsEnabled(tt *acctest.TestTools, resourceName string
 
 		var alertManager *cockpit.AlertManager
 
-		err := transport.RetryOn403(context.Background(), func() error {
+		_, err := transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			var err error
 
 			alertManager, err = api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
@@ -605,7 +605,7 @@ func testAccCheckManagedAlertsEnabled(tt *acctest.TestTools, resourceName string
 				ProjectID: projectID,
 			})
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return err

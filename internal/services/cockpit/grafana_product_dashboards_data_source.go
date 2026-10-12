@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -176,7 +177,7 @@ func (d *GrafanaProductDashboardsDataSource) Read(ctx context.Context, req datas
 		listReq.Tags = tags
 	}
 
-	apiResp, err := retryOn403Value(ctx, func() (*cockpit.ListGrafanaProductDashboardsResponse, error) {
+	apiResp, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListGrafanaProductDashboardsResponse, error) {
 		return d.globalAPI.ListGrafanaProductDashboards(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {

@@ -200,12 +200,12 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	var key *key_manager.Key
 
-	err = transport.RetryOn403(ctx, func() error {
+	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 		var err error
 
 		key, err = api.CreateKey(createReq)
 
-		return err
+		return struct{}{}, err
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -226,8 +226,8 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	// Retry on 403 while IAM permissions propagate, and on 404 to handle eventual consistency issues
-	key, err := transport.RetryOn403Value(ctx, func() (*key_manager.Key, error) {
-		return transport.RetryOn404(ctx, func(_ context.Context) (*key_manager.Key, error) {
+	key, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*key_manager.Key, error) {
+		return transport.RetryOnStatus(ctx, transport.NotFound, func(_ context.Context) (*key_manager.Key, error) {
 			return client.GetKey(&key_manager.GetKeyRequest{
 				Region: region,
 				KeyID:  keyID,
@@ -292,10 +292,10 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
-	err = transport.RetryOn403(ctx, func() error {
+	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 		_, err := client.UpdateKey(updateReq)
 
-		return err
+		return struct{}{}, err
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -310,8 +310,8 @@ func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	err = transport.RetryOn403(ctx, func() error {
-		return client.DeleteKey(&key_manager.DeleteKeyRequest{
+	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		return struct{}{}, client.DeleteKey(&key_manager.DeleteKeyRequest{
 			Region: region,
 			KeyID:  keyID,
 		})

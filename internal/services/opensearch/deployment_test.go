@@ -1,6 +1,7 @@
 package opensearch_test
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -480,13 +481,13 @@ func testAccCheckOpenSearchAPIHasPrivateEndpoint(tt *acctest.TestTools, resource
 
 		var deployment *searchdbSDK.Deployment
 
-		err = transport.RetryOn403(tt.T.Context(), func() error {
+		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			deployment, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return err
@@ -521,13 +522,13 @@ func testAccCheckOpenSearchAPIHasNoPrivateEndpoint(tt *acctest.TestTools, resour
 
 		var deployment *searchdbSDK.Deployment
 
-		err = transport.RetryOn403(tt.T.Context(), func() error {
+		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			deployment, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return err
@@ -570,13 +571,13 @@ func testAccCheckOpenSearchAPIPrivateNetworkID(tt *acctest.TestTools, resourceNa
 
 		var deployment *searchdbSDK.Deployment
 
-		err = transport.RetryOn403(tt.T.Context(), func() error {
+		_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			deployment, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return err
@@ -620,13 +621,13 @@ func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			err = transport.RetryOn403(tt.T.Context(), func() error {
+			_, err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 				_, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
 					Region:       region,
 					DeploymentID: id,
-				}, scw.WithContext(tt.T.Context()))
+				}, scw.WithContext(ctx))
 
-				return err
+				return struct{}{}, err
 			})
 			if err == nil {
 				return fmt.Errorf("deployment %s still exists", id)

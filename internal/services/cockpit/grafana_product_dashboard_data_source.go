@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -152,7 +153,7 @@ func (d *GrafanaProductDashboardDataSource) Read(ctx context.Context, req dataso
 
 	dashboardName := state.DashboardName.ValueString()
 
-	dashboard, err := retryOn403Value(ctx, func() (*cockpit.GrafanaProductDashboard, error) {
+	dashboard, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.GrafanaProductDashboard, error) {
 		return d.globalAPI.GetGrafanaProductDashboard(&cockpit.GlobalAPIGetGrafanaProductDashboardRequest{
 			ProjectID:     projectID,
 			DashboardName: dashboardName,

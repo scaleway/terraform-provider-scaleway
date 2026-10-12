@@ -76,7 +76,7 @@ func dataSourceRouteReadByID(ctx context.Context, d *schema.ResourceData, m any,
 	d.SetId(regionalID)
 	_ = d.Set("route_id", regionalID)
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.Route, error) {
+	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.Route, error) {
 		return vpcAPI.GetRoute(&vpc.GetRouteRequest{
 			Region:  region,
 			RouteID: locality.ExpandID(routeID),
@@ -113,7 +113,7 @@ func dataSourceRouteReadByFilters(ctx context.Context, d *schema.ResourceData, m
 		req.IsIPv6 = types.ExpandBoolPtr(isIPv6)
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListRoutesWithNexthopResponse, error) {
+	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListRoutesWithNexthopResponse, error) {
 		return routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx))
 	})
 	if err != nil {
@@ -148,7 +148,7 @@ func dataSourceRouteReadByFilters(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	fullRoute, err := transport.RetryOn403Value(ctx, func() (*vpc.Route, error) {
+	fullRoute, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.Route, error) {
 		return vpcAPI.GetRoute(&vpc.GetRouteRequest{
 			Region:  region,
 			RouteID: route.Route.ID,

@@ -246,7 +246,7 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 		req.Subnets = append(req.Subnets, ipv6Subnets...)
 	}
 
-	pn, err := transport.RetryOn403Value(ctx, func() (*vpc.PrivateNetwork, error) {
+	pn, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.PrivateNetwork, error) {
 		return vpcAPI.CreatePrivateNetwork(req, scw.WithContext(ctx))
 	})
 	if err != nil {
@@ -267,7 +267,7 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	pn, err := transport.RetryOn403Value(ctx, func() (*vpc.PrivateNetwork, error) {
+	pn, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.PrivateNetwork, error) {
 		return vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
 			PrivateNetworkID: ID,
 			Region:           region,
@@ -325,7 +325,7 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	err = transport.RetryOn403(ctx, func() error {
+	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 		_, err := vpcAPI.UpdatePrivateNetwork(&vpc.UpdatePrivateNetworkRequest{
 			PrivateNetworkID:               ID,
 			Region:                         region,
@@ -334,7 +334,7 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 			DefaultRoutePropagationEnabled: types.ExpandBoolPtr(d.Get("enable_default_route_propagation").(bool)),
 		}, scw.WithContext(ctx))
 
-		return err
+		return struct{}{}, err
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -350,8 +350,8 @@ func ResourceVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	err = retry.RetryContext(ctx, 2*time.Minute, func() *retry.RetryError {
-		err := transport.RetryOn403(ctx, func() error {
-			return vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
+		_, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+			return struct{}{}, vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
 				PrivateNetworkID: ID,
 				Region:           region,
 			}, scw.WithContext(ctx))

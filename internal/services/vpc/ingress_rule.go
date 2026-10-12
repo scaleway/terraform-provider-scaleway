@@ -122,7 +122,7 @@ func ResourceIngressRuleCreate(ctx context.Context, d *schema.ResourceData, m an
 		Tags:                    types.ExpandStrings(d.Get("tags")),
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.IngressRule, error) {
+	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.IngressRule, error) {
 		return vpcAPI.CreateIngressRule(req, scw.WithContext(ctx))
 	})
 	if err != nil {
@@ -145,7 +145,7 @@ func ResourceIngressRuleRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.IngressRule, error) {
+	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.IngressRule, error) {
 		return vpcAPI.GetIngressRule(&vpc.GetIngressRuleRequest{
 			Region: region,
 			RuleID: ID,
@@ -243,10 +243,10 @@ func ResourceIngressRuleUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	if hasChanged {
-		err = transport.RetryOn403(ctx, func() error {
+		_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
 			_, err := vpcAPI.UpdateIngressRule(updateRequest, scw.WithContext(ctx))
 
-			return err
+			return struct{}{}, err
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -262,8 +262,8 @@ func ResourceIngressRuleDelete(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	err = transport.RetryOn403(ctx, func() error {
-		return vpcAPI.DeleteIngressRule(&vpc.DeleteIngressRuleRequest{
+	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		return struct{}{}, vpcAPI.DeleteIngressRule(&vpc.DeleteIngressRuleRequest{
 			Region: region,
 			RuleID: ID,
 		}, scw.WithContext(ctx))

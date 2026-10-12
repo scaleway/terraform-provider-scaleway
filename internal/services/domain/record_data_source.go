@@ -46,7 +46,7 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 	recordIDRaw, ok := d.GetOk("record_id")
 	if !ok { // Get Record by dns_zone, name, type and data.
-		res, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZoneRecordsResponse, error) {
+		res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZoneRecordsResponse, error) {
 			return domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 				DNSZone:   dnsZone,
 				Name:      d.Get("name").(string),
@@ -96,7 +96,7 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 }
 
 func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, dnsZone, recordID string) diag.Diagnostics {
-	res, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZoneRecordsResponse, error) {
+	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZoneRecordsResponse, error) {
 		return domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
 			ID:      &recordID,
@@ -123,7 +123,7 @@ func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI 
 	// Data sources do not support Identity schema; use SetId directly.
 	d.SetId(fmt.Sprintf("%s/%s", dnsZone, record.ID))
 
-	dnsZones, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZonesResponse, error) {
+	dnsZones, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZonesResponse, error) {
 		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
 	})
 	if err != nil {

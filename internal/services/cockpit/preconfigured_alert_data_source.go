@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -130,7 +131,7 @@ func dataSourceCockpitPreconfiguredAlertRead(ctx context.Context, d *schema.Reso
 		req.RuleStatus = new(cockpit.AlertStatus(ruleStatus.(string)))
 	}
 
-	response, err := retryOn403Value(ctx, func() (*cockpit.ListAlertsResponse, error) {
+	response, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListAlertsResponse, error) {
 		return api.ListAlerts(req, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {

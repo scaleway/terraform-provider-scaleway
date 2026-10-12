@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -99,7 +100,7 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	res, err := retryOn403Value(ctx, func() (*cockpit.DataSource, error) {
+	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
 		return api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
 			Region:        region,
 			ProjectID:     d.Get("project_id").(string),
@@ -125,7 +126,7 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	res, err := retryOn403Value(ctx, func() (*cockpit.DataSource, error) {
+	res, err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
 		return api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
 			Region:       region,
 			DataSourceID: id,
@@ -185,7 +186,7 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChanges("retention_days", "name") {
-		_, err = retryOn403Value(ctx, func() (*cockpit.DataSource, error) {
+		_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
 			return api.UpdateDataSource(updateRequest, scw.WithContext(ctx))
 		})
 		if err != nil {
@@ -202,8 +203,8 @@ func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	err = retryOn403(ctx, func() error {
-		return api.DeleteDataSource(&cockpit.RegionalAPIDeleteDataSourceRequest{
+	_, err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) (struct{}, error) {
+		return struct{}{}, api.DeleteDataSource(&cockpit.RegionalAPIDeleteDataSourceRequest{
 			DataSourceID: id,
 			Region:       region,
 		}, scw.WithContext(ctx))
