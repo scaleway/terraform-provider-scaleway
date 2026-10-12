@@ -99,6 +99,8 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					resource.TestMatchResourceAttr("scaleway_block_snapshot.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
 					resource.TestMatchResourceAttr("data.scaleway_block_snapshot.find_by_name", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
 					resource.TestMatchResourceAttr("data.scaleway_block_snapshot.find_by_id", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
+					resource.TestCheckResourceAttr("data.scaleway_block_snapshot.find_by_name", "status", "available"),
+					resource.TestCheckResourceAttr("data.scaleway_block_snapshot.find_by_id", "status", "available"),
 				),
 			},
 		},
