@@ -134,12 +134,15 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	dnsZone, err = transport.RetryOn403Value(ctx, func() (*domain.DNSZone, error) {
-		return domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
-			ProjectID: projectID,
-			Domain:    domainName,
-			Subdomain: subdomainName,
-		}, scw.WithContext(ctx))
+	// A freshly created project may not be known by the domain API yet (404 "project id not found").
+	dnsZone, err = transport.RetryOn404(ctx, func(ctx context.Context) (*domain.DNSZone, error) {
+		return transport.RetryOn403Value(ctx, func() (*domain.DNSZone, error) {
+			return domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
+				ProjectID: projectID,
+				Domain:    domainName,
+				Subdomain: subdomainName,
+			}, scw.WithContext(ctx))
+		})
 	})
 	if err != nil {
 		// Handle case where zone was already created by another process (409 conflict)
@@ -170,10 +173,11 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	var zone *domain.DNSZone
 
+	// No project filter: a zone name is unique, and filtering by a freshly created project
+	// intermittently returns an empty list right after the zone is created.
 	zones, err := transport.RetryOn403Value(ctx, func() (*domain.ListDNSZonesResponse, error) {
 		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-			DNSZones:  []string{d.Id()},
+			DNSZones: []string{d.Id()},
 		}, scw.WithContext(ctx))
 	})
 	if err != nil {
