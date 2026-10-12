@@ -63,3 +63,4 @@ In addition to all above arguments, the following attributes are exported:
     - `srn` - The Scaleway Resource Name (SRN) of the snapshot.
     - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the snapshot is.
     - `project_id` - The ID of the Project the snapshot is associated with.
+    - `status` - The current status of the snapshot (`available`, `in_use`, `error`, ...).
