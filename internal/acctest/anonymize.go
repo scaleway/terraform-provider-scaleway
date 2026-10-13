@@ -19,6 +19,7 @@ var SensitiveFields = map[string]any{
 	"new_password":  "xxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 	"email":         "tf_test@example.com",
+	"data":          "MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAw",
 }
 
 // LeakCheckFields: fields checked on request body only (responses ignored).
@@ -38,6 +39,7 @@ var LeakCheckFields = map[string]any{
 // values (e.g. cockpit contact points).
 var FieldNamespaces = map[string]string{
 	"email": "/partner/",
+	"data":  "/secret-manager/",
 }
 
 var HeaderPlaceholders = map[string]string{ //nolint: gosec // G101: placeholder values for anonymization

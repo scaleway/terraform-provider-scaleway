@@ -8,140 +8,202 @@ interactions:
         proto_minor: 1
         content_length: 129
         host: api.scaleway.com
-        body: '{"name":"tf-test-scaleway-project-3945167171772574439","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":""}'
+        body: '{"name":"tf-test-scaleway-project-3913945635079322686","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":""}'
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/account/v3/projects
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 286
-        body: '{"id":"18f4efa6-81ae-42da-9fd5-0f7ebffac67e", "name":"tf-test-scaleway-project-3945167171772574439", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:02.354992Z", "updated_at":"2026-06-12T15:42:02.354992Z", "description":"", "qualification":null}'
+        content_length: 373
+        body: '{"srn":"srn://account.scw.eu/projects/d35616d0-f1d4-433b-b2d0-345579e106c7","id":"d35616d0-f1d4-433b-b2d0-345579e106c7","name":"tf-test-scaleway-project-3913945635079322686","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:41:40.398358Z","updated_at":"2026-10-07T13:41:40.398358Z","description":"","qualification":null,"status":"active"}'
         headers:
             Content-Length:
-                - "286"
+                - "373"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:02 GMT
+                - Wed, 07 Oct 2026 13:41:40 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - ffaf4968-050a-4a4e-a3bc-3f0446a9a5db
+                - b829eec1-a1f6-4d25-ab5c-7dd0ef2d10e4
         status: 200 OK
         code: 200
-        duration: 1.641941316s
+        duration: 621.851205ms
     - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/metadata
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 59
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
+        headers:
+            Content-Length:
+                - "59"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:41:40 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - c5b3aa38-780b-4fab-a17a-591cb9a401e9
+        status: 200 OK
+        code: 200
+        duration: 17.362206ms
+    - id: 2
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 141
         host: api.scaleway.com
-        body: '{"name":"tf-test-scaleway-iam-app-4086008549729153376","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":"","tags":null}'
+        body: '{"name":"tf-test-scaleway-iam-app-8034213395406981284","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":"","tags":null}'
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/iam/v1alpha1/applications
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 344
-        body: '{"id":"797196f6-d8af-404e-a8cb-aa5f9e07de3a", "name":"tf-test-scaleway-iam-app-4086008549729153376", "description":"", "created_at":"2026-06-12T15:42:02.876610Z", "updated_at":"2026-06-12T15:42:02.876610Z", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "editable":true, "deletable":true, "managed":false, "nb_api_keys":0, "tags":[]}'
+        content_length: 409
+        body: '{"srn":"srn://iam.scw.eu/applications/6025cb4c-ac3a-4914-be90-7fde0e898745","id":"6025cb4c-ac3a-4914-be90-7fde0e898745","name":"tf-test-scaleway-iam-app-8034213395406981284","description":"","created_at":"2026-10-07T13:41:40.938107Z","updated_at":"2026-10-07T13:41:40.938107Z","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","editable":true,"deletable":true,"managed":false,"nb_api_keys":0,"tags":[]}'
         headers:
             Content-Length:
-                - "344"
+                - "409"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:02 GMT
+                - Wed, 07 Oct 2026 13:41:40 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 391c4a66-2b67-4bd4-9309-6936c8b550c8
+                - 76c0ce39-80cc-4d06-aadf-b54360971012
         status: 200 OK
         code: 200
-        duration: 157.201708ms
-    - id: 2
+        duration: 155.899515ms
+    - id: 3
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 322
         host: api.scaleway.com
-        body: '{"name":"tf-test-scaleway-iam-policy-5873824897653104896","description":"","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","rules":[{"permission_set_names":["IAMManager"],"condition":"","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}],"tags":null,"application_id":"797196f6-d8af-404e-a8cb-aa5f9e07de3a"}'
+        body: '{"name":"tf-test-scaleway-iam-policy-8734393462001916794","description":"","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","rules":[{"permission_set_names":["IAMManager"],"condition":"","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}],"tags":null,"application_id":"6025cb4c-ac3a-4914-be90-7fde0e898745"}'
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/iam/v1alpha1/policies
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 440
-        body: '{"id":"86dafdfe-f6ac-4d3b-9510-e5c1b306056c", "name":"tf-test-scaleway-iam-policy-5873824897653104896", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:04.773731Z", "updated_at":"2026-06-12T15:42:04.773731Z", "editable":true, "deletable":true, "managed":false, "nb_rules":0, "nb_scopes":0, "nb_permission_sets":0, "tags":[], "application_id":"797196f6-d8af-404e-a8cb-aa5f9e07de3a"}'
+        content_length: 498
+        body: '{"srn":"srn://iam.scw.eu/policies/0ad871b5-9f77-45ab-9c93-7333dde78707","id":"0ad871b5-9f77-45ab-9c93-7333dde78707","name":"tf-test-scaleway-iam-policy-8734393462001916794","description":"","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:41:41.016322Z","updated_at":"2026-10-07T13:41:41.016322Z","editable":true,"deletable":true,"managed":false,"nb_rules":0,"nb_scopes":0,"nb_permission_sets":0,"tags":[],"application_id":"6025cb4c-ac3a-4914-be90-7fde0e898745"}'
         headers:
             Content-Length:
-                - "440"
+                - "498"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:04 GMT
+                - Wed, 07 Oct 2026 13:41:41 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - c7f1c2b2-e339-42d9-ae70-bfe1e2fb4a0b
+                - 0ccf9761-a3b7-45d0-b45b-75ea6aea9b66
         status: 200 OK
         code: 200
-        duration: 2.052955143s
-    - id: 3
+        duration: 94.116247ms
+    - id: 4
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 134
         host: api.scaleway.com
-        body: '{"application_id":"797196f6-d8af-404e-a8cb-aa5f9e07de3a","default_project_id":"18f4efa6-81ae-42da-9fd5-0f7ebffac67e","description":""}'
+        body: '{"application_id":"6025cb4c-ac3a-4914-be90-7fde0e898745","default_project_id":"d35616d0-f1d4-433b-b2d0-345579e106c7","description":""}'
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/iam/v1alpha1/api-keys
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 417
-        body: '{"access_key":"SCW4HWRPJPZB3GQ7QKFJ", "secret_key":"11111111-1111-1111-1111-111111111111", "description":"", "created_at":"2026-06-12T15:42:05.630926Z", "updated_at":"2026-06-12T15:42:05.630926Z", "expires_at":null, "default_project_id":"18f4efa6-81ae-42da-9fd5-0f7ebffac67e", "editable":true, "deletable":true, "managed":false, "creation_ip":"88.189.216.157", "application_id":"797196f6-d8af-404e-a8cb-aa5f9e07de3a"}'
+        content_length: 470
+        body: '{"srn":"srn://iam.scw.eu/api-keys/SCWQW79E3D29RH7HTMBW", "access_key":"SCWXXXXXXXXXXXXXXXXX", "secret_key":"11111111-1111-1111-1111-111111111111", "description":"", "created_at":"2026-10-07T13:41:41.234846Z", "updated_at":"2026-10-07T13:41:41.234846Z", "expires_at":null, "default_project_id":"d35616d0-f1d4-433b-b2d0-345579e106c7", "editable":true, "deletable":true, "managed":false, "creation_ip":"88.178.0.12", "application_id":"6025cb4c-ac3a-4914-be90-7fde0e898745"}'
         headers:
             Content-Length:
-                - "417"
+                - "470"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:05 GMT
+                - Wed, 07 Oct 2026 13:41:41 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 14b37fee-5321-46d4-b3bc-e5f3af454d0e
+                - bfee6a81-621c-451b-a39a-bff0d8d64a20
         status: 200 OK
         code: 200
-        duration: 735.521537ms
-    - id: 4
+        duration: 205.001934ms
+    - id: 5
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -153,61 +215,35 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/iam/v1alpha1/policies
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 388
-        body: '{"id":"09c4ac7a-413f-4f55-a838-a14684cdc95e", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:07.154376Z", "updated_at":"2026-06-12T15:42:07.154376Z", "editable":true, "deletable":true, "managed":false, "nb_rules":0, "nb_scopes":0, "nb_permission_sets":0, "tags":[], "no_principal":true}'
+        content_length: 460
+        body: '{"srn":"srn://iam.scw.eu/policies/b679df34-922f-4ca4-b1ea-c9595f53e861", "id":"b679df34-922f-4ca4-b1ea-c9595f53e861", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:35.507195Z", "updated_at":"2026-10-07T13:42:35.507195Z", "editable":true, "deletable":true, "managed":false, "nb_rules":0, "nb_scopes":0, "nb_permission_sets":0, "tags":[], "no_principal":true}'
         headers:
             Content-Length:
-                - "388"
+                - "460"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:07 GMT
+                - Wed, 07 Oct 2026 13:42:35 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "44"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 93288017-d10b-48a9-9ea5-5622701dee60
+                - 11b99923-b306-4e52-b664-64b0b0d9270b
         status: 200 OK
         code: 200
-        duration: 919.203592ms
-    - id: 5
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/09c4ac7a-413f-4f55-a838-a14684cdc95e
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 388
-        body: '{"id":"09c4ac7a-413f-4f55-a838-a14684cdc95e", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:07.154376Z", "updated_at":"2026-06-12T15:42:07.154376Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}'
-        headers:
-            Content-Length:
-                - "388"
-            Content-Type:
-                - application/json
-            Date:
-                - Fri, 12 Jun 2026 15:42:07 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 5205b137-ff2d-47aa-a817-6d55491450e6
-        status: 200 OK
-        code: 200
-        duration: 109.021994ms
+        duration: 145.611412ms
     - id: 6
       request:
         proto: HTTP/1.1
@@ -215,34 +251,37 @@ interactions:
         proto_minor: 1
         content_length: 0
         host: api.scaleway.com
-        form:
-            policy_id:
-                - 09c4ac7a-413f-4f55-a838-a14684cdc95e
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/metadata
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 243
-        body: '{"rules":[{"id":"462827a0-719b-49b7-bb44-61a161ed5b4c", "permission_set_names":["ContainerRegistryReadOnly"], "permission_sets_scope_type":"projects", "condition":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}], "total_count":1}'
+        content_length: 59
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
         headers:
             Content-Length:
-                - "243"
+                - "59"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:07 GMT
+                - Wed, 07 Oct 2026 13:42:35 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "43"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 15507e6d-a34b-42a9-91e9-402427a5e1f8
+                - 88d0ddb2-9aef-4b29-bdef-9707a0d697c5
         status: 200 OK
         code: 200
-        duration: 108.972129ms
+        duration: 15.70281ms
     - id: 7
       request:
         proto: HTTP/1.1
@@ -252,29 +291,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/b679df34-922f-4ca4-b1ea-c9595f53e861
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 388
-        body: '{"id":"09c4ac7a-413f-4f55-a838-a14684cdc95e", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:07.154376Z", "updated_at":"2026-06-12T15:42:07.154376Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}'
+        content_length: 446
+        body: '{"srn":"srn://iam.scw.eu/policies/b679df34-922f-4ca4-b1ea-c9595f53e861","id":"b679df34-922f-4ca4-b1ea-c9595f53e861","name":"test-policy-list-1","description":"Test policy 1","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:42:35.507195Z","updated_at":"2026-10-07T13:42:35.507195Z","editable":true,"deletable":true,"managed":false,"nb_rules":1,"nb_scopes":1,"nb_permission_sets":1,"tags":[],"no_principal":true}'
         headers:
             Content-Length:
-                - "388"
+                - "446"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:07 GMT
+                - Wed, 07 Oct 2026 13:42:35 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 619a66ad-c4be-471c-8200-c7652d38ee7a
+                - a90be175-758b-4e6d-ba50-586d498cc645
         status: 200 OK
         code: 200
-        duration: 67.416411ms
+        duration: 95.005861ms
     - id: 8
       request:
         proto: HTTP/1.1
@@ -284,32 +329,38 @@ interactions:
         host: api.scaleway.com
         form:
             policy_id:
-                - 09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - b679df34-922f-4ca4-b1ea-c9595f53e861
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=b679df34-922f-4ca4-b1ea-c9595f53e861
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 243
-        body: '{"rules":[{"id":"462827a0-719b-49b7-bb44-61a161ed5b4c", "permission_set_names":["ContainerRegistryReadOnly"], "permission_sets_scope_type":"projects", "condition":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}], "total_count":1}'
+        content_length: 306
+        body: '{"rules":[{"srn":"srn://iam.scw.eu/rules/29e6ee77-ebfb-4a4e-a3de-fcdd7ac622f3","id":"29e6ee77-ebfb-4a4e-a3de-fcdd7ac622f3","permission_set_names":["ContainerRegistryReadOnly"],"permission_sets_scope_type":"projects","condition":"","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}],"total_count":1}'
         headers:
             Content-Length:
-                - "243"
+                - "306"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:08 GMT
+                - Wed, 07 Oct 2026 13:42:35 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "42"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 77fad6b4-a6bc-4ec1-b606-03fdf47c2854
+                - c48f8db3-c487-46ba-ae05-c637dd6b515a
         status: 200 OK
         code: 200
-        duration: 97.273343ms
+        duration: 93.338658ms
     - id: 9
       request:
         proto: HTTP/1.1
@@ -319,29 +370,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/b679df34-922f-4ca4-b1ea-c9595f53e861
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 388
-        body: '{"id":"09c4ac7a-413f-4f55-a838-a14684cdc95e", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:07.154376Z", "updated_at":"2026-06-12T15:42:07.154376Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}'
+        content_length: 460
+        body: '{"srn":"srn://iam.scw.eu/policies/b679df34-922f-4ca4-b1ea-c9595f53e861", "id":"b679df34-922f-4ca4-b1ea-c9595f53e861", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:35.507195Z", "updated_at":"2026-10-07T13:42:35.507195Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}'
         headers:
             Content-Length:
-                - "388"
+                - "460"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:08 GMT
+                - Wed, 07 Oct 2026 13:42:36 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 8fcec444-a8fb-4b39-82d6-b9bb92c464ef
+                - f03a516d-8f90-46aa-90e1-ec557f48048f
         status: 200 OK
         code: 200
-        duration: 111.356363ms
+        duration: 83.45239ms
     - id: 10
       request:
         proto: HTTP/1.1
@@ -351,33 +408,118 @@ interactions:
         host: api.scaleway.com
         form:
             policy_id:
-                - 09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - b679df34-922f-4ca4-b1ea-c9595f53e861
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=b679df34-922f-4ca4-b1ea-c9595f53e861
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 243
-        body: '{"rules":[{"id":"462827a0-719b-49b7-bb44-61a161ed5b4c", "permission_set_names":["ContainerRegistryReadOnly"], "permission_sets_scope_type":"projects", "condition":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}], "total_count":1}'
+        content_length: 312
+        body: '{"rules":[{"srn":"srn://iam.scw.eu/rules/29e6ee77-ebfb-4a4e-a3de-fcdd7ac622f3", "id":"29e6ee77-ebfb-4a4e-a3de-fcdd7ac622f3", "permission_set_names":["ContainerRegistryReadOnly"], "permission_sets_scope_type":"projects", "condition":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}], "total_count":1}'
         headers:
             Content-Length:
-                - "243"
+                - "312"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:08 GMT
+                - Wed, 07 Oct 2026 13:42:36 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 7dd903c9-e8ab-4430-974d-60e7658783b2
+                - 6c4b6b0a-a0cd-4fc6-a63e-be5dffac8122
         status: 200 OK
         code: 200
-        duration: 51.976518ms
+        duration: 39.325182ms
     - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/b679df34-922f-4ca4-b1ea-c9595f53e861
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 446
+        body: '{"srn":"srn://iam.scw.eu/policies/b679df34-922f-4ca4-b1ea-c9595f53e861","id":"b679df34-922f-4ca4-b1ea-c9595f53e861","name":"test-policy-list-1","description":"Test policy 1","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:42:35.507195Z","updated_at":"2026-10-07T13:42:35.507195Z","editable":true,"deletable":true,"managed":false,"nb_rules":1,"nb_scopes":1,"nb_permission_sets":1,"tags":[],"no_principal":true}'
+        headers:
+            Content-Length:
+                - "446"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:37 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "45"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - f5ae1aa2-252c-4bd3-8b1d-aec8e1dfd002
+        status: 200 OK
+        code: 200
+        duration: 92.92993ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            policy_id:
+                - b679df34-922f-4ca4-b1ea-c9595f53e861
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=b679df34-922f-4ca4-b1ea-c9595f53e861
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 306
+        body: '{"rules":[{"srn":"srn://iam.scw.eu/rules/29e6ee77-ebfb-4a4e-a3de-fcdd7ac622f3","id":"29e6ee77-ebfb-4a4e-a3de-fcdd7ac622f3","permission_set_names":["ContainerRegistryReadOnly"],"permission_sets_scope_type":"projects","condition":"","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}],"total_count":1}'
+        headers:
+            Content-Length:
+                - "306"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:37 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 3035b45a-5152-4e4c-81d4-789d0377e6b1
+        status: 200 OK
+        code: 200
+        duration: 40.004088ms
+    - id: 13
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -389,96 +531,35 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/iam/v1alpha1/policies
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 398
-        body: '{"id":"f7d02d53-d0f5-4aff-83d5-784a65437519", "name":"test-policy-list-2", "description":"Test policy 2", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:08.960546Z", "updated_at":"2026-06-12T15:42:08.960546Z", "editable":true, "deletable":true, "managed":false, "nb_rules":0, "nb_scopes":0, "nb_permission_sets":0, "tags":["test-tag"], "no_principal":true}'
+        content_length: 456
+        body: '{"srn":"srn://iam.scw.eu/policies/c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c","id":"c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c","name":"test-policy-list-2","description":"Test policy 2","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:42:38.647605Z","updated_at":"2026-10-07T13:42:38.647605Z","editable":true,"deletable":true,"managed":false,"nb_rules":0,"nb_scopes":0,"nb_permission_sets":0,"tags":["test-tag"],"no_principal":true}'
         headers:
             Content-Length:
-                - "398"
+                - "456"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:09 GMT
+                - Wed, 07 Oct 2026 13:42:38 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 01746e13-f886-4cb9-a97b-e5849cec695c
+                - 5fb862dc-bcea-4326-8f38-84d7f0073811
         status: 200 OK
         code: 200
-        duration: 153.510942ms
-    - id: 12
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/f7d02d53-d0f5-4aff-83d5-784a65437519
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 398
-        body: '{"id":"f7d02d53-d0f5-4aff-83d5-784a65437519", "name":"test-policy-list-2", "description":"Test policy 2", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:08.960546Z", "updated_at":"2026-06-12T15:42:08.960546Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["test-tag"], "no_principal":true}'
-        headers:
-            Content-Length:
-                - "398"
-            Content-Type:
-                - application/json
-            Date:
-                - Fri, 12 Jun 2026 15:42:09 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 751a8704-4b9a-4c91-900e-2acd8a62de1d
-        status: 200 OK
-        code: 200
-        duration: 41.965662ms
-    - id: 13
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        form:
-            policy_id:
-                - f7d02d53-d0f5-4aff-83d5-784a65437519
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=f7d02d53-d0f5-4aff-83d5-784a65437519
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 237
-        body: '{"rules":[{"id":"7490156c-eaf3-4436-952e-83ddf84eecef", "permission_set_names":["AllProductsReadOnly"], "permission_sets_scope_type":"projects", "condition":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}], "total_count":1}'
-        headers:
-            Content-Length:
-                - "237"
-            Content-Type:
-                - application/json
-            Date:
-                - Fri, 12 Jun 2026 15:42:09 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 25664ea2-3601-4fa9-93b4-ca89f2aef356
-        status: 200 OK
-        code: 200
-        duration: 52.994311ms
+        duration: 137.970404ms
     - id: 14
       request:
         proto: HTTP/1.1
@@ -488,29 +569,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 388
-        body: '{"id":"09c4ac7a-413f-4f55-a838-a14684cdc95e", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:07.154376Z", "updated_at":"2026-06-12T15:42:07.154376Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}'
+        content_length: 456
+        body: '{"srn":"srn://iam.scw.eu/policies/c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c","id":"c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c","name":"test-policy-list-2","description":"Test policy 2","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:42:38.647605Z","updated_at":"2026-10-07T13:42:38.647605Z","editable":true,"deletable":true,"managed":false,"nb_rules":1,"nb_scopes":1,"nb_permission_sets":1,"tags":["test-tag"],"no_principal":true}'
         headers:
             Content-Length:
-                - "388"
+                - "456"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:09 GMT
+                - Wed, 07 Oct 2026 13:42:38 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 8a68e3bf-dc05-4fbd-970b-ba18511fcac7
+                - 240914e9-145a-49e2-b132-23f71675a825
         status: 200 OK
         code: 200
-        duration: 78.336884ms
+        duration: 49.628485ms
     - id: 15
       request:
         proto: HTTP/1.1
@@ -518,31 +605,40 @@ interactions:
         proto_minor: 1
         content_length: 0
         host: api.scaleway.com
+        form:
+            policy_id:
+                - c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/f7d02d53-d0f5-4aff-83d5-784a65437519
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 398
-        body: '{"id":"f7d02d53-d0f5-4aff-83d5-784a65437519", "name":"test-policy-list-2", "description":"Test policy 2", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:08.960546Z", "updated_at":"2026-06-12T15:42:08.960546Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["test-tag"], "no_principal":true}'
+        content_length: 300
+        body: '{"rules":[{"srn":"srn://iam.scw.eu/rules/a6ff2f4c-ddba-4c8e-bb50-43fd2dc65203","id":"a6ff2f4c-ddba-4c8e-bb50-43fd2dc65203","permission_set_names":["AllProductsReadOnly"],"permission_sets_scope_type":"projects","condition":"","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}],"total_count":1}'
         headers:
             Content-Length:
-                - "398"
+                - "300"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:09 GMT
+                - Wed, 07 Oct 2026 13:42:38 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "44"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - c53381f3-af95-4324-a48f-64c5fb6b5be3
+                - 0ec9da61-7205-4406-837f-c8d9e31a2241
         status: 200 OK
         code: 200
-        duration: 92.752702ms
+        duration: 51.845993ms
     - id: 16
       request:
         proto: HTTP/1.1
@@ -550,35 +646,76 @@ interactions:
         proto_minor: 1
         content_length: 0
         host: api.scaleway.com
-        form:
-            policy_id:
-                - 09c4ac7a-413f-4f55-a838-a14684cdc95e
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/b679df34-922f-4ca4-b1ea-c9595f53e861
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 243
-        body: '{"rules":[{"id":"462827a0-719b-49b7-bb44-61a161ed5b4c", "permission_set_names":["ContainerRegistryReadOnly"], "permission_sets_scope_type":"projects", "condition":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}], "total_count":1}'
+        content_length: 460
+        body: '{"srn":"srn://iam.scw.eu/policies/b679df34-922f-4ca4-b1ea-c9595f53e861", "id":"b679df34-922f-4ca4-b1ea-c9595f53e861", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:35.507195Z", "updated_at":"2026-10-07T13:42:35.507195Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}'
         headers:
             Content-Length:
-                - "243"
+                - "460"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:09 GMT
+                - Wed, 07 Oct 2026 13:42:39 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 392ed144-0918-4b06-94f3-4fdcb60e4c56
+                - 3522aab9-b86e-4af4-b4fd-41d7c6d2964b
         status: 200 OK
         code: 200
-        duration: 52.933977ms
+        duration: 36.094601ms
     - id: 17
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 456
+        body: '{"srn":"srn://iam.scw.eu/policies/c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c","id":"c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c","name":"test-policy-list-2","description":"Test policy 2","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:42:38.647605Z","updated_at":"2026-10-07T13:42:38.647605Z","editable":true,"deletable":true,"managed":false,"nb_rules":1,"nb_scopes":1,"nb_permission_sets":1,"tags":["test-tag"],"no_principal":true}'
+        headers:
+            Content-Length:
+                - "456"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:39 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "44"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - b44f3b40-cc0c-44bc-b4bc-41d7832eb1ea
+        status: 200 OK
+        code: 200
+        duration: 46.081159ms
+    - id: 18
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -587,33 +724,80 @@ interactions:
         host: api.scaleway.com
         form:
             policy_id:
-                - f7d02d53-d0f5-4aff-83d5-784a65437519
+                - b679df34-922f-4ca4-b1ea-c9595f53e861
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=f7d02d53-d0f5-4aff-83d5-784a65437519
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=b679df34-922f-4ca4-b1ea-c9595f53e861
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 237
-        body: '{"rules":[{"id":"7490156c-eaf3-4436-952e-83ddf84eecef", "permission_set_names":["AllProductsReadOnly"], "permission_sets_scope_type":"projects", "condition":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}], "total_count":1}'
+        content_length: 312
+        body: '{"rules":[{"srn":"srn://iam.scw.eu/rules/29e6ee77-ebfb-4a4e-a3de-fcdd7ac622f3", "id":"29e6ee77-ebfb-4a4e-a3de-fcdd7ac622f3", "permission_set_names":["ContainerRegistryReadOnly"], "permission_sets_scope_type":"projects", "condition":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}], "total_count":1}'
         headers:
             Content-Length:
-                - "237"
+                - "312"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:09 GMT
+                - Wed, 07 Oct 2026 13:42:39 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - e9929f0d-1cb1-4669-9ed0-a43f8be2657b
+                - 05d2e042-04aa-43dc-9454-594f85759548
         status: 200 OK
         code: 200
-        duration: 51.781309ms
-    - id: 18
+        duration: 45.930897ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            policy_id:
+                - c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/rules?policy_id=c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 300
+        body: '{"rules":[{"srn":"srn://iam.scw.eu/rules/a6ff2f4c-ddba-4c8e-bb50-43fd2dc65203","id":"a6ff2f4c-ddba-4c8e-bb50-43fd2dc65203","permission_set_names":["AllProductsReadOnly"],"permission_sets_scope_type":"projects","condition":"","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}],"total_count":1}'
+        headers:
+            Content-Length:
+                - "300"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:39 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "43"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - d79745b9-c433-410c-87d5-3597b52c4e14
+        status: 200 OK
+        code: 200
+        duration: 96.506041ms
+    - id: 20
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -629,30 +813,36 @@ interactions:
                 - "1"
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/iam/v1alpha1/policies?order_by=policy_name_asc&organization_id=11111111-1111-1111-1111-111111111111&page=1
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 10344
-        body: '{"policies":[{"id":"c1214ec3-4d8e-4f04-96b7-07158a0ea805", "name":"Audit Trail - Read Only", "description":"Audit Trail team has requested access to our Audit Trail events in Read Only, in order to investigate the events generated for each product during our nightly tests.", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-01-19T14:14:31.033134Z", "updated_at":"2026-01-19T14:14:31.033134Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"db32fc9e-e4f6-4c65-baa1-c6ceaa7a04a9"}, {"id":"8e7692cc-a0c9-44e9-989d-2cda3039ad3f", "name":"Group - Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T13:58:31.167738Z", "updated_at":"2023-01-18T17:01:03.768470Z", "editable":true, "deletable":true, "managed":false, "nb_rules":3, "nb_scopes":2, "nb_permission_sets":12, "tags":[], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"id":"373b7611-4796-4bfe-ac6c-508e76b7da84", "name":"Group - Billing Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T14:15:39.605605Z", "updated_at":"2022-07-13T14:15:39.605605Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":2, "tags":[], "group_id":"a6e3c206-f142-4319-98e1-d8f2513570c4"}, {"id":"214ac9dc-1462-4400-ae46-e7c07ef2d341", "name":"Group - Editors", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T14:08:44.770662Z", "updated_at":"2022-07-13T14:08:44.770662Z", "editable":true, "deletable":true, "managed":false, "nb_rules":2, "nb_scopes":2, "nb_permission_sets":4, "tags":[], "group_id":"ab38ef63-a3ed-41b5-8998-dd8be1901047"}, {"id":"d7bcb410-6a62-4566-b0c2-108c8905e346", "name":"IAMManager Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-12-01T12:52:21.271957Z", "updated_at":"2022-12-01T12:52:21.271957Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"id":"55ed9fa3-ba93-44a4-9c9b-e127210253f8", "name":"nigthly-object-policy", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2024-09-09T14:00:00.174444Z", "updated_at":"2024-09-09T14:05:21.842982Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["="], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"id":"15d8aae3-a0c2-477e-8469-10df8f565b78", "name":"Project - default (105bdce1)", "description":"API keys on project default", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-05T13:52:38.072110Z", "updated_at":"2022-07-05T13:52:38.072110Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"1e467c5f-3c82-441f-a186-7cc3b5173599"}, {"id":"5bfe38ec-b3fb-4437-9fa3-ed16b0dfacc0", "name":"Project - Guest (50ab77d5)", "description":"Default policy for API keys on project Guest (50ab77d5)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-11-04T16:35:06.038058Z", "updated_at":"2022-11-04T16:35:06.038058Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"id":"1feb354f-2ec8-4365-b14a-ca8bf67651e3", "name":"Project - Packer Plugin Scaleway (c567f266)", "description":"Default policy for API keys on project Packer Plugin Scaleway (c567f266)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-08-03T12:39:07.152811Z", "updated_at":"2022-08-03T12:39:07.152811Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"id":"fb950aca-67d7-4d56-bebc-5223be6cea83", "name":"Project - SDK Python (fe479fbe)", "description":"Default policy for API keys on project SDK Python (fe479fbe)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-11-25T09:25:12.994244Z", "updated_at":"2022-11-25T09:25:12.994244Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"id":"09c4ac7a-413f-4f55-a838-a14684cdc95e", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:07.154376Z", "updated_at":"2026-06-12T15:42:07.154376Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"id":"f7d02d53-d0f5-4aff-83d5-784a65437519", "name":"test-policy-list-2", "description":"Test policy 2", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:08.960546Z", "updated_at":"2026-06-12T15:42:08.960546Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["test-tag"], "no_principal":true}, {"id":"86dafdfe-f6ac-4d3b-9510-e5c1b306056c", "name":"tf-test-scaleway-iam-policy-5873824897653104896", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:04.773731Z", "updated_at":"2026-06-12T15:42:04.773731Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"797196f6-d8af-404e-a8cb-aa5f9e07de3a"}, {"id":"f16f6bff-4eea-48b1-b9f3-9373f5902e60", "name":"VPN Gateway 09ab475e-7efa-49fb-b1d1-03567da95268", "description":"Managed policy for connections of VPN Gateway 09ab475e-7efa-49fb-b1d1-03567da95268", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-03-26T02:07:04.500260Z", "updated_at":"2026-03-26T02:07:04.500260Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=09ab475e-7efa-49fb-b1d1-03567da95268"], "application_id":"8daaae3b-cade-4891-aa25-b4112d2027fc"}, {"id":"8f472acf-c156-41a3-8e81-ae29b83ea2c8", "name":"VPN Gateway 1993bf76-b58b-4d98-a346-61cd92521141", "description":"Managed policy for connections of VPN Gateway 1993bf76-b58b-4d98-a346-61cd92521141", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-02-27T01:50:55.153027Z", "updated_at":"2026-02-27T01:50:55.153027Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=1993bf76-b58b-4d98-a346-61cd92521141"], "application_id":"3433d12e-a46f-416d-9d23-5efc3b283369"}, {"id":"d480b914-cb61-4a80-a0b2-ff354b46cd04", "name":"VPN Gateway 53748370-9ab4-4814-a3f4-8ade0f24d4d1", "description":"Managed policy for connections of VPN Gateway 53748370-9ab4-4814-a3f4-8ade0f24d4d1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-02-18T01:54:08.320216Z", "updated_at":"2026-02-18T01:54:08.320216Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=53748370-9ab4-4814-a3f4-8ade0f24d4d1"], "application_id":"742e11f2-b146-4c79-8723-b2443bd0e96d"}, {"id":"a19fc6e9-7c77-4a50-8743-c61fe6306fd3", "name":"VPN Gateway 78663504-6fc8-4126-84d0-33fc1614a52e", "description":"Managed policy for connections of VPN Gateway 78663504-6fc8-4126-84d0-33fc1614a52e", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-02-25T01:50:46.438953Z", "updated_at":"2026-02-25T01:50:46.438953Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=78663504-6fc8-4126-84d0-33fc1614a52e"], "application_id":"4bf312f1-13dc-4acd-bdc3-643bbb8b5016"}, {"id":"968481a3-41e7-48b8-b8f5-139b36fb807b", "name":"VPN Gateway 9085d542-d49d-401b-85fd-818ec81f5f61", "description":"Managed policy for connections of VPN Gateway 9085d542-d49d-401b-85fd-818ec81f5f61", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-02-22T01:54:42.243601Z", "updated_at":"2026-02-22T01:54:42.243601Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=9085d542-d49d-401b-85fd-818ec81f5f61"], "application_id":"e0dcca72-aeee-4594-a279-15e1209fb923"}, {"id":"980a4a14-0c72-4b18-bd05-37c5f253b135", "name":"VPN Gateway b4161a55-f239-4d97-bd0c-9703ff6cabf3", "description":"Managed policy for connections of VPN Gateway b4161a55-f239-4d97-bd0c-9703ff6cabf3", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-03-05T01:49:08.380944Z", "updated_at":"2026-03-05T01:49:08.380944Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=b4161a55-f239-4d97-bd0c-9703ff6cabf3"], "application_id":"8be81d92-91a3-410a-9a05-e620c7560c43"}, {"id":"c8324efb-2861-4284-90be-d9f8c7f4b10e", "name":"VPN Gateway c62484a3-b18d-4c7a-b660-c959728e53da", "description":"Managed policy for connections of VPN Gateway c62484a3-b18d-4c7a-b660-c959728e53da", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-03-10T01:35:12.516738Z", "updated_at":"2026-03-10T01:35:12.516738Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=c62484a3-b18d-4c7a-b660-c959728e53da"], "application_id":"c48198a0-8c74-4cff-bf57-48cc3f544d3e"}], "total_count":25}'
+        content_length: 10233
+        body: '{"policies":[{"srn":"srn://iam.scw.eu/policies/c1214ec3-4d8e-4f04-96b7-07158a0ea805", "id":"c1214ec3-4d8e-4f04-96b7-07158a0ea805", "name":"Audit Trail - Read Only", "description":"Audit Trail team has requested access to our Audit Trail events in Read Only, in order to investigate the events generated for each product during our nightly tests.", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-01-19T14:14:31.033134Z", "updated_at":"2026-01-19T14:14:31.033134Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"db32fc9e-e4f6-4c65-baa1-c6ceaa7a04a9"}, {"srn":"srn://iam.scw.eu/policies/8e7692cc-a0c9-44e9-989d-2cda3039ad3f", "id":"8e7692cc-a0c9-44e9-989d-2cda3039ad3f", "name":"Group - Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T13:58:31.167738Z", "updated_at":"2023-01-18T17:01:03.768470Z", "editable":true, "deletable":true, "managed":false, "nb_rules":3, "nb_scopes":2, "nb_permission_sets":12, "tags":[], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"srn":"srn://iam.scw.eu/policies/373b7611-4796-4bfe-ac6c-508e76b7da84", "id":"373b7611-4796-4bfe-ac6c-508e76b7da84", "name":"Group - Billing Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T14:15:39.605605Z", "updated_at":"2022-07-13T14:15:39.605605Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":2, "tags":[], "group_id":"a6e3c206-f142-4319-98e1-d8f2513570c4"}, {"srn":"srn://iam.scw.eu/policies/214ac9dc-1462-4400-ae46-e7c07ef2d341", "id":"214ac9dc-1462-4400-ae46-e7c07ef2d341", "name":"Group - Editors", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T14:08:44.770662Z", "updated_at":"2022-07-13T14:08:44.770662Z", "editable":true, "deletable":true, "managed":false, "nb_rules":2, "nb_scopes":2, "nb_permission_sets":4, "tags":[], "group_id":"ab38ef63-a3ed-41b5-8998-dd8be1901047"}, {"srn":"srn://iam.scw.eu/policies/d7bcb410-6a62-4566-b0c2-108c8905e346", "id":"d7bcb410-6a62-4566-b0c2-108c8905e346", "name":"IAMManager Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-12-01T12:52:21.271957Z", "updated_at":"2022-12-01T12:52:21.271957Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"srn":"srn://iam.scw.eu/policies/55ed9fa3-ba93-44a4-9c9b-e127210253f8", "id":"55ed9fa3-ba93-44a4-9c9b-e127210253f8", "name":"nigthly-object-policy", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2024-09-09T14:00:00.174444Z", "updated_at":"2024-09-09T14:05:21.842982Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["="], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"srn":"srn://iam.scw.eu/policies/15d8aae3-a0c2-477e-8469-10df8f565b78", "id":"15d8aae3-a0c2-477e-8469-10df8f565b78", "name":"Project - default (105bdce1)", "description":"API keys on project default", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-05T13:52:38.072110Z", "updated_at":"2022-07-05T13:52:38.072110Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"1e467c5f-3c82-441f-a186-7cc3b5173599"}, {"srn":"srn://iam.scw.eu/policies/5bfe38ec-b3fb-4437-9fa3-ed16b0dfacc0", "id":"5bfe38ec-b3fb-4437-9fa3-ed16b0dfacc0", "name":"Project - Guest (50ab77d5)", "description":"Default policy for API keys on project Guest (50ab77d5)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-11-04T16:35:06.038058Z", "updated_at":"2022-11-04T16:35:06.038058Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"srn":"srn://iam.scw.eu/policies/1feb354f-2ec8-4365-b14a-ca8bf67651e3", "id":"1feb354f-2ec8-4365-b14a-ca8bf67651e3", "name":"Project - Packer Plugin Scaleway (c567f266)", "description":"Default policy for API keys on project Packer Plugin Scaleway (c567f266)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-08-03T12:39:07.152811Z", "updated_at":"2022-08-03T12:39:07.152811Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"166d33e7-63d7-48a0-96ec-f372a1c7f766"}, {"srn":"srn://iam.scw.eu/policies/fb950aca-67d7-4d56-bebc-5223be6cea83", "id":"fb950aca-67d7-4d56-bebc-5223be6cea83", "name":"Project - SDK Python (fe479fbe)", "description":"Default policy for API keys on project SDK Python (fe479fbe)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-11-25T09:25:12.994244Z", "updated_at":"2022-11-25T09:25:12.994244Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"srn":"srn://iam.scw.eu/policies/b679df34-922f-4ca4-b1ea-c9595f53e861", "id":"b679df34-922f-4ca4-b1ea-c9595f53e861", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:35.507195Z", "updated_at":"2026-10-07T13:42:35.507195Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"srn":"srn://iam.scw.eu/policies/c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c", "id":"c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c", "name":"test-policy-list-2", "description":"Test policy 2", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:38.647605Z", "updated_at":"2026-10-07T13:42:38.647605Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["test-tag"], "no_principal":true}, {"srn":"srn://iam.scw.eu/policies/96462838-3ca5-4bc7-bf46-9238465c8d15", "id":"96462838-3ca5-4bc7-bf46-9238465c8d15", "name":"tf-test-scaleway-iam-policy-4367164762239724680", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:41:42.149943Z", "updated_at":"2026-10-07T13:41:42.149943Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"ece4ccb4-cf79-4b32-a61a-066379451ea8"}, {"srn":"srn://iam.scw.eu/policies/199c391f-0a3d-4409-aa90-20d24c370c56", "id":"199c391f-0a3d-4409-aa90-20d24c370c56", "name":"tf-test-scaleway-iam-policy-5153934000983870368", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:41:45.287466Z", "updated_at":"2026-10-07T13:41:45.287466Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"b78264b6-06cb-4ffb-98d1-d57d711db56f"}, {"srn":"srn://iam.scw.eu/policies/c1b9c212-fb10-425e-89e6-4d60be30f2e6", "id":"c1b9c212-fb10-425e-89e6-4d60be30f2e6", "name":"tf-test-scaleway-iam-policy-7095581772611460054", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:41:44.260746Z", "updated_at":"2026-10-07T13:41:44.260746Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"0660a33b-e2ad-4804-bc39-9e4efc595900"}, {"srn":"srn://iam.scw.eu/policies/0ad871b5-9f77-45ab-9c93-7333dde78707", "id":"0ad871b5-9f77-45ab-9c93-7333dde78707", "name":"tf-test-scaleway-iam-policy-8734393462001916794", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:41:41.016322Z", "updated_at":"2026-10-07T13:41:41.016322Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"6025cb4c-ac3a-4914-be90-7fde0e898745"}, {"srn":"srn://iam.scw.eu/policies/47fab1a6-c043-4a93-ba1c-a24e1e81d630", "id":"47fab1a6-c043-4a93-ba1c-a24e1e81d630", "name":"tf-test-scaleway-iam-policy-8937815904265860569", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:41:46.909271Z", "updated_at":"2026-10-07T13:41:46.909271Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"8435b933-1a1a-4079-9faa-673130090cf8"}, {"srn":"srn://iam.scw.eu/policies/9dba3cce-b698-46b4-9514-b97fe0ed5a7d", "id":"9dba3cce-b698-46b4-9514-b97fe0ed5a7d", "name":"tf-test-scaleway-iam-policy-8967503988182947690", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:41:43.149319Z", "updated_at":"2026-10-07T13:41:43.149319Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"ac484aa6-5025-4d06-a417-d1777fd0e1d3"}, {"srn":"srn://iam.scw.eu/policies/b0590d15-8910-457c-b75a-2017a86e722b", "id":"b0590d15-8910-457c-b75a-2017a86e722b", "name":"tf_tests_policy_basic", "description":"a description", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:34.698143Z", "updated_at":"2026-10-07T13:42:38.332702Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"srn":"srn://iam.scw.eu/policies/f06e2386-594b-43e3-9269-cce3a85c0afb", "id":"f06e2386-594b-43e3-9269-cce3a85c0afb", "name":"tf_tests_policy_change_linked_entity", "description":"a description", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:34.231718Z", "updated_at":"2026-10-07T13:42:34.231718Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"4616b0f7-e6a1-4f09-8716-6c2106dce217"}], "total_count":23}'
         headers:
             Content-Length:
-                - "10344"
+                - "10233"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:10 GMT
+                - Wed, 07 Oct 2026 13:42:40 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - d4a39552-6db9-4a9a-a45c-9fe62bea5596
+                - e84172f7-5a60-4632-bf46-3b2d88875a39
         status: 200 OK
         code: 200
-        duration: 341.157631ms
-    - id: 19
+        duration: 205.873052ms
+    - id: 21
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -668,30 +858,36 @@ interactions:
                 - "2"
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/iam/v1alpha1/policies?order_by=policy_name_asc&organization_id=11111111-1111-1111-1111-111111111111&page=2
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 3341
-        body: '{"policies":[{"id":"1db9b434-6a5f-48eb-8d61-003fba47fdb1", "name":"VPN Gateway d4962fbf-8d93-49fe-88b9-0f0069692f79", "description":"Managed policy for connections of VPN Gateway d4962fbf-8d93-49fe-88b9-0f0069692f79", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-02-25T01:51:10.664273Z", "updated_at":"2026-02-25T01:51:10.664273Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=d4962fbf-8d93-49fe-88b9-0f0069692f79"], "application_id":"afa385d2-1a77-48fb-b30a-669690a00f69"}, {"id":"f0765379-937b-4c18-8450-fc93cf74be53", "name":"VPN Gateway dbb84e88-4a63-4084-bebb-fa987d1bceeb", "description":"Managed policy for connections of VPN Gateway dbb84e88-4a63-4084-bebb-fa987d1bceeb", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-03-26T02:06:34.124869Z", "updated_at":"2026-03-26T02:06:34.124869Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=dbb84e88-4a63-4084-bebb-fa987d1bceeb"], "application_id":"f86f5a0c-2e5a-4421-b143-c0249c1b7a74"}, {"id":"75f887aa-78af-40bc-a207-bc7977bd1f79", "name":"VPN Gateway dcabdaad-25da-42b4-8b7c-3cb40ffba736", "description":"Managed policy for connections of VPN Gateway dcabdaad-25da-42b4-8b7c-3cb40ffba736", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-02-26T01:52:57.582887Z", "updated_at":"2026-02-26T01:52:57.582887Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=dcabdaad-25da-42b4-8b7c-3cb40ffba736"], "application_id":"7bdeb7b5-f177-44f3-ade0-74928971aa57"}, {"id":"d1e4eebc-80fd-4267-9b09-8e03c5d7d98b", "name":"VPN Gateway ed4eae8a-adbc-4c1e-ac29-e2c363e402bf", "description":"Managed policy for connections of VPN Gateway ed4eae8a-adbc-4c1e-ac29-e2c363e402bf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-02-20T01:50:30.718066Z", "updated_at":"2026-02-20T01:50:30.718066Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=ed4eae8a-adbc-4c1e-ac29-e2c363e402bf"], "application_id":"69b1a301-84f0-48bf-88d2-1253478e2c95"}, {"id":"9ccf4ce5-da07-4fbc-891a-13386fd516cf", "name":"VPN Gateway f62e0c30-2575-4140-9d39-df56e559b7a8", "description":"Managed policy for connections of VPN Gateway f62e0c30-2575-4140-9d39-df56e559b7a8", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-02-18T01:54:35.391838Z", "updated_at":"2026-02-18T01:54:35.391838Z", "editable":false, "deletable":false, "managed":true, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":4, "tags":["iam-managed-product=s-2-s-vpn", "iam-managed-resource-name=vpn_gateway", "iam-managed-resource-id=f62e0c30-2575-4140-9d39-df56e559b7a8"], "application_id":"dc72f2b2-ca95-4670-a345-1cb23ed56330"}], "total_count":25}'
+        content_length: 1400
+        body: '{"policies":[{"srn":"srn://iam.scw.eu/policies/d793b245-021c-47b3-997e-53ef404f26ed","id":"d793b245-021c-47b3-997e-53ef404f26ed","name":"tf_tests_policy_changepermissions","description":"a description","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:42:34.090493Z","updated_at":"2026-10-07T13:42:40.694151Z","editable":true,"deletable":true,"managed":false,"nb_rules":1,"nb_scopes":1,"nb_permission_sets":1,"tags":[],"no_principal":true},{"srn":"srn://iam.scw.eu/policies/9dbfb76f-70f6-4147-9c7c-44ea8547683a","id":"9dbfb76f-70f6-4147-9c7c-44ea8547683a","name":"tf_tests_policy_condition","description":"a description","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:42:32.324079Z","updated_at":"2026-10-07T13:42:39.545386Z","editable":true,"deletable":true,"managed":false,"nb_rules":1,"nb_scopes":1,"nb_permission_sets":1,"tags":[],"no_principal":true},{"srn":"srn://iam.scw.eu/policies/7b5690bc-f0aa-48da-9955-85ffc8fd3ce6","id":"7b5690bc-f0aa-48da-9955-85ffc8fd3ce6","name":"tf_tests_policy_noupdate","description":"a description","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:42:34.344148Z","updated_at":"2026-10-07T13:42:34.344148Z","editable":true,"deletable":true,"managed":false,"nb_rules":1,"nb_scopes":1,"nb_permission_sets":1,"tags":[],"no_principal":true}],"total_count":23}'
         headers:
             Content-Length:
-                - "3341"
+                - "1400"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:10 GMT
+                - Wed, 07 Oct 2026 13:42:40 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - b8f89802-d604-43a7-957d-c3c735922530
+                - a91cd9ce-c297-4c40-8d08-21bc1df587f6
         status: 200 OK
         code: 200
-        duration: 225.449737ms
-    - id: 20
+        duration: 160.825476ms
+    - id: 22
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -709,30 +905,36 @@ interactions:
                 - test-tag
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/iam/v1alpha1/policies?order_by=policy_name_asc&organization_id=11111111-1111-1111-1111-111111111111&page=1&tag=test-tag
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 430
-        body: '{"policies":[{"id":"f7d02d53-d0f5-4aff-83d5-784a65437519", "name":"test-policy-list-2", "description":"Test policy 2", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:08.960546Z", "updated_at":"2026-06-12T15:42:08.960546Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["test-tag"], "no_principal":true}], "total_count":1}'
+        content_length: 487
+        body: '{"policies":[{"srn":"srn://iam.scw.eu/policies/c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c","id":"c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c","name":"test-policy-list-2","description":"Test policy 2","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","created_at":"2026-10-07T13:42:38.647605Z","updated_at":"2026-10-07T13:42:38.647605Z","editable":true,"deletable":true,"managed":false,"nb_rules":1,"nb_scopes":1,"nb_permission_sets":1,"tags":["test-tag"],"no_principal":true}],"total_count":1}'
         headers:
             Content-Length:
-                - "430"
+                - "487"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:10 GMT
+                - Wed, 07 Oct 2026 13:42:41 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - d3af336b-805f-4f4c-9e4e-b32823615f2c
+                - e07e4cf7-4e65-4c48-9c6d-7440d056b422
         status: 200 OK
         code: 200
-        duration: 87.162409ms
-    - id: 21
+        duration: 142.42699ms
+    - id: 23
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -750,30 +952,36 @@ interactions:
                 - "1"
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/iam/v1alpha1/policies?editable=true&order_by=policy_name_asc&organization_id=11111111-1111-1111-1111-111111111111&page=1
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 5710
-        body: '{"policies":[{"id":"c1214ec3-4d8e-4f04-96b7-07158a0ea805", "name":"Audit Trail - Read Only", "description":"Audit Trail team has requested access to our Audit Trail events in Read Only, in order to investigate the events generated for each product during our nightly tests.", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-01-19T14:14:31.033134Z", "updated_at":"2026-01-19T14:14:31.033134Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"db32fc9e-e4f6-4c65-baa1-c6ceaa7a04a9"}, {"id":"8e7692cc-a0c9-44e9-989d-2cda3039ad3f", "name":"Group - Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T13:58:31.167738Z", "updated_at":"2023-01-18T17:01:03.768470Z", "editable":true, "deletable":true, "managed":false, "nb_rules":3, "nb_scopes":2, "nb_permission_sets":12, "tags":[], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"id":"373b7611-4796-4bfe-ac6c-508e76b7da84", "name":"Group - Billing Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T14:15:39.605605Z", "updated_at":"2022-07-13T14:15:39.605605Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":2, "tags":[], "group_id":"a6e3c206-f142-4319-98e1-d8f2513570c4"}, {"id":"214ac9dc-1462-4400-ae46-e7c07ef2d341", "name":"Group - Editors", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T14:08:44.770662Z", "updated_at":"2022-07-13T14:08:44.770662Z", "editable":true, "deletable":true, "managed":false, "nb_rules":2, "nb_scopes":2, "nb_permission_sets":4, "tags":[], "group_id":"ab38ef63-a3ed-41b5-8998-dd8be1901047"}, {"id":"d7bcb410-6a62-4566-b0c2-108c8905e346", "name":"IAMManager Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-12-01T12:52:21.271957Z", "updated_at":"2022-12-01T12:52:21.271957Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"id":"55ed9fa3-ba93-44a4-9c9b-e127210253f8", "name":"nigthly-object-policy", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2024-09-09T14:00:00.174444Z", "updated_at":"2024-09-09T14:05:21.842982Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["="], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"id":"15d8aae3-a0c2-477e-8469-10df8f565b78", "name":"Project - default (105bdce1)", "description":"API keys on project default", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-05T13:52:38.072110Z", "updated_at":"2022-07-05T13:52:38.072110Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"1e467c5f-3c82-441f-a186-7cc3b5173599"}, {"id":"5bfe38ec-b3fb-4437-9fa3-ed16b0dfacc0", "name":"Project - Guest (50ab77d5)", "description":"Default policy for API keys on project Guest (50ab77d5)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-11-04T16:35:06.038058Z", "updated_at":"2022-11-04T16:35:06.038058Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"id":"1feb354f-2ec8-4365-b14a-ca8bf67651e3", "name":"Project - Packer Plugin Scaleway (c567f266)", "description":"Default policy for API keys on project Packer Plugin Scaleway (c567f266)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-08-03T12:39:07.152811Z", "updated_at":"2022-08-03T12:39:07.152811Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"id":"fb950aca-67d7-4d56-bebc-5223be6cea83", "name":"Project - SDK Python (fe479fbe)", "description":"Default policy for API keys on project SDK Python (fe479fbe)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-11-25T09:25:12.994244Z", "updated_at":"2022-11-25T09:25:12.994244Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"id":"09c4ac7a-413f-4f55-a838-a14684cdc95e", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:07.154376Z", "updated_at":"2026-06-12T15:42:07.154376Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"id":"f7d02d53-d0f5-4aff-83d5-784a65437519", "name":"test-policy-list-2", "description":"Test policy 2", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:08.960546Z", "updated_at":"2026-06-12T15:42:08.960546Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["test-tag"], "no_principal":true}, {"id":"86dafdfe-f6ac-4d3b-9510-e5c1b306056c", "name":"tf-test-scaleway-iam-policy-5873824897653104896", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:04.773731Z", "updated_at":"2026-06-12T15:42:04.773731Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"797196f6-d8af-404e-a8cb-aa5f9e07de3a"}], "total_count":13}'
+        content_length: 9211
+        body: '{"policies":[{"srn":"srn://iam.scw.eu/policies/c1214ec3-4d8e-4f04-96b7-07158a0ea805", "id":"c1214ec3-4d8e-4f04-96b7-07158a0ea805", "name":"Audit Trail - Read Only", "description":"Audit Trail team has requested access to our Audit Trail events in Read Only, in order to investigate the events generated for each product during our nightly tests.", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-01-19T14:14:31.033134Z", "updated_at":"2026-01-19T14:14:31.033134Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"db32fc9e-e4f6-4c65-baa1-c6ceaa7a04a9"}, {"srn":"srn://iam.scw.eu/policies/8e7692cc-a0c9-44e9-989d-2cda3039ad3f", "id":"8e7692cc-a0c9-44e9-989d-2cda3039ad3f", "name":"Group - Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T13:58:31.167738Z", "updated_at":"2023-01-18T17:01:03.768470Z", "editable":true, "deletable":true, "managed":false, "nb_rules":3, "nb_scopes":2, "nb_permission_sets":12, "tags":[], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"srn":"srn://iam.scw.eu/policies/373b7611-4796-4bfe-ac6c-508e76b7da84", "id":"373b7611-4796-4bfe-ac6c-508e76b7da84", "name":"Group - Billing Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T14:15:39.605605Z", "updated_at":"2022-07-13T14:15:39.605605Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":2, "tags":[], "group_id":"a6e3c206-f142-4319-98e1-d8f2513570c4"}, {"srn":"srn://iam.scw.eu/policies/214ac9dc-1462-4400-ae46-e7c07ef2d341", "id":"214ac9dc-1462-4400-ae46-e7c07ef2d341", "name":"Group - Editors", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-13T14:08:44.770662Z", "updated_at":"2022-07-13T14:08:44.770662Z", "editable":true, "deletable":true, "managed":false, "nb_rules":2, "nb_scopes":2, "nb_permission_sets":4, "tags":[], "group_id":"ab38ef63-a3ed-41b5-8998-dd8be1901047"}, {"srn":"srn://iam.scw.eu/policies/d7bcb410-6a62-4566-b0c2-108c8905e346", "id":"d7bcb410-6a62-4566-b0c2-108c8905e346", "name":"IAMManager Administrators", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-12-01T12:52:21.271957Z", "updated_at":"2022-12-01T12:52:21.271957Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"srn":"srn://iam.scw.eu/policies/55ed9fa3-ba93-44a4-9c9b-e127210253f8", "id":"55ed9fa3-ba93-44a4-9c9b-e127210253f8", "name":"nigthly-object-policy", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2024-09-09T14:00:00.174444Z", "updated_at":"2024-09-09T14:05:21.842982Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["="], "group_id":"a0f019a0-539b-4509-8748-fb55b428f1cd"}, {"srn":"srn://iam.scw.eu/policies/15d8aae3-a0c2-477e-8469-10df8f565b78", "id":"15d8aae3-a0c2-477e-8469-10df8f565b78", "name":"Project - default (105bdce1)", "description":"API keys on project default", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-07-05T13:52:38.072110Z", "updated_at":"2022-07-05T13:52:38.072110Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"1e467c5f-3c82-441f-a186-7cc3b5173599"}, {"srn":"srn://iam.scw.eu/policies/5bfe38ec-b3fb-4437-9fa3-ed16b0dfacc0", "id":"5bfe38ec-b3fb-4437-9fa3-ed16b0dfacc0", "name":"Project - Guest (50ab77d5)", "description":"Default policy for API keys on project Guest (50ab77d5)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-11-04T16:35:06.038058Z", "updated_at":"2022-11-04T16:35:06.038058Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"srn":"srn://iam.scw.eu/policies/1feb354f-2ec8-4365-b14a-ca8bf67651e3", "id":"1feb354f-2ec8-4365-b14a-ca8bf67651e3", "name":"Project - Packer Plugin Scaleway (c567f266)", "description":"Default policy for API keys on project Packer Plugin Scaleway (c567f266)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-08-03T12:39:07.152811Z", "updated_at":"2022-08-03T12:39:07.152811Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"166d33e7-63d7-48a0-96ec-f372a1c7f766"}, {"srn":"srn://iam.scw.eu/policies/fb950aca-67d7-4d56-bebc-5223be6cea83", "id":"fb950aca-67d7-4d56-bebc-5223be6cea83", "name":"Project - SDK Python (fe479fbe)", "description":"Default policy for API keys on project SDK Python (fe479fbe)", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2022-11-25T09:25:12.994244Z", "updated_at":"2022-11-25T09:25:12.994244Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"srn":"srn://iam.scw.eu/policies/b679df34-922f-4ca4-b1ea-c9595f53e861", "id":"b679df34-922f-4ca4-b1ea-c9595f53e861", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:35.507195Z", "updated_at":"2026-10-07T13:42:35.507195Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}, {"srn":"srn://iam.scw.eu/policies/c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c", "id":"c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c", "name":"test-policy-list-2", "description":"Test policy 2", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:38.647605Z", "updated_at":"2026-10-07T13:42:38.647605Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":["test-tag"], "no_principal":true}, {"srn":"srn://iam.scw.eu/policies/199c391f-0a3d-4409-aa90-20d24c370c56", "id":"199c391f-0a3d-4409-aa90-20d24c370c56", "name":"tf-test-scaleway-iam-policy-5153934000983870368", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:41:45.287466Z", "updated_at":"2026-10-07T13:41:45.287466Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"b78264b6-06cb-4ffb-98d1-d57d711db56f"}, {"srn":"srn://iam.scw.eu/policies/c1b9c212-fb10-425e-89e6-4d60be30f2e6", "id":"c1b9c212-fb10-425e-89e6-4d60be30f2e6", "name":"tf-test-scaleway-iam-policy-7095581772611460054", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:41:44.260746Z", "updated_at":"2026-10-07T13:41:44.260746Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"0660a33b-e2ad-4804-bc39-9e4efc595900"}, {"srn":"srn://iam.scw.eu/policies/0ad871b5-9f77-45ab-9c93-7333dde78707", "id":"0ad871b5-9f77-45ab-9c93-7333dde78707", "name":"tf-test-scaleway-iam-policy-8734393462001916794", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:41:41.016322Z", "updated_at":"2026-10-07T13:41:41.016322Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"6025cb4c-ac3a-4914-be90-7fde0e898745"}, {"srn":"srn://iam.scw.eu/policies/47fab1a6-c043-4a93-ba1c-a24e1e81d630", "id":"47fab1a6-c043-4a93-ba1c-a24e1e81d630", "name":"tf-test-scaleway-iam-policy-8937815904265860569", "description":"", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:41:46.909271Z", "updated_at":"2026-10-07T13:41:46.909271Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "application_id":"8435b933-1a1a-4079-9faa-673130090cf8"}, {"srn":"srn://iam.scw.eu/policies/f06e2386-594b-43e3-9269-cce3a85c0afb", "id":"f06e2386-594b-43e3-9269-cce3a85c0afb", "name":"tf_tests_policy_change_linked_entity", "description":"a description", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:34.231718Z", "updated_at":"2026-10-07T13:42:34.231718Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "group_id":"5a75d660-ac31-4ad0-ae4f-e328d02d345e"}, {"srn":"srn://iam.scw.eu/policies/d793b245-021c-47b3-997e-53ef404f26ed", "id":"d793b245-021c-47b3-997e-53ef404f26ed", "name":"tf_tests_policy_changepermissions", "description":"a description", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:34.090493Z", "updated_at":"2026-10-07T13:42:40.694151Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}], "total_count":18}'
         headers:
             Content-Length:
-                - "5710"
+                - "9211"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:11 GMT
+                - Wed, 07 Oct 2026 13:42:41 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "45"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 2882801f-9864-4597-852f-79b9d5a6667b
+                - f8b2b4e6-6e93-444a-b08a-4033ca5da980
         status: 200 OK
         code: 200
-        duration: 144.702668ms
-    - id: 22
+        duration: 80.548763ms
+    - id: 24
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -788,92 +996,38 @@ interactions:
             page:
                 - "1"
             policy_ids:
-                - 09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - b679df34-922f-4ca4-b1ea-c9595f53e861
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies?order_by=policy_name_asc&organization_id=11111111-1111-1111-1111-111111111111&page=1&policy_ids=09c4ac7a-413f-4f55-a838-a14684cdc95e
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies?order_by=policy_name_asc&organization_id=11111111-1111-1111-1111-111111111111&page=1&policy_ids=b679df34-922f-4ca4-b1ea-c9595f53e861
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 420
-        body: '{"policies":[{"id":"09c4ac7a-413f-4f55-a838-a14684cdc95e", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-12T15:42:07.154376Z", "updated_at":"2026-06-12T15:42:07.154376Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}], "total_count":1}'
+        content_length: 492
+        body: '{"policies":[{"srn":"srn://iam.scw.eu/policies/b679df34-922f-4ca4-b1ea-c9595f53e861", "id":"b679df34-922f-4ca4-b1ea-c9595f53e861", "name":"test-policy-list-1", "description":"Test policy 1", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-10-07T13:42:35.507195Z", "updated_at":"2026-10-07T13:42:35.507195Z", "editable":true, "deletable":true, "managed":false, "nb_rules":1, "nb_scopes":1, "nb_permission_sets":1, "tags":[], "no_principal":true}], "total_count":1}'
         headers:
             Content-Length:
-                - "420"
+                - "492"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:11 GMT
+                - Wed, 07 Oct 2026 13:42:42 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 9de5d4ad-3f10-48ab-bbbd-0e5a94741589
+                - 795ad233-b0bc-4812-8ec2-fbee26734628
         status: 200 OK
         code: 200
-        duration: 88.876177ms
-    - id: 23
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/09c4ac7a-413f-4f55-a838-a14684cdc95e
-        method: DELETE
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 0
-        body: ""
-        headers:
-            Content-Type:
-                - application/json
-            Date:
-                - Fri, 12 Jun 2026 15:42:12 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 194c40db-e808-4739-9d5b-a3a99eb56caa
-        status: 204 No Content
-        code: 204
-        duration: 101.694817ms
-    - id: 24
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/f7d02d53-d0f5-4aff-83d5-784a65437519
-        method: DELETE
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 0
-        body: ""
-        headers:
-            Content-Type:
-                - application/json
-            Date:
-                - Fri, 12 Jun 2026 15:42:12 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 51a02712-96dd-45a7-89bb-4a9c44857c8a
-        status: 204 No Content
-        code: 204
-        duration: 113.745557ms
+        duration: 39.695369ms
     - id: 25
       request:
         proto: HTTP/1.1
@@ -883,7 +1037,79 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:42 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 0a729dac-44fe-42b9-9b87-73be01b3da25
+        status: 204 No Content
+        code: 204
+        duration: 90.151921ms
+    - id: 26
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/b679df34-922f-4ca4-b1ea-c9595f53e861
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:42 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - cee3ee88-d4bc-44ee-95dd-71fad9a63b73
+        status: 204 No Content
+        code: 204
+        duration: 94.301098ms
+    - id: 27
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/iam/v1alpha1/api-keys/SCWXXXXXXXXXXXXXXXXX
         method: DELETE
       response:
@@ -896,74 +1122,20 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:12 GMT
+                - Wed, 07 Oct 2026 13:42:42 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "43"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - a2ab19d7-6a6a-4be8-a691-df71e0390137
+                - 8927a07f-9417-40ee-952b-e7eb247f5cb7
         status: 204 No Content
         code: 204
-        duration: 476.183604ms
-    - id: 26
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/86dafdfe-f6ac-4d3b-9510-e5c1b306056c
-        method: DELETE
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 0
-        body: ""
-        headers:
-            Content-Type:
-                - application/json
-            Date:
-                - Fri, 12 Jun 2026 15:42:12 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - cf3a3807-9a50-4784-a8f0-852b6985dad5
-        status: 204 No Content
-        code: 204
-        duration: 117.089876ms
-    - id: 27
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/applications/797196f6-d8af-404e-a8cb-aa5f9e07de3a
-        method: DELETE
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 0
-        body: ""
-        headers:
-            Content-Type:
-                - application/json
-            Date:
-                - Fri, 12 Jun 2026 15:42:12 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 21257bc0-7160-480b-8a06-b6ef153ca88a
-        status: 204 No Content
-        code: 204
-        duration: 126.372594ms
+        duration: 54.164852ms
     - id: 28
       request:
         proto: HTTP/1.1
@@ -973,8 +1145,8 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/account/v3/projects/18f4efa6-81ae-42da-9fd5-0f7ebffac67e
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/0ad871b5-9f77-45ab-9c93-7333dde78707
         method: DELETE
       response:
         proto: HTTP/2.0
@@ -986,14 +1158,20 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:14 GMT
+                - Wed, 07 Oct 2026 13:42:42 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - b305b913-8e91-4873-8d29-63ed3cb6a51d
+                - dd4af9f3-ec89-4c2e-a169-ce2f2941c6c2
         status: 204 No Content
         code: 204
-        duration: 1.956326192s
+        duration: 99.150721ms
     - id: 29
       request:
         proto: HTTP/1.1
@@ -1003,29 +1181,33 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/09c4ac7a-413f-4f55-a838-a14684cdc95e
-        method: GET
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/applications/6025cb4c-ac3a-4914-be90-7fde0e898745
+        method: DELETE
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 127
-        body: '{"message":"resource is not found","resource":"policy","resource_id":"09c4ac7a-413f-4f55-a838-a14684cdc95e","type":"not_found"}'
+        content_length: 0
+        body: ""
         headers:
-            Content-Length:
-                - "127"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:14 GMT
+                - Wed, 07 Oct 2026 13:42:42 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - fb85ae45-82b4-41d5-af9f-27260b6d4e2c
-        status: 404 Not Found
-        code: 404
-        duration: 42.247967ms
+                - 90f53e19-8407-4dfa-8b82-93d946e8d633
+        status: 204 No Content
+        code: 204
+        duration: 48.932779ms
     - id: 30
       request:
         proto: HTTP/1.1
@@ -1035,26 +1217,106 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/iam/v1alpha1/policies/f7d02d53-d0f5-4aff-83d5-784a65437519
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/d35616d0-f1d4-433b-b2d0-345579e106c7
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:44 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "43"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 62c3daa5-4ab1-4366-b1f6-74959cc460e1
+        status: 204 No Content
+        code: 204
+        duration: 1.93468885s
+    - id: 31
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         content_length: 127
-        body: '{"message":"resource is not found","resource":"policy","resource_id":"f7d02d53-d0f5-4aff-83d5-784a65437519","type":"not_found"}'
+        body: '{"message":"resource is not found","resource":"policy","resource_id":"c420b0bb-9baf-4eae-a24a-ff1b72a6bb0c","type":"not_found"}'
         headers:
             Content-Length:
                 - "127"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 12 Jun 2026 15:42:14 GMT
+                - Wed, 07 Oct 2026 13:42:44 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "40"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 04e99176-8906-4ab9-86f1-2b3aca585253
+                - cf059816-91de-4fbf-afaa-08a8967315b4
         status: 404 Not Found
         code: 404
-        duration: 44.106306ms
+        duration: 30.591821ms
+    - id: 32
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/policies/b679df34-922f-4ca4-b1ea-c9595f53e861
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 127
+        body: '{"message":"resource is not found","resource":"policy","resource_id":"b679df34-922f-4ca4-b1ea-c9595f53e861","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "127"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:44 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - cae0e479-b3d9-454b-b624-41b1ad4dc07a
+        status: 404 Not Found
+        code: 404
+        duration: 32.423193ms

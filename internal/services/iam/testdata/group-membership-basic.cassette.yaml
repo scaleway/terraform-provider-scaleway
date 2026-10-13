@@ -1,721 +1,891 @@
 ---
 version: 2
 interactions:
-- id: 0
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 130
-    host: api.scaleway.com
-    body: "{\"name\":\"tf-tests-iam-group-membership-basic\",\"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\",\"description\":\"\",\"tags\":[]}"
-    headers:
-      Content-Type:
-      - application/json
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/applications
-    method: POST
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 335
-    body: "{\"id\":\"01a09c7c-b2d9-4188-9cbd-d9915c057435\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"created_at\":\"2025-11-17T17:10:35.966134Z\", \"updated_at\":\"2025-11-17T17:10:35.966134Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"editable\":true, \"deletable\":true, \"managed\":false, \"nb_api_keys\":0, \"tags\":[]}"
-    headers:
-      Content-Length:
-      - "335"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:35 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 3ed4f84b-acb0-4e77-aeed-b12ff79e8200
-    status: 200 OK
-    code: 200
-    duration: 98.017234ms
-- id: 1
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/applications/01a09c7c-b2d9-4188-9cbd-d9915c057435
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 335
-    body: "{\"id\":\"01a09c7c-b2d9-4188-9cbd-d9915c057435\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"created_at\":\"2025-11-17T17:10:35.966134Z\", \"updated_at\":\"2025-11-17T17:10:35.966134Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"editable\":true, \"deletable\":true, \"managed\":false, \"nb_api_keys\":0, \"tags\":[]}"
-    headers:
-      Content-Length:
-      - "335"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:36 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 91c4efd5-9111-4b69-a3ac-9e3f290d174f
-    status: 200 OK
-    code: 200
-    duration: 43.710767ms
-- id: 2
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 130
-    host: api.scaleway.com
-    body: "{\"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\",\"name\":\"tf-tests-iam-group-membership-basic\",\"description\":\"\",\"tags\":[]}"
-    headers:
-      Content-Type:
-      - application/json
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups
-    method: POST
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 355
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "355"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:36 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 78ca5f9c-e825-4094-9809-40830d1a2c3a
-    status: 200 OK
-    code: 200
-    duration: 197.731028ms
-- id: 3
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 355
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "355"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:36 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - d9862a16-59fb-49ce-9d37-ad27365404d2
-    status: 200 OK
-    code: 200
-    duration: 77.703862ms
-- id: 4
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 57
-    host: api.scaleway.com
-    body: "{\"application_id\":\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"}"
-    headers:
-      Content-Type:
-      - application/json
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047/add-member
-    method: POST
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 393
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "393"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:36 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 1b8a2d4a-0e8a-4228-bdea-e29063e955e0
-    status: 200 OK
-    code: 200
-    duration: 370.611053ms
-- id: 5
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 393
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "393"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:36 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - a12a2952-2215-4861-9d47-74e2607e5d41
-    status: 200 OK
-    code: 200
-    duration: 43.5842ms
-- id: 6
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 393
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "393"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:36 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - ea1cfcfe-d870-4c35-a5d7-9bd9de920a5d
-    status: 200 OK
-    code: 200
-    duration: 44.455733ms
-- id: 7
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 393
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "393"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:37 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 004a0a61-8967-48e1-bed8-8064e8534897
-    status: 200 OK
-    code: 200
-    duration: 90.358441ms
-- id: 8
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/applications/01a09c7c-b2d9-4188-9cbd-d9915c057435
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 335
-    body: "{\"id\":\"01a09c7c-b2d9-4188-9cbd-d9915c057435\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"created_at\":\"2025-11-17T17:10:35.966134Z\", \"updated_at\":\"2025-11-17T17:10:35.966134Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"editable\":true, \"deletable\":true, \"managed\":false, \"nb_api_keys\":0, \"tags\":[]}"
-    headers:
-      Content-Length:
-      - "335"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:37 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 7835dc1f-b27d-4cdf-9494-0934ddc27e82
-    status: 200 OK
-    code: 200
-    duration: 103.112026ms
-- id: 9
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 393
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "393"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:37 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - c9d8b776-87ee-47bd-9c56-14e49db4b638
-    status: 200 OK
-    code: 200
-    duration: 64.19222ms
-- id: 10
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 393
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "393"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:38 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - b2e65afb-b0c7-4a5d-bffa-35c76107c477
-    status: 200 OK
-    code: 200
-    duration: 44.131369ms
-- id: 11
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/applications/01a09c7c-b2d9-4188-9cbd-d9915c057435
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 335
-    body: "{\"id\":\"01a09c7c-b2d9-4188-9cbd-d9915c057435\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"created_at\":\"2025-11-17T17:10:35.966134Z\", \"updated_at\":\"2025-11-17T17:10:35.966134Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"editable\":true, \"deletable\":true, \"managed\":false, \"nb_api_keys\":0, \"tags\":[]}"
-    headers:
-      Content-Length:
-      - "335"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:39 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 6a69f764-c730-4e84-afdd-4acef8c4cc0a
-    status: 200 OK
-    code: 200
-    duration: 52.69718ms
-- id: 12
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 393
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "393"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:39 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 0b1acb14-1f93-4120-8fd1-25e72db1ee98
-    status: 200 OK
-    code: 200
-    duration: 49.618848ms
-- id: 13
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 393
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "393"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:40 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 4edec321-c1fc-4d72-8eca-073da5a75254
-    status: 200 OK
-    code: 200
-    duration: 71.352221ms
-- id: 14
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 393
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "393"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:40 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 0302e725-1aec-4030-b238-a610be68f66b
-    status: 200 OK
-    code: 200
-    duration: 93.015362ms
-- id: 15
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 57
-    host: api.scaleway.com
-    body: "{\"application_id\":\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"}"
-    headers:
-      Content-Type:
-      - application/json
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047/remove-member
-    method: POST
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 170
-    body: "{\"current_state\":\"updating\",\"message\":\"resource is in a transient state\",\"resource\":\"group\",\"resource_id\":\"127d163c-9d46-4e92-879d-53f019ce1047\",\"type\":\"transient_state\"}"
-    headers:
-      Content-Length:
-      - "170"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:41 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 36f03601-db9e-459e-bc70-d85d80c907ee
-    status: 409 Conflict
-    code: 409
-    duration: 111.59969ms
-- id: 16
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 57
-    host: api.scaleway.com
-    body: "{\"application_id\":\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"}"
-    headers:
-      Content-Type:
-      - application/json
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047/remove-member
-    method: POST
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 355
-    body: "{\"id\":\"127d163c-9d46-4e92-879d-53f019ce1047\", \"created_at\":\"2025-11-17T17:10:36.063550Z\", \"updated_at\":\"2025-11-17T17:10:36.063550Z\", \"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\", \"name\":\"tf-tests-iam-group-membership-basic\", \"description\":\"\", \"user_ids\":[], \"application_ids\":[], \"tags\":[], \"editable\":true, \"deletable\":true, \"managed\":false}"
-    headers:
-      Content-Length:
-      - "355"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:41 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - f0c7f1ed-6329-426e-9d6d-0bbbda160b73
-    status: 200 OK
-    code: 200
-    duration: 140.227422ms
-- id: 17
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 57
-    host: api.scaleway.com
-    body: "{\"application_id\":\"01a09c7c-b2d9-4188-9cbd-d9915c057435\"}"
-    headers:
-      Content-Type:
-      - application/json
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047/remove-member
-    method: POST
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 121
-    body: "{\"message\":\"resource is not found\",\"resource\":\"\",\"resource_id\":\"01a09c7c-b2d9-4188-9cbd-d9915c057435\",\"type\":\"not_found\"}"
-    headers:
-      Content-Length:
-      - "121"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:41 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 0769492e-d41f-4da4-9d18-24a6ee3a0cd8
-    status: 404 Not Found
-    code: 404
-    duration: 355.23637ms
-- id: 18
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: DELETE
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 0
-    body: ""
-    headers:
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:41 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - d226d0f5-0bb5-402f-bc1d-a535ff6a7289
-    status: 204 No Content
-    code: 204
-    duration: 145.691047ms
-- id: 19
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/applications/01a09c7c-b2d9-4188-9cbd-d9915c057435
-    method: DELETE
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 0
-    body: ""
-    headers:
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:41 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - ec6b1295-029e-4397-bff2-57e7c301c10a
-    status: 204 No Content
-    code: 204
-    duration: 207.077625ms
-- id: 20
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/groups/127d163c-9d46-4e92-879d-53f019ce1047
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 126
-    body: "{\"message\":\"resource is not found\",\"resource\":\"group\",\"resource_id\":\"127d163c-9d46-4e92-879d-53f019ce1047\",\"type\":\"not_found\"}"
-    headers:
-      Content-Length:
-      - "126"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:41 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 29dea17b-ceba-4e1c-9c3b-15598b3fda83
-    status: 404 Not Found
-    code: 404
-    duration: 78.595587ms
-- id: 21
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/iam/v1alpha1/applications/01a09c7c-b2d9-4188-9cbd-d9915c057435
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 132
-    body: "{\"message\":\"resource is not found\",\"resource\":\"application\",\"resource_id\":\"01a09c7c-b2d9-4188-9cbd-d9915c057435\",\"type\":\"not_found\"}"
-    headers:
-      Content-Length:
-      - "132"
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 17 Nov 2025 17:10:41 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-2;edge03)
-      X-Request-Id:
-      - 42539d20-25f1-4174-aaea-c07777df9e7d
-    status: 404 Not Found
-    code: 404
-    duration: 37.620716ms
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 130
+        host: api.scaleway.com
+        body: '{"name":"tf-tests-iam-group-membership-basic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":"","tags":[]}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/applications
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 411
+        body: '{"srn":"srn://iam.scw.eu/applications/3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039", "id":"3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039", "name":"tf-tests-iam-group-membership-basic", "description":"", "created_at":"2026-10-07T13:42:27.608663Z", "updated_at":"2026-10-07T13:42:27.608663Z", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "editable":true, "deletable":true, "managed":false, "nb_api_keys":0, "tags":[]}'
+        headers:
+            Content-Length:
+                - "411"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:27 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 72da15d0-1478-4333-b6c4-e975f6381739
+        status: 200 OK
+        code: 200
+        duration: 64.049945ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/metadata
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 59
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
+        headers:
+            Content-Length:
+                - "59"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:27 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 54b43180-664c-4796-a979-3d591cb12b2a
+        status: 200 OK
+        code: 200
+        duration: 17.626043ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 130
+        host: api.scaleway.com
+        body: '{"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-tests-iam-group-membership-basic","description":"","tags":[]}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 456
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5","id":"1439c90e-ac7f-405e-8d93-ed569121ebd5","created_at":"2026-10-07T13:42:27.650841Z","updated_at":"2026-10-07T13:42:27.650841Z","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-tests-iam-group-membership-basic","description":"","user_ids":[],"application_ids":[],"tags":[],"editable":true,"deletable":true,"managed":false,"all_users":false,"all_applications":false}'
+        headers:
+            Content-Length:
+                - "456"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:27 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 200b9837-7479-453e-80f5-d40701b75b7f
+        status: 200 OK
+        code: 200
+        duration: 108.82546ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/applications/3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 400
+        body: '{"srn":"srn://iam.scw.eu/applications/3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039","id":"3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039","name":"tf-tests-iam-group-membership-basic","description":"","created_at":"2026-10-07T13:42:27.608663Z","updated_at":"2026-10-07T13:42:27.608663Z","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","editable":true,"deletable":true,"managed":false,"nb_api_keys":0,"tags":[]}'
+        headers:
+            Content-Length:
+                - "400"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:27 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 86b27716-1a2f-4901-bdfe-22d3ec3fcdb2
+        status: 200 OK
+        code: 200
+        duration: 110.130151ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 470
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5", "id":"1439c90e-ac7f-405e-8d93-ed569121ebd5", "created_at":"2026-10-07T13:42:27.650841Z", "updated_at":"2026-10-07T13:42:27.650841Z", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-iam-group-membership-basic", "description":"", "user_ids":[], "application_ids":[], "tags":[], "editable":true, "deletable":true, "managed":false, "all_users":false, "all_applications":false}'
+        headers:
+            Content-Length:
+                - "470"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:27 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - ec04e2a5-b295-49b7-abd4-5abaeba4ecbf
+        status: 200 OK
+        code: 200
+        duration: 88.442996ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 57
+        host: api.scaleway.com
+        body: '{"application_id":"3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5/add-member
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 494
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5","id":"1439c90e-ac7f-405e-8d93-ed569121ebd5","created_at":"2026-10-07T13:42:27.650841Z","updated_at":"2026-10-07T13:42:27.650841Z","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-tests-iam-group-membership-basic","description":"","user_ids":[],"application_ids":["3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"],"tags":[],"editable":true,"deletable":true,"managed":false,"all_users":false,"all_applications":false}'
+        headers:
+            Content-Length:
+                - "494"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:27 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "43"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - dc0cad1f-93b0-491b-a8e6-ca8bbeeeddd3
+        status: 200 OK
+        code: 200
+        duration: 118.818419ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 508
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5", "id":"1439c90e-ac7f-405e-8d93-ed569121ebd5", "created_at":"2026-10-07T13:42:27.650841Z", "updated_at":"2026-10-07T13:42:27.650841Z", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-iam-group-membership-basic", "description":"", "user_ids":[], "application_ids":["3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"], "tags":[], "editable":true, "deletable":true, "managed":false, "all_users":false, "all_applications":false}'
+        headers:
+            Content-Length:
+                - "508"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:27 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "41"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 31513ad2-3916-4926-9a72-505a5bb28c32
+        status: 200 OK
+        code: 200
+        duration: 51.616591ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 508
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5", "id":"1439c90e-ac7f-405e-8d93-ed569121ebd5", "created_at":"2026-10-07T13:42:27.650841Z", "updated_at":"2026-10-07T13:42:27.650841Z", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-iam-group-membership-basic", "description":"", "user_ids":[], "application_ids":["3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"], "tags":[], "editable":true, "deletable":true, "managed":false, "all_users":false, "all_applications":false}'
+        headers:
+            Content-Length:
+                - "508"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:28 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "41"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 6f66c022-d1f3-4016-87db-91af443b06c2
+        status: 200 OK
+        code: 200
+        duration: 94.870986ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 508
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5", "id":"1439c90e-ac7f-405e-8d93-ed569121ebd5", "created_at":"2026-10-07T13:42:27.650841Z", "updated_at":"2026-10-07T13:42:27.650841Z", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-iam-group-membership-basic", "description":"", "user_ids":[], "application_ids":["3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"], "tags":[], "editable":true, "deletable":true, "managed":false, "all_users":false, "all_applications":false}'
+        headers:
+            Content-Length:
+                - "508"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:29 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 34cd8d2f-6163-4dc3-ab4d-17974da859fa
+        status: 200 OK
+        code: 200
+        duration: 54.195146ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/applications/3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 400
+        body: '{"srn":"srn://iam.scw.eu/applications/3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039","id":"3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039","name":"tf-tests-iam-group-membership-basic","description":"","created_at":"2026-10-07T13:42:27.608663Z","updated_at":"2026-10-07T13:42:27.608663Z","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","editable":true,"deletable":true,"managed":false,"nb_api_keys":0,"tags":[]}'
+        headers:
+            Content-Length:
+                - "400"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:29 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - ee78bd9a-8adc-439d-8064-f6ece8d52a05
+        status: 200 OK
+        code: 200
+        duration: 96.498053ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 494
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5","id":"1439c90e-ac7f-405e-8d93-ed569121ebd5","created_at":"2026-10-07T13:42:27.650841Z","updated_at":"2026-10-07T13:42:27.650841Z","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-tests-iam-group-membership-basic","description":"","user_ids":[],"application_ids":["3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"],"tags":[],"editable":true,"deletable":true,"managed":false,"all_users":false,"all_applications":false}'
+        headers:
+            Content-Length:
+                - "494"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:29 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 252d81dd-cd42-4020-8839-549c3b6523d7
+        status: 200 OK
+        code: 200
+        duration: 86.775833ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 494
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5","id":"1439c90e-ac7f-405e-8d93-ed569121ebd5","created_at":"2026-10-07T13:42:27.650841Z","updated_at":"2026-10-07T13:42:27.650841Z","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-tests-iam-group-membership-basic","description":"","user_ids":[],"application_ids":["3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"],"tags":[],"editable":true,"deletable":true,"managed":false,"all_users":false,"all_applications":false}'
+        headers:
+            Content-Length:
+                - "494"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 0667d6bd-7c7f-404f-b8f4-5dacfbe23771
+        status: 200 OK
+        code: 200
+        duration: 43.523251ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/applications/3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 411
+        body: '{"srn":"srn://iam.scw.eu/applications/3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039", "id":"3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039", "name":"tf-tests-iam-group-membership-basic", "description":"", "created_at":"2026-10-07T13:42:27.608663Z", "updated_at":"2026-10-07T13:42:27.608663Z", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "editable":true, "deletable":true, "managed":false, "nb_api_keys":0, "tags":[]}'
+        headers:
+            Content-Length:
+                - "411"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "42"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - ea1414c2-b76f-4a84-8ebe-6b862e464eee
+        status: 200 OK
+        code: 200
+        duration: 47.631371ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 494
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5","id":"1439c90e-ac7f-405e-8d93-ed569121ebd5","created_at":"2026-10-07T13:42:27.650841Z","updated_at":"2026-10-07T13:42:27.650841Z","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-tests-iam-group-membership-basic","description":"","user_ids":[],"application_ids":["3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"],"tags":[],"editable":true,"deletable":true,"managed":false,"all_users":false,"all_applications":false}'
+        headers:
+            Content-Length:
+                - "494"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "39"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 2b6b46dd-0327-4f47-b07a-bc1cc566a407
+        status: 200 OK
+        code: 200
+        duration: 79.8824ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 508
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5", "id":"1439c90e-ac7f-405e-8d93-ed569121ebd5", "created_at":"2026-10-07T13:42:27.650841Z", "updated_at":"2026-10-07T13:42:27.650841Z", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-iam-group-membership-basic", "description":"", "user_ids":[], "application_ids":["3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"], "tags":[], "editable":true, "deletable":true, "managed":false, "all_users":false, "all_applications":false}'
+        headers:
+            Content-Length:
+                - "508"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:31 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 2d578da7-ca8f-42ef-97f2-5fb90211c53e
+        status: 200 OK
+        code: 200
+        duration: 38.114847ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 494
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5","id":"1439c90e-ac7f-405e-8d93-ed569121ebd5","created_at":"2026-10-07T13:42:27.650841Z","updated_at":"2026-10-07T13:42:27.650841Z","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-tests-iam-group-membership-basic","description":"","user_ids":[],"application_ids":["3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"],"tags":[],"editable":true,"deletable":true,"managed":false,"all_users":false,"all_applications":false}'
+        headers:
+            Content-Length:
+                - "494"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:31 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "44"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - b094a1d7-ee7e-4be1-8bc1-230a1cfa1afc
+        status: 200 OK
+        code: 200
+        duration: 45.010466ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 57
+        host: api.scaleway.com
+        body: '{"application_id":"3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5/remove-member
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 170
+        body: '{"current_state":"updating","message":"resource is in a transient state","resource":"group","resource_id":"1439c90e-ac7f-405e-8d93-ed569121ebd5","type":"transient_state"}'
+        headers:
+            Content-Length:
+                - "170"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:32 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 728b9ce6-5604-4564-b237-8f1a32ab2d99
+        status: 409 Conflict
+        code: 409
+        duration: 109.426621ms
+    - id: 17
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 57
+        host: api.scaleway.com
+        body: '{"application_id":"3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5/remove-member
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 456
+        body: '{"srn":"srn://iam.scw.eu/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5","id":"1439c90e-ac7f-405e-8d93-ed569121ebd5","created_at":"2026-10-07T13:42:27.650841Z","updated_at":"2026-10-07T13:42:27.650841Z","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-tests-iam-group-membership-basic","description":"","user_ids":[],"application_ids":[],"tags":[],"editable":true,"deletable":true,"managed":false,"all_users":false,"all_applications":false}'
+        headers:
+            Content-Length:
+                - "456"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:32 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 724e67fa-5970-44f0-b00b-7d6b82809990
+        status: 200 OK
+        code: 200
+        duration: 123.375945ms
+    - id: 18
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/applications/3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:32 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 35917935-58e0-4c9b-89aa-b1697fdd69b1
+        status: 204 No Content
+        code: 204
+        duration: 105.341103ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:32 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "45"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 0aadc74f-d8aa-425b-8808-586e99f8976a
+        status: 204 No Content
+        code: 204
+        duration: 109.153858ms
+    - id: 20
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 57
+        host: api.scaleway.com
+        body: '{"application_id":"3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5/remove-member
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 126
+        body: '{"message":"resource is not found","resource":"group","resource_id":"1439c90e-ac7f-405e-8d93-ed569121ebd5","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "126"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:32 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 2ef756ee-c50e-48b5-bf46-b839419680d1
+        status: 404 Not Found
+        code: 404
+        duration: 111.7677ms
+    - id: 21
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/groups/1439c90e-ac7f-405e-8d93-ed569121ebd5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 126
+        body: '{"message":"resource is not found","resource":"group","resource_id":"1439c90e-ac7f-405e-8d93-ed569121ebd5","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "126"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:32 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "43"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - d76664d7-e9d6-4df8-9aa1-e5d90dbcc206
+        status: 404 Not Found
+        code: 404
+        duration: 40.282461ms
+    - id: 22
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20261002075733-8aea664f16f2 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/applications/3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 132
+        body: '{"message":"resource is not found","resource":"application","resource_id":"3c7d50a5-c1b5-4d43-9d8b-c1d2d9c0e039","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "132"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 07 Oct 2026 13:42:32 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "45"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 5687d736-4305-4282-b6ee-2989a138898c
+        status: 404 Not Found
+        code: 404
+        duration: 31.866345ms
