@@ -307,6 +307,11 @@ func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	_, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !projectIDExists {
+		t.Skip("no default project ID")
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
