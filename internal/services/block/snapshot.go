@@ -368,16 +368,26 @@ func (r *SnapshotResource) Read(
 		return
 	}
 
-	resourceID := state.ID.ValueString()
+	var (
+		id   string
+		zone scw.Zone
+	)
+
 	if identityAvailable {
-		resourceID = identity.ID.ValueString()
-	}
+		id = identity.ID.ValueString()
+		zone = scw.Zone(identity.Zone.ValueString())
+	} else {
+		resourceID := state.ID.ValueString()
 
-	zone, id, err := zonal.ParseID(resourceID)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+		tmpZone, tmpId, err := zonal.ParseID(resourceID)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse block snapshot ID during READ", err.Error())
 
-		return
+			return
+		}
+
+		id = tmpId
+		zone = tmpZone
 	}
 
 	snapshot, err := waitForBlockSnapshot(ctx, r.api, zone, id, defaultBlockTimeout)
@@ -432,7 +442,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 
 	zone, id, err := zonal.ParseID(state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+		resp.Diagnostics.AddError("Failed to parse block snapshot ID during UPDATE", err.Error())
 
 		return
 	}
@@ -528,7 +538,7 @@ func (r *SnapshotResource) Delete(ctx context.Context, req resource.DeleteReques
 
 	zone, id, err := zonal.ParseID(state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+		resp.Diagnostics.AddError("Failed to parse block snapshot ID during DELETE", err.Error())
 
 		return
 	}
