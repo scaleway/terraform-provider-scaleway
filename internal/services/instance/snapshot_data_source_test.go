@@ -14,10 +14,7 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	_, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
-	if !projectIDExists {
-		t.Skip("no default project ID")
-	}
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	snapshotName := "tf-snapshot-ds-basic"
 
