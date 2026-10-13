@@ -111,6 +111,8 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 
 	templateID := ""
 
+	// For now, we need to explicitly define the project_id for the CI's Acceptance Tests to pass.
+	// We should find a more appropriate solution in the future.
 	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
 	if !projectIDExists {
 		t.Skip("no default project ID")
@@ -730,10 +732,7 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	_, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
-	if !projectIDExists {
-		t.Skip("no default project ID")
-	}
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
