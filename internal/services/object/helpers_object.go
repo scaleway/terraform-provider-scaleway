@@ -95,8 +95,6 @@ func NewS3ClientFromMeta(ctx context.Context, meta *meta.Meta, region string) (*
 		region = defaultRegion.String()
 	}
 
-	fmt.Println(region)
-
 	s3Endpoint, err := retrieveS3Endpoint(ctx, meta, nil, nil, region)
 	if err != nil {
 		return nil, err
