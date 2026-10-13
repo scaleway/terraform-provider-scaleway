@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -19,18 +18,6 @@ const (
 	defaultBlockRetryInterval = 5 * time.Second
 	BlockVolumeType           = instance.VolumeServerVolumeType("sbs_volume")
 )
-
-// blockAPIWithZone returns a new block API and the zone for a Create request
-func blockAPIWithZone(d *schema.ResourceData, m any) (*block.API, scw.Zone, error) {
-	blockAPI := block.NewAPI(meta.ExtractScwClient(m))
-
-	zone, err := meta.ExtractZone(d, m)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return blockAPI, zone, nil
-}
 
 // NewAPIWithZoneAndID returns a new block API with zone and ID extracted from the state
 func NewAPIWithZoneAndID(m any, zonedID string) (*block.API, scw.Zone, string, error) {
