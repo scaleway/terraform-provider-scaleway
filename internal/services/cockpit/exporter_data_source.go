@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -45,7 +46,7 @@ func fetchExporterByID(ctx context.Context, d *schema.ResourceData, meta any) di
 		return diag.FromErr(err)
 	}
 
-	res, err := retryOn403Value(ctx, func() (*cockpit.Exporter, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
 		return api.GetExporter(&cockpit.RegionalAPIGetExporterRequest{
 			Region:     region,
 			ExporterID: id,
@@ -76,7 +77,7 @@ func fetchExporterByFilters(ctx context.Context, d *schema.ResourceData, m any) 
 		ProjectID: projectID,
 	}
 
-	res, err := retryOn403Value(ctx, func() (*cockpit.ListExportersResponse, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListExportersResponse, error) {
 		return api.ListExporters(req, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {
@@ -115,7 +116,7 @@ func flattenExporterWithProjectID(ctx context.Context, d *schema.ResourceData, a
 	_ = d.Set("updated_at", types.FlattenTime(exp.UpdatedAt))
 	_ = d.Set("exported_products", types.FlattenSliceString(exp.ExportedProducts))
 
-	ds, err := retryOn403Value(ctx, func() (*cockpit.DataSource, error) {
+	ds, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
 		return api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
 			Region:       region,
 			DataSourceID: exp.DatasourceID,

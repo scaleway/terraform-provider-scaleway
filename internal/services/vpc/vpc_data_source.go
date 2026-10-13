@@ -59,7 +59,7 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}
 
-		res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCsResponse, error) {
+		res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListVPCsResponse, error) {
 			return vpcAPI.ListVPCs(request, scw.WithContext(ctx))
 		})
 		if err != nil {
@@ -78,7 +78,7 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 				OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 			}
 
-			res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCsResponse, error) {
+			res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListVPCsResponse, error) {
 				return vpcAPI.ListVPCs(request, scw.WithContext(ctx))
 			})
 			if err != nil {
@@ -106,7 +106,7 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.VPC, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.VPC, error) {
 		return vpcAPI.GetVPC(&vpc.GetVPCRequest{
 			Region: region,
 			VpcID:  regional.ExpandID(vpcID).ID,

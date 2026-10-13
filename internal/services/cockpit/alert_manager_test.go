@@ -279,7 +279,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 
 		var contactPoints *cockpit.ListContactPointsResponse
 
-		err := transport.RetryOn403(context.Background(), func() error {
+		err := transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			contactPoints, err = api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
@@ -548,7 +548,7 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 
 		var alerts *cockpit.ListAlertsResponse
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			alerts, err = api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
@@ -597,7 +597,7 @@ func testAccCheckManagedAlertsEnabled(tt *acctest.TestTools, resourceName string
 
 		var alertManager *cockpit.AlertManager
 
-		err := transport.RetryOn403(context.Background(), func() error {
+		err := transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			alertManager, err = api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{

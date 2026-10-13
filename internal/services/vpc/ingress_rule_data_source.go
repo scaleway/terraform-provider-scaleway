@@ -74,7 +74,7 @@ func dataSourceIngressRuleReadByID(ctx context.Context, d *schema.ResourceData, 
 	id := locality.ExpandID(ruleID)
 	d.SetId(regional.NewIDString(region, id))
 
-	rule, err := transport.RetryOn403Value(ctx, func() (*vpc.IngressRule, error) {
+	rule, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.IngressRule, error) {
 		return vpcAPI.GetIngressRule(&vpc.GetIngressRuleRequest{
 			Region: region,
 			RuleID: id,
@@ -114,7 +114,7 @@ func dataSourceIngressRuleReadByFilters(ctx context.Context, d *schema.ResourceD
 		req.IsIPv6 = types.ExpandBoolPtr(isIPv6)
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListIngressRulesResponse, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListIngressRulesResponse, error) {
 		return vpcAPI.ListIngressRules(req, scw.WithContext(ctx))
 	})
 	if err != nil {
