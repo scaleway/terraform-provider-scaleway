@@ -1,6 +1,7 @@
 package messageq_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -212,12 +213,12 @@ func isUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 		api := messageq.NewAPI(tt.Meta)
 
-		return transport.RetryOn403(tt.T.Context(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			res, err := api.ListUsers(&messageqSDK.ListUsersRequest{
 				Region:       region,
 				DeploymentID: deploymentID,
 				Name:         &userName,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 			if err != nil {
 				return err
 			}
@@ -228,6 +229,8 @@ func isUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 			return nil
 		})
+
+		return err
 	}
 }
 
@@ -245,12 +248,12 @@ func isUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			api := messageq.NewAPI(tt.Meta)
 
-			err = transport.RetryOn403(tt.T.Context(), func() error {
+			err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 				res, err := api.ListUsers(&messageqSDK.ListUsersRequest{
 					Region:       region,
 					DeploymentID: deploymentID,
 					Name:         &userName,
-				}, scw.WithContext(tt.T.Context()))
+				}, scw.WithContext(ctx))
 				if err != nil {
 					return err
 				}

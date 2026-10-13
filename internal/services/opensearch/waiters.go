@@ -24,7 +24,7 @@ func waitForDeployment(
 
 	var deployment *searchdbapi.Deployment
 
-	err := transport.RetryOn403(ctx, func() error {
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		var err error
 
 		deployment, err = api.WaitForDeployment(&searchdbapi.WaitForDeploymentRequest{
@@ -74,7 +74,7 @@ func waitForEndpointsDeleted(
 	for {
 		var deployment *searchdbapi.Deployment
 
-		err := transport.RetryOn403(ctx, func() error {
+		err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			deployment, err = api.GetDeployment(&searchdbapi.GetDeploymentRequest{

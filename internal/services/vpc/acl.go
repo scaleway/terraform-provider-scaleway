@@ -133,7 +133,7 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.Rules = expandedRules
 	}
 
-	err = transport.RetryOn403(ctx, func() error {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		_, err := vpcAPI.SetACL(req, scw.WithContext(ctx))
 
 		return err
@@ -156,7 +156,7 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	acl, err := transport.RetryOn403Value(ctx, func() (*vpc.GetACLResponse, error) {
+	acl, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.GetACLResponse, error) {
 		return vpcAPI.GetACL(&vpc.GetACLRequest{
 			VpcID:  locality.ExpandID(ID),
 			Region: region,
@@ -212,7 +212,7 @@ func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.Rules = expandedRules
 	}
 
-	err = transport.RetryOn403(ctx, func() error {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		_, err := vpcAPI.SetACL(req, scw.WithContext(ctx))
 
 		return err
@@ -230,7 +230,7 @@ func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	err = transport.RetryOn403(ctx, func() error {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		_, err := vpcAPI.SetACL(&vpc.SetACLRequest{
 			VpcID:         locality.ExpandID(ID),
 			Region:        region,

@@ -124,7 +124,7 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		Region:                  region,
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.Route, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.Route, error) {
 		return vpcAPI.CreateRoute(req, scw.WithContext(ctx))
 	})
 	if err != nil {
@@ -145,7 +145,7 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.Route, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.Route, error) {
 		return vpcAPI.GetRoute(&vpc.GetRouteRequest{
 			Region:  region,
 			RouteID: ID,
@@ -251,7 +251,7 @@ func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	if hasChanged {
-		err = transport.RetryOn403(ctx, func() error {
+		err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := vpcAPI.UpdateRoute(updateRequest, scw.WithContext(ctx))
 
 			return err
@@ -271,7 +271,7 @@ func ResourceRouteDelete(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	// issue with route deletion for now, permissions_denied
-	err = transport.RetryOn403(ctx, func() error {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		return vpcAPI.DeleteRoute(&vpc.DeleteRouteRequest{
 			Region:  region,
 			RouteID: ID,
