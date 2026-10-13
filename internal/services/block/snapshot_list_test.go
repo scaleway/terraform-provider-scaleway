@@ -21,6 +21,8 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	testDefaultZone, _ := tt.Meta.ScwClient().GetDefaultZone()
 
 	resource.ParallelTest(t, resource.TestCase{

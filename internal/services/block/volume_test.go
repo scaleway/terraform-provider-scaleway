@@ -133,10 +133,7 @@ func TestAccVolume_FromSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	_, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
-	if !projectIDExists {
-		t.Skip("no default project ID")
-	}
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -176,10 +173,7 @@ func TestAccVolume_FromSnapshotWithSize(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	_, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
-	if !projectIDExists {
-		t.Skip("no default project ID")
-	}
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,

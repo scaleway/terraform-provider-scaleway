@@ -19,6 +19,8 @@ func TestAccActionSnapshotExport_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-export-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,

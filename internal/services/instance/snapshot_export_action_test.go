@@ -151,6 +151,8 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	var bucketName string
 	for {
 		bucketName = sdkacctest.RandomWithPrefix("tf-test-action-instance-export-snap-sbs")
