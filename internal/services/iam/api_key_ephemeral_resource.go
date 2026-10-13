@@ -63,6 +63,7 @@ type ApiKeyEphemeralResourceModel struct {
 	ExpiresAt     types.String `tfsdk:"expires_at"`
 	ApplicationID types.String `tfsdk:"application_id"`
 	UserID        types.String `tfsdk:"user_id"`
+	SRN           types.String `tfsdk:"srn"`
 	// Output
 	AccessKey        types.String `tfsdk:"access_key"`
 	SecretKey        types.String `tfsdk:"secret_key"`
@@ -131,6 +132,10 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 					verify.IsStringUUID(),
 				},
 			},
+			"srn": schema.StringAttribute{
+				Computed:    true,
+				Description: "The Scaleway Resource Name (SRN) of the iam api key",
+			},
 		},
 	}
 }
@@ -193,6 +198,7 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 	data.ExpiresAt = types.StringValue(res.ExpiresAt.Format(time.RFC3339))
 	data.CreationIP = types.StringValue(res.CreationIP)
 	data.DefaultProjectID = types.StringValue(res.DefaultProjectID)
+	data.SRN = types.StringValue(res.Srn)
 
 	resp.Result.Set(ctx, &data)
 }

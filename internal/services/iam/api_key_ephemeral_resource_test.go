@@ -2,7 +2,9 @@ package iam_test
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -93,11 +95,25 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 						revision  = "3"
 						depends_on = [scaleway_secret_version.app_id]
 					} 
+
+					resource "scaleway_secret_version" "srn" {
+						description = "%[1]s"
+						secret_id   = scaleway_secret.main.id
+						data_wo     = ephemeral.scaleway_iam_api_key.main.srn
+						depends_on 	= [scaleway_secret_version.app_id]
+					}
+
+					data "scaleway_secret_version" "srn" {
+						secret_id = scaleway_secret.main.id
+						revision  = "4"
+						depends_on = [scaleway_secret_version.srn]
+					}
 					`, description, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEphemeralIamAPIKeyExists(tt, "data.scaleway_secret_version.access_key"),
 					testAccCheckSecretVersionDataEquals("data.scaleway_secret_version.app_id", "data", "scaleway_iam_application.main", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.desc", "data", secret.Base64Encoded([]byte(description))),
+					testAccCheckSecretVersionDataMatches("data.scaleway_secret_version.srn", regexp.MustCompile(`^srn://iam\..+/api-keys/.+$`)),
 				),
 			},
 		},
@@ -229,6 +245,32 @@ func testAccCheckSecretVersionDataEquals(secretVersionDataSource, secretVersionA
 
 		if decodedData != expectedValue {
 			return fmt.Errorf("secret version data (decoded: %s) does not match expected value (%s)", decodedData, expectedValue)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckSecretVersionDataMatches(secretVersionDataSource string, re *regexp.Regexp) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		secretRs, ok := state.RootModule().Resources[secretVersionDataSource]
+		if !ok {
+			return fmt.Errorf("secret version data source not found: %s", secretVersionDataSource)
+		}
+
+		encodedData := secretRs.Primary.Attributes["data"]
+		if encodedData == "" {
+			return errors.New("secret version attribute data is empty")
+		}
+
+		decodedBytes, err := base64.StdEncoding.DecodeString(encodedData)
+		if err != nil {
+			return fmt.Errorf("failed to decode base64 data from secret version: %w", err)
+		}
+
+		decodedData := string(decodedBytes)
+		if !re.MatchString(decodedData) {
+			return fmt.Errorf("secret version data (decoded: %s) does not match pattern %v", decodedData, re)
 		}
 
 		return nil
