@@ -332,6 +332,13 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 
 			return
 		}
+
+		snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, snapshot.ID, defaultBlockTimeout)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed waiting for block snapshot export", err.Error())
+
+			return
+		}
 	}
 
 	state := flattenBlockSnapshot(ctx, snapshot, &plan, &resp.Diagnostics)
