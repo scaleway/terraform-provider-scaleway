@@ -335,6 +335,120 @@ func TestAccEdgeServicesBackend_Container(t *testing.T) {
 	})
 }
 
+func TestAccEdgeServicesBackend_ChangeType(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			edgeservicestestfuncs.CheckEdgeServicesBackendDestroy(tt),
+			edgeservicestestfuncs.CheckEdgeServicesDNSDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_object_bucket" "main" {
+					  name       = "tf-test-es-backend-change-type"
+					}
+
+					resource "scaleway_container_namespace" "main" {
+					  name       = "tf-tests-es-backend-change-type"
+					}
+
+					resource "scaleway_container" "main" {
+					  namespace_id = scaleway_container_namespace.main.id
+					  name         = "tf-tests-es-backend-change-type"
+					  image        = "nginx:1.29.4-alpine"
+					  port         = 80
+					}
+
+					resource "scaleway_edge_services_pipeline" "main" {
+					  name        = "tf-tests-es-backend-change-type"
+					  description = "pipeline description"
+					}
+
+					resource "scaleway_edge_services_backend_stage" "main" {
+					  pipeline_id = scaleway_edge_services_pipeline.main.id
+					  s3_backend_config {
+						bucket_name   = scaleway_object_bucket.main.name
+						bucket_region = "fr-par"
+					  }
+
+					  lifecycle {
+						create_before_destroy = true
+					  }
+					}
+
+					resource "scaleway_edge_services_dns_stage" "main" {
+					  pipeline_id      = scaleway_edge_services_pipeline.main.id
+					  backend_stage_id = scaleway_edge_services_backend_stage.main.id
+					  fqdns            = ["backend-change-type.example.fr"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					edgeservicestestfuncs.CheckEdgeServicesBackendExists(tt, "scaleway_edge_services_backend_stage.main"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_backend_stage.main", "s3_backend_config.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_backend_stage.main", "id",
+						"scaleway_edge_services_dns_stage.main", "backend_stage_id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_object_bucket" "main" {
+					  name       = "tf-test-es-backend-change-type"
+					}
+
+					resource "scaleway_container_namespace" "main" {
+					  name       = "tf-tests-es-backend-change-type"
+					}
+
+					resource "scaleway_container" "main" {
+					  namespace_id = scaleway_container_namespace.main.id
+					  name         = "tf-tests-es-backend-change-type"
+					  image        = "nginx:1.29.4-alpine"
+					  port         = 80
+					}
+
+					resource "scaleway_edge_services_pipeline" "main" {
+					  name        = "tf-tests-es-backend-change-type"
+					  description = "pipeline description"
+					}
+
+					resource "scaleway_edge_services_backend_stage" "main" {
+					  pipeline_id = scaleway_edge_services_pipeline.main.id
+					  container_backend_config {
+						container_id = scaleway_container.main.id
+					  }
+
+					  lifecycle {
+						create_before_destroy = true
+					  }
+					}
+
+					resource "scaleway_edge_services_dns_stage" "main" {
+					  pipeline_id      = scaleway_edge_services_pipeline.main.id
+					  backend_stage_id = scaleway_edge_services_backend_stage.main.id
+					  fqdns            = ["backend-change-type.example.fr"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					edgeservicestestfuncs.CheckEdgeServicesBackendExists(tt, "scaleway_edge_services_backend_stage.main"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_backend_stage.main", "s3_backend_config.#", "0"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_backend_stage.main", "container_backend_config.0.container_id",
+						"scaleway_container.main", "id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_backend_stage.main", "id",
+						"scaleway_edge_services_dns_stage.main", "backend_stage_id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccEdgeServicesBackend_Function(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
