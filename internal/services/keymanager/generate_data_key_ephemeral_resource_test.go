@@ -1,12 +1,13 @@
 package keymanager_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 )
 
 func TestAccGenerateDataKeyEphemeralResource_Basic(t *testing.T) {
@@ -17,10 +18,14 @@ func TestAccGenerateDataKeyEphemeralResource_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	dataPath := tfjsonpath.New("data")
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004
 				Config: `
 				resource "scaleway_key_manager_key" "test_key" {
 				  name        = "tf-test-generate-data-key"
@@ -35,62 +40,37 @@ func TestAccGenerateDataKeyEphemeralResource_Basic(t *testing.T) {
 				  region     = "fr-par"
 				}
 
-				resource "scaleway_secret" "main" {
-					name        = "test-data-key-secret"
-				}
-
-				resource "scaleway_secret_version" "ciphertext" {
-					description = "version1"
-					secret_id   = scaleway_secret.main.id
-					data_wo     = ephemeral.scaleway_key_manager_generate_data_key.main.ciphertext
-				}
-
-				resource "scaleway_secret_version" "plaintext" {
-					description = "version2"
-					secret_id   = scaleway_secret.main.id
-					data_wo     = ephemeral.scaleway_key_manager_generate_data_key.main.plaintext
-					data_wo_version = 2
-					depends_on	= [scaleway_secret_version.ciphertext]
-				}
-
-				data "scaleway_secret_version" "ciphertext" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "1"
-				  depends_on = [scaleway_secret_version.ciphertext]
-				}
-
-				data "scaleway_secret_version" "plaintext" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "2"
-				  depends_on = [scaleway_secret_version.plaintext]
-				}
-
 				ephemeral "scaleway_key_manager_decrypt" "test_decrypt" {
 				  key_id     = scaleway_key_manager_key.test_key.id
 				  ciphertext  = ephemeral.scaleway_key_manager_generate_data_key.main.ciphertext
 				  region     = "fr-par"
 				}
 
-				resource "scaleway_secret_version" "decrypted" {
-					description = "version3"
-					secret_id   = scaleway_secret.main.id
-					data_wo     = ephemeral.scaleway_key_manager_decrypt.test_decrypt.plaintext
-					data_wo_version = 3
-					depends_on	= [scaleway_secret_version.plaintext]
+				provider "echo" {
+				  alias = "generate_data_key"
+				  data  = ephemeral.scaleway_key_manager_generate_data_key.main
 				}
 
-				data "scaleway_secret_version" "decrypted" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "3"
-				  depends_on = [scaleway_secret_version.decrypted]
+				provider "echo" {
+				  alias = "decrypt"
+				  data  = ephemeral.scaleway_key_manager_decrypt.test_decrypt
 				}
 
+				resource "echo" "test_generate_data_key" {
+				  provider = echo.generate_data_key
+				}
+
+				resource "echo" "test_decrypt" {
+				  provider = echo.decrypt
+				}
 				`,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_generate_data_key", dataPath.AtMapKey("ciphertext"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("echo.test_generate_data_key", dataPath.AtMapKey("plaintext"), knownvalue.NotNull()),
+				},
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.scaleway_secret_version.ciphertext", "data"),
-					resource.TestCheckResourceAttrSet("data.scaleway_secret_version.plaintext", "data"),
 					// Check that a generated data key plaintext is equivalent to calling decrypt with its ciphertext
-					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.decrypted", "data", "data.scaleway_secret_version.plaintext", "data"),
+					resource.TestCheckResourceAttrPair("echo.test_decrypt", "data.plaintext", "echo.test_generate_data_key", "data.plaintext"),
 				),
 			},
 		},
@@ -105,12 +85,15 @@ func TestAccGenerateDataKeyEphemeralResource_WithoutPlaintext(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	emptyPlaintext := "plaintext was empty"
+	dataPath := tfjsonpath.New("data")
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				// lintignore:AT004
+				Config: `
 				resource "scaleway_key_manager_key" "test_key" {
 				  name        = "tf-test-generate-no-plaintext"
 				  region      = "fr-par"
@@ -125,40 +108,16 @@ func TestAccGenerateDataKeyEphemeralResource_WithoutPlaintext(t *testing.T) {
 				  without_plaintext = true
 				}
 
-				resource "scaleway_secret" "main" {
-					name        = "test-data-key-secret-no-plaintext"
+				provider "echo" {
+				  data = ephemeral.scaleway_key_manager_generate_data_key.main
 				}
 
-				resource "scaleway_secret_version" "ciphertext" {
-					description = "version1"
-					secret_id   = scaleway_secret.main.id
-					data_wo     = ephemeral.scaleway_key_manager_generate_data_key.main.ciphertext
-				}
-
-				resource "scaleway_secret_version" "plaintext" {
-					description = "version2"
-					secret_id   = scaleway_secret.main.id
-  					data_wo     = ephemeral.scaleway_key_manager_generate_data_key.main.plaintext != "" ? ephemeral.scaleway_key_manager_generate_data_key.main.plaintext : "%s"
-					data_wo_version = 2
-					depends_on	= [scaleway_secret_version.ciphertext]
-				}
-
-				data "scaleway_secret_version" "ciphertext" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "1"
-				  depends_on = [scaleway_secret_version.ciphertext]
-				}
-
-				data "scaleway_secret_version" "plaintext" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "2"
-				  depends_on = [scaleway_secret_version.plaintext]
-				}
-				`, emptyPlaintext),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.scaleway_secret_version.ciphertext", "data"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.plaintext", "data", secret.Base64Encoded([]byte(emptyPlaintext))),
-				),
+				resource "echo" "test_generate_data_key" {}
+				`,
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_generate_data_key", dataPath.AtMapKey("ciphertext"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("echo.test_generate_data_key", dataPath.AtMapKey("plaintext"), knownvalue.StringExact("")),
+				},
 			},
 		},
 	})

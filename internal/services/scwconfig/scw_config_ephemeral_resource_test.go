@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
-	"github.com/hashicorp/terraform-plugin-testing/echoprovider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -56,7 +55,7 @@ func TestAccEphemeralConfig_ActiveProfile(t *testing.T) {
 
 					return muxServer.ProviderServer(), nil
 				},
-				"echo": echoprovider.NewProviderServer(),
+				"echo": tt.ProviderFactories["echo"],
 			}
 		}(),
 		Steps: []resource.TestStep{
@@ -132,7 +131,7 @@ func TestAccEphemeralConfig_OtherProfile(t *testing.T) {
 
 					return muxServer.ProviderServer(), nil
 				},
-				"echo": echoprovider.NewProviderServer(),
+				"echo": tt.ProviderFactories["echo"],
 			}
 		}(),
 		Steps: []resource.TestStep{
@@ -209,7 +208,7 @@ func TestAccEphemeralConfig_MixedProfile(t *testing.T) {
 
 					return muxServer.ProviderServer(), nil
 				},
-				"echo": echoprovider.NewProviderServer(),
+				"echo": tt.ProviderFactories["echo"],
 			}
 		}(),
 		Steps: []resource.TestStep{

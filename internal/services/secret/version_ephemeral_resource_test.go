@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
@@ -24,14 +26,16 @@ func TestAccEphemeralResourceSecretVersion_Basic(t *testing.T) {
 		secretDescription   = "secret description"
 		secretVersionData   = "my_super_secret_v1"
 		secretVersionDataV2 = "my_super_secret_v2"
-		secretVersionDataV3 = "my_super_secret_v3"
 	)
+
+	dataPath := tfjsonpath.New("data")
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004
 				Config: fmt.Sprintf(`
 				resource "scaleway_secret" "main" {
 				  name        = "%[1]s"
@@ -73,68 +77,49 @@ func TestAccEphemeralResourceSecretVersion_Basic(t *testing.T) {
 				  depends_on = [scaleway_secret_version.v2]
 				}
 
-				# We set the value of the ephemeral resource in a scaleway_secret_version,
-				# to be able to call its data source and retrieve the ephemeral values
-				# in the checks.
-				# This is not something that should be done in a real configuration. 
-				resource "scaleway_secret_version" "v1_from_ephemeral" {
-				  description = "version1_from_ephemeral"
-				  secret_id   = scaleway_secret.main.id
-				  data_wo        = base64decode(ephemeral.scaleway_secret_version.data_v1.data)
-				  data_wo_version = 3
-				  depends_on = [ephemeral.scaleway_secret_version.data_v1]
+				provider "echo" {
+				  alias = "v1"
+				  data  = ephemeral.scaleway_secret_version.data_v1
 				}
 
-				resource "scaleway_secret_version" "v2_from_ephemeral" {
-				  description 		= "version2_from_ephemeral"
-				  secret_id   		= scaleway_secret.main.id
-				  data_wo        	= base64decode(ephemeral.scaleway_secret_version.data_v2.data)
-				  data_wo_version	= 4
-				  depends_on = [scaleway_secret_version.v1_from_ephemeral]
+				provider "echo" {
+				  alias = "v2"
+				  data  = ephemeral.scaleway_secret_version.data_v2
 				}
 
-				resource "scaleway_secret_version" "latest_from_ephemeral" {
-				  description		= "version2_from_ephemeral"
-				  secret_id			= scaleway_secret.main.id
-				  data_wo			= base64decode(ephemeral.scaleway_secret_version.data_v2.data)
-				  data_wo_version	= 5
-				  depends_on = [scaleway_secret_version.v2_from_ephemeral]
+				provider "echo" {
+				  alias  = "latest"
+				  data   = ephemeral.scaleway_secret_version.data_latest
 				}
 
-				# We use datasources to be able to retrieve the ephemeral values in the checks.
-				# This is not something that should be done in a real configuration. 
-				data "scaleway_secret_version" "v1_from_ephemeral" {
-					secret_id 	= scaleway_secret.main.id
-					revision  	= "3"
-					depends_on 	= [scaleway_secret_version.v1_from_ephemeral]
+				resource "echo" "test_v1" {
+				  provider = echo.v1
 				}
 
-				data "scaleway_secret_version" "v2_from_ephemeral" {
-					secret_id 	= scaleway_secret.main.id
-					revision  	= "4"
-					depends_on 	= [scaleway_secret_version.v2_from_ephemeral]
-				} 
+				resource "echo" "test_v2" {
+				  provider = echo.v2
+				}
 
-				data "scaleway_secret_version" "latest_from_ephemeral" {
-					secret_id 	= scaleway_secret.main.id
-					revision  	= "5"
-					depends_on 	= [scaleway_secret_version.latest_from_ephemeral]
-				} 
+				resource "echo" "test_latest" {
+				  provider = echo.latest
+				}
 				`, secretName, secretDescription, secretVersionData, secretVersionDataV2),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_v1", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionData)))),
+					statecheck.ExpectKnownValue("echo.test_v2", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionDataV2)))),
+					statecheck.ExpectKnownValue("echo.test_latest", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionDataV2)))),
+				},
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.v1_from_ephemeral", "data", secret.Base64Encoded([]byte(secretVersionData))),
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v2"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.v2_from_ephemeral", "data", secret.Base64Encoded([]byte(secretVersionDataV2))),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.latest_from_ephemeral", "data", secret.Base64Encoded([]byte(secretVersionDataV2))),
 					// Ensure data_wo (and data) and ephemeral secret_version are not in state
-					testAccCheckAttributeNotInState("scaleway_secret_version.v1", "data_wo"),
-					testAccCheckAttributeNotInState("scaleway_secret_version.v1", "data"),
-					testAccCheckAttributeNotInState("scaleway_secret_version.v2", "data_wo"),
-					testAccCheckAttributeNotInState("scaleway_secret_version.v2", "data"),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_v1"),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_v2"),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_latest"),
+					acctest.CheckAttributeNotInState("scaleway_secret_version.v1", "data_wo"),
+					acctest.CheckAttributeNotInState("scaleway_secret_version.v1", "data"),
+					acctest.CheckAttributeNotInState("scaleway_secret_version.v2", "data_wo"),
+					acctest.CheckAttributeNotInState("scaleway_secret_version.v2", "data"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_v1"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_v2"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_latest"),
 				),
 			},
 		},
@@ -154,11 +139,14 @@ func TestAccEphemeralResourceSecretVersion_ByNameSecret(t *testing.T) {
 		secretName        = "erSecretVersionByNameSecret"
 	)
 
+	dataPath := tfjsonpath.New("data")
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004
 				Config: fmt.Sprintf(`
 				resource "scaleway_secret" "main" {
 				  name = "%[1]s"
@@ -186,62 +174,37 @@ func TestAccEphemeralResourceSecretVersion_ByNameSecret(t *testing.T) {
 				  depends_on = [scaleway_secret_version.v1]
 				}
 
-				# We set the value of the ephemeral resource in a scaleway_secret_version,
-				# to be able to call its data source and retrieve the ephemeral values
-				# in the checks.
-				# This is not something that should be done in a real configuration. 
-				resource "scaleway_secret_version" "v1_from_ephemeral" {
-				  description 		= "version1_from_ephemeral"
-				  secret_id   		= scaleway_secret.main.id
-				  data_wo        	= base64decode(ephemeral.scaleway_secret_version.data_by_name.data)
-				  data_wo_version 	= 2
-				  depends_on 		= [ephemeral.scaleway_secret_version.data_by_name]
+				provider "echo" {
+				  alias = "by_name"
+				  data  = ephemeral.scaleway_secret_version.data_by_name
 				}
 
-				resource "scaleway_secret_version" "by_name_from_ephemeral" {
-				  description 		= "by_name_from_ephemeral"
-				  secret_id   		= scaleway_secret.main.id
-				  data_wo        	= base64decode(ephemeral.scaleway_secret_version.data_by_name_latest.data)
-				  data_wo_version 	= 3
-				  depends_on 		= [ephemeral.scaleway_secret_version.data_by_name_latest]
+				provider "echo" {
+				  alias = "by_name_latest"
+				  data  = ephemeral.scaleway_secret_version.data_by_name_latest
 				}
 
-				# We use datasources to be able to retrieve the ephemeral values in the checks.
-				# This is not something that should be done in a real configuration. 
-				data "scaleway_secret_version" "v1_from_ephemeral" {
-					secret_id 	= scaleway_secret.main.id
-					revision  	= "2"
-					depends_on 	= [scaleway_secret_version.v1_from_ephemeral]
+				resource "echo" "test_by_name" {
+				  provider = echo.by_name
 				}
 
-				data "scaleway_secret_version" "by_name_from_ephemeral" {
-					secret_id 	= scaleway_secret.main.id
-					revision  	= "3"
-					depends_on 	= [scaleway_secret_version.by_name_from_ephemeral]
+				resource "echo" "test_by_name_latest" {
+				  provider = echo.by_name_latest
 				}
 				`, secretName, secretVersionData),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_by_name", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionData)))),
+					statecheck.ExpectKnownValue("echo.test_by_name_latest", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionData)))),
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1_from_ephemeral"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.v1_from_ephemeral", "data", secret.Base64Encoded([]byte(secretVersionData))),
-					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.by_name_from_ephemeral"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.by_name_from_ephemeral", "data", secret.Base64Encoded([]byte(secretVersionData))),
+					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
 					// Ensure data_wo (and data) and ephemeral secret_version are not in state
-					testAccCheckAttributeNotInState("scaleway_secret_version.v1_from_ephemeral", "data_wo"),
-					testAccCheckAttributeNotInState("scaleway_secret_version.v1_from_ephemeral", "data"),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_by_name"),
-					testAccCheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_by_name_latest"),
+					acctest.CheckAttributeNotInState("scaleway_secret_version.v1", "data_wo"),
+					acctest.CheckAttributeNotInState("scaleway_secret_version.v1", "data"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_by_name"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_by_name_latest"),
 				),
 			},
 		},
 	})
-}
-
-func testAccCheckEphemeralResourceNotInState(resource string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		if _, ok := state.RootModule().Resources[resource]; ok {
-			return fmt.Errorf("ephemeral resource %s should not be persisted in state", resource)
-		}
-
-		return nil
-	}
 }
