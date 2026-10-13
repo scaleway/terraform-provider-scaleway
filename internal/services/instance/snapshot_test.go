@@ -49,6 +49,11 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	_, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !projectIDExists {
+		t.Skip("no default project ID")
+	}
+
 	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-instance-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
