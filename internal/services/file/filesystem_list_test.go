@@ -19,6 +19,11 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	_, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !projectIDExists {
+		t.Skip("no default project ID")
+	}
+
 	identity1 := identitycheck.Identity()
 	identity2 := identitycheck.Identity()
 	identity3 := identitycheck.Identity()
