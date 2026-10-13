@@ -1,20 +1,23 @@
 package iam_test
 
 import (
-	"encoding/base64"
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
-	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
-	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
+
+// accessKeyPattern matches the format of a Scaleway IAM access key.
+var accessKeyPattern = regexp.MustCompile(`^SCW[0-9A-Z]{17}$`)
 
 func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
@@ -25,22 +28,19 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 	defer tt.Cleanup()
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
-	if !*acctest.UpdateCassettes {
-		// This hardcoded value has to be replaced with the expiration in cassettes.
-		// Should be in the first "POST /api-keys" request.
-		expiresAt = "2026-06-10T16:22:39Z"
-	}
 
 	description := "tf_test_api_key_er_with_app"
+	dataPath := tfjsonpath.New("data")
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamApplicationDestroy(tt),
 			testAccCheckIamAPIKeyDestroy(tt),
-			secrettestfuncs.CheckSecretDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004
 				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "main" {
 						name = "%[1]s"
@@ -52,52 +52,19 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 						expires_at = "%[2]s"
 					}
 
-					resource "scaleway_secret" "main" {
-						name        = "%[1]s"
+					provider "echo" {
+						data = ephemeral.scaleway_iam_api_key.main
 					}
 
-					resource "scaleway_secret_version" "access_key" {
-						description = "%[1]s"
-						secret_id   = scaleway_secret.main.id
-						data_wo     = ephemeral.scaleway_iam_api_key.main.access_key
-					}
-
-					data "scaleway_secret_version" "access_key" {
-						secret_id = scaleway_secret.main.id
-						revision  = "1"
-						depends_on = [scaleway_secret_version.access_key]
-					} 
-
-					resource "scaleway_secret_version" "desc" {
-						description = "%[1]s"
-						secret_id   = scaleway_secret.main.id
-						data_wo     = ephemeral.scaleway_iam_api_key.main.description
-						depends_on 	= [scaleway_secret_version.access_key]
-					}
-
-					data "scaleway_secret_version" "desc" {
-						secret_id = scaleway_secret.main.id
-						revision  = "2"
-						depends_on = [scaleway_secret_version.desc]
-					} 
-
-					resource "scaleway_secret_version" "app_id" {
-						description = "%[1]s"
-						secret_id   = scaleway_secret.main.id
-						data_wo     = ephemeral.scaleway_iam_api_key.main.application_id
-						depends_on 	= [scaleway_secret_version.desc]
-					}
-
-					data "scaleway_secret_version" "app_id" {
-						secret_id = scaleway_secret.main.id
-						revision  = "3"
-						depends_on = [scaleway_secret_version.app_id]
-					} 
+					resource "echo" "test_api_key" {}
 					`, description, expiresAt),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("access_key"), knownvalue.StringRegexp(accessKeyPattern)),
+					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("description"), knownvalue.StringExact(description)),
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEphemeralIamAPIKeyExists(tt, "data.scaleway_secret_version.access_key"),
-					testAccCheckSecretVersionDataEquals("data.scaleway_secret_version.app_id", "data", "scaleway_iam_application.main", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.desc", "data", secret.Base64Encoded([]byte(description))),
+					testAccCheckEphemeralIamAPIKeyExists(tt, "echo.test_api_key"),
+					resource.TestCheckResourceAttrPair("echo.test_api_key", "data.application_id", "scaleway_iam_application.main", "id"),
 				),
 			},
 		},
@@ -114,26 +81,23 @@ func TestAccApiKeyEphemeralResource_DefaultProject(t *testing.T) {
 
 	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
 	if !projectIDExists {
-		projectID = "105bdce1-64c0-48ab-899d-868455867ecf"
+		t.Skip("no default project ID")
 	}
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
-	if !*acctest.UpdateCassettes {
-		// This hardcoded value has to be replaced with the expiration in cassettes.
-		// Should be in the first "POST /api-keys" request.
-		expiresAt = "2026-06-10T16:22:39Z"
-	}
 
 	description := "tf_test_api_key_er_project"
+	dataPath := tfjsonpath.New("data")
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			iamchecks.CheckUserDestroyed(tt),
+			testAccCheckIamApplicationDestroy(tt),
 			testAccCheckIamAPIKeyDestroy(tt),
-			secrettestfuncs.CheckSecretDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004
 				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "main" {
 						name = "%[1]s"
@@ -146,111 +110,41 @@ func TestAccApiKeyEphemeralResource_DefaultProject(t *testing.T) {
 						default_project_id = "%[3]s"
 					}
 
-					resource "scaleway_secret" "main" {
-						name        = "%[1]s"
+					provider "echo" {
+						data = ephemeral.scaleway_iam_api_key.main
 					}
 
-					resource "scaleway_secret_version" "access_key" {
-						description = "%[1]s"
-						secret_id   = scaleway_secret.main.id
-						data_wo     = ephemeral.scaleway_iam_api_key.main.access_key
-					}
-
-					data "scaleway_secret_version" "access_key" {
-						secret_id = scaleway_secret.main.id
-						revision  = "1"
-						depends_on = [scaleway_secret_version.access_key]
-					} 
-
-					resource "scaleway_secret_version" "desc" {
-						description = "%[1]s"
-						secret_id   = scaleway_secret.main.id
-						data_wo     = ephemeral.scaleway_iam_api_key.main.description
-						depends_on 	= [scaleway_secret_version.access_key]
-					}
-
-					data "scaleway_secret_version" "desc" {
-						secret_id = scaleway_secret.main.id
-						revision  = "2"
-						depends_on = [scaleway_secret_version.desc]
-					} 
-
-					resource "scaleway_secret_version" "project_id" {
-						description = "%[1]s"
-						secret_id   = scaleway_secret.main.id
-						data_wo     = ephemeral.scaleway_iam_api_key.main.default_project_id
-						depends_on 	= [scaleway_secret_version.desc]
-					}
-
-					data "scaleway_secret_version" "project_id" {
-						secret_id = scaleway_secret.main.id
-						revision  = "3"
-						depends_on = [scaleway_secret_version.project_id]
-					} 
+					resource "echo" "test_api_key" {}
 					`, description, expiresAt, projectID),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("access_key"), knownvalue.StringRegexp(accessKeyPattern)),
+					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("description"), knownvalue.StringExact(description)),
+					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("default_project_id"), knownvalue.StringExact(projectID)),
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEphemeralIamAPIKeyExists(tt, "data.scaleway_secret_version.access_key"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.project_id", "data", secret.Base64Encoded([]byte(projectID))),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.desc", "data", secret.Base64Encoded([]byte(description))),
+					testAccCheckEphemeralIamAPIKeyExists(tt, "echo.test_api_key"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckSecretVersionDataEquals(secretVersionDataSource, secretVersionAttribute, expectedResource, expectedAttribute string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		secretRs, ok := state.RootModule().Resources[secretVersionDataSource]
-		if !ok {
-			return fmt.Errorf("secret version data source not found: %s", secretVersionDataSource)
-		}
-
-		expectedRs, ok := state.RootModule().Resources[expectedResource]
-		if !ok {
-			return fmt.Errorf("expected resource not found: %s", expectedResource)
-		}
-
-		encodedData := secretRs.Primary.Attributes[secretVersionAttribute]
-		if encodedData == "" {
-			return fmt.Errorf("secret version attribute %s is empty", secretVersionAttribute)
-		}
-
-		decodedBytes, err := base64.StdEncoding.DecodeString(encodedData)
-		if err != nil {
-			return fmt.Errorf("failed to decode base64 data from secret version: %w", err)
-		}
-
-		decodedData := string(decodedBytes)
-
-		expectedValue := expectedRs.Primary.Attributes[expectedAttribute]
-		if expectedValue == "" {
-			return fmt.Errorf("expected attribute %s is empty", expectedAttribute)
-		}
-
-		if decodedData != expectedValue {
-			return fmt.Errorf("secret version data (decoded: %s) does not match expected value (%s)", decodedData, expectedValue)
-		}
-
-		return nil
-	}
-}
-
 func testAccCheckEphemeralIamAPIKeyExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", name)
+			return fmt.Errorf("not found: %s", name)
 		}
 
-		key, err := base64.StdEncoding.DecodeString(rs.Primary.Attributes["data"])
-		if err != nil {
-			return fmt.Errorf("could not find api key: %w", err)
+		accessKey := rs.Primary.Attributes["data.access_key"]
+		if accessKey == "" {
+			return fmt.Errorf("echo resource %s has an empty access key", name)
 		}
 
 		iamAPI := iam.NewAPI(tt.Meta)
 
-		_, err = iamAPI.GetAPIKey(&iamSDK.GetAPIKeyRequest{
-			AccessKey: string(key),
+		_, err := iamAPI.GetAPIKey(&iamSDK.GetAPIKeyRequest{
+			AccessKey: accessKey,
 		})
 		if err != nil {
 			return fmt.Errorf("could not find api key: %w", err)

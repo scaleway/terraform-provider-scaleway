@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
 func TestAccSignEphemeralResource_Basic(t *testing.T) {
@@ -24,14 +26,14 @@ func TestAccSignEphemeralResource_Basic(t *testing.T) {
 		t.Errorf("failed to create digest: %v", err.Error())
 	}
 
+	dataPath := tfjsonpath.New("data")
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			IsKeyManagerKeyDestroyed(tt),
-			secrettestfuncs.CheckSecretDestroy(tt),
-		),
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004
 				Config: fmt.Sprintf(`
 				resource "scaleway_key_manager_key" "test_key" {
 					name        = "tf-test-sign-key"
@@ -47,25 +49,15 @@ func TestAccSignEphemeralResource_Basic(t *testing.T) {
 					region		= "fr-par"
 				}
 
-				resource "scaleway_secret" "main" {
-					name        = "test-sign-secret"
+				provider "echo" {
+					data = ephemeral.scaleway_key_manager_sign.test_sign
 				}
 
-				resource "scaleway_secret_version" "v1" {
-					description = "version1"
-					secret_id   = scaleway_secret.main.id
-					data_wo     = ephemeral.scaleway_key_manager_sign.test_sign.signature
-				}
-
-				data "scaleway_secret_version" "data_v1" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "1"
-				  depends_on = [scaleway_secret_version.v1]
-				}
+				resource "echo" "test_sign" {}
 				`, digest),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.scaleway_secret_version.data_v1", "data"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_sign", dataPath.AtMapKey("signature"), knownvalue.NotNull()),
+				},
 			},
 		},
 	})

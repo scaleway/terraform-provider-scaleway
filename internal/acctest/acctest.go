@@ -14,6 +14,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	"github.com/hashicorp/terraform-plugin-testing/echoprovider"
 	"github.com/scaleway/scaleway-sdk-go/vcr"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -175,6 +176,7 @@ func NewTestTools(t *testing.T) *TestTools {
 
 				return muxServer.ProviderServer(), nil
 			},
+			"echo": echoprovider.NewProviderServer(),
 		},
 		Cleanup: cleanup,
 	}
