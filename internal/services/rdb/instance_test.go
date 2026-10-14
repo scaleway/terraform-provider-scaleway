@@ -154,6 +154,7 @@ func TestAccInstance_HighAvailabilityMode(t *testing.T) {
 	defer tt.Cleanup()
 
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+	instanceID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -162,7 +163,27 @@ func TestAccInstance_HighAvailabilityMode(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance main {
-						name = "test-rdb-ha-mode"
+						name = "tf-test-rdb-ha-mode"
+						node_type = "db-dev-m"
+						engine = %q
+						high_availability_mode = "disabled"
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s8cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "ha-mode" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					acctest.CheckResourceIDPersisted("scaleway_rdb_instance.main", &instanceID),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "high_availability_mode", "disabled"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "tf-test-rdb-ha-mode"
 						node_type = "db-dev-m"
 						engine = %q
 						high_availability_mode = "single_zone"
@@ -174,9 +195,16 @@ func TestAccInstance_HighAvailabilityMode(t *testing.T) {
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					acctest.CheckResourceIDPersisted("scaleway_rdb_instance.main", &instanceID),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "high_availability_mode", "single_zone"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "true"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_rdb_instance.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"user_name", "password"},
 			},
 		},
 	})

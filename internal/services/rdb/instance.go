@@ -494,13 +494,20 @@ func customizeDiffInstanceHA(_ context.Context, diff *schema.ResourceDiff, _ any
 		return nil
 	}
 
-	if !haEnabledFromDiffChange(diff, true) && haEnabledFromDiffChange(diff, false) {
-		if err := diff.ForceNew("high_availability_mode"); err != nil {
-			return err
+	oldHA := haEnabledFromDiffChange(diff, true)
+	newHA := haEnabledFromDiffChange(diff, false)
+
+	if oldHA && !newHA {
+		if diff.HasChange("high_availability_mode") {
+			if err := diff.ForceNew("high_availability_mode"); err != nil {
+				return err
+			}
 		}
 
-		if err := diff.ForceNew("is_ha_cluster"); err != nil {
-			return err
+		if diff.HasChange("is_ha_cluster") {
+			if err := diff.ForceNew("is_ha_cluster"); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -512,25 +519,17 @@ func haEnabledFromDiffChange(diff *schema.ResourceDiff, fromOld bool) bool {
 	oldMode, newMode := diff.GetChange("high_availability_mode")
 	oldHA, newHA := diff.GetChange("is_ha_cluster")
 
-	modeVal := newMode
-	haVal := newHA
-
+	modeVal, haVal := newMode, newHA
 	if fromOld {
-		modeVal = oldMode
-		haVal = oldHA
+		modeVal, haVal = oldMode, oldHA
 	}
 
 	mode, _ := modeVal.(string)
 	isHA, _ := haVal.(bool)
 
-	switch rdb.HighAvailabilityMode(mode) {
-	case rdb.HighAvailabilityModeSingleZone, rdb.HighAvailabilityModeMultipleZone:
-		return true
-	case rdb.HighAvailabilityModeDisabled:
-		return false
-	default:
-		return isHA
-	}
+	_, enabled := FlattenHighAvailabilityMode(rdb.HighAvailabilityMode(mode), isHA)
+
+	return enabled
 }
 
 func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -552,6 +551,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			SnapshotID:           snapshotID,
 			Region:               region,
 			InstanceName:         types.ExpandOrGenerateString(d.Get("name"), "rdb"),
+			IsHaCluster:          new(haMode == rdb.HighAvailabilityModeSingleZone || haMode == rdb.HighAvailabilityModeMultipleZone),
 			HighAvailabilityMode: haMode,
 			NodeType:             new(d.Get("node_type").(string)),
 		}
@@ -639,6 +639,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			Name:                 types.ExpandOrGenerateString(d.Get("name"), "rdb"),
 			NodeType:             d.Get("node_type").(string),
 			Engine:               d.Get("engine").(string),
+			IsHaCluster:          haMode == rdb.HighAvailabilityModeSingleZone || haMode == rdb.HighAvailabilityModeMultipleZone,
 			HighAvailabilityMode: haMode,
 			DisableBackup:        d.Get("disable_backup").(bool),
 			UserName:             d.Get("user_name").(string),
