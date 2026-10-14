@@ -83,6 +83,11 @@ func runnerSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The error message of the runner",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the runner",
+		},
 		"zone":       zonal.Schema(),
 		"project_id": account.ProjectIDSchema(),
 	}
@@ -174,6 +179,7 @@ func ResourceAppleSiliconRunnerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("ci_provider", runner.Configuration.Provider)
 	_ = d.Set("status", runner.Status)
 	_ = d.Set("error_message", runner.ErrorMessage)
+	_ = d.Set("srn", runner.Srn)
 
 	if runner.Configuration.Provider.String() == applesilicon.RunnerConfigurationProviderGithub.String() {
 		_ = d.Set("url", runner.Configuration.GithubConfiguration.URL)

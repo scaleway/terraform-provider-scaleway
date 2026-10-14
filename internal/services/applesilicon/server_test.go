@@ -3,6 +3,7 @@ package applesilicon_test
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -32,35 +33,36 @@ func TestAccServer_Basic(t *testing.T) {
 				Config: `
 					resource scaleway_apple_silicon_server main {
 						name = "TestAccServerBasic"
-						type = "M4-M"
+						type = "M2-L-ASAHI"
 						public_bandwidth = 1000000000
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerBasic"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M4-M"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-L-ASAHI"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "1000000000"),
 					// Computed
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
+					resource.TestMatchResourceAttr("scaleway_apple_silicon_server.main", "srn", regexp.MustCompile(`^srn://apple-silicon\..+/zones/.+/servers/.+$`)),
 				),
 			},
 			{
 				Config: `
 					resource scaleway_apple_silicon_server main {
 						name = "TestAccServerBasic"
-						type = "M4-M"
-						public_bandwidth = 2000000000
+						type = "M2-L-ASAHI"
+						public_bandwidth = 1000000000
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerBasic"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M4-M"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "2000000000"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-L-ASAHI"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "1000000000"),
 					// Computed
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
@@ -462,7 +464,7 @@ func isServerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			}
 
 			// Unexpected api error we return it
-			if !httperrors.Is403(err) {
+			if !httperrors.Is404(err) && !httperrors.Is403(err) {
 				return err
 			}
 		}
