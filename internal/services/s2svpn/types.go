@@ -125,6 +125,22 @@ func expandConnectionSecret(rawID, rawRevision any) *s2s_vpn.CreateConnectionReq
 	return secret
 }
 
+func expandConnectionSecretUpdate(rawID, rawRevision any) (*string, *uint32) {
+	var secretID *string
+
+	if id, ok := rawID.(string); ok && id != "" {
+		expandedID := locality.ExpandID(id)
+		secretID = &expandedID
+	}
+
+	var revision *uint32
+	if rev, ok := rawRevision.(int); ok && rev > 0 {
+		revision = types.ExpandUint32Ptr(rev)
+	}
+
+	return secretID, revision
+}
+
 func flattenVPNGatewayPublicConfig(region scw.Region, config *s2s_vpn.VpnGatewayPublicConfig) any {
 	if config == nil {
 		return nil

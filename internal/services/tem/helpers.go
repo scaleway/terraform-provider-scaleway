@@ -1,6 +1,8 @@
 package tem
 
 import (
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -39,4 +41,25 @@ func NewAPIWithRegionAndID(m any, id string) (*tem.API, scw.Region, string, erro
 	}
 
 	return api, region, id, nil
+}
+
+// FlattenMXRecordValue splits an API MX value ("PRIORITY EXCHANGE") into parts
+// compatible with scaleway_domain_record data and priority attributes.
+func FlattenMXRecordValue(value string) (priority int, exchange string) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return 0, ""
+	}
+
+	parts := strings.SplitN(value, " ", 2)
+	if len(parts) != 2 {
+		return 0, value
+	}
+
+	prio, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, value
+	}
+
+	return prio, parts[1]
 }

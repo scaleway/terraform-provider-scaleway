@@ -13,6 +13,8 @@ Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute
 
 ## Example Usage
 
+### Basic (with taints and labels)
+
 ```terraform
 resource "scaleway_vpc" "main" {}
 
@@ -57,10 +59,16 @@ resource "scaleway_k8s_pool" "main" {
 }
 ```
 
+### With a different Private Network than the cluster and a Placement Group
+
 ```terraform
 resource "scaleway_vpc" "main" {}
 
 resource "scaleway_vpc_private_network" "main" {
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_vpc_private_network" "other" {
   vpc_id = scaleway_vpc.main.id
 }
 
@@ -80,6 +88,7 @@ resource "scaleway_k8s_pool" "main" {
   node_type          = "DEV1-M"
   size               = 3
   placement_group_id = scaleway_instance_placement_group.main.id
+  private_network_id = scaleway_vpc_private_network.other.id
 
   # Make sure that the new resource is created before destroying the old one on changes that require replacement
   lifecycle {
@@ -87,9 +96,6 @@ resource "scaleway_k8s_pool" "main" {
   }
 }
 ```
-
-
-
 
 ## Argument Reference
 
@@ -127,6 +133,11 @@ For the field to be properly taken into account, the `upgrade_pools` field of th
 - `placement_group_id` - (Optional) The [placement group](https://www.scaleway.com/en/developers/api/instance/#path-placement-groups-create-a-placement-group) the nodes of the pool will be attached to.
 
 ~> **Important:** Updates to this field will recreate a new resource.
+
+- `private_network_id` - (Optional) The ID of the private network to which the nodes of the pool will be attached.
+The private network needs to be in the same VPC as the API server/the cluster.
+
+~> **Important:** Updates to this field will recreate the resource.
 
 - `autoscaling` - (Defaults to `false`) Enables the autoscaling feature for this pool.
 
@@ -171,6 +182,14 @@ For the field to be properly taken into account, the `upgrade_pools` field of th
 - `taints` - The list of Kubernetes taints applied and reconciled on the nodes.
 
 - `startup_taints` - The list of Kubernetes taints applied at node creation but not reconciled afterward.
+
+- `user_data` - (Optional) User data applied and reconciled with the pool, as a map of key to content.
+
+  key - The user data key. The cloud-init key is reserved, please use cloud_init attribute instead.
+
+  value - The user data content.
+
+~> **Important:** Updates to this field will recreate a new resource.
 
 ## Attributes Reference
 

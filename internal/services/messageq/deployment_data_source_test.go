@@ -12,7 +12,7 @@ func TestAccDataSourceMessageQDeployment_ByName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	skipUnlessDefaultProjectID(t, tt)
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
@@ -61,7 +61,7 @@ func TestAccDataSourceMessageQDeployment_ByID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	skipUnlessDefaultProjectID(t, tt)
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)

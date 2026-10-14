@@ -549,9 +549,11 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	diagnostics := resourceLbFrontendUpdateACL(ctx, d, lbAPI, zone, ID)
-	if diagnostics != nil {
-		return diagnostics
+	if !d.Get("external_acls").(bool) {
+		diagnostics := resourceLbFrontendUpdateACL(ctx, d, lbAPI, zone, ID)
+		if diagnostics != nil {
+			return diagnostics
+		}
 	}
 
 	return resourceLbFrontendRead(ctx, d, m)

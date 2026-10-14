@@ -57,6 +57,12 @@ func getValues[T EnumValues[T]]() []string {
 	return result
 }
 
+// KnownValues returns the string values of the provided enum type,
+// excluding "unknown" and "unknown_*" placeholder values.
+func KnownValues[T EnumValues[T]]() []string {
+	return filterUnknownValues(getValues[T]())
+}
+
 // filterUnknownValues removes "unknown" and "unknown_*" values from the slice
 func filterUnknownValues(values []string) []string {
 	filtered := make([]string, 0, len(values))

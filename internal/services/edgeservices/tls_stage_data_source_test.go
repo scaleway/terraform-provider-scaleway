@@ -24,7 +24,7 @@ func TestAccDataSourceTLSStage_ByID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-tls-id"
+					  name = "tf-test-scaleway-object-bucket-ds-tls-id"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {
@@ -74,7 +74,7 @@ func TestAccDataSourceTLSStage_ByPipelineID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-tls-filter"
+					  name = "tf-test-scaleway-object-bucket-ds-tls-filter"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {

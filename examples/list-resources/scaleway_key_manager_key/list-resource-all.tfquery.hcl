@@ -1,5 +1,5 @@
 # List all keys across all regions and projects
-list "scaleway_keymanager_key" "all" {
+list "scaleway_key_manager_key" "all" {
   provider = scaleway
 
   config {
