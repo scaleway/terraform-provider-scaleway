@@ -469,7 +469,6 @@ func instanceSchema() map[string]*schema.Schema {
 	}
 }
 
-//gocyclo:ignore
 func customizeDiffInstanceHA(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 	rawMode, modeInConfig := meta.GetRawConfigForKey(diff, "high_availability_mode", cty.String)
 	rawHA, haInConfig := meta.GetRawConfigForKey(diff, "is_ha_cluster", cty.Bool)
@@ -532,6 +531,7 @@ func haEnabledFromDiffChange(diff *schema.ResourceDiff, fromOld bool) bool {
 	return enabled
 }
 
+//gocyclo:ignore
 func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
@@ -546,13 +546,11 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		haMode := ExpandHighAvailabilityMode(d)
 		createReqFromSnapshot := &rdb.CreateInstanceFromSnapshotRequest{
 			SnapshotID:           snapshotID,
 			Region:               region,
 			InstanceName:         types.ExpandOrGenerateString(d.Get("name"), "rdb"),
-			IsHaCluster:          new(haMode == rdb.HighAvailabilityModeSingleZone || haMode == rdb.HighAvailabilityModeMultipleZone),
-			HighAvailabilityMode: haMode,
+			HighAvailabilityMode: ExpandHighAvailabilityMode(d),
 			NodeType:             new(d.Get("node_type").(string)),
 		}
 
@@ -632,15 +630,13 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			password = d.Get("password").(string)
 		}
 
-		haMode := ExpandHighAvailabilityMode(d)
 		createReq := &rdb.CreateInstanceRequest{
 			Region:               region,
 			ProjectID:            types.ExpandStringPtr(d.Get("project_id")),
 			Name:                 types.ExpandOrGenerateString(d.Get("name"), "rdb"),
 			NodeType:             d.Get("node_type").(string),
 			Engine:               d.Get("engine").(string),
-			IsHaCluster:          haMode == rdb.HighAvailabilityModeSingleZone || haMode == rdb.HighAvailabilityModeMultipleZone,
-			HighAvailabilityMode: haMode,
+			HighAvailabilityMode: ExpandHighAvailabilityMode(d),
 			DisableBackup:        d.Get("disable_backup").(bool),
 			UserName:             d.Get("user_name").(string),
 			Password:             password,
@@ -1164,7 +1160,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	// HA cluster
-	if d.HasChange("is_ha_cluster") || d.HasChange("high_availability_mode") {
+	if d.HasChanges("is_ha_cluster", "high_availability_mode") {
 		mode := ExpandHighAvailabilityMode(d)
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
 			rdb.UpgradeInstanceRequest{
@@ -1262,6 +1258,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 				tflog.Info(ctx, "Re-enabling HA on upgraded instance "+ID)
 
 				mode := ExpandHighAvailabilityMode(d)
+
 				upgradedInstance, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
 					Region:               region,
 					InstanceID:           ID,

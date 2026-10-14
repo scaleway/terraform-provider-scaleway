@@ -50,8 +50,8 @@ func TestFlattenHighAvailabilityMode(t *testing.T) {
 	tests := []struct {
 		name     string
 		mode     rdbSDK.HighAvailabilityMode
-		isHA     bool
 		wantMode string
+		isHA     bool
 		wantIsHA bool
 	}{
 		{
