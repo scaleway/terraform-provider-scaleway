@@ -53,6 +53,7 @@ func TestAccInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "high_availability_mode", "disabled"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
@@ -89,6 +90,7 @@ func TestAccInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "high_availability_mode", "disabled"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
@@ -134,12 +136,46 @@ func TestAccInstance_WithCluster(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-m"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "high_availability_mode", "single_zone"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "false"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password", "thiZ_is_v&ry_s8cret"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.1", "scaleway_rdb_instance"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.2", "minimal"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_HighAvailabilityMode(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-ha-mode"
+						node_type = "db-dev-m"
+						engine = %q
+						high_availability_mode = "single_zone"
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s8cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "ha-mode" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "high_availability_mode", "single_zone"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "true"),
 				),
 			},
 		},
@@ -2063,6 +2099,7 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", oldVersion),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "high_availability_mode", "single_zone"),
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
 						if !ok {
