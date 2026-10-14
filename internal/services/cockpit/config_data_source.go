@@ -8,6 +8,7 @@ import (
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func DataSourceCockpitConfig() *schema.Resource {
@@ -57,7 +58,7 @@ func dataSourceCockpitConfigRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	resp, err := retryOn403Value(ctx, func() (*cockpit.GetConfigResponse, error) {
+	resp, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.GetConfigResponse, error) {
 		return api.GetConfig(&cockpit.RegionalAPIGetConfigRequest{
 			Region: region,
 		}, scw.WithContext(ctx))

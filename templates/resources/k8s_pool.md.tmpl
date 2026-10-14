@@ -11,11 +11,13 @@ page_title: "Scaleway: scaleway_k8s_pool"
 {{ if .HasExamples }}
 ## Example Usage
 
-{{ range .ExampleFiles -}}
-{{ tffile . }}
+### Basic (with taints and labels)
 
-{{ end }}
+{{ tffile "examples/resources/scaleway_k8s_pool/resource-basic.tf" }}
 
+### With a different Private Network than the cluster and a Placement Group
+
+{{ tffile "examples/resources/scaleway_k8s_pool/resource-placement-group.tf" }}
 
 {{ end -}}
 
@@ -55,6 +57,11 @@ For the field to be properly taken into account, the `upgrade_pools` field of th
 - `placement_group_id` - (Optional) The [placement group](https://www.scaleway.com/en/developers/api/instance/#path-placement-groups-create-a-placement-group) the nodes of the pool will be attached to.
 
 ~> **Important:** Updates to this field will recreate a new resource.
+
+- `private_network_id` - (Optional) The ID of the private network to which the nodes of the pool will be attached.
+The private network needs to be in the same VPC as the API server/the cluster.
+
+~> **Important:** Updates to this field will recreate the resource.
 
 - `autoscaling` - (Defaults to `false`) Enables the autoscaling feature for this pool.
 

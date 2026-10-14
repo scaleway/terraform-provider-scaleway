@@ -286,7 +286,7 @@ func (r *RecordListResource) buildRecordListTargets(ctx context.Context, project
 }
 
 func (r *RecordListResource) listProjectDNSZoneNames(ctx context.Context, projectID string) ([]string, error) {
-	response, err := transport.RetryOn403Value(ctx, func() (*domainSDK.ListDNSZonesResponse, error) {
+	response, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domainSDK.ListDNSZonesResponse, error) {
 		return r.domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
 			ProjectID: &projectID,
 		}, scw.WithContext(ctx), scw.WithAllPages())
@@ -320,7 +320,7 @@ func (r *RecordListResource) fetchRecordRows(ctx context.Context, target recordL
 		}
 	}
 
-	response, err := transport.RetryOn403Value(ctx, func() (*domainSDK.ListDNSZoneRecordsResponse, error) {
+	response, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domainSDK.ListDNSZoneRecordsResponse, error) {
 		return r.domainAPI.ListDNSZoneRecords(request, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {
@@ -350,7 +350,7 @@ func (r *RecordListResource) fetchRecordRows(ctx context.Context, target recordL
 }
 
 func (r *RecordListResource) isRootDNSZone(ctx context.Context, projectID, dnsZone string) (bool, error) {
-	response, err := transport.RetryOn403Value(ctx, func() (*domainSDK.ListDNSZonesResponse, error) {
+	response, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domainSDK.ListDNSZonesResponse, error) {
 		return r.domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
 			ProjectID: &projectID,
 			DNSZones:  []string{dnsZone},

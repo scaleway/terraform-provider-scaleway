@@ -192,4 +192,5 @@ func setKeyState(d *schema.ResourceData, key *key_manager.Key) {
 	_ = d.Set("rotated_at", types.FlattenTime(key.RotatedAt))
 	_ = d.Set("rotation_policy", FlattenKeyRotationPolicy(key.RotationPolicy))
 	_ = d.Set("srn", key.Srn)
+	_ = d.Set("protection_level", key.ProtectionLevel.String())
 }

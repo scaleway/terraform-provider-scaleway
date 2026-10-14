@@ -206,7 +206,7 @@ func isUserPresent(tt *acctest.TestTools, instance string, user string) resource
 
 		var users *rdbSDK.ListUsersResponse
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			users, err = rdbAPI.ListUsers(&rdbSDK.ListUsersRequest{

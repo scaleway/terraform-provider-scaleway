@@ -238,3 +238,15 @@ func IsTestResource(identifier string) bool {
 		(identifier[2] == '_' || identifier[2] == '-') &&
 		identifier[3:7] == "test"
 }
+
+// SkipUnlessDefaultProjectID skips when SCW_DEFAULT_PROJECT_ID is unset, which
+// happens when opening a PR from a fork.
+// Framework Create resolves project_id via ExtractFrameworkProjectID and hard-fails
+// without a client default.
+func SkipUnlessDefaultProjectID(t *testing.T, tt *TestTools) {
+	t.Helper()
+
+	if _, ok := tt.Meta.ScwClient().GetDefaultProjectID(); !ok {
+		t.Skip("No default project ID found, skipping test")
+	}
+}

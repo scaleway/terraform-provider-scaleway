@@ -281,6 +281,14 @@ func poolSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 		},
+		"private_network_id": {
+			Type:             schema.TypeString,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			Description:      "ID of the private network in which the nodes are attached. Should be a member of the same VPC as the cluster.",
+		},
 		"zone":   zonal.Schema(),
 		"region": regional.Schema(),
 		// Computed elements
@@ -483,6 +491,10 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		}
 	}
 
+	if privateNetworkID, ok := d.GetOk("private_network_id"); ok {
+		req.PrivateNetworkID = types.ExpandStringPtr(locality.ExpandID(privateNetworkID))
+	}
+
 	// Validate pool configuration
 	diags := validateRootVolumeSpecs(ctx, m.(*meta.Meta).ScwClient(), req)
 	if diags.HasError() {
@@ -613,6 +625,10 @@ func setPoolState(ctx context.Context, d *schema.ResourceData, m any, pool *k8s.
 
 	if pool.PlacementGroupID != nil {
 		_ = d.Set("placement_group_id", zonal.NewID(pool.Zone, *pool.PlacementGroupID).String())
+	}
+
+	if pool.PrivateNetworkID != nil {
+		_ = d.Set("private_network_id", regional.NewID(pool.Region, *pool.PrivateNetworkID).String())
 	}
 
 	_ = d.Set("labels", flattenLabels(pool.Labels))

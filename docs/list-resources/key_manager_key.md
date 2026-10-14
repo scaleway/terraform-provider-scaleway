@@ -15,7 +15,7 @@ For more information, see [the main documentation](https://www.scaleway.com/en/d
 
 ```terraform
 # List all keys across all regions and projects
-list "scaleway_keymanager_key" "all" {
+list "scaleway_key_manager_key" "all" {
   provider = scaleway
 
   config {
@@ -27,7 +27,7 @@ list "scaleway_keymanager_key" "all" {
 
 ```terraform
 # List keys filtered by name
-list "scaleway_keymanager_key" "by_name" {
+list "scaleway_key_manager_key" "by_name" {
   provider = scaleway
 
   config {
@@ -38,7 +38,7 @@ list "scaleway_keymanager_key" "by_name" {
 
 ```terraform
 # List keys in specific projects
-list "scaleway_keymanager_key" "by_projects" {
+list "scaleway_key_manager_key" "by_projects" {
   provider = scaleway
 
   config {
@@ -46,6 +46,17 @@ list "scaleway_keymanager_key" "by_projects" {
       "11111111-1111-1111-1111-111111111111",
       "22222222-2222-2222-2222-222222222222",
     ]
+  }
+}
+```
+
+```terraform
+# List keys filtered by protection level
+list "scaleway_key_manager_key" "by_protection_level" {
+  provider = scaleway
+
+  config {
+    protection_level = "hsm"
   }
 }
 ```
@@ -61,6 +72,7 @@ The following arguments can be specified in the `config` block:
 - `name` - (Optional) Name of the key to filter for.
 - `usage` - (Optional) Usage of the key to filter for. Possible values: `symmetric_encryption`, `asymmetric_encryption`, `asymmetric_signing`.
 - `scheduled_for_deletion` - (Optional) Filter keys by deletion status.
+- `protection_level` - (Optional) Protection level of the key to filter for. Possible values: `software`, `hsm`.
 
 ## Attributes Reference
 
@@ -82,3 +94,4 @@ In addition to the arguments above, the following attributes are exported for ea
 - `rotated_at` - The date and time of the last rotation of the key.
 - `rotation_policy` - The key rotation policy.
 - `state` - The state of the key.
+- `protection_level` - The protection level of the key (`software` or `hsm`).
