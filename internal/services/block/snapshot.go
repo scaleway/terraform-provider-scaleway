@@ -381,8 +381,7 @@ func (r *SnapshotResource) Read(
 	)
 
 	if identityAvailable {
-		id = identity.ID.ValueString()
-		zone = scw.Zone(identity.Zone.ValueString())
+		zone, id = identityfw.ResolveZonalIdentity(identity)
 	} else {
 		resourceID := state.ID.ValueString()
 

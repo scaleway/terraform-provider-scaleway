@@ -485,8 +485,7 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 	)
 
 	if identityAvailable {
-		id = identity.ID.ValueString()
-		region = scw.Region(identity.Region.ValueString())
+		region, id = framework.ResolveRegionalIdentity(identity)
 	} else {
 		resourceID := state.ID.ValueString()
 
