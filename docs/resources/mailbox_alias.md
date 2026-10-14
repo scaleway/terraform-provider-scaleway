@@ -40,7 +40,7 @@ resource "scaleway_mailbox_alias" "contact" {
 
 - `mailbox_id` - (Required, Forces new resource) UUID of the `scaleway_mailbox` to which this alias belongs.
 - `local_part` - (Required, Forces new resource) Local part of the alias email address (part before the `@`). Must be 1–64 characters. Changing this value forces a new alias to be created.
-- `description` - (Optional) Description of the alias. Can be updated in place.
+- `description` - (Optional) Description of the alias. Can be updated in place. Omit the attribute to leave it empty (do not set an empty string).
 
 ## Attributes Reference
 

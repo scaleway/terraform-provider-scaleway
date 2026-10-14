@@ -91,7 +91,11 @@ func (r *AliasResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "Description of the alias",
+				MarkdownDescription: "Description of the alias. Omit the attribute to leave it empty; an empty string is not allowed.",
+				Validators: []validator.String{
+					// Reject "" so config never differs from API empty → null in state (perpetual diff).
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"email": schema.StringAttribute{
 				Computed:            true,
