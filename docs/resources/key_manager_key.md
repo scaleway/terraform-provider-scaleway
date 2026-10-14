@@ -97,8 +97,9 @@ The following arguments are supported:
     - `symmetric_encryption` – For symmetric encryption operations
     - `asymmetric_encryption` – For asymmetric encryption operations
     - `asymmetric_signing` – For digital signing operations
+    - `key_encapsulation` – For key encapsulation operations
 
-- `algorithm` (String, Required) – The cryptographic algorithm to use. Valid values depend on the `usage`:
+- `algorithm` (String, Required) – The cryptographic algorithm to use. The valid algorithms depend on the `usage` type; see the [Key Manager cryptographic details](https://www.scaleway.com/en/docs/key-manager/reference-content/cryptographic-details-key-manager/#encryption-algorithm) for the full list. Valid values:
     - For `symmetric_encryption`:
         - `aes_256_gcm`
     - For `asymmetric_encryption`:
@@ -107,8 +108,20 @@ The following arguments are supported:
         - `rsa_oaep_4096_sha256`
     - For `asymmetric_signing`:
         - `ec_p256_sha256`
+        - `ec_p384_sha384`
+        - `ec_secp256k1_sha256`
         - `rsa_pss_2048_sha256`
+        - `rsa_pss_3072_sha256`
+        - `rsa_pss_4096_sha256`
         - `rsa_pkcs1_2048_sha256`
+        - `rsa_pkcs1_3072_sha256`
+        - `rsa_pkcs1_4096_sha256`
+        - `ml_dsa_44`
+        - `ml_dsa_65`
+        - `ml_dsa_87`
+    - For `key_encapsulation`:
+        - `ml_kem_768`
+        - `ml_kem_1024`
 
 **Other arguments:**
 
@@ -159,4 +172,4 @@ terraform import scaleway_key_manager_key.main fr-par/11111111-2222-3333-4444-55
   If you set `next_rotation_at` explicitly, it must be in the future (the API rejects past dates). Once the scheduled rotation occurs, the API computes a new `next_rotation_at`, so the configured value becomes stale: update or remove it from the configuration (or use `ignore_changes`) to avoid a permanent diff.
 - **Origin**: The `origin` argument is optional and defaults to `scaleway_kms`. Use `external` if you want to import an external key (see Scaleway documentation for details).
 - **Project and Region**: If not specified, `project_id` and `region` will default to the provider configuration.
-- **Algorithm Validation**: The provider validates that the specified `algorithm` is compatible with the `usage` type at plan time, providing early feedback on configuration errors.
+- **Algorithm Validation**: The provider checks at plan time that the specified `algorithm` is one of the algorithms known to the Key Manager API and is compatible with the `usage` type (a warning is emitted for unrecognized values).
