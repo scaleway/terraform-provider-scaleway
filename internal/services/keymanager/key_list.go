@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
@@ -55,10 +54,10 @@ func (r *KeyListResource) ListResourceConfigSchema(_ context.Context, _ list.Lis
 			"tags":        listscw.TagsAttribute("Tags to filter for"),
 			"name":        listscw.NameAttribute("Name of the key to filter for"),
 			"usage": schema.StringAttribute{
-				Description: "Usage of the key to filter for (symmetric_encryption, asymmetric_encryption, asymmetric_signing)",
+				Description: fmt.Sprintf("Usage of the key to filter for (%s)", strings.Join(verify.KnownValues[key_manager.ListKeysRequestUsage](), ", ")),
 				Optional:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOf("symmetric_encryption", "asymmetric_encryption", "asymmetric_signing"),
+					verify.ValidateEnumFramework[key_manager.ListKeysRequestUsage](),
 				},
 			},
 			"scheduled_for_deletion": schema.BoolAttribute{
