@@ -1,11 +1,9 @@
 package kafka
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	kafkaapi "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -46,14 +44,10 @@ func NewAPIWithRegionAndID(m any, id string) (*kafkaapi.API, scw.Region, string,
 }
 
 // expandClusterAvailability maps multi_az / mono_az_zone to the API oneof.
-// If neither is set, defaults to mono-AZ on the provider default zone.
+// multi_az=true → MultiAz; else mono (explicit zone or provider default).
 func expandClusterAvailability(d *schema.ResourceData, m any) (*kafkaapi.ClusterMultiAZDetails, *kafkaapi.ClusterMonoAZDetails, error) {
-	if raw, ok := meta.GetRawConfigForKey(d, "multi_az", cty.Bool); ok {
-		if raw.(bool) {
-			return &kafkaapi.ClusterMultiAZDetails{}, nil, nil
-		}
-
-		return nil, nil, errors.New("multi_az cannot be false; set mono_az_zone or omit multi_az to use the provider default zone")
+	if d.Get("multi_az").(bool) {
+		return &kafkaapi.ClusterMultiAZDetails{}, nil, nil
 	}
 
 	if v, ok := d.GetOk("mono_az_zone"); ok {

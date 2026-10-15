@@ -168,7 +168,7 @@ func clusterSchema() map[string]*schema.Schema {
 			Computed:      true,
 			ForceNew:      true,
 			ConflictsWith: []string{"mono_az_zone"},
-			Description:   "Deploy the cluster across multiple availability zones in the region. Conflicts with mono_az_zone. If neither is set, defaults to mono-AZ on the provider default zone.",
+			Description:   "Deploy the cluster across multiple availability zones. Defaults to mono-AZ on the provider default zone when unset.",
 		},
 		"mono_az_zone": {
 			Type:          schema.TypeString,
@@ -176,7 +176,7 @@ func clusterSchema() map[string]*schema.Schema {
 			Computed:      true,
 			ForceNew:      true,
 			ConflictsWith: []string{"multi_az"},
-			Description:   "Zone to pin a mono-AZ cluster (e.g. fr-par-1). Conflicts with multi_az. If neither is set, defaults to the provider default zone.",
+			Description:   "Zone for a mono-AZ cluster (e.g. fr-par-1). Defaults to the provider default zone when unset.",
 		},
 		// Computed
 		"status": {
@@ -347,7 +347,12 @@ func setClusterState(d *schema.ResourceData, cluster *kafkaapi.Cluster) diag.Dia
 		_ = d.Set("volume_size_in_gb", int(cluster.Volume.SizeBytes/scw.GB))
 	}
 
-	flattenClusterAvailability(d, cluster)
+	if cluster.MultiAz != nil {
+		_ = d.Set("multi_az", true)
+		_ = d.Set("mono_az_zone", "")
+	} else if cluster.MonoAz != nil && cluster.MonoAz.Zone != nil {
+		_ = d.Set("mono_az_zone", cluster.MonoAz.Zone.String())
+	}
 
 	publicBlock, hasPublic := flattenPublicNetwork(cluster.Endpoints, cluster.Region)
 	if hasPublic {
