@@ -57,6 +57,11 @@ func projectSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the Project (Format ISO 8601)",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the project",
+		},
 		"organization_id": {
 			Type:             schema.TypeString,
 			Description:      "The organization_id you want to attach the resource to",
@@ -123,6 +128,7 @@ func setProjectState(d *schema.ResourceData, res *accountSDK.Project) {
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("srn", res.Srn)
 }
 
 func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

@@ -376,7 +376,7 @@ func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, do
 		OrderBy:   domain.ListTasksRequestOrderByDomainDesc,
 	}
 
-	listTasksResponse, err := transport.RetryOn403Value(ctx, func() (*domain.ListTasksResponse, error) {
+	listTasksResponse, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListTasksResponse, error) {
 		return registrarAPI.ListTasks(req, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {
@@ -398,7 +398,7 @@ func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, do
 	// outside Terraform where no create/transfer task exists in ListTasks (tasks are archived
 	// after some time and disappear from the active table).
 	// Fall back to GetDomain to confirm the domain is actually managed by this account.
-	domainResp, domainErr := transport.RetryOn403Value(ctx, func() (*domain.Domain, error) {
+	domainResp, domainErr := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
 		return registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
 			Domain: domainName,
 		}, scw.WithContext(ctx))
@@ -450,7 +450,7 @@ func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *doma
 		return names, nil
 	}
 
-	listTasksResponse, err := transport.RetryOn403Value(ctx, func() (*domain.ListTasksResponse, error) {
+	listTasksResponse, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListTasksResponse, error) {
 		return registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{
 			PageSize: new(uint32(1000)),
 			OrderBy:  domain.ListTasksRequestOrderByDomainDesc,

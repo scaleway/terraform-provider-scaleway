@@ -43,7 +43,7 @@ func DataSourceACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 	regionalID := datasource.NewRegionalID(d.Get("vpc_id"), region)
 	d.SetId(regionalID)
 
-	acl, err := transport.RetryOn403Value(ctx, func() (*vpc.GetACLResponse, error) {
+	acl, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.GetACLResponse, error) {
 		return vpcAPI.GetACL(&vpc.GetACLRequest{
 			VpcID:  vpcID,
 			Region: region,

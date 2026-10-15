@@ -1,6 +1,7 @@
 package keymanager_test
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccKeyManagerKey_Basic(t *testing.T) {
@@ -145,9 +147,11 @@ func IsKeyManagerKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			key, err := client.GetKey(&key_manager.GetKeyRequest{
-				Region: region,
-				KeyID:  keyID,
+			key, err := transport.RetryOnStatusValue(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (*key_manager.Key, error) {
+				return client.GetKey(&key_manager.GetKeyRequest{
+					Region: region,
+					KeyID:  keyID,
+				})
 			})
 			if err == nil {
 				if key.DeletionRequestedAt != nil {
@@ -318,6 +322,37 @@ func TestAccKeyManagerKey_WithCustomAlgorithm(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.rsa_4096", "usage", "asymmetric_encryption"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.rsa_4096", "algorithm", "rsa_oaep_4096_sha256"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.rsa_4096", "description", "Test key with RSA-4096 algorithm"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccKeyManagerKey_KeyEncapsulation(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_key_manager_key" "ml_kem" {
+				  name        = "tf-test-kms-key-ml-kem"
+				  region      = "fr-par"
+				  usage       = "key_encapsulation"
+				  algorithm   = "ml_kem_768"
+				  description = "Test key with ML-KEM-768 algorithm"
+				  unprotected = true
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "name", "tf-test-kms-key-ml-kem"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "usage", "key_encapsulation"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "algorithm", "ml_kem_768"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "description", "Test key with ML-KEM-768 algorithm"),
+					resource.TestMatchResourceAttr("scaleway_key_manager_key.ml_kem", "srn", regexp.MustCompile(`^srn://key-manager\..+/regions/.+/keys/.+$`)),
 				),
 			},
 		},
