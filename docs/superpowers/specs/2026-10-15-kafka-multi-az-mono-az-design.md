@@ -12,9 +12,9 @@ Expose Scaleway Kafka Multi-AZ / Mono-AZ placement on the existing SDKv2 resourc
 
 - Package: `github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1`
 - `CreateClusterRequest` and `Cluster` both carry:
-  - `MultiAz *ClusterMultiAZDetails` (empty struct)
-  - `MonoAz *ClusterMonoAZDetails` with `Zone *scw.Zone`
-  - Comment: *Precisely one of MultiAz, MonoAz must be set*
+    - `MultiAz *ClusterMultiAZDetails` (empty struct)
+    - `MonoAz *ClusterMonoAZDetails` with `Zone *scw.Zone`
+    - Comment: *Precisely one of MultiAz, MonoAz must be set*
 - Absent from `UpdateClusterRequest` → create-only → Terraform **ForceNew**
 - Resource is **regional** (`region`); mono mode pins a **zone** inside that region
 - No equivalent oneof exists on other Scaleway TF resources; CLI exposes `multi-az` / `mono-az.zone`

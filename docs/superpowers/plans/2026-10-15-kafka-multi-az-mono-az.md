@@ -31,9 +31,9 @@
 ### Task 1: Schema + create expand + read flatten
 
 **Files:**
+
 - Modify: `internal/services/kafka/cluster.go`
 - Modify: `internal/services/kafka/types.go` (optional flatten helpers)
-
 - [ ] **Step 1:** Add schema attrs `multi_az` / `mono_az_zone`
 - [ ] **Step 2:** Add `expandClusterAvailability` used in create
 - [ ] **Step 3:** Flatten in `setClusterState`
@@ -43,8 +43,8 @@
 ### Task 2: Acceptance tests
 
 **Files:**
-- Modify: `internal/services/kafka/cluster_test.go`
 
+- Modify: `internal/services/kafka/cluster_test.go`
 - [ ] **Step 1:** Assert AZ on Basic; add `TestAccCluster_MultiAZ` and `TestAccCluster_MonoAZ`
 - [ ] **Step 2:** Replay if cassettes exist / note re-record needed
 - [ ] **Step 3:** Commit
@@ -52,10 +52,10 @@
 ### Task 3: Docs + examples
 
 **Files:**
+
 - Modify: `docs/resources/kafka_cluster.md`
 - Create: `examples/resources/scaleway_kafka_cluster/multi_az.tf`
 - Create: `examples/resources/scaleway_kafka_cluster/mono_az.tf`
-
 - [ ] **Step 1:** Document attrs + examples
 - [ ] **Step 2:** Commit
 
