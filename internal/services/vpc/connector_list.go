@@ -109,7 +109,7 @@ func (r *ConnectorListResource) FetchConnectors(ctx context.Context, region scw.
 		TargetVpcID:    locality.ExpandFrameworkID(data.TargetVpcID),
 	}
 
-	response, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCConnectorsResponse, error) {
+	response, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListVPCConnectorsResponse, error) {
 		return r.vpcAPI.ListVPCConnectors(listRequest, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {

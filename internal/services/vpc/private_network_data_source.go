@@ -54,7 +54,7 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	if !ok {
 		pnName := d.Get("name").(string)
 
-		res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListPrivateNetworksResponse, error) {
+		res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListPrivateNetworksResponse, error) {
 			return vpcAPI.ListPrivateNetworks(
 				&vpc.ListPrivateNetworksRequest{
 					Name:      types.ExpandStringPtr(pnName),
@@ -83,7 +83,7 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	d.SetId(regionalID)
 	_ = d.Set("private_network_id", regionalID)
 
-	pn, err := transport.RetryOn403Value(ctx, func() (*vpc.PrivateNetwork, error) {
+	pn, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.PrivateNetwork, error) {
 		return vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
 			PrivateNetworkID: regional.ExpandID(privateNetworkID).ID,
 			Region:           region,

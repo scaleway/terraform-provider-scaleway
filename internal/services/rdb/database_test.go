@@ -130,7 +130,7 @@ func isDatabasePresent(tt *acctest.TestTools, instance string, database string) 
 
 		var databases *rdbSDK.ListDatabasesResponse
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			databases, err = rdbAPI.ListDatabases(&rdbSDK.ListDatabasesRequest{

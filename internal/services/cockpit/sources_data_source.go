@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -75,7 +76,7 @@ func dataSourceCockpitSourcesRead(ctx context.Context, d *schema.ResourceData, m
 		req.Origin = cockpit.DataSourceOrigin(v.(string))
 	}
 
-	res, err := retryOn403Value(ctx, func() (*cockpit.ListDataSourcesResponse, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListDataSourcesResponse, error) {
 		return api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {

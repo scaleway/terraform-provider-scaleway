@@ -2,6 +2,7 @@ package account_test
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -42,6 +43,7 @@ func TestAccDataSourceProject_Basic(t *testing.T) {
 						project_id = scaleway_account_project.project.id
 					}`, orgID),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("data.scaleway_account_project.by_name", "srn", regexp.MustCompile(`^srn://account\..+/projects/.+$`)),
 					resource.TestCheckResourceAttrPair("data.scaleway_account_project.by_name", "id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_account_project.by_name", "name", "scaleway_account_project.project", "name"),
 					resource.TestCheckResourceAttrPair("data.scaleway_account_project.by_id", "id", "scaleway_account_project.project", "id"),
