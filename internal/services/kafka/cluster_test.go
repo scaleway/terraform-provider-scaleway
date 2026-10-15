@@ -61,6 +61,8 @@ resource "scaleway_kafka_cluster" "main" {
 					resource.TestCheckResourceAttrSet("scaleway_kafka_cluster.main", "node_type"),
 					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "volume_type", "sbs_5k"),
 					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "volume_size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "multi_az", "false"),
+					resource.TestCheckResourceAttrSet("scaleway_kafka_cluster.main", "mono_az_zone"),
 
 					// Private network is present
 					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "private_network.#", "1"),
@@ -108,6 +110,107 @@ resource "scaleway_kafka_cluster" "main" {
 
 					// Private network still present
 					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "private_network.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccCluster_MultiAZ(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestKafkaVersion(tt)
+	nodeType := fetchAvailableKafkaNodeType(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  region = "fr-par"
+  name   = "TestAccCluster_MultiAZ"
+}
+
+resource "scaleway_vpc_private_network" "pn01" {
+  name   = "tf_test_kafka_multi_az_pn"
+  region = "fr-par"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_kafka_cluster" "main" {
+  name              = "tf-test-kafka-multi-az"
+  version           = "%s"
+  node_amount       = 3
+  node_type         = "%s"
+  volume_type       = "sbs_5k"
+  volume_size_in_gb = 10
+  multi_az          = true
+  user_name         = "admin"
+  password          = "password@1234567"
+
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn01.id
+  }
+}
+`, latestVersion, nodeType),
+				Check: resource.ComposeTestCheckFunc(
+					isClusterPresent(tt, "scaleway_kafka_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "multi_az", "true"),
+					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "mono_az_zone", ""),
+					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "node_amount", "3"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccCluster_MonoAZ(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestKafkaVersion(tt)
+	nodeType := fetchAvailableKafkaNodeType(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  region = "fr-par"
+  name   = "TestAccCluster_MonoAZ"
+}
+
+resource "scaleway_vpc_private_network" "pn01" {
+  name   = "tf_test_kafka_mono_az_pn"
+  region = "fr-par"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_kafka_cluster" "main" {
+  name              = "tf-test-kafka-mono-az"
+  version           = "%s"
+  node_amount       = 1
+  node_type         = "%s"
+  volume_type       = "sbs_5k"
+  volume_size_in_gb = 10
+  mono_az_zone      = "fr-par-1"
+  user_name         = "admin"
+  password          = "password@1234567"
+
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn01.id
+  }
+}
+`, latestVersion, nodeType),
+				Check: resource.ComposeTestCheckFunc(
+					isClusterPresent(tt, "scaleway_kafka_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "multi_az", "false"),
+					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "mono_az_zone", "fr-par-1"),
 				),
 			},
 		},

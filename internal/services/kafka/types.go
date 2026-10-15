@@ -1,10 +1,30 @@
 package kafka
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	kafkaapi "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
+
+func flattenClusterAvailability(d *schema.ResourceData, cluster *kafkaapi.Cluster) {
+	if cluster.MultiAz != nil {
+		_ = d.Set("multi_az", true)
+		_ = d.Set("mono_az_zone", "")
+
+		return
+	}
+
+	if cluster.MonoAz != nil {
+		_ = d.Set("multi_az", false)
+
+		if cluster.MonoAz.Zone != nil {
+			_ = d.Set("mono_az_zone", cluster.MonoAz.Zone.String())
+		}
+
+		return
+	}
+}
 
 // flattenPublicNetwork scans through all endpoints and returns at most one "public" block.
 // It returns ([]map[string]interface{}, true) if a public endpoint exists, or (nil, false) otherwise.
