@@ -359,37 +359,15 @@ func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest,
 	updateReq := &block.UpdateVolumeRequest{
 		Zone:     zone,
 		VolumeID: id,
-	}
-	hasChanges := false
-
-	if !plan.Name.Equal(state.Name) {
-		updateReq.Name = new(plan.Name.ValueString())
-		hasChanges = true
+		Name:     new(plan.Name.ValueString()),
+		Size:     new(scw.Size(plan.SizeInGB.ValueInt64()) * scw.GB),
+		PerfIops: new(uint32(plan.Iops.ValueInt64())),
 	}
 
-	if !plan.SizeInGB.Equal(state.SizeInGB) {
-		updateReq.Size = new(scw.Size(plan.SizeInGB.ValueInt64()) * scw.GB)
-		hasChanges = true
-	}
-
-	if !plan.Tags.Equal(state.Tags) {
-		updateReq.Tags = new(scwtypes.ExpandUpdatedStringList(
-			ctx, plan.Tags, &resp.Diagnostics,
-		))
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		hasChanges = true
-	}
-
-	if !plan.Iops.Equal(state.Iops) {
-		iops := plan.Iops.ValueInt64()
-		updateReq.PerfIops = new(uint32(iops))
-		hasChanges = true
-	}
-
-	if !hasChanges {
+	updateReq.Tags = new(scwtypes.ExpandUpdatedStringList(
+		ctx, plan.Tags, &resp.Diagnostics,
+	))
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
