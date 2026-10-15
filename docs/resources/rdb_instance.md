@@ -48,6 +48,11 @@ resource "scaleway_rdb_instance" "clone" {
   node_type  = "DB-DEV-M"
   clone_from = scaleway_rdb_instance.source.id
 
+  # Optional: set explicitly to override what CloneInstance inherits from the source
+  # is_ha_cluster  = false
+  # disable_backup = true
+  # volume_type    = "lssd"
+
   # Keep the public endpoint provisioned by CloneInstance
   load_balancer {}
 }
@@ -301,6 +306,10 @@ interruption.
 - `clone_from` - (Optional) The ID of an existing Database Instance to clone. The clone includes all databases, users, and permissions, and is fully independent of its parent. You may keep the same `node_type` or upgrade to a larger one. Conflicts with the `engine` and `snapshot_id` parameters.
 
 ~> **Important** Updates to `clone_from` will recreate the Database Instance.
+
+~> **Note** `CloneInstance` only accepts `name` and optional `node_type`. Other settings are inherited from the source:
+  - Omitting `is_ha_cluster` or `disable_backup` keeps the source values. Set them explicitly to override after clone.
+  - `volume_type` still defaults to `lssd` in the schema: set it explicitly to match a non-`lssd` source (e.g. `sbs_5k`) to avoid a plan diff.
 
 ~> **Note** When cloning from a Local Storage (`lssd`) instance to a Block Storage node type, change the volume type on the source instance first. See [How to clone a Database Instance](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/how-to/clone-a-database-instance/).
 

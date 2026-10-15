@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
@@ -46,10 +47,13 @@ func ResourceInstance() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
-		Importer:         identity.DefaultRegionalImporter(),
-		SchemaVersion:    0,
-		SchemaFunc:       instanceSchema,
-		CustomizeDiff:    cdf.LocalityCheck("clone_from", "private_network.#.pn_id"),
+		Importer:      identity.DefaultRegionalImporter(),
+		SchemaVersion: 0,
+		SchemaFunc:    instanceSchema,
+		CustomizeDiff: customdiff.All(
+			cdf.LocalityCheck("clone_from", "private_network.#.pn_id"),
+			customizeDiffCloneFromInherited,
+		),
 		Identity:         identity.DefaultRegional(),
 		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
 	}
@@ -103,16 +107,18 @@ func instanceSchema() map[string]*schema.Schema {
 			},
 		},
 		"is_ha_cluster": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			Description: "Enable or disable high availability for the database instance",
+			Type:             schema.TypeBool,
+			Optional:         true,
+			Computed:         true,
+			Description:      "Enable or disable high availability for the database instance",
+			DiffSuppressFunc: diffSuppressCloneInheritedBool("is_ha_cluster"),
 		},
 		"disable_backup": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			Description: "Disable automated backup for the database instance",
+			Type:             schema.TypeBool,
+			Optional:         true,
+			Computed:         true,
+			Description:      "Disable automated backup for the database instance",
+			DiffSuppressFunc: diffSuppressCloneInheritedBool("disable_backup"),
 		},
 		"backup_schedule_frequency": {
 			Type:        schema.TypeInt,
@@ -497,20 +503,50 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 
 		id = res.ID
 
-		_, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+		instance, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		rawTag, tagExist := d.GetOk("tags")
-		if tagExist {
-			updateReq := &rdb.UpdateInstanceRequest{
+		// CloneInstance inherits HA from the source. Apply an explicit is_ha_cluster only.
+		if wantHA := types.GetBool(d, "is_ha_cluster"); wantHA != nil && wantHA.(bool) != instance.IsHaCluster {
+			_, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: res.ID,
+				EnableHa:   types.ExpandBoolPtr(wantHA), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
 			}
-			updateReq.Tags = new(types.ExpandStrings(rawTag))
 
-			_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
+			instance, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		cloneUpdate := &rdb.UpdateInstanceRequest{
+			Region:     region,
+			InstanceID: res.ID,
+		}
+		cloneMustUpdate := false
+
+		if rawTag, tagExist := d.GetOk("tags"); tagExist {
+			cloneUpdate.Tags = new(types.ExpandStrings(rawTag))
+			cloneMustUpdate = true
+		}
+
+		// CloneInstance inherits the backup schedule. Apply an explicit disable_backup only.
+		if wantDisable := types.GetBool(d, "disable_backup"); wantDisable != nil {
+			disabled := wantDisable.(bool)
+			if instance.BackupSchedule == nil || instance.BackupSchedule.Disabled != disabled {
+				cloneUpdate.IsBackupScheduleDisabled = &disabled
+				cloneMustUpdate = true
+			}
+		}
+
+		if cloneMustUpdate {
+			_, err = rdbAPI.UpdateInstance(cloneUpdate, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -703,8 +739,25 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		InstanceID: id,
 	}
 	// Configure Schedule Backup
-	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
-	if !d.Get("disable_backup").(bool) {
+	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation.
+	// For clones, an omitted disable_backup inherits the source schedule (handled above / via diff suppress).
+	_, isClone := d.GetOk("clone_from")
+	if isClone {
+		if wantDisable := types.GetBool(d, "disable_backup"); wantDisable != nil && !wantDisable.(bool) {
+			updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
+			updateReq.IsBackupScheduleDisabled = new(false)
+
+			if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
+				updateReq.BackupScheduleFrequency = new(uint32(backupScheduleFrequency.(int)))
+			}
+
+			if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
+				updateReq.BackupScheduleRetention = new(uint32(backupScheduleRetention.(int)))
+			}
+
+			mustUpdate = true
+		}
+	} else if !d.Get("disable_backup").(bool) {
 		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
 		updateReq.IsBackupScheduleDisabled = new(d.Get("disable_backup").(bool))
 
