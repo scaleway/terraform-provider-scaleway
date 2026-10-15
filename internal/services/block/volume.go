@@ -267,9 +267,8 @@ func (r *VolumeResource) Create(
 
 				createReq.FromSnapshot.Size = &snapshot.Size // Already in bytes from the API
 			} else {
-				volumeSizeInBytes := scw.Size(5) * scw.GB
 				createReq.FromEmpty = &block.CreateVolumeRequestFromEmpty{
-					Size: volumeSizeInBytes,
+					Size: scw.Size(5) * scw.GB,
 				}
 			}
 		}
