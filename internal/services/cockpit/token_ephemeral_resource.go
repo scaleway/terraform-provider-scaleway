@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -322,7 +323,7 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 
 	name := data.Name.ValueString()
 
-	res, err := retryOn403Value(ctx, func() (*cockpit.Token, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Token, error) {
 		return r.cockpitAPI.CreateToken(&cockpit.RegionalAPICreateTokenRequest{
 			Region:      region,
 			ProjectID:   projectID,
@@ -461,8 +462,8 @@ func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseR
 
 	region := scw.Region(regionStr)
 
-	// Do not retryOn403 here: Cockpit returns 403 when the token is already gone,
-	// which must not be treated as IAM propagation.
+	// Do not RetryOnStatus(IAMPropagation) here: Cockpit returns 403 when the token is
+	// already gone, which must not be treated as IAM propagation.
 	err := r.deleteToken(ctx, region, tokenID)
 	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		resp.Diagnostics.AddError(
