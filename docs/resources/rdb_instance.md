@@ -307,9 +307,9 @@ interruption.
 
 ~> **Important** Updates to `clone_from` will recreate the Database Instance.
 
-~> **Note** `CloneInstance` only accepts `name` and optional `node_type`. Other settings are inherited from the source:
-  - Omitting `is_ha_cluster` or `disable_backup` keeps the source values. Set them explicitly to override after clone.
-  - `volume_type` still defaults to `lssd` in the schema: set it explicitly to match a non-`lssd` source (e.g. `sbs_5k`) to avoid a plan diff.
+~> **Note** `CloneInstance` only accepts `name` and optional `node_type`. Other settings are inherited from the source. Omitting `is_ha_cluster` or `disable_backup` keeps the source values; set them explicitly to override after clone.
+
+~> **Note** `volume_type` still defaults to `lssd` in the schema: set it explicitly to match a non-`lssd` source (e.g. `sbs_5k`) to avoid a plan diff.
 
 ~> **Note** When cloning from a Local Storage (`lssd`) instance to a Block Storage node type, change the volume type on the source instance first. See [How to clone a Database Instance](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/how-to/clone-a-database-instance/).
 
