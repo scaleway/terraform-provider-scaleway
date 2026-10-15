@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -30,12 +31,14 @@ func dataSourceImageSchema() map[string]*schema.Schema {
 			Optional:      true,
 			Description:   "Exact name of the desired image",
 			ConflictsWith: []string{"image_id"},
+			AtLeastOneOf:  []string{"image_id", "name", "tags"},
 		},
 		"image_id": {
 			Type:          schema.TypeString,
 			Optional:      true,
 			Description:   "ID of the desired image",
 			ConflictsWith: []string{"name", "architecture"},
+			AtLeastOneOf:  []string{"image_id", "name", "tags"},
 		},
 		"architecture": {
 			Type:          schema.TypeString,
@@ -54,8 +57,10 @@ func dataSourceImageSchema() map[string]*schema.Schema {
 		"tags": {
 			Type:          schema.TypeList,
 			Optional:      true,
-			Description:   "List of tags to filter images by (e.g. [\"product=vivado\", \"version=2021.1\"])",
+			Computed:      true,
+			Description:   "List of tags to filter images by (e.g. [\"env=production\", \"version=v1.2.3\"])",
 			ConflictsWith: []string{"image_id"},
+			AtLeastOneOf:  []string{"image_id", "name", "tags"},
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -117,18 +122,25 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	imageID, ok := d.GetOk("image_id")
-	if !ok { // Get instance by name, zone, and arch.
-		name, hasName := d.GetOk("name")
+	if !ok { // Get image by name, architecture, tags and zone.
+		name := d.Get("name").(string)
+		arch := d.Get("architecture").(string)
 		tags := types.ExpandStrings(d.Get("tags"))
+
+		// AtLeastOneOf accepts empty and unknown values, which would select
+		// the most recent image of the project without any filter.
+		if name == "" && len(tags) == 0 {
+			return diag.FromErr(errors.New("one of image_id, name or tags must be set to a non-empty value"))
+		}
 
 		listReq := &instance.ListImagesRequest{
 			Zone:    zone,
-			Name:    types.ExpandStringPtr(d.Get("name")),
-			Arch:    types.ExpandStringPtr(d.Get("architecture")),
+			Name:    types.ExpandStringPtr(name),
+			Arch:    types.ExpandStringPtr(arch),
 			Project: types.ExpandStringPtr(d.Get("project_id")),
 		}
 		if len(tags) > 0 {
-			listReq.Tags = scw.StringPtr(strings.Join(tags, ","))
+			listReq.Tags = new(strings.Join(tags, ","))
 		}
 
 		res, err := instanceAPI.ListImages(listReq, scw.WithAllPages(), scw.WithContext(ctx))
@@ -136,21 +148,23 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 			return diag.FromErr(err)
 		}
 
-		var matchingImages []*instance.Image
+		// The API name filter is a partial match, only keep exact matches.
+		matchingImages := make([]*instance.Image, 0, len(res.Images))
 
 		for _, image := range res.Images {
-			if hasName && image.Name != name {
+			if name != "" && image.Name != name {
 				continue
 			}
+
 			matchingImages = append(matchingImages, image)
 		}
 
 		if len(matchingImages) == 0 {
-			return diag.FromErr(fmt.Errorf("no image found with the name %s, architecture %s and tags %s in zone %s", d.Get("name"), d.Get("architecture"), tags, zone))
+			return diag.FromErr(fmt.Errorf("no image found with name %q, architecture %s and tags %v in zone %s", name, arch, tags, zone))
 		}
 
 		if len(matchingImages) > 1 && !d.Get("latest").(bool) {
-			return diag.FromErr(fmt.Errorf("%d images found with the same name %s, architecture %s and tags %s in zone %s", len(matchingImages), d.Get("name"), d.Get("architecture"), tags, zone))
+			return diag.FromErr(fmt.Errorf("%d images found with name %q, architecture %s and tags %v in zone %s", len(matchingImages), name, arch, tags, zone))
 		}
 
 		sort.Slice(matchingImages, func(i, j int) bool {
@@ -179,6 +193,7 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 	_ = d.Set("project_id", resp.Image.Project)
 	_ = d.Set("architecture", resp.Image.Arch)
 	_ = d.Set("name", resp.Image.Name)
+	_ = d.Set("tags", resp.Image.Tags)
 
 	_ = d.Set("creation_date", types.FlattenTime(resp.Image.CreationDate))
 	_ = d.Set("modification_date", types.FlattenTime(resp.Image.ModificationDate))
