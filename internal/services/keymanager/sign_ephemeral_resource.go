@@ -152,7 +152,7 @@ func (r *SignEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRequ
 	signReq := &key_manager.SignRequest{
 		Region: region,
 		KeyID:  keyID,
-		Digest: digestBytes,
+		Digest: &digestBytes,
 	}
 
 	signResp, err := r.keyManagerAPI.Sign(signReq)

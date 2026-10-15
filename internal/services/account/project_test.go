@@ -2,6 +2,7 @@ package account_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -28,6 +29,7 @@ func TestAccProject_Basic(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_account_project.main", "srn", regexp.MustCompile(`^srn://account\..+/projects/.+$`)),
 					isProjectPresent(tt, "scaleway_account_project.main"),
 					resource.TestCheckResourceAttr("scaleway_account_project.main", "name", "tf_tests_project_basic"),
 					resource.TestCheckResourceAttr("scaleway_account_project.main", "description", "a description"),
