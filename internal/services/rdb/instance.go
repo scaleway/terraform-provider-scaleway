@@ -552,39 +552,8 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			}
 		}
 
-		// CloneInstance always provisions a default load-balancer endpoint and has no
-		// InitEndpoints field. Keep the inherited LB when load_balancer is set; never create a second one.
-		_, wantPrivateNetwork := d.GetOk("private_network")
-		_, wantLoadBalancer := d.GetOk("load_balancer")
-
-		if wantLoadBalancer {
-			if wantPrivateNetwork {
-				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-					return diag.FromErr(err)
-				}
-
-				if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
-					return diags
-				}
-
-				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		} else {
-			if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
-				return diags
-			}
-
-			if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
-				return diags
-			}
-
-			if wantPrivateNetwork {
-				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-					return diag.FromErr(err)
-				}
-			}
+		if diags := configureEndpointsAfterInheritedLB(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+			return diags
 		}
 	} else if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
 		_, snapshotID, err := regional.ParseID(regionalSnapshotID.(string))
@@ -617,55 +586,12 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		rawTag, tagExist := d.GetOk("tags")
-		if tagExist {
-			updateReq := &rdb.UpdateInstanceRequest{
-				Region:     region,
-				InstanceID: res.ID,
-			}
-			updateReq.Tags = new(types.ExpandStrings(rawTag))
-
-			_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
+		if err := applyInstanceTagsFromConfig(ctx, rdbAPI, region, res.ID, d); err != nil {
+			return diag.FromErr(err)
 		}
 
-		// CreateInstanceFromSnapshot always provisions a default load-balancer endpoint and has no
-		// InitEndpoints field. Keep the inherited LB when load_balancer is set; never create a second one.
-		_, wantPrivateNetwork := d.GetOk("private_network")
-		_, wantLoadBalancer := d.GetOk("load_balancer")
-
-		if wantLoadBalancer {
-			// Instance already has a public LB from the snapshot restore: only attach PN if requested.
-			if wantPrivateNetwork {
-				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-					return diag.FromErr(err)
-				}
-
-				if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
-					return diags
-				}
-
-				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		} else {
-			// Preserve historical order (PN then remove inherited LB) for existing cassettes.
-			if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
-				return diags
-			}
-
-			if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
-				return diags
-			}
-
-			if wantPrivateNetwork {
-				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-					return diag.FromErr(err)
-				}
-			}
+		if diags := configureEndpointsAfterInheritedLB(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+			return diags
 		}
 	} else {
 		var password string
@@ -807,6 +733,66 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	return ResourceRdbInstanceRead(ctx, d, m)
+}
+
+func applyInstanceTagsFromConfig(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) error {
+	rawTag, tagExist := d.GetOk("tags")
+	if !tagExist {
+		return nil
+	}
+
+	_, err := rdbAPI.UpdateInstance(&rdb.UpdateInstanceRequest{
+		Region:     region,
+		InstanceID: instanceID,
+		Tags:       new(types.ExpandStrings(rawTag)),
+	}, scw.WithContext(ctx))
+
+	return err
+}
+
+// configureEndpointsAfterInheritedLB configures PN/LB after APIs that always provision a default
+// load-balancer endpoint and have no InitEndpoints (CloneInstance, CreateInstanceFromSnapshot).
+// Keep the inherited LB when load_balancer is set; otherwise create PN then remove the LB
+// (order preserved for existing snapshot cassettes).
+func configureEndpointsAfterInheritedLB(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) diag.Diagnostics {
+	_, wantPrivateNetwork := d.GetOk("private_network")
+	_, wantLoadBalancer := d.GetOk("load_balancer")
+
+	if wantLoadBalancer {
+		if !wantPrivateNetwork {
+			return nil
+		}
+
+		if _, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); err != nil {
+			return diag.FromErr(err)
+		}
+
+		if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, instanceID, d); diags.HasError() {
+			return diags
+		}
+
+		if _, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); err != nil {
+			return diag.FromErr(err)
+		}
+
+		return nil
+	}
+
+	if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, instanceID, d); diags.HasError() {
+		return diags
+	}
+
+	if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
+		return diags
+	}
+
+	if wantPrivateNetwork {
+		if _, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return nil
 }
 
 // createPrivateNetworkEndpoints creates private network endpoints for an instance
