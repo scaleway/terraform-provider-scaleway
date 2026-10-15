@@ -518,7 +518,7 @@ func flattenVolume(ctx context.Context, api *block.API, volume *block.Volume, re
 			SnapshotID: *volume.ParentSnapshotID,
 			Zone:       volume.Zone,
 		}, scw.WithContext(ctx))
-		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
+		if !httperrors.Is403(err) && !httperrors.Is404(err) {
 			model.SnapshotID = types.StringValue(zonal.NewIDString(volume.Zone, *volume.ParentSnapshotID))
 		} else {
 			model.SnapshotID = types.StringNull()
