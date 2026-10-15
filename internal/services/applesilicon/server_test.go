@@ -50,26 +50,29 @@ func TestAccServer_Basic(t *testing.T) {
 					resource.TestMatchResourceAttr("scaleway_apple_silicon_server.main", "srn", regexp.MustCompile(`^srn://apple-silicon\..+/zones/.+/servers/.+$`)),
 				),
 			},
-			{
-				Config: `
-					resource scaleway_apple_silicon_server main {
-						name = "TestAccServerBasic"
-						type = "M2-L-ASAHI"
-						public_bandwidth = 1000000000
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerBasic"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-L-ASAHI"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "1000000000"),
-					// Computed
-					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
-					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
-					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
-					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
-				),
-			},
+			// TODO: "M2-L-ASAHI" is the only type currently in stock, but it does not support
+			// bandwidth upgrade. If a server type that supports such an upgrade is back in
+			// stock, edit this test's server type, public_bandwidth, and uncomment this step.
+			// {
+			// 	Config: `
+			// 		resource scaleway_apple_silicon_server main {
+			// 			name = "TestAccServerBasic"
+			// 			type = "M2-L-ASAHI"
+			// 			public_bandwidth = 2000000000
+			// 		}
+			// 	`,
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		isServerPresent(tt, "scaleway_apple_silicon_server.main"),
+			// 		resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerBasic"),
+			// 		resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-L-ASAHI"),
+			// 		resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "1000000000"),
+			// 		// Computed
+			// 		resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
+			// 		resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
+			// 		resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
+			// 		resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
+			// 	),
+			// },
 			{
 				ResourceName:      "scaleway_apple_silicon_server.main",
 				ImportState:       true,
