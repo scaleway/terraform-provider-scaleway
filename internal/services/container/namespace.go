@@ -100,6 +100,11 @@ func namespaceSchema() map[string]*schema.Schema {
 			Description: "Destroy registry on deletion",
 			Deprecated:  "A registry is no longer created alongside the namespace, it has to be handled separately.",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the container namespace",
+		},
 		"region":          regional.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -166,6 +171,7 @@ func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("secret_environment_variables", ns.SecretEnvironmentVariables)
 	_ = d.Set("tags", types.FlattenSliceString(ns.Tags))
 	_ = d.Set("region", ns.Region)
+	_ = d.Set("srn", ns.Srn)
 
 	return nil
 }
