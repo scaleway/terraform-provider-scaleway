@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -52,7 +53,7 @@ func expandClusterAvailability(d *schema.ResourceData, m any) (*kafkaapi.Cluster
 			return &kafkaapi.ClusterMultiAZDetails{}, nil, nil
 		}
 
-		return nil, nil, fmt.Errorf("multi_az cannot be false; set mono_az_zone or omit multi_az to use the provider default zone")
+		return nil, nil, errors.New("multi_az cannot be false; set mono_az_zone or omit multi_az to use the provider default zone")
 	}
 
 	if v, ok := d.GetOk("mono_az_zone"); ok {
