@@ -142,6 +142,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `error_message` - The error message of the container.
 
+- `srn` - The Scaleway Resource Name (SRN) of the container.
+
 - `domain_name` - The native domain name of the container
 
 - `public_endpoint` - The native domain name of the container
