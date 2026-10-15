@@ -1,6 +1,7 @@
 package instance_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -46,6 +47,35 @@ func TestAccDataSourceImage_Basic(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceImage_NoFilter(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      `data "scaleway_instance_image" "test" {}`,
+				ExpectError: regexp.MustCompile("one of `image_id,name,tags` must be specified"),
+			},
+			{
+				Config: `
+					data "scaleway_instance_image" "test" {
+						name = ""
+					}`,
+				ExpectError: regexp.MustCompile("one of image_id, name or tags must be set to a non-empty value"),
+			},
+			{
+				Config: `
+					data "scaleway_instance_image" "test" {
+						tags = []
+					}`,
+				ExpectError: regexp.MustCompile("one of image_id, name or tags must be set to a non-empty value"),
+			},
+		},
+	})
+}
+
 func TestAccDataSourceImage_Tags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -72,11 +102,11 @@ func TestAccDataSourceImage_Tags(t *testing.T) {
 					resource "scaleway_instance_image" "main" {
 						name            = "tf-test-image-tags"
 						root_volume_id  = scaleway_block_snapshot.main.id
-						tags            = ["product=vivado", "version=2021.1"]
+						tags            = ["env=production", "version=v1.2.3"]
 					}
 
 					data "scaleway_instance_image" "by_tags" {
-						tags      = ["product=vivado", "version=2021.1"]
+						tags      = ["env=production", "version=v1.2.3"]
 						latest    = true
 						depends_on = [scaleway_instance_image.main]
 					}
@@ -86,6 +116,9 @@ func TestAccDataSourceImage_Tags(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.scaleway_instance_image.by_tags", "id", "scaleway_instance_image.main", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.by_tags", "name", "tf-test-image-tags"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.by_tags", "latest", "true"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_image.by_tags", "tags.#", "2"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_image.by_tags", "tags.0", "env=production"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_image.by_tags", "tags.1", "version=v1.2.3"),
 				),
 			},
 		},
