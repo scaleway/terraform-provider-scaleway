@@ -71,6 +71,11 @@ func placementGroupSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the placement group",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the placement group",
+		},
 		"zone":       zonal.Schema(),
 		"project_id": account.ProjectIDSchema(),
 	}
@@ -130,6 +135,7 @@ func setPlacementGroupState(d *schema.ResourceData, pg *instance.PlacementGroup,
 	_ = d.Set("policy_type", pg.PolicyType.String())
 	_ = d.Set("policy_respected", pgV1.PolicyRespected)
 	_ = d.Set("tags", pg.Tags)
+	_ = d.Set("srn", pg.Srn)
 
 	return nil
 }
