@@ -328,6 +328,37 @@ func TestAccKeyManagerKey_WithCustomAlgorithm(t *testing.T) {
 	})
 }
 
+func TestAccKeyManagerKey_KeyEncapsulation(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_key_manager_key" "ml_kem" {
+				  name        = "tf-test-kms-key-ml-kem"
+				  region      = "fr-par"
+				  usage       = "key_encapsulation"
+				  algorithm   = "ml_kem_768"
+				  description = "Test key with ML-KEM-768 algorithm"
+				  unprotected = true
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "name", "tf-test-kms-key-ml-kem"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "usage", "key_encapsulation"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "algorithm", "ml_kem_768"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "description", "Test key with ML-KEM-768 algorithm"),
+					resource.TestMatchResourceAttr("scaleway_key_manager_key.ml_kem", "srn", regexp.MustCompile(`^srn://key-manager\..+/regions/.+/keys/.+$`)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccKeyManagerKey_DefaultAlgorithm(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

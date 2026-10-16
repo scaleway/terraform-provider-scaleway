@@ -391,6 +391,11 @@ func containerSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The error description",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the container",
+		},
 		"region": regional.Schema(),
 	}
 }
@@ -527,6 +532,7 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("secret_environment_variables", co.SecretEnvironmentVariables)
 	_ = d.Set("tags", types.FlattenSliceString(co.Tags))
 	_ = d.Set("command", types.FlattenSliceString(co.Command))
+	_ = d.Set("srn", co.Srn)
 	_ = d.Set("args", types.FlattenSliceString(co.Args))
 
 	if co.PrivateNetworkID != nil {

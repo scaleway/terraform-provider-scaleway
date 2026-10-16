@@ -51,6 +51,7 @@ In addition to the arguments above, the following attributes are exported:
 ~> **Important:** Serverless Containers namespace IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are expressed in the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `organization_id` - The unique identifier of the organization with which the namespace is associated.
+- `srn` - The Scaleway Resource Name (SRN) of the container namespace.
 - `description` - The description of the namespace.
 - `environment_variables` - The environment variables of the namespace.
 - `registry_endpoint` - (Deprecated) The registry endpoint of the namespace.
