@@ -2,6 +2,7 @@ package annotations_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -44,6 +45,8 @@ func TestAccDataSourceAnnotationsValue_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.scaleway_annotations_value.main", "key_id", "scaleway_annotations_value.main", "key_id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_annotations_value.main", "name", "scaleway_annotations_value.main", "name"),
 					resource.TestCheckResourceAttrPair("data.scaleway_annotations_value.main", "description", "scaleway_annotations_value.main", "description"),
+					resource.TestCheckResourceAttrPair("data.scaleway_annotations_value.main", "srn", "scaleway_annotations_value.main", "srn"),
+					resource.TestMatchResourceAttr("data.scaleway_annotations_value.main", "srn", regexp.MustCompile(`^srn://annotations\..+/values/.+$`)),
 				),
 			},
 		},

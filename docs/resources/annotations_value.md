@@ -39,6 +39,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the annotation value.
 - `value_id` - The ID of the annotation value.
+- `srn` - The Scaleway Resource Name (SRN) of the annotation value.
 
 ## Import
 
