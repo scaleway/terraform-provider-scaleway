@@ -46,5 +46,5 @@ In addition to all arguments above, the following attributes are exported:
 Annotation values can be imported using their `id`:
 
 ```bash
-terraform import scaleway_annotations_value.main <value_id>
+terraform import scaleway_annotations_value.main VALUE_ID
 ```
