@@ -236,14 +236,15 @@ func serverSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			Description:      "The ID of the reserved IP for the server",
-			DiffSuppressFunc: dsf.Locality,
+			DiffSuppressFunc: diffSuppressIPIDWhenIPIDsConfigured,
 			ConflictsWith:    []string{"ip_ids"},
 		},
 		"ip_ids": {
-			Type:          schema.TypeList,
-			Description:   "The IDs of the reserved IP for the server",
-			Optional:      true,
-			ConflictsWith: []string{"ip_id"},
+			Type:             schema.TypeList,
+			Description:      "The IDs of the reserved IP for the server",
+			Optional:         true,
+			ConflictsWith:    []string{"ip_id"},
+			DiffSuppressFunc: diffSuppressIPIDsWhenIPIDConfigured,
 			Elem: &schema.Schema{
 				Type:             schema.TypeString,
 				Description:      "ID of the reserved IP for the server",
@@ -719,15 +720,17 @@ func setServerState(ctx context.Context, d *schema.ResourceData, m any, api *ins
 		_, hasIPIDs := d.GetOk("ip_ids")
 
 		switch {
-		case hasIPID:
+		case hasIPID && !hasIPIDs:
 			publicIP := FindIPInList(ipID.(string), server.PublicIPs)
 			if publicIP != nil && !publicIP.Dynamic {
 				ipIDToSet = zonal.NewID(zone, publicIP.ID).String()
 			}
-		case hasIPIDs:
+		case hasIPIDs && !hasIPID:
 			ipIDsToSet = flattenServerIPIDs(server.PublicIPs, server.Zone)
 		default:
-			// In import context, we don't know if the field that was used is 'ip_id' or 'ip_ids', so we set them both
+			// In import context, we don't know if the field that was used is 'ip_id' or 'ip_ids', so we set them both.
+			// Both stay set on later reads: the one missing from the configuration has its diff suppressed
+			// (see diffSuppressIPIDWhenIPIDsConfigured), so neither is cleared nor detaches the IPs.
 			for _, publicIP := range server.PublicIPs {
 				if !publicIP.Dynamic {
 					ipIDToSet = zonal.NewID(zone, publicIP.ID).String()
@@ -1512,6 +1515,35 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 	}
 
 	return nil
+}
+
+// isAttributeConfigured reports whether attribute is set in the configuration (unknown values count as set).
+// d.Get cannot be used for this in a DiffSuppressFunc: it falls back to the state for optional attributes.
+func isAttributeConfigured(d *schema.ResourceData, attribute string) bool {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsNull() || !rawConfig.IsKnown() {
+		return false
+	}
+
+	value := rawConfig.GetAttr(attribute)
+
+	return !value.IsNull()
+}
+
+// diffSuppressIPIDWhenIPIDsConfigured suppresses the removal of ip_id when the configuration uses ip_ids instead.
+// After an import both ip_id and ip_ids are set in the state, and applying the removal of ip_id would detach every public IP.
+func diffSuppressIPIDWhenIPIDsConfigured(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	if newValue == "" && isAttributeConfigured(d, "ip_ids") {
+		return true
+	}
+
+	return dsf.Locality(k, oldValue, newValue, d)
+}
+
+// diffSuppressIPIDsWhenIPIDConfigured suppresses the removal of ip_ids when the configuration uses ip_id instead.
+// It is the counterpart of diffSuppressIPIDWhenIPIDsConfigured.
+func diffSuppressIPIDsWhenIPIDConfigured(_, _, _ string, d *schema.ResourceData) bool {
+	return isAttributeConfigured(d, "ip_id") && !isAttributeConfigured(d, "ip_ids")
 }
 
 func customDiffInstanceServerPublicIPs(_ context.Context, diff *schema.ResourceDiff, _ any) error {
