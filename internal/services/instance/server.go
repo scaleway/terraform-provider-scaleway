@@ -1635,26 +1635,32 @@ func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *instan
 		}}
 	}
 
-	// Root SBS volume may still be provisioning after the server is ready.
-	_, err = api.BlockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeAndReferencesRequest{
-		VolumeID:      rootVolume.ID,
-		Zone:          zone,
-		RetryInterval: transport.DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.Diagnostics{{
-			Severity:      diag.Warning,
-			Summary:       "Failed to update root_volume iops",
-			Detail:        err.Error(),
-			AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
-		}}
-	}
-
-	_, err = api.BlockAPI.UpdateVolume(&block.UpdateVolumeRequest{
+	updateReq := &block.UpdateVolumeRequest{
 		Zone:     zone,
 		VolumeID: rootVolume.ID,
 		PerfIops: iops,
-	}, scw.WithContext(ctx))
+	}
+
+	_, err = api.BlockAPI.UpdateVolume(updateReq, scw.WithContext(ctx))
+	// Root SBS volume may still be provisioning after the server is ready.
+	if err != nil && errorCheck(err, "volume is not available") {
+		_, waitErr := api.BlockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeAndReferencesRequest{
+			VolumeID:      rootVolume.ID,
+			Zone:          zone,
+			RetryInterval: transport.DefaultWaitRetryInterval,
+		}, scw.WithContext(ctx))
+		if waitErr != nil {
+			return diag.Diagnostics{{
+				Severity:      diag.Warning,
+				Summary:       "Failed to update root_volume iops",
+				Detail:        waitErr.Error(),
+				AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+			}}
+		}
+
+		_, err = api.BlockAPI.UpdateVolume(updateReq, scw.WithContext(ctx))
+	}
+
 	if err != nil {
 		return diag.Diagnostics{{
 			Severity:      diag.Warning,
