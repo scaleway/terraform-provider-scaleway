@@ -7,6 +7,7 @@ import (
 
 	mailboxsdk "github.com/scaleway/scaleway-sdk-go/api/mailbox/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -95,4 +96,27 @@ func waitForMailboxDeleted(ctx context.Context, api *mailboxsdk.API, mailboxID s
 		Timeout:       &timeout,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+}
+
+func waitForAlias(ctx context.Context, api *mailboxsdk.API, aliasID string, timeout time.Duration) (*mailboxsdk.Alias, error) {
+	retryInterval := defaultRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	return api.WaitForAlias(&mailboxsdk.WaitForAliasRequest{
+		AliasID:       aliasID,
+		Timeout:       &timeout,
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
+// waitForAliasDeleted waits until the alias is gone (GetAlias returns 404).
+func waitForAliasDeleted(ctx context.Context, api *mailboxsdk.API, aliasID string, timeout time.Duration) error {
+	_, err := waitForAlias(ctx, api, aliasID, timeout)
+	if err != nil && httperrors.Is404(err) {
+		return nil
+	}
+
+	return err
 }
