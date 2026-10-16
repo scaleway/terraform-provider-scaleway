@@ -15,6 +15,7 @@ import (
 func DataSourceInstance() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceInstance().SchemaFunc())
+	delete(dsSchema, "allow_major_version_upgrade")
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
