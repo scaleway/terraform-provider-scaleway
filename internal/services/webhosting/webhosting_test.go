@@ -62,6 +62,26 @@ func TestAccWebhosting_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "name_servers.0.is_default"),
 				),
 			},
+			{
+				Config: `
+				data "scaleway_webhosting_offer" "by_name" {
+				  name = "essential"
+				  control_panel = "Cpanel"
+				}
+
+				resource "scaleway_webhosting" "main" {
+				  offer_id                       = data.scaleway_webhosting_offer.by_name.offer_id
+				  email                          = "hashicorp@scaleway.com"
+				  domain                         = "devtools-tf-tests.scaleway.com"
+				  tags                           = ["devtools", "provider", "terraform"]
+				  delete_hosting_after_commitment = true
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWebhostingExists(tt, "scaleway_webhosting.main"),
+					resource.TestCheckResourceAttr("scaleway_webhosting.main", "delete_hosting_after_commitment", "true"),
+				),
+			},
 		},
 	})
 }
