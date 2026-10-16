@@ -53,6 +53,7 @@ In addition to all above arguments, the following attributes are exported:
 - `node_type` - The type of MongoDB® node.
 - `node_number` - The number of nodes in the MongoDB® cluster.
 - `created_at` - The date and time the MongoDB® instance was created.
+- `srn` - The Scaleway Resource Name (SRN) of the MongoDB® instance.
 - `project_id` - The ID of the project the instance belongs to.
 - `tags` - A list of tags attached to the MongoDB® instance.
 - `volume_type` - The type of volume attached to the MongoDB® instance.
