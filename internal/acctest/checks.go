@@ -175,3 +175,15 @@ func CheckResourceAttrIP(name string, key string) resource.TestCheckFunc {
 		return nil
 	})
 }
+
+// CheckEphemeralResourceNotInState asserts that an ephemeral resource address
+// was not persisted in Terraform state.
+func CheckEphemeralResourceNotInState(resourceName string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		if _, ok := state.RootModule().Resources[resourceName]; ok {
+			return fmt.Errorf("ephemeral resource %s should not be persisted in state", resourceName)
+		}
+
+		return nil
+	}
+}
