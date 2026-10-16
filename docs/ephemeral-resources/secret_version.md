@@ -98,6 +98,7 @@ ephemeral "scaleway_secret_version" "data_latest" {
 - `created_at` (String) Date and time of secret version's creation (RFC 3339 format)
 - `data` (String, Sensitive) The payload of the secret version (base64 encoded)
 - `description` (String) Description of the secret version
+- `srn` (String) The Scaleway Resource Name (SRN) of the secret version
 - `status` (String) Status of the secret version
 - `updated_at` (String) Date and time of secret version's last update (RFC 3339 format)
 

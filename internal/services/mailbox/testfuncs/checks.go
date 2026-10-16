@@ -412,3 +412,46 @@ func CheckDomainExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		return nil
 	}
 }
+
+// CheckAliasDestroyed verifies that all mailbox alias resources in state have been deleted.
+func CheckAliasDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		api := mailboxsdk.NewAPI(tt.Meta.ScwClient())
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_mailbox_alias" {
+				continue
+			}
+
+			_, err := api.GetAlias(&mailboxsdk.GetAliasRequest{AliasID: rs.Primary.ID}, scw.WithContext(tt.T.Context()))
+			if err == nil {
+				return fmt.Errorf("mailbox alias %s still exists", rs.Primary.ID)
+			}
+
+			if !httperrors.Is404(err) {
+				return fmt.Errorf("unexpected error checking alias %s: %w", rs.Primary.ID, err)
+			}
+		}
+
+		return nil
+	}
+}
+
+// CheckAliasExists verifies a mailbox alias resource exists in both state and API.
+func CheckAliasExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource %q not found in state", n)
+		}
+
+		api := mailboxsdk.NewAPI(tt.Meta.ScwClient())
+
+		_, err := api.GetAlias(&mailboxsdk.GetAliasRequest{AliasID: rs.Primary.ID}, scw.WithContext(tt.T.Context()))
+		if err != nil {
+			return fmt.Errorf("error reading mailbox alias %s: %w", rs.Primary.ID, err)
+		}
+
+		return nil
+	}
+}

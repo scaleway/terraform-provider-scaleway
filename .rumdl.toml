@@ -81,14 +81,13 @@ on-missing-language-definition = "fail"
 normalize-language = "linguist"
 
 [code-block-tools.languages]
-shell = { enabled = false }
-terraform = { format = ["terraform_fmt"], lint = ["true"] }
+hcl = { enabled = false }
 ini = { enabled = false }
+json = { enabled = true, format = ["jq"], lint = ["jq"] }
+shell = { enabled = true, format = ["shfmt"], lint = ["shellcheck"] }
+terraform = { enabled = true, format = ["terraform:format"], lint = ["terraform:format"] }
 text = { enabled = false }
-json = { lint = ["jq"], format = ["jq"] }
-yaml = { format = ["yamlfmt"], lint = ["yamllint"] }
+yaml = { enabled = true, format = ["yamlfmt"], lint = ["ryl"] }
 
-[code-block-tools.tools.terraform_fmt]
-command = ["terraform", "fmt", "-"]
-stdin = true
-stdout = true
+[code-block-tools.tools.ryl]
+command = ["ryl", "-"]

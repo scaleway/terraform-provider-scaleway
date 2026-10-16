@@ -167,7 +167,7 @@ func lbPrivateNetworkSetHash(v any) int {
 		}
 	}
 
-	return types.StringHashcode(buf.String())
+	return schema.HashString(buf.String())
 }
 
 func diffSuppressFunc32SubnetMask(k, _, _ string, d *schema.ResourceData) bool {

@@ -146,7 +146,7 @@ resource "scaleway_edge_services_backend_stage" "main" {
     - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Serverless Function.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the backend stage is associated with.
 
-~> **Important:** `s3_backend_config`, `lb_backend_config`, `container_backend_config` and `function_backend_config` are mutually exclusive.
+~> **Important:** `s3_backend_config`, `lb_backend_config`, `container_backend_config` and `function_backend_config` are mutually exclusive. Changing the backend type forces the backend stage to be replaced.
 
 ## Attributes Reference
 
