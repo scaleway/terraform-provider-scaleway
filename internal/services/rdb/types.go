@@ -4,10 +4,13 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -18,6 +21,58 @@ func flattenInstanceSettings(settings []*rdb.InstanceSetting) any {
 	}
 
 	return res
+}
+
+// ExpandHighAvailabilityMode resolves the HA mode from config.
+// Prefer high_availability_mode when set in the raw config; otherwise map is_ha_cluster
+// (true → single_zone, false → disabled). See https://github.com/scaleway/terraform-provider-scaleway/issues/4272
+func ExpandHighAvailabilityMode(d *schema.ResourceData) rdb.HighAvailabilityMode {
+	if mode, ok := meta.GetRawConfigForKey(d, "high_availability_mode", cty.String); ok {
+		if s, ok := mode.(string); ok && s != "" {
+			return rdb.HighAvailabilityMode(s)
+		}
+	}
+
+	if d.Get("is_ha_cluster").(bool) {
+		return rdb.HighAvailabilityModeSingleZone
+	}
+
+	return rdb.HighAvailabilityModeDisabled
+}
+
+// FlattenHighAvailabilityMode maps API HA fields to Terraform attributes.
+// Prefer the enum when known; fall back to is_ha_cluster for unknown/legacy responses.
+func FlattenHighAvailabilityMode(mode rdb.HighAvailabilityMode, isHA bool) (string, bool) {
+	switch mode {
+	case rdb.HighAvailabilityModeSingleZone, rdb.HighAvailabilityModeMultipleZone:
+		return string(mode), true
+	case rdb.HighAvailabilityModeDisabled:
+		return string(mode), false
+	default:
+		if isHA {
+			return string(rdb.HighAvailabilityModeSingleZone), true
+		}
+
+		return string(rdb.HighAvailabilityModeDisabled), false
+	}
+}
+
+// InstanceWantsHA reports whether the desired config enables high availability.
+func InstanceWantsHA(d *schema.ResourceData) bool {
+	mode := ExpandHighAvailabilityMode(d)
+
+	return mode == rdb.HighAvailabilityModeSingleZone || mode == rdb.HighAvailabilityModeMultipleZone
+}
+
+// InstanceHasHA reports whether the API instance currently has HA enabled.
+func InstanceHasHA(inst *rdb.Instance) bool {
+	if inst == nil {
+		return false
+	}
+
+	_, isHA := FlattenHighAvailabilityMode(inst.HighAvailabilityMode, inst.IsHaCluster)
+
+	return isHA
 }
 
 func expandInstanceSettings(i any) []*rdb.InstanceSetting {
