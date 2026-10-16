@@ -16,6 +16,7 @@ import (
 
 const (
 	defaultWaitDomainsRegistrationRetryInterval = 10 * time.Minute
+	defaultWaitExternalDomainsValidationRetryInterval = 30 * time.Second
 )
 
 // NewDomainAPI returns a new domain API.
