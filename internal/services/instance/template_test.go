@@ -111,8 +111,6 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 
 	templateID := ""
 
-	// For now, we need to explicitly define the project_id for the CI's Acceptance Tests to pass.
-	// We should find a more appropriate solution in the future.
 	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
 	if !projectIDExists {
 		t.Skip("no default project ID")
