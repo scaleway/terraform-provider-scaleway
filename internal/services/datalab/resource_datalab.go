@@ -23,6 +23,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 var (
@@ -374,7 +375,7 @@ func (r *DatalabResource) Create(ctx context.Context, req resource.CreateRequest
 		HasNotebook:      data.HasNotebook.ValueBool(),
 	}
 
-	createReq.Tags = expandTags(ctx, data.Tags, &resp.Diagnostics)
+	createReq.Tags = scwtypes.ExpandStringList(ctx, data.Tags, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -547,7 +548,7 @@ func (r *DatalabResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	if !plan.Tags.Equal(state.Tags) {
-		updateReq.Tags = expandTags(ctx, plan.Tags, &resp.Diagnostics)
+		updateReq.Tags = scwtypes.ExpandStringList(ctx, plan.Tags, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -776,17 +777,6 @@ func flattenVolume(vol *datalab.Volume, diags *diag.Diagnostics) types.Object {
 	diags.Append(d...)
 
 	return obj
-}
-
-func expandTags(ctx context.Context, tags types.List, diags *diag.Diagnostics) []string {
-	if tags.IsNull() || tags.IsUnknown() {
-		return nil
-	}
-
-	var result []string
-	diags.Append(tags.ElementsAs(ctx, &result, false)...)
-
-	return result
 }
 
 func flattenStringList(ctx context.Context, items []string) (types.List, diag.Diagnostics) {

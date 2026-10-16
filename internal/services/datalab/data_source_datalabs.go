@@ -12,6 +12,7 @@ import (
 	datalab "github.com/scaleway/scaleway-sdk-go/api/datalab/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 var (
@@ -193,7 +194,7 @@ func (d *DatalabsDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	if !config.Tags.IsNull() && !config.Tags.IsUnknown() {
-		listReq.Tags = expandTags(ctx, config.Tags, &resp.Diagnostics)
+		listReq.Tags = scwtypes.ExpandStringList(ctx, config.Tags, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}
