@@ -114,7 +114,7 @@ func NewMetaFromFrameworkConfig(ctx context.Context, config *FrameworkProviderCo
 
 func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, endpoints map[string]string, s3UsePathStyle *bool, terraformVersion string, httpClient *http.Client) (*Meta, error) {
 	if httpClient == nil {
-		httpClient = &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
+		httpClient = &http.Client{Transport: transport.NewRetryableTransportWithOptions(http.DefaultTransport, transport.RetryableTransportOptions{})}
 	}
 
 	opts := []scw.ClientOption{

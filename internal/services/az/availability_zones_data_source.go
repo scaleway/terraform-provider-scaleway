@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 )
 
 func DataSourceAvailabilityZones() *schema.Resource {
@@ -47,7 +46,7 @@ func dataSourceAvailabilityZonesRead(_ context.Context, d *schema.ResourceData, 
 	regionStr := d.Get("region").(string)
 
 	if !validation.IsRegion(regionStr) {
-		return diag.FromErr(datasource.SingularDataSourceFindError("Availability Zone", fmt.Errorf("not a supported region %s", regionStr)))
+		return diag.FromErr(fmt.Errorf("not a supported region %s", regionStr))
 	}
 
 	region := scw.Region(regionStr)

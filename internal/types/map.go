@@ -13,24 +13,6 @@ func FlattenMap(m map[string]string) any {
 	return flattenedMap
 }
 
-func FlattenMapStringStringPtr(m map[string]*string) any {
-	if m == nil {
-		return nil
-	}
-
-	flattenedMap := make(map[string]any)
-
-	for k, v := range m {
-		if v != nil {
-			flattenedMap[k] = *v
-		} else {
-			flattenedMap[k] = ""
-		}
-	}
-
-	return flattenedMap
-}
-
 func ExpandMapPtrStringString(data any) *map[string]string {
 	if data == nil {
 		return nil
