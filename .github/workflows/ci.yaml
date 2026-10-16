@@ -1,0 +1,69 @@
+name: ci
+
+on:
+  merge_group:
+  pull_request:
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions: {}
+
+jobs:
+  ci:
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
+    timeout-minutes: 20 # acceptance tests take 10 minutes-ish on a decent laptop.
+    permissions:
+      contents: read
+      code-quality: write
+    steps:
+      - uses: $/.github/actions/checkout
+      - name: Set cache paths
+        run: |
+          echo "GOMODCACHE=$HOME/.cache/go-mod" >> "$GITHUB_ENV"
+          echo "GOCACHE=$HOME/.cache/go-build" >> "$GITHUB_ENV"
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: go-mod-cache
+        name: Restore go module cache
+        with:
+          path: ${{ env.GOMODCACHE }}
+          key: go-mod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-mod-
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: go-build-cache
+        name: Restore go build cache
+        with:
+          path: ${{ env.GOCACHE }}
+          key: go-build-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            go-build-${{ runner.os }}-
+      - uses: $/.github/actions/mise
+        with:
+          cache_save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      - run: mise run ci --coverprofile cover.out
+      - name: Generate coverage report
+        run: |
+          gocover-cobertura < cover.out > cover.xml
+      - name: Upload coverage report
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/upload-code-coverage@d8e329117199404bba6fc81efe8093dc7c015e34 # v1.4.2
+        with:
+          file: cover.xml
+          language: Go
+          label: terraform-provider
+      - name: Save go module cache
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.GOMODCACHE }}
+          key: go-mod-${{ hashFiles('**/go.sum') }}
+      - name: Save go build cache
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.GOCACHE }}
+          key: go-build-${{ runner.os }}-${{ github.sha }}
