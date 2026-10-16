@@ -103,6 +103,8 @@ func TestAccVolume_FromSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
@@ -140,6 +142,8 @@ func TestAccVolume_FromSnapshot(t *testing.T) {
 func TestAccVolume_FromSnapshotWithSize(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,

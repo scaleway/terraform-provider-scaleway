@@ -18,6 +18,8 @@ func TestAccImage_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -141,6 +143,8 @@ func TestAccImage_Basic(t *testing.T) {
 func TestAccImage_ExternalBlockVolume(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -389,6 +393,8 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -526,6 +532,8 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 func TestAccImage_MixedVolumes(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	imageID := ""
 

@@ -13,6 +13,8 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	snapshotName := "tf-snapshot-ds-basic"
 
 	resource.ParallelTest(t, resource.TestCase{
