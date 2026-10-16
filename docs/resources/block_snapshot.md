@@ -100,6 +100,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `srn` - The Scaleway Resource Name (SRN) of the snapshot.
 
+- `status` - The current status of the snapshot (`available`, `in_use`, `error`, ...).
+
 ## Import
 
 This section explains how to import the snapshot of a Block Storage volume using the zoned ID format (`{zone}/{id}`).
