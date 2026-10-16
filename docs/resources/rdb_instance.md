@@ -31,6 +31,34 @@ resource "scaleway_rdb_instance" "main" {
 ```
 
 ```terraform
+### Example Clone
+
+resource "scaleway_rdb_instance" "source" {
+  name           = "test-rdb-source"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-15"
+  is_ha_cluster  = false
+  disable_backup = true
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+}
+
+resource "scaleway_rdb_instance" "clone" {
+  name       = "test-rdb-clone"
+  node_type  = "DB-DEV-M"
+  clone_from = scaleway_rdb_instance.source.id
+
+  # Optional: set explicitly to override what CloneInstance inherits from the source
+  # is_ha_cluster  = false
+  # disable_backup = true
+  # volume_type    = "lssd"
+
+  # Keep the public endpoint provisioned by CloneInstance
+  load_balancer {}
+}
+```
+
+```terraform
 ### Example Engine Upgrade
 
 # Initial creation with PostgreSQL 14
@@ -273,7 +301,19 @@ interruption.
 
 - `encryption_at_rest` - (Optional) Enable or disable encryption at rest for the Database Instance.
 
-- `snapshot_id` - (Optional) The ID of an existing snapshot to restore or create the Database Instance from. Conflicts with the `engine` parameter and backup settings.
+- `snapshot_id` - (Optional) The ID of an existing snapshot to restore or create the Database Instance from. Conflicts with the `engine` and `clone_from` parameters.
+
+- `clone_from` - (Optional) The ID of an existing Database Instance to clone. The clone includes all databases, users, and permissions, and is fully independent of its parent. You may keep the same `node_type` or upgrade to a larger one. Conflicts with the `engine` and `snapshot_id` parameters.
+
+~> **Important** Updates to `clone_from` will recreate the Database Instance.
+
+~> **Note** `CloneInstance` only accepts `name` and optional `node_type`. Other settings are inherited from the source. Omitting `is_ha_cluster` or `disable_backup` keeps the source values; set them explicitly to override after clone.
+
+~> **Note** `volume_type` still defaults to `lssd` in the schema: set it explicitly to match a non-`lssd` source (e.g. `sbs_5k`) to avoid a plan diff.
+
+~> **Note** When cloning from a Local Storage (`lssd`) instance to a Block Storage node type, change the volume type on the source instance first. See [How to clone a Database Instance](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/how-to/clone-a-database-instance/).
+
+~> **Note** `CloneInstance` always provisions a public load-balancer endpoint. Keep it with an empty `load_balancer {}` block, or omit the block to remove it (same behaviour as `snapshot_id`). Private Network endpoints can be attached with `private_network`.
 
 ### Backups
 
