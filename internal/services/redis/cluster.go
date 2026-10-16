@@ -285,6 +285,11 @@ func clusterSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the Redis cluster",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the Redis cluster",
+		},
 		// Common
 		"zone":       zonal.Schema(),
 		"project_id": account.ProjectIDSchema(),
@@ -433,6 +438,7 @@ func setClusterState(ctx context.Context, d *schema.ResourceData, redisAPI *redi
 	_ = d.Set("cluster_size", int(cluster.ClusterSize))
 	_ = d.Set("created_at", cluster.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", cluster.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("srn", cluster.Srn)
 	_ = d.Set("acl", flattenACLs(cluster.ACLRules))
 	_ = d.Set("settings", flattenSettings(cluster.ClusterSettings))
 
