@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral/schema"
@@ -19,7 +18,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -66,10 +64,7 @@ type TokenEphemeralResourceModel struct {
 	ProjectID types.String `tfsdk:"project_id"`
 	Region    types.String `tfsdk:"region"`
 	Scopes    types.List   `tfsdk:"scopes"`
-	// Output
 	SecretKey types.String `tfsdk:"secret_key"`
-	CreatedAt types.String `tfsdk:"created_at"`
-	UpdatedAt types.String `tfsdk:"updated_at"`
 }
 
 type tokenEphemeralScopesModel struct {
@@ -117,14 +112,6 @@ func (r *TokenEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaReq
 				Description: "The secret key of the token",
 				Sensitive:   true,
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The date and time of the creation of the Cockpit Token (Format ISO 8601)",
-			},
-			"updated_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The date and time of the last update of the Cockpit Token (Format ISO 8601)",
-			},
 		},
 		Blocks: map[string]schema.Block{
 			"scopes": schema.ListNestedBlock{
@@ -133,47 +120,38 @@ func (r *TokenEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaReq
 					Attributes: map[string]schema.Attribute{
 						"query_metrics": schema.BoolAttribute{
 							Optional:    true,
-							Computed:    true,
 							Description: "Query metrics. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"write_metrics": schema.BoolAttribute{
 							Optional:    true,
-							Computed:    true,
 							Description: "Write metrics. Defaults to true (same as scaleway_cockpit_token).",
 						},
 						"setup_metrics_rules": schema.BoolAttribute{
 							Optional:    true,
-							Computed:    true,
 							Description: "Setup metrics rules. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"query_logs": schema.BoolAttribute{
 							Optional:    true,
-							Computed:    true,
 							Description: "Query logs. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"write_logs": schema.BoolAttribute{
 							Optional:    true,
-							Computed:    true,
 							Description: "Write logs. Defaults to true (same as scaleway_cockpit_token).",
 						},
 						"setup_logs_rules": schema.BoolAttribute{
 							Optional:    true,
-							Computed:    true,
 							Description: "Setup logs rules. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"setup_alerts": schema.BoolAttribute{
 							Optional:    true,
-							Computed:    true,
 							Description: "Setup alerts. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"query_traces": schema.BoolAttribute{
 							Optional:    true,
-							Computed:    true,
 							Description: "Query traces. Defaults to false (same as scaleway_cockpit_token).",
 						},
 						"write_traces": schema.BoolAttribute{
 							Optional:    true,
-							Computed:    true,
 							Description: "Write traces. Defaults to false (same as scaleway_cockpit_token).",
 						},
 					},
@@ -189,9 +167,6 @@ func (r *TokenEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaReq
 func expandTokenEphemeralScopes(ctx context.Context, scopes types.List) ([]cockpit.TokenScope, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	// Omitting the scopes block (or an empty list) applies the same defaults as the
-	// managed resource. An explicitly set block must not fall back to those defaults
-	// when every flag is false — that would ignore the config.
 	if scopes.IsNull() || scopes.IsUnknown() {
 		return defaultCockpitTokenScopes(), diags
 	}
@@ -209,8 +184,6 @@ func expandTokenEphemeralScopes(ctx context.Context, scopes types.List) ([]cockp
 	}
 
 	s := scopeModels[0]
-	// Per-attribute defaults match the managed scaleway_cockpit_token resource
-	// (write_metrics / write_logs = true when the attribute is unset inside the block).
 	flags := map[string]any{
 		"query_metrics":       ephemeralScopeBool(s.QueryMetrics, false),
 		"write_metrics":       ephemeralScopeBool(s.WriteMetrics, true),
@@ -232,48 +205,6 @@ func ephemeralScopeBool(value types.Bool, defaultValue bool) bool {
 	}
 
 	return value.ValueBool()
-}
-
-func tokenEphemeralScopesObjectType() types.ObjectType {
-	return types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"query_metrics":       types.BoolType,
-			"write_metrics":       types.BoolType,
-			"setup_metrics_rules": types.BoolType,
-			"query_logs":          types.BoolType,
-			"write_logs":          types.BoolType,
-			"setup_logs_rules":    types.BoolType,
-			"setup_alerts":        types.BoolType,
-			"query_traces":        types.BoolType,
-			"write_traces":        types.BoolType,
-		},
-	}
-}
-
-func flattenTokenEphemeralScopes(ctx context.Context, scopes []cockpit.TokenScope) (types.List, diag.Diagnostics) {
-	flat := flattenCockpitTokenScopes(scopes)
-	if len(flat) == 0 {
-		return types.ListNull(tokenEphemeralScopesObjectType()), nil
-	}
-
-	m, ok := flat[0].(map[string]any)
-	if !ok {
-		return types.ListNull(tokenEphemeralScopesObjectType()), nil
-	}
-
-	model := tokenEphemeralScopesModel{
-		QueryMetrics:      types.BoolValue(m["query_metrics"].(bool)),
-		WriteMetrics:      types.BoolValue(m["write_metrics"].(bool)),
-		SetupMetricsRules: types.BoolValue(m["setup_metrics_rules"].(bool)),
-		QueryLogs:         types.BoolValue(m["query_logs"].(bool)),
-		WriteLogs:         types.BoolValue(m["write_logs"].(bool)),
-		SetupLogsRules:    types.BoolValue(m["setup_logs_rules"].(bool)),
-		SetupAlerts:       types.BoolValue(m["setup_alerts"].(bool)),
-		QueryTraces:       types.BoolValue(m["query_traces"].(bool)),
-		WriteTraces:       types.BoolValue(m["write_traces"].(bool)),
-	}
-
-	return types.ListValueFrom(ctx, tokenEphemeralScopesObjectType(), []tokenEphemeralScopesModel{model})
 }
 
 func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRequest, resp *ephemeral.OpenResponse) {
@@ -341,46 +272,28 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 	}
 
 	cleanup := func() {
-		_ = r.deleteToken(ctx, res.Region, res.ID)
+		_ = r.cockpitAPI.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
+			Region:  res.Region,
+			TokenID: res.ID,
+		}, scw.WithContext(ctx))
 	}
 
-	tokenIDPrivate, err := json.Marshal(res.ID)
+	tokenRefPrivate, err := json.Marshal(regional.NewIDString(res.Region, res.ID))
 	if err != nil {
 		cleanup()
 		resp.Diagnostics.AddError(
 			"Error storing private data",
-			fmt.Sprintf("Failed to encode token ID for later cleanup: %s", err),
+			fmt.Sprintf("Failed to encode token reference for later cleanup: %s", err),
 		)
 
 		return
 	}
 
-	if err := resp.Private.SetKey(ctx, "token_id", tokenIDPrivate); err != nil {
+	if err := resp.Private.SetKey(ctx, "token_ref", tokenRefPrivate); err != nil {
 		cleanup()
 		resp.Diagnostics.AddError(
 			"Error storing private data",
-			fmt.Sprintf("Failed to store token ID for later cleanup: %s", err),
-		)
-
-		return
-	}
-
-	regionPrivate, err := json.Marshal(res.Region.String())
-	if err != nil {
-		cleanup()
-		resp.Diagnostics.AddError(
-			"Error storing private data",
-			fmt.Sprintf("Failed to encode region for later cleanup: %s", err),
-		)
-
-		return
-	}
-
-	if err := resp.Private.SetKey(ctx, "region", regionPrivate); err != nil {
-		cleanup()
-		resp.Diagnostics.AddError(
-			"Error storing private data",
-			fmt.Sprintf("Failed to store region for later cleanup: %s", err),
+			fmt.Sprintf("Failed to store token reference for later cleanup: %s", err),
 		)
 
 		return
@@ -388,25 +301,12 @@ func (r *TokenEphemeralResource) Open(ctx context.Context, req ephemeral.OpenReq
 
 	data.ProjectID = types.StringValue(res.ProjectID)
 	data.Region = types.StringValue(res.Region.String())
-	data.CreatedAt = types.StringValue(scwtypes.FlattenTime(res.CreatedAt).(string))
-	data.UpdatedAt = types.StringValue(scwtypes.FlattenTime(res.UpdatedAt).(string))
 
 	if res.SecretKey != nil {
 		data.SecretKey = types.StringValue(*res.SecretKey)
 	} else {
 		data.SecretKey = types.StringNull()
 	}
-
-	scopesList, scopesDiags := flattenTokenEphemeralScopes(ctx, res.Scopes)
-	resp.Diagnostics.Append(scopesDiags...)
-
-	if resp.Diagnostics.HasError() {
-		cleanup()
-
-		return
-	}
-
-	data.Scopes = scopesList
 
 	resp.Diagnostics.Append(resp.Result.Set(ctx, &data)...)
 
@@ -426,56 +326,41 @@ func (r *TokenEphemeralResource) Close(ctx context.Context, req ephemeral.CloseR
 		return
 	}
 
-	tokenIDBytes, diags := req.Private.GetKey(ctx, "token_id")
+	tokenRefBytes, diags := req.Private.GetKey(ctx, "token_ref")
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	regionBytes, diags := req.Private.GetKey(ctx, "region")
-	resp.Diagnostics.Append(diags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var tokenID string
-	if err := json.Unmarshal(tokenIDBytes, &tokenID); err != nil {
+	var tokenRef string
+	if err := json.Unmarshal(tokenRefBytes, &tokenRef); err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading private data",
-			fmt.Sprintf("Failed to decode token ID for cleanup: %s", err),
+			fmt.Sprintf("Failed to decode token reference for cleanup: %s", err),
 		)
 
 		return
 	}
 
-	var regionStr string
-	if err := json.Unmarshal(regionBytes, &regionStr); err != nil {
+	region, tokenID, err := regional.ParseID(tokenRef)
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading private data",
-			fmt.Sprintf("Failed to decode region for cleanup: %s", err),
+			fmt.Sprintf("Failed to parse token reference for cleanup: %s", err),
 		)
 
 		return
 	}
 
-	region := scw.Region(regionStr)
-
-	// Do not RetryOnStatus(IAMPropagation) here: Cockpit returns 403 when the token is
-	// already gone, which must not be treated as IAM propagation.
-	err := r.deleteToken(ctx, region, tokenID)
+	err = r.cockpitAPI.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
+		Region:  region,
+		TokenID: tokenID,
+	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		resp.Diagnostics.AddError(
 			"Error closing Cockpit Token",
 			fmt.Sprintf("Failed to delete Cockpit token %s in region %s: %s", tokenID, region, err),
 		)
 	}
-}
-
-func (r *TokenEphemeralResource) deleteToken(ctx context.Context, region scw.Region, tokenID string) error {
-	return r.cockpitAPI.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
-		Region:  region,
-		TokenID: tokenID,
-	}, scw.WithContext(ctx))
 }

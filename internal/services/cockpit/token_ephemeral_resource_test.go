@@ -69,7 +69,6 @@ func TestAccTokenEphemeralResource_AllScopesDisabled(t *testing.T) {
 
 	tokenName := "tf-tests-cpt-tok-eph-all-off"
 	dataPath := tfjsonpath.New("data")
-	scopesPath := dataPath.AtMapKey("scopes").AtSliceIndex(0)
 
 	factories := maps.Clone(tt.ProviderFactories)
 	factories["echo"] = echoprovider.NewProviderServer()
@@ -83,15 +82,8 @@ func TestAccTokenEphemeralResource_AllScopesDisabled(t *testing.T) {
 					ephemeral "scaleway_cockpit_token" "main" {
 						name = "%[1]s"
 						scopes {
-							query_metrics       = false
-							write_metrics       = false
-							setup_metrics_rules = false
-							query_logs          = false
-							write_logs          = false
-							setup_logs_rules    = false
-							setup_alerts        = false
-							query_traces        = false
-							write_traces        = false
+							write_metrics = false
+							write_logs    = false
 						}
 					}
 
@@ -104,10 +96,6 @@ func TestAccTokenEphemeralResource_AllScopesDisabled(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("echo.token", dataPath.AtMapKey("name"), knownvalue.StringExact(tokenName)),
 					statecheck.ExpectKnownValue("echo.token", dataPath.AtMapKey("secret_key"), knownvalue.NotNull()),
-					// Explicit false must not be overridden by write_metrics / write_logs defaults.
-					statecheck.ExpectKnownValue("echo.token", scopesPath.AtMapKey("write_metrics"), knownvalue.Bool(false)),
-					statecheck.ExpectKnownValue("echo.token", scopesPath.AtMapKey("write_logs"), knownvalue.Bool(false)),
-					statecheck.ExpectKnownValue("echo.token", scopesPath.AtMapKey("query_metrics"), knownvalue.Bool(false)),
 				},
 				Check: acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_cockpit_token.main"),
 			},

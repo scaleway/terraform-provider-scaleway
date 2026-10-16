@@ -44,9 +44,7 @@ ephemeral "scaleway_cockpit_token" "main" {
 
 ### Read-Only
 
-- `created_at` (String) The date and time of the creation of the Cockpit Token (Format ISO 8601)
 - `secret_key` (String, Sensitive) The secret key of the token
-- `updated_at` (String) The date and time of the last update of the Cockpit Token (Format ISO 8601)
 
 <a id="nestedblock--scopes"></a>
 ### Nested Schema for `scopes`
