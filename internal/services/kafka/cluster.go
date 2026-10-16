@@ -162,6 +162,22 @@ func clusterSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"multi_az": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			ConflictsWith: []string{"mono_az_zone"},
+			Description:   "Deploy the cluster across multiple availability zones. Defaults to mono-AZ on the provider default zone when unset.",
+		},
+		"mono_az_zone": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			ConflictsWith: []string{"multi_az"},
+			Description:   "Zone for a mono-AZ cluster (e.g. fr-par-1). Defaults to the provider default zone when unset.",
+		},
 		// Computed
 		"status": {
 			Type:        schema.TypeString,
@@ -211,6 +227,14 @@ func resourceClusterCreate(ctx context.Context, d *schema.ResourceData, meta any
 	if v, ok := d.GetOk("password"); ok {
 		req.Password = new(v.(string))
 	}
+
+	multiAZ, monoAZ, err := expandClusterAvailability(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	req.MultiAz = multiAZ
+	req.MonoAz = monoAZ
 
 	// Configure endpoints
 	// Note: Public endpoints are not yet supported by the Kafka API (returns 501)
@@ -321,6 +345,13 @@ func setClusterState(d *schema.ResourceData, cluster *kafkaapi.Cluster) diag.Dia
 	if cluster.Volume != nil {
 		_ = d.Set("volume_type", string(cluster.Volume.Type))
 		_ = d.Set("volume_size_in_gb", int(cluster.Volume.SizeBytes/scw.GB))
+	}
+
+	if cluster.MultiAz != nil {
+		_ = d.Set("multi_az", true)
+		_ = d.Set("mono_az_zone", "")
+	} else if cluster.MonoAz != nil && cluster.MonoAz.Zone != nil {
+		_ = d.Set("mono_az_zone", cluster.MonoAz.Zone.String())
 	}
 
 	publicBlock, hasPublic := flattenPublicNetwork(cluster.Endpoints, cluster.Region)
