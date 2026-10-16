@@ -37,6 +37,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -1625,25 +1626,40 @@ func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *instan
 	}
 
 	rootVolume, exists := res.Server.Volumes["0"]
-	if exists {
-		_, err := api.BlockAPI.UpdateVolume(&block.UpdateVolumeRequest{
-			Zone:     zone,
-			VolumeID: rootVolume.ID,
-			PerfIops: iops,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.Diagnostics{{
-				Severity:      diag.Warning,
-				Summary:       "Failed to update root_volume iops",
-				Detail:        err.Error(),
-				AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
-			}}
-		}
-	} else {
+	if !exists {
 		return diag.Diagnostics{{
 			Severity:      diag.Warning,
 			Summary:       "Failed to find root_volume",
 			Detail:        "Failed to update root_volume IOPS",
+			AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+		}}
+	}
+
+	// Root SBS volume may still be provisioning after the server is ready.
+	_, err = api.BlockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeAndReferencesRequest{
+		VolumeID:      rootVolume.ID,
+		Zone:          zone,
+		RetryInterval: transport.DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.Diagnostics{{
+			Severity:      diag.Warning,
+			Summary:       "Failed to update root_volume iops",
+			Detail:        err.Error(),
+			AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+		}}
+	}
+
+	_, err = api.BlockAPI.UpdateVolume(&block.UpdateVolumeRequest{
+		Zone:     zone,
+		VolumeID: rootVolume.ID,
+		PerfIops: iops,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.Diagnostics{{
+			Severity:      diag.Warning,
+			Summary:       "Failed to update root_volume iops",
+			Detail:        err.Error(),
 			AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
 		}}
 	}
