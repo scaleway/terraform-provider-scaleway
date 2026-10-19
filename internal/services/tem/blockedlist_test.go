@@ -12,8 +12,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 )
 
-// TestAccBlockedList_Basic is now covered by TestAccTEM_Complete step 2
-
 func isBlockedEmailPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

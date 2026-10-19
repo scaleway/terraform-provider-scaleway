@@ -45,5 +45,3 @@ func TestAccDataSourceDomain_Basic(t *testing.T) {
 		},
 	})
 }
-
-// TestAccDataSourceDomain_Reputation is now covered by TestAccTEM_Complete step 4

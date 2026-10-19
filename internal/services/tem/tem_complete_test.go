@@ -10,46 +10,80 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-// TestAccTEM_Complete tests multiple TEM resources using a single validated domain to avoid quota issues
-// Step 1: Domain validation with autoconfig
-// Step 2: Blockedlist
-// Step 3: Webhook creation
-// Step 4: Webhook update (name and event_types)
-// Step 5: Data source reputation
+const testAccTEMProjectID = "105bdce1-64c0-48ab-899d-868455867ecf"
+
+func temCompleteBaseConfig(subDomainName string) string {
+	return fmt.Sprintf(`
+		resource "scaleway_domain_zone" "test" {
+			domain     = "%s"
+			subdomain  = "%s"
+			project_id = "%s"
+		}
+
+		resource scaleway_tem_domain cr01 {
+			name       = scaleway_domain_zone.test.id
+			accept_tos = true
+			autoconfig = true
+			project_id = "%s"
+		}
+
+		resource scaleway_tem_domain_validation valid {
+			domain_id = scaleway_tem_domain.cr01.id
+			region    = scaleway_tem_domain.cr01.region
+			timeout   = 3600
+		}
+	`, domainNameValidation, subDomainName, testAccTEMProjectID, testAccTEMProjectID)
+}
+
+func temWebhookConfig(webhookName string, eventTypes string) string {
+	return fmt.Sprintf(`
+		resource "scaleway_mnq_sns" "sns" {
+			project_id = "%s"
+		}
+
+		resource "scaleway_mnq_sns_credentials" "sns_credentials" {
+			project_id = scaleway_mnq_sns.sns.project_id
+			permissions {
+				can_manage = true
+			}
+		}
+
+		resource "scaleway_mnq_sns_topic" "sns_topic" {
+			project_id = scaleway_mnq_sns.sns.project_id
+			name       = "tf-test-tem-sns-topic"
+			access_key = scaleway_mnq_sns_credentials.sns_credentials.access_key
+			secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
+			depends_on = [scaleway_mnq_sns_credentials.sns_credentials]
+		}
+
+		resource "scaleway_tem_webhook" "webhook" {
+			name        = "%s"
+			domain_id   = scaleway_tem_domain.cr01.id
+			event_types = %s
+			sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
+			depends_on  = [
+				scaleway_mnq_sns_topic.sns_topic,
+				scaleway_tem_domain_validation.valid
+			]
+		}
+	`, testAccTEMProjectID, webhookName, eventTypes)
+}
+
 func TestAccTEM_Complete(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "test-complete"
+	subDomainName := "tf-test-tem-complete"
 	blockedEmail := "spam@example.com"
-	webhookName := "terraform-webhook-test"
-	updatedWebhookName := "terraform-webhook-updated"
-	organizationID := "105bdce1-64c0-48ab-899d-868455867ecf"
+	webhookName := "tf-test-tem-webhook"
+	updatedWebhookName := "tf-test-tem-webhook-updated"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             checkTEMResourcesDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_domain_zone" "test" {
-						domain    = "%s"
-						subdomain = "%s"
-					}
-
-					resource scaleway_tem_domain cr01 {
-						name       = scaleway_domain_zone.test.id
-						accept_tos = true
-						autoconfig = true
-					}
-
-					resource scaleway_tem_domain_validation valid {
-						domain_id = scaleway_tem_domain.cr01.id
-						region    = scaleway_tem_domain.cr01.region
-						timeout   = 3600
-					}
-				`, domainNameValidation, subDomainName),
+				Config: temCompleteBaseConfig(subDomainName),
 				Check: resource.ComposeTestCheckFunc(
 					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", subDomainName+"."+domainNameValidation),
@@ -64,24 +98,13 @@ func TestAccTEM_Complete(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_domain_zone" "test" {
-						domain    = "%s"
-						subdomain = "%s"
-					}
-
-					resource scaleway_tem_domain cr01 {
-						name       = scaleway_domain_zone.test.id
-						accept_tos = true
-						autoconfig = true
-					}
-
-					resource scaleway_tem_domain_validation valid {
-						domain_id = scaleway_tem_domain.cr01.id
-						region    = scaleway_tem_domain.cr01.region
-						timeout   = 3600
-					}
-
+				ResourceName:            "scaleway_tem_domain.cr01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"status", "last_valid_at", "next_check_at", "reputation"},
+			},
+			{
+				Config: temCompleteBaseConfig(subDomainName) + fmt.Sprintf(`
 					resource "scaleway_tem_blocked_list" "test" {
 						domain_id  = scaleway_tem_domain.cr01.id
 						email      = "%s"
@@ -90,7 +113,7 @@ func TestAccTEM_Complete(t *testing.T) {
 						region     = "fr-par"
 						depends_on = [scaleway_tem_domain_validation.valid]
 					}
-				`, domainNameValidation, subDomainName, blockedEmail),
+				`, blockedEmail),
 				Check: resource.ComposeTestCheckFunc(
 					isBlockedEmailPresent(tt, "scaleway_tem_blocked_list.test"),
 					resource.TestCheckResourceAttr("scaleway_tem_blocked_list.test", "email", blockedEmail),
@@ -98,59 +121,7 @@ func TestAccTEM_Complete(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_domain_zone" "test" {
-						domain    = "%s"
-						subdomain = "%s"
-					}
-
-					resource scaleway_tem_domain cr01 {
-						name       = scaleway_domain_zone.test.id
-						accept_tos = true
-						autoconfig = true
-					}
-
-					resource scaleway_tem_domain_validation valid {
-						domain_id = scaleway_tem_domain.cr01.id
-						region    = scaleway_tem_domain.cr01.region
-						timeout   = 3600
-					}
-
-					data scaleway_account_project "project" {
-						name = "default"
-						organization_id = "%s"
-					}
-
-					data scaleway_mnq_sns sns {
-						project_id = data.scaleway_account_project.project.project_id
-					}
-
-					resource "scaleway_mnq_sns_credentials" "sns_credentials" {
-						project_id = data.scaleway_mnq_sns.sns.project_id
-						permissions {
-							can_manage = true
-						}
-					}
-
-					resource "scaleway_mnq_sns_topic" "sns_topic" {
-						project_id = data.scaleway_mnq_sns.sns.project_id
-						name = "test-mnq-sns-topic-basic"
-						access_key = scaleway_mnq_sns_credentials.sns_credentials.access_key
-						secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
-						depends_on = [scaleway_mnq_sns_credentials.sns_credentials]
-					}
-
-					resource "scaleway_tem_webhook" "webhook" {
-						name        = "%s"
-						domain_id   = scaleway_tem_domain.cr01.id
-						event_types = ["email_delivered", "email_dropped"]
-						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
-						depends_on  = [
-							scaleway_mnq_sns_topic.sns_topic,
-							scaleway_tem_domain_validation.valid
-						]
-					}
-				`, domainNameValidation, subDomainName, organizationID, webhookName),
+				Config: temCompleteBaseConfig(subDomainName) + temWebhookConfig(webhookName, `["email_delivered", "email_dropped"]`),
 				Check: resource.ComposeTestCheckFunc(
 					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", webhookName),
@@ -160,59 +131,7 @@ func TestAccTEM_Complete(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_domain_zone" "test" {
-						domain    = "%s"
-						subdomain = "%s"
-					}
-
-					resource scaleway_tem_domain cr01 {
-						name       = scaleway_domain_zone.test.id
-						accept_tos = true
-						autoconfig = true
-					}
-
-					resource scaleway_tem_domain_validation valid {
-						domain_id = scaleway_tem_domain.cr01.id
-						region    = scaleway_tem_domain.cr01.region
-						timeout   = 3600
-					}
-
-					data scaleway_account_project "project" {
-						name = "default"
-						organization_id = "%s"
-					}
-
-					data scaleway_mnq_sns sns {
-						project_id = data.scaleway_account_project.project.project_id
-					}
-
-					resource "scaleway_mnq_sns_credentials" "sns_credentials" {
-						project_id = data.scaleway_mnq_sns.sns.project_id
-						permissions {
-							can_manage = true
-						}
-					}
-
-					resource "scaleway_mnq_sns_topic" "sns_topic" {
-						project_id = data.scaleway_mnq_sns.sns.project_id
-						name = "test-mnq-sns-topic-basic"
-						access_key = scaleway_mnq_sns_credentials.sns_credentials.access_key
-						secret_key = scaleway_mnq_sns_credentials.sns_credentials.secret_key
-						depends_on = [scaleway_mnq_sns_credentials.sns_credentials]
-					}
-
-					resource "scaleway_tem_webhook" "webhook" {
-						name        = "%s"
-						domain_id   = scaleway_tem_domain.cr01.id
-						event_types = ["email_queued"]
-						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
-						depends_on  = [
-							scaleway_mnq_sns_topic.sns_topic,
-							scaleway_tem_domain_validation.valid
-						]
-					}
-				`, domainNameValidation, subDomainName, organizationID, updatedWebhookName),
+				Config: temCompleteBaseConfig(subDomainName) + temWebhookConfig(updatedWebhookName, `["email_queued"]`),
 				Check: resource.ComposeTestCheckFunc(
 					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", updatedWebhookName),
@@ -222,29 +141,12 @@ func TestAccTEM_Complete(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_domain_zone" "test" {
-						domain    = "%s"
-						subdomain = "%s"
-					}
-
-					resource scaleway_tem_domain cr01 {
-						name       = scaleway_domain_zone.test.id
-						accept_tos = true
-						autoconfig = true
-					}
-
-					resource scaleway_tem_domain_validation valid {
-						domain_id = scaleway_tem_domain.cr01.id
-						region    = scaleway_tem_domain.cr01.region
-						timeout   = 3600
-					}
-
+				Config: temCompleteBaseConfig(subDomainName) + `
 					data "scaleway_tem_domain" "test" {
 						name = scaleway_tem_domain.cr01.name
 						depends_on = [scaleway_tem_domain_validation.valid]
 					}
-				`, domainNameValidation, subDomainName),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_tem_domain.test", "reputation.0.status"),
 					resource.TestCheckResourceAttrSet("data.scaleway_tem_domain.test", "reputation.0.score"),
@@ -260,10 +162,6 @@ func checkTEMResourcesDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			return err
 		}
 
-		if err := isWebhookDestroyed(tt)(state); err != nil {
-			return err
-		}
-
-		return nil
+		return isWebhookDestroyed(tt)(state)
 	}
 }

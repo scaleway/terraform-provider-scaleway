@@ -74,9 +74,6 @@ func TestAccDomain_Tos(t *testing.T) {
 	})
 }
 
-// TestAccDomain_Autoconfig is now covered by TestAccTEM_Complete step 1
-// TestAccDomain_AutoconfigUpdate was removed: updating autoconfig from false to true takes >10 minutes (API schedules next check in 10 min), causing timeout
-
 func isDomainPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

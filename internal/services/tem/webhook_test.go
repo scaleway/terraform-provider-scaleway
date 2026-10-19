@@ -13,8 +13,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 )
 
-// TestAccWebhook_BasicAndUpdate is now covered by TestAccTEM_Complete steps 3-4
-
 func isWebhookPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

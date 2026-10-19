@@ -2,12 +2,10 @@ package tem
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -77,26 +75,12 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 
 	duration := d.Get("timeout").(int)
 	timeout := time.Duration(duration) * time.Second
-	_ = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		domainCheck, _ := api.CheckDomain(&tem.CheckDomainRequest{
-			Region:   region,
-			DomainID: domain.ID,
-		})
-		if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
-			return retry.RetryableError(errors.New("retry"))
-		}
 
-		return nil
-	})
-
-	domainCheck, _ := api.CheckDomain(&tem.CheckDomainRequest{
-		Region:   region,
-		DomainID: domain.ID,
-	})
-	if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
+	_, err = WaitForDomainCheck(ctx, api, region, domain.ID, timeout)
+	if err != nil {
 		d.SetId("")
 
-		return diag.Errorf("domain validation did not complete in %d seconds", duration)
+		return diag.FromErr(err)
 	}
 
 	return ResourceDomainValidationRead(ctx, d, meta)
@@ -125,7 +109,7 @@ func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("validated", domain.Status == "checked")
+	_ = d.Set("validated", domain.Status == tem.DomainStatusChecked)
 
 	return nil
 }
