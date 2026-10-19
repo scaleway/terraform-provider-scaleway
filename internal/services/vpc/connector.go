@@ -100,7 +100,7 @@ func ResourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.VPCConnector, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.VPCConnector, error) {
 		return vpcAPI.CreateVPCConnector(&vpc.CreateVPCConnectorRequest{
 			Name:        types.ExpandOrGenerateString(d.Get("name"), "connector"),
 			VpcID:       regional.ExpandID(d.Get("vpc_id").(string)).ID,
@@ -127,7 +127,7 @@ func ResourceConnectorRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.VPCConnector, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.VPCConnector, error) {
 		return vpcAPI.GetVPCConnector(&vpc.GetVPCConnectorRequest{
 			Region:         region,
 			VpcConnectorID: ID,
@@ -193,7 +193,7 @@ func ResourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	if hasChanged {
-		err = transport.RetryOn403(ctx, func() error {
+		err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := vpcAPI.UpdateVPCConnector(updateRequest, scw.WithContext(ctx))
 
 			return err
@@ -212,7 +212,7 @@ func ResourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	err = transport.RetryOn403(ctx, func() error {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		return vpcAPI.DeleteVPCConnector(&vpc.DeleteVPCConnectorRequest{
 			Region:         region,
 			VpcConnectorID: ID,

@@ -19,6 +19,6 @@ resource "scaleway_key_manager_key" "main" {
 }
 
 resource "scaleway_annotations_binding" "main" {
-  srn      = scaleway_key_manager_key.main.srn
-  value_id = scaleway_annotations_value.production.id
+  target_srn = scaleway_key_manager_key.main.srn
+  value_id   = scaleway_annotations_value.production.id
 }

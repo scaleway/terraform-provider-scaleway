@@ -224,7 +224,7 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 			}
 
 			if topics, ok := d.GetOk(fqfnS + iotTopicsSuffix); ok {
-				mfSet.Topics = new(types.ExpandStringsOrEmpty(topics))
+				mfSet.Topics = new(types.ExpandStrings(topics))
 			}
 
 			mf.Publish = &mfSet
@@ -239,7 +239,7 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 			}
 
 			if topics, ok := d.GetOk(fqfnP + iotTopicsSuffix); ok {
-				mfSet.Topics = new(types.ExpandStringsOrEmpty(topics))
+				mfSet.Topics = new(types.ExpandStrings(topics))
 			}
 
 			mf.Subscribe = &mfSet
@@ -431,7 +431,7 @@ func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m any)
 				d.Get(fqfnS + iotPolicySuffix).(string))
 
 			mfSet.Topics = new(
-				types.ExpandStringsOrEmpty(d.Get(fqfnS + iotTopicsSuffix)))
+				types.ExpandStrings(d.Get(fqfnS + iotTopicsSuffix)))
 		}
 
 		if d.HasChange(fqfn + ".subscribe") {
@@ -443,7 +443,7 @@ func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m any)
 				d.Get(fqfnP + iotPolicySuffix).(string))
 
 			mfSet.Topics = new(
-				types.ExpandStringsOrEmpty(d.Get(fqfnP + iotTopicsSuffix)))
+				types.ExpandStrings(d.Get(fqfnP + iotTopicsSuffix)))
 		}
 	}
 

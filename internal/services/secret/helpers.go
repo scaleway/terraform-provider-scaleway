@@ -201,6 +201,7 @@ func setSecretState(d *schema.ResourceData, secret *secret.Secret, versions *sec
 	_ = d.Set("protected", secret.Protected)
 	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secret.EphemeralPolicy))
 	_ = d.Set("type", secret.Type)
+	_ = d.Set("key_id", types.FlattenStringPtr(secret.KeyID))
 	_ = d.Set("tags", types.FlattenSliceString(secret.Tags))
 	_ = d.Set("srn", secret.Srn)
 

@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -173,7 +174,7 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m a
 
 	logging.L.Debugf("Creating token %+v", scopes)
 
-	res, err := retryOn403Value(ctx, func() (*cockpit.Token, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Token, error) {
 		return api.CreateToken(&cockpit.RegionalAPICreateTokenRequest{
 			Name:        name,
 			TokenScopes: scopes,
@@ -200,7 +201,7 @@ func ResourceCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	res, err := retryOn403Value(ctx, func() (*cockpit.Token, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Token, error) {
 		return api.GetToken(&cockpit.RegionalAPIGetTokenRequest{
 			Region:  region,
 			TokenID: id,
@@ -236,7 +237,7 @@ func ResourceCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	err = retryOn403(ctx, func() error {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		return api.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
 			Region:  region,
 			TokenID: id,
