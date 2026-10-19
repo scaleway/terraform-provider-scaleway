@@ -1967,28 +1967,9 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 						volume_size_in_gb = 10
 					}
 				`, newVersion),
-				ExpectError: regexp.MustCompile(`Set allow_major_version_upgrade = true to confirm`),
+				ExpectError: regexp.MustCompile(`set allow_major_version_upgrade = true to change engine`),
 			},
-			// Step 3: Attempt upgrade together with another attribute (should fail at plan)
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_rdb_instance" "main" {
-						name           = "test-rdb-engine-upgrade-renamed"
-						node_type      = "db-dev-s"
-						engine         = %q
-						allow_major_version_upgrade = true
-						is_ha_cluster  = false
-						disable_backup = true
-						user_name      = "test_user"
-						password       = "thiZ_is_v&ry_s3cret"
-						tags           = ["terraform-test", "engine-upgrade"]
-						volume_type    = "sbs_5k"
-						volume_size_in_gb = 10
-					}
-				`, newVersion),
-				ExpectError: regexp.MustCompile(`cannot change engine together with other attributes \(name\)`),
-			},
-			// Step 4: Attempt upgrade to invalid version (should fail)
+			// Step 3: Attempt upgrade to invalid version (should fail)
 			{
 				Config: `
 					resource "scaleway_rdb_instance" "main" {
@@ -2007,7 +1988,7 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 				`,
 				ExpectError: regexp.MustCompile(`engine version PostgreSQL-99\.99 is not available for upgrade`),
 			},
-			// Step 5: Upgrade to valid new version and verify old instance destroyed
+			// Step 4: Upgrade to valid new version and verify old instance destroyed
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "main" {

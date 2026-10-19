@@ -76,7 +76,7 @@ func instanceSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
-			Description:      "Database's engine version name (e.g., 'PostgreSQL-16', 'MySQL-8'). Changing this value on an existing instance requires `allow_major_version_upgrade = true` and triggers a blue/green upgrade using MajorUpgradeWorkflow with automatic endpoint migration",
+			Description:      "Database's engine version name (e.g., 'PostgreSQL-16', 'MySQL-8'). Changing this on an existing instance requires `allow_major_version_upgrade = true`",
 			DiffSuppressFunc: dsf.IgnoreCase,
 			ConflictsWith: []string{
 				"snapshot_id",
@@ -85,7 +85,7 @@ func instanceSchema() map[string]*schema.Schema {
 		"allow_major_version_upgrade": {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: "Must be set to `true` to change `engine` on an existing instance. The upgrade is a blue/green operation: a new instance is created from a snapshot, the Terraform state switches to the new instance ID, endpoints are migrated and the previous instance is deleted",
+			Description: "Set to `true` to allow changing `engine` on an existing instance (blue/green major upgrade)",
 		},
 		"snapshot_id": {
 			Type:        schema.TypeString,
