@@ -214,6 +214,11 @@ func serverSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The username of the server",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the server",
+		},
 
 		// Common
 		"zone":            zonal.Schema(),
@@ -332,6 +337,7 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("public_bandwidth", int(res.PublicBandwidthBps))
 	_ = d.Set("zone", res.Zone)
 	_ = d.Set("runner_ids", res.AppliedRunnerConfigurationIDs)
+	_ = d.Set("srn", res.Srn)
 
 	switch res.VpcStatus {
 	case applesilicon.ServerPrivateNetworkStatusVpcDisabled:

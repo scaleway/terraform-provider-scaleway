@@ -81,7 +81,7 @@ raw values because it allows to check their availability in the zone you want to
 * If you want to link any already existing resource, you can import it to the Terraform state by running :
 
    ```bash
-   terraform import <scaleway_resource_type> <locality>/<id>
+   terraform import SCALEWAY_RESOURCE_TYPE LOCALITY/ID
    ```
 
 ## Configure the Elastic Metal server
@@ -91,7 +91,7 @@ raw values because it allows to check their availability in the zone you want to
 1. Get your server's public IP and SSH to the server :
 
     ```bash
-    ssh <user>@<baremetal_server_ip>
+    ssh USER@BAREMETAL_SERVER_IP
     ```
 
 2. Download the node-agent program :
@@ -103,7 +103,7 @@ raw values because it allows to check their availability in the zone you want to
 3. Export the required environment variables :
 
     ```bash
-    export POOL_ID=<pool_id>  POOL_REGION=<cluster_region>  SCW_SECRET_KEY=<secret_key>
+    export POOL_ID=POOL_ID POOL_REGION=CLUSTER_REGION SCW_SECRET_KEY=SECRET_KEY
     ```
 
 4. Execute the program to attach the node to the multicloud pool :
@@ -155,7 +155,11 @@ You check that everything went well by :
 * In the CLI : by listing the nodes of the cluster|pool with the CLI
 
     ```shell
-    scw k8s node list cluster-id=<cluster_id> [pool-id=<pool_id>]
+    scw k8s node list cluster-id=CLUSTER_ID
+    ```
+
+    ```shell
+    scw k8s node list cluster-id=CLUSTER_ID pool-id=POOL_ID
     ```
 
 * In the console : by checking the `Nodes` tab of your cluster.
