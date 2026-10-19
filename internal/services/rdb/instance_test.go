@@ -2044,7 +2044,7 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
 						}
 
-						err = transport.RetryOn403(context.Background(), func() error {
+						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 							_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
 								Region:     region,
 								InstanceID: oldInstanceID,
@@ -2156,7 +2156,7 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 
 						var instance *rdbSDK.Instance
 
-						err = transport.RetryOn403(context.Background(), func() error {
+						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 							var err error
 
 							instance, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
@@ -2174,7 +2174,7 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 							return fmt.Errorf("expected upgraded instance %s to keep HA enabled", newInstanceID)
 						}
 
-						err = transport.RetryOn403(context.Background(), func() error {
+						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 							_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
 								Region:     region,
 								InstanceID: oldInstanceID,
@@ -2339,7 +2339,7 @@ func checkInstanceACLRules(tt *acctest.TestTools, instanceResource string, expec
 
 		var res *rdbSDK.ListInstanceACLRulesResponse
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			res, err = rdbAPI.ListInstanceACLRules(&rdbSDK.ListInstanceACLRulesRequest{
@@ -2380,7 +2380,7 @@ func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
 				InstanceID: ID,
 				Region:     region,

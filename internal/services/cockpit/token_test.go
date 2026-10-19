@@ -187,7 +187,7 @@ func isTokenPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := api.GetToken(&cockpitSDK.RegionalAPIGetTokenRequest{
 				TokenID: ID,
 				Region:  region,

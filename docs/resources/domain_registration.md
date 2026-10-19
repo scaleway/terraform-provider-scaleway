@@ -139,19 +139,19 @@ Each contact block supports the following attributes:
 To import an existing domain registration, use the domain name:
 
 ```bash
-terraform import scaleway_domain_registration.test <domain_name>
+terraform import scaleway_domain_registration.test DOMAIN_NAME
 ```
 
 For a multi-domain registration, list every domain name separated by commas. The order matters: use the same order as the `domain_names` argument in your configuration to avoid a plan diff after import.
 
 ```bash
-terraform import scaleway_domain_registration.test <domain1.com>,<domain2.com>
+terraform import scaleway_domain_registration.test DOMAIN1,DOMAIN2
 ```
 
 Importing by task ID is also supported, as long as the registration task still exists:
 
 ```bash
-terraform import scaleway_domain_registration.test <task_id>
+terraform import scaleway_domain_registration.test TASK_ID
 ```
 
 The `project_id` is resolved automatically from the API and does not need to be provided in the import ID. A legacy `<project_id>/<domain_name>` or `<project_id>/<task_id>` format is still accepted for backward compatibility.

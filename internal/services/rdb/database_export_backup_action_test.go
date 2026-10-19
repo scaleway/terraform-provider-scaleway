@@ -89,13 +89,13 @@ func isBackupExported(tt *acctest.TestTools, resourceName string) resource.TestC
 
 		var backup *rdbSDK.DatabaseBackup
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			backup, err = api.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
 				Region:           region,
 				DatabaseBackupID: id,
-			}, scw.WithContext(context.Background()))
+			}, scw.WithContext(ctx))
 
 			return err
 		})
