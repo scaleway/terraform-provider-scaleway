@@ -483,10 +483,10 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 
 	var id string
 
-	if _, ok := d.GetOk("clone_from"); ok {
+	if cloneFrom, ok := d.GetOk("clone_from"); ok {
 		cloneReq := &rdb.CloneInstanceRequest{
 			Region:     region,
-			InstanceID: locality.ExpandID(d.Get("clone_from")),
+			InstanceID: locality.ExpandID(cloneFrom),
 			Name:       types.ExpandOrGenerateString(d.Get("name"), "rdb"),
 			NodeType:   types.ExpandStringPtr(d.Get("node_type")),
 		}
