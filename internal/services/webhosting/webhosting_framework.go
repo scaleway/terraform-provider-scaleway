@@ -3,6 +3,7 @@ package webhosting
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -840,7 +841,7 @@ func (preserveInternalTag) MarkdownDescription(_ context.Context) string {
 }
 
 func (preserveInternalTag) PlanModifyList(
-	_ context.Context, req planmodifier.ListRequest, resp *planmodifier.ListResponse,
+	ctx context.Context, req planmodifier.ListRequest, resp *planmodifier.ListResponse,
 ) {
 	// Only applies when a prior state exists (i.e. updates, not creates).
 	if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
@@ -848,8 +849,9 @@ func (preserveInternalTag) PlanModifyList(
 	}
 
 	var oldTags, newTags []string
-	resp.Diagnostics.Append(req.StateValue.ElementsAs(context.Background(), &oldTags, false)...)
-	resp.Diagnostics.Append(req.PlanValue.ElementsAs(context.Background(), &newTags, false)...)
+	resp.Diagnostics.Append(req.StateValue.ElementsAs(ctx, &oldTags, false)...)
+	resp.Diagnostics.Append(req.PlanValue.ElementsAs(ctx, &newTags, false)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -863,11 +865,5 @@ func (preserveInternalTag) PlanModifyList(
 }
 
 func sliceContainsString(slice []string, target string) bool {
-	for _, s := range slice {
-		if s == target {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(slice, target)
 }
