@@ -293,7 +293,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_ip_reverse_dns":                  vpcgw.ResourceIPReverseDNS(),
 				"scaleway_vpc_public_gateway_pat_rule":                        vpcgw.ResourcePATRule(),
 				"scaleway_vpc_route":                                          vpc.ResourceRoute(),
-				"scaleway_webhosting":                                         webhosting.ResourceWebhosting(),
+				// "scaleway_webhosting":                                         webhosting.ResourceWebhosting(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{

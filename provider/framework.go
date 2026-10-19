@@ -49,6 +49,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/webhosting"
 )
 
 var (
@@ -289,6 +290,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		messageq.NewDeploymentResource,
 		messageq.NewUserResource,
 		partner.NewPartnerOrganizationResource,
+		webhosting.NewWebhostingResource,
 	}
 }
 
