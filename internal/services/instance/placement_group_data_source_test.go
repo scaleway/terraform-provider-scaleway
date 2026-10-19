@@ -1,6 +1,7 @@
 package instance_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -32,6 +33,7 @@ func TestAccDataSourcePlacementGroup_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("data.scaleway_instance_placement_group.find_by_name", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/placement-groups/.+$`)),
 					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.main"),
 
 					resource.TestCheckResourceAttrPair("scaleway_instance_placement_group.main", "name", "data.scaleway_instance_placement_group.find_by_name", "name"),

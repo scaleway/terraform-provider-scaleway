@@ -289,8 +289,8 @@ func instanceSchema() map[string]*schema.Schema {
 		},
 		"settings": {
 			Type:        schema.TypeMap,
-			Description: "Map of settings to define for the instance.",
-			Optional:    true,
+			Computed:    true,
+			Description: "Map of engine settings applied to the instance (read-only).",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -522,7 +522,12 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, mongod
 		_ = d.Set("private_ip", privateIPs)
 	}
 
-	_ = d.Set("settings", map[string]string{})
+	settings := make(map[string]string)
+	for _, setting := range instance.Settings {
+		settings[setting.Name] = setting.Value
+	}
+
+	_ = d.Set("settings", settings)
 
 	cert, err := mongodbAPI.GetInstanceCertificate(&mongodb.GetInstanceCertificateRequest{
 		Region:     region,
