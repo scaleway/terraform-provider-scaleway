@@ -19,8 +19,6 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	identity1 := identitycheck.Identity()
 	identity2 := identitycheck.Identity()
 	identity3 := identitycheck.Identity()
@@ -31,7 +29,12 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+				resource "scaleway_account_project" "project" {
+					name = "tf_tests_file_filesystem_list_basic"
+				}
+
 				resource "scaleway_file_filesystem" "fs1" {
+					project_id = scaleway_account_project.project.id
 					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
@@ -39,13 +42,19 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 			},
 			{
 				Config: `
+				resource "scaleway_account_project" "project" {
+					name = "tf_tests_file_filesystem_list_basic"
+				}
+
 				resource "scaleway_file_filesystem" "fs1" {
+					project_id = scaleway_account_project.project.id
 					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
 				}
 
 				resource "scaleway_file_filesystem" "fs2" {
+					project_id = scaleway_account_project.project.id
 					name = "test-fs02"
 					size_in_gb = 200
 					tags = ["foo"]
@@ -53,19 +62,26 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 			},
 			{
 				Config: `
+				resource "scaleway_account_project" "project" {
+					name = "tf_tests_file_filesystem_list_basic"
+				}
+
 				resource "scaleway_file_filesystem" "fs1" {
+					project_id = scaleway_account_project.project.id
 					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
 				}
 
 				resource "scaleway_file_filesystem" "fs2" {
+					project_id = scaleway_account_project.project.id
 					name = "test-fs02"
 					size_in_gb = 200
 					tags = ["foo"]
 				}
 
 				resource "scaleway_file_filesystem" "fs3" {
+					project_id = scaleway_account_project.project.id
 					name = "test-fs03"
 					size_in_gb = 300
 					tags = ["bar"]

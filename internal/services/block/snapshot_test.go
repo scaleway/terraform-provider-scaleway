@@ -16,20 +16,24 @@ func TestAccSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_block_snapshot_basic"
+					}
+
 					resource scaleway_block_volume main {
+						project_id = scaleway_account_project.project.id
 						iops = 5000
 						size_in_gb = 10
 					}
 
 					resource scaleway_block_snapshot main {
+						project_id = scaleway_account_project.project.id
 						name = "test-block-snapshot-basic"
 						volume_id = scaleway_block_volume.main.id
 					}
@@ -79,8 +83,6 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -92,6 +94,10 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_block_snapshot_from_s3"
+					}
+
 					resource "scaleway_object_bucket" "snapshot-bucket" {
 					  name = "%s"
 					}
@@ -103,6 +109,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "qcow-block-snapshot" {
+					  project_id = scaleway_account_project.project.id
 					  name = "test-acc-block-snapshot-qcow2"
 					  import {
 					    bucket = scaleway_object.qcow-object.bucket
@@ -124,8 +131,6 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-export-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -137,7 +142,12 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_block_snapshot_to_s3"
+					}
+
 					resource scaleway_block_volume main {
+						project_id = scaleway_account_project.project.id
 						iops = 5000
 						size_in_gb = 10
 					}
@@ -153,6 +163,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "qcow-block-snapshot" {
+					  project_id = scaleway_account_project.project.id
 					  name = "test-acc-export-block-snapshot-qcow2"
 					  volume_id = scaleway_block_volume.main.id
 					  export {
@@ -170,7 +181,12 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_block_snapshot_to_s3"
+					}
+
 					resource scaleway_block_volume main {
+						project_id = scaleway_account_project.project.id
 						iops = 5000
 						size_in_gb = 10
 					}
@@ -186,6 +202,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "qcow-block-export-snapshot" {
+					  project_id = scaleway_account_project.project.id
 					  name = "test-acc-export-block-snapshot-qcow2"
 					  volume_id = scaleway_block_volume.main.id
 					  export {
@@ -195,6 +212,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "qcow-block-import-snapshot" {
+					  project_id = scaleway_account_project.project.id
 					  name = "test-acc-block-snapshot-qcow2"
 					  import {
 					    bucket = scaleway_object.qcow-object.bucket
@@ -203,6 +221,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					}
 
 					resource scaleway_block_volume new-volume {
+						project_id = scaleway_account_project.project.id
 						name = "test-block-volume-from-snapshot"
 						iops = 5000
 						snapshot_id = scaleway_block_snapshot.qcow-block-import-snapshot.id

@@ -307,15 +307,18 @@ func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_server_root_volume_from_external_snapshot"
+					}
+
 					resource "scaleway_instance_server" "main" {
+						project_id = scaleway_account_project.project.id
 						name = "tf-acc-server-root-volume-from-external-snapshot"
 						image = "ubuntu_jammy"
 						type  = "PLAY2-PICO"
@@ -328,6 +331,7 @@ func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "snapshot" {
+						project_id = scaleway_account_project.project.id
 						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
 					}`,
 				Check: resource.ComposeTestCheckFunc(
@@ -341,7 +345,12 @@ func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_server_root_volume_from_external_snapshot"
+					}
+
 					resource "scaleway_instance_server" "main" {
+						project_id = scaleway_account_project.project.id
 						name = "tf-acc-server-root-volume-from-external-snapshot"
 						image = "ubuntu_jammy"
 						type  = "PLAY2-PICO"
@@ -354,15 +363,18 @@ func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "snapshot" {
+						project_id = scaleway_account_project.project.id
 						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
 					}
 
 					resource "scaleway_block_volume" "volume" {
+						project_id = scaleway_account_project.project.id
 						snapshot_id = scaleway_block_snapshot.snapshot.id
 						iops = 5000
 					}
 
 					resource "scaleway_instance_server" "from_snapshot" {
+						project_id = scaleway_account_project.project.id
 						name = "tf-acc-server-root-volume-from-external-snapshot-2"
 						type  = "PLAY2-PICO"
 						root_volume {
