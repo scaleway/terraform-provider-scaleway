@@ -969,6 +969,53 @@ func TestAccPool_TaintsAndLabels(t *testing.T) {
 	})
 }
 
+func TestAccPool_UserData(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.main"),
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: kapsuleClusterConfigForPoolTests("user-data", latestK8SVersion) + `
+					resource "scaleway_k8s_pool" "main" {
+					    name = "test-pool-user-data"
+						cluster_id = scaleway_k8s_cluster.main.id
+						size = 1
+						tags = [ "terraform-test", "scaleway_k8s_pool", "user-data" ]
+						node_type = "PRO2_XXS"
+						wait_for_pool_ready = false
+
+						user_data = {
+							"foo"   = "bar"
+							"hello" = "world"
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "user_data.%", "2"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "user_data.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "user_data.hello", "world"),
+				),
+			},
+			{
+				ResourceName:            "scaleway_k8s_pool.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"wait_for_pool_ready", "status"},
+			},
+		},
+	})
+}
+
 func TestAccPool_Version_Explicit(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -1046,6 +1093,82 @@ func TestAccPool_Version_Explicit(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "version", latestK8SVersion),
 					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(clusterID)),
 					acctest.CheckResourceIDPersisted("scaleway_k8s_pool.main", new(poolID)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccPool_PrivateNetworkID(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+
+	unchangedClusterAndPrivateNetworksConfig := fmt.Sprintf(`
+		resource "scaleway_vpc" "main" {}
+
+		resource "scaleway_vpc_private_network" "pn1" {
+		  vpc_id = scaleway_vpc.main.id
+		  name   = "test-k8s-pool-pn1"
+          tags   = ["pn1"]
+		}
+
+		resource "scaleway_vpc_private_network" "pn2" {
+		  vpc_id = scaleway_vpc.main.id
+		  name   = "test-k8s-pool-pn2"
+          tags   = ["pn2"]
+		}
+
+		resource "scaleway_k8s_cluster" "pool_with_pn" {
+		  name = "test-k8s-pool-with-pn"
+		  version = "%s"
+		  cni     = "cilium"
+		  private_network_id = scaleway_vpc_private_network.pn1.id
+		  tags = [ "terraform-test", "scaleway_k8s_pool", "private_network" ]
+		  delete_additional_resources = false
+		}`, latestK8SVersion)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.pool_with_pn"),
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				// Default behavior
+				Config: unchangedClusterAndPrivateNetworksConfig + `
+					resource "scaleway_k8s_pool" "pool_with_pn" {
+					  cluster_id          = scaleway_k8s_cluster.pool_with_pn.id
+					  name                = "test-k8s-pool-with-pn"
+					  node_type           = "pro2_xxs"
+					  size                = 1
+					  wait_for_pool_ready = false
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.pool_with_pn"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.pool_with_pn"),
+					resource.TestCheckResourceAttrPair("scaleway_k8s_pool.pool_with_pn", "private_network_id",
+						"scaleway_vpc_private_network.pn1", "id"),
+				),
+			},
+			{
+				Config: unchangedClusterAndPrivateNetworksConfig + `
+					resource "scaleway_k8s_pool" "pool_with_pn" {
+					  cluster_id          = scaleway_k8s_cluster.pool_with_pn.id
+					  name                = "test-k8s-pool-with-pn"
+					  node_type           = "pro2_xxs"
+					  size                = 1
+					  wait_for_pool_ready = false
+					  private_network_id  = scaleway_vpc_private_network.pn2.id
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.pool_with_pn"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.pool_with_pn"),
+					resource.TestCheckResourceAttrPair("scaleway_k8s_pool.pool_with_pn", "private_network_id",
+						"scaleway_vpc_private_network.pn2", "id"),
 				),
 			},
 		},

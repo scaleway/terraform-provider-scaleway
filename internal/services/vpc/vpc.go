@@ -2,7 +2,6 @@ package vpc
 
 import (
 	"context"
-	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -26,12 +26,12 @@ func ResourceVPC() *schema.Resource {
 		SchemaFunc:    vpcSchema,
 		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
-			before, after := diff.GetChange("enable_routing")
-			if before != nil && before.(bool) && after != nil && !after.(bool) {
-				return errors.New("routing cannot be disabled on this VPC")
+			err := customDiffCheckFeatureNotDisabled(diff, "enable_routing", "routing cannot be disabled on this VPC")
+			if err != nil {
+				return err
 			}
 
-			return nil
+			return customDiffCheckFeatureNotDisabled(diff, "enable_custom_routes_propagation", "custom routes propagation cannot be disabled on this VPC")
 		},
 	}
 }
@@ -57,12 +57,14 @@ func vpcSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Description: "Enable routing between Private Networks in the VPC",
+			Deprecated:  "Routing is always enabled on newly created VPCs and cannot be disabled, this argument is ignored and will be removed in a future major version",
 		},
 		"enable_custom_routes_propagation": {
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Computed:    true,
 			Description: "Defines whether the VPC advertises custom routes between its Private Networks",
+			Deprecated:  "Custom routes propagation is always enabled on newly created VPCs and cannot be disabled, this argument is ignored and will be removed in a future major version",
 		},
 		"enable_transitivity": {
 			Type:        schema.TypeBool,
@@ -104,23 +106,29 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	res, err := vpcAPI.CreateVPC(&vpc.CreateVPCRequest{
-		Name:               types.ExpandOrGenerateString(d.Get("name"), "vpc"),
-		Tags:               types.ExpandStrings(d.Get("tags")),
-		EnableRouting:      d.Get("enable_routing").(bool),
-		EnableTransitivity: d.Get("enable_transitivity").(bool),
-		ProjectID:          d.Get("project_id").(string),
-		Region:             region,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.VPC, error) {
+		return vpcAPI.CreateVPC(&vpc.CreateVPCRequest{
+			Name:               types.ExpandOrGenerateString(d.Get("name"), "vpc"),
+			Tags:               types.ExpandStrings(d.Get("tags")),
+			EnableRouting:      d.Get("enable_routing").(bool),
+			EnableTransitivity: d.Get("enable_transitivity").(bool),
+			ProjectID:          d.Get("project_id").(string),
+			Region:             region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	if _, ok := d.GetOk("enable_custom_routes_propagation"); ok {
-		_, err = vpcAPI.EnableCustomRoutesPropagation(&vpc.EnableCustomRoutesPropagationRequest{
-			Region: region,
-			VpcID:  res.ID,
-		}, scw.WithContext(ctx))
+		err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+			_, err := vpcAPI.EnableCustomRoutesPropagation(&vpc.EnableCustomRoutesPropagationRequest{
+				Region: region,
+				VpcID:  res.ID,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -140,10 +148,12 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 		return diag.FromErr(err)
 	}
 
-	res, err := vpcAPI.GetVPC(&vpc.GetVPCRequest{
-		Region: region,
-		VpcID:  ID,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.VPC, error) {
+		return vpcAPI.GetVPC(&vpc.GetVPCRequest{
+			Region: region,
+			VpcID:  ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -208,7 +218,11 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.
 	}
 
 	if hasChanged {
-		_, err = vpcAPI.UpdateVPC(updateRequest, scw.WithContext(ctx))
+		err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+			_, err := vpcAPI.UpdateVPC(updateRequest, scw.WithContext(ctx))
+
+			return err
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -217,10 +231,14 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.
 	if d.HasChange("enable_routing") {
 		enableRouting := d.Get("enable_routing").(bool)
 		if enableRouting {
-			_, err = vpcAPI.EnableRouting(&vpc.EnableRoutingRequest{
-				Region: region,
-				VpcID:  ID,
-			}, scw.WithContext(ctx))
+			err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+				_, err := vpcAPI.EnableRouting(&vpc.EnableRoutingRequest{
+					Region: region,
+					VpcID:  ID,
+				}, scw.WithContext(ctx))
+
+				return err
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -230,10 +248,14 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.
 	if d.HasChange("enable_custom_routes_propagation") {
 		enableCustomRoutesPropagation := d.Get("enable_custom_routes_propagation").(bool)
 		if enableCustomRoutesPropagation {
-			_, err = vpcAPI.EnableCustomRoutesPropagation(&vpc.EnableCustomRoutesPropagationRequest{
-				Region: region,
-				VpcID:  ID,
-			}, scw.WithContext(ctx))
+			err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+				_, err := vpcAPI.EnableCustomRoutesPropagation(&vpc.EnableCustomRoutesPropagationRequest{
+					Region: region,
+					VpcID:  ID,
+				}, scw.WithContext(ctx))
+
+				return err
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -249,10 +271,12 @@ func ResourceVPCDelete(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	err = vpcAPI.DeleteVPC(&vpc.DeleteVPCRequest{
-		Region: region,
-		VpcID:  ID,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return vpcAPI.DeleteVPC(&vpc.DeleteVPCRequest{
+			Region: region,
+			VpcID:  ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

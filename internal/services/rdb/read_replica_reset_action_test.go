@@ -80,13 +80,13 @@ func isReadReplicaReset(tt *acctest.TestTools, readReplicaResourceName string) r
 
 		var readReplica *rdbSDK.ReadReplica
 
-		err = transport.RetryOn403(context.Background(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			readReplica, err = api.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
 				Region:        region,
 				ReadReplicaID: id,
-			}, scw.WithContext(context.Background()))
+			}, scw.WithContext(ctx))
 
 			return err
 		})

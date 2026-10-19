@@ -16,6 +16,7 @@ var SensitiveFields = map[string]any{
 	"secret":        "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 	"token":         "xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx",
 	"password":      "xxxxxxxx",
+	"new_password":  "xxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 	"email":         "tf_test@example.com",
 }

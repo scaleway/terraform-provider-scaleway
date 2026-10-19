@@ -81,7 +81,7 @@ func TestAccListBlockVolumes_Basic(t *testing.T) {
 
 						config {
 							zones       = ["*"]
-							project_ids = ["*"]
+							project_ids = [scaleway_block_volume.vol1.project_id]
 						}
 					}
 				`,
@@ -97,8 +97,8 @@ func TestAccListBlockVolumes_Basic(t *testing.T) {
 						provider = scaleway
 
 						config {
-							project_ids = ["*"]
 							zones       = ["pl-waw-2"]
+							project_ids = [scaleway_block_volume.vol1.project_id]
 						}
 					}
 				`,
@@ -114,8 +114,8 @@ func TestAccListBlockVolumes_Basic(t *testing.T) {
 						provider = scaleway
 
 						config {
-							project_ids = ["*"]
 							zones       = ["%s"]
+							project_ids = [scaleway_block_volume.vol1.project_id]
 						}
 					}
 				`, testDefaultZone),
@@ -132,7 +132,7 @@ func TestAccListBlockVolumes_Basic(t *testing.T) {
 
 						config {
 							zones       = ["*"]
-							project_ids = ["*"]
+							project_ids = [scaleway_block_volume.vol1.project_id]
 							name        = "test-volume-list-1"
 						}
 					}
@@ -190,7 +190,7 @@ func TestAccListBlockVolumes_WithTags(t *testing.T) {
 
 						config {
 							zones       = ["*"]
-							project_ids = ["*"]
+							project_ids = [scaleway_block_volume.vol1.project_id]
 							tags        = ["test-tag"]
 						}
 					}
@@ -208,7 +208,7 @@ func TestAccListBlockVolumes_WithTags(t *testing.T) {
 
 						config {
 							zones       = ["*"]
-							project_ids = ["*"]
+							project_ids = [scaleway_block_volume.vol1.project_id]
 							tags        = ["other-tag"]
 						}
 					}

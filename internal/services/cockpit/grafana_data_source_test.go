@@ -23,12 +23,8 @@ func TestAccDataSourceCockpitGrafana_Basic(t *testing.T) {
 						name = "%s"
 					}
 
-					resource "scaleway_cockpit" "main" {
-						project_id = scaleway_account_project.project.id
-					}
-
 					data "scaleway_cockpit_grafana" "main" {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 					}
 				`, projectName),
 				Check: resource.ComposeTestCheckFunc(

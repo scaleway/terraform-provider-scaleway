@@ -73,7 +73,7 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 						config {
 							regions     = ["*"]
-							project_ids = ["*"]
+							project_ids = [scaleway_object_bucket.bucket1.project_id]
 						}
 					}
 				`,
@@ -107,7 +107,7 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 						config {
 							regions     = ["pl-waw"]
-							project_ids = ["*"]
+							project_ids = [scaleway_object_bucket.bucket1.project_id]
 						}
 					}
 				`,
@@ -124,7 +124,7 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 						config {
 							regions     = ["%s"]
-							project_ids = ["*"]
+							project_ids = [scaleway_object_bucket.bucket1.project_id]
 						}
 					}
 				`, testDefaultRegion),

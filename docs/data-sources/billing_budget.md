@@ -31,7 +31,7 @@ data "scaleway_billing_budget" "main" {
 The following attributes are exported:
 
 - `id` - The ID of the budget
-- `consumption_limit` - Cost limit for the budget in cents
+- `consumption_limit` - Cost limit for the budget in euros
 - `enabled` - Whether the budget is enabled or not
 - `created_at` - The date and time of budget creation
 - `updated_at` - The date and time when the budget was last updated

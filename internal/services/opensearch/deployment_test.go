@@ -1,6 +1,7 @@
 package opensearch_test
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -75,6 +76,69 @@ resource "scaleway_opensearch_deployment" "main" {
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "tags.0", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "tags.1", "tag2"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccDeployment_UpdateNodeCount verifies that changing node_count upgrades
+// the deployment in place (SearchDB UpgradeDeployment API) instead of
+// recreating it: the resource ID must persist across steps.
+func TestAccDeployment_UpdateNodeCount(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestVersion(tt)
+	nodeType := fetchAvailableDedicatedNodeType(tt)
+
+	var deploymentID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_opensearch_deployment" "main" {
+  name       = "tf-test-opensearch-update-node-count"
+  version    = "%s"
+  node_count = 1
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_count", "1"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_type", nodeType),
+					acctest.CheckResourceIDPersisted("scaleway_opensearch_deployment.main", &deploymentID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_opensearch_deployment" "main" {
+  name       = "tf-test-opensearch-update-node-count"
+  version    = "%s"
+  node_count = 3
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_count", "3"),
+					acctest.CheckResourceIDPersisted("scaleway_opensearch_deployment.main", &deploymentID),
 				),
 			},
 		},
@@ -417,11 +481,11 @@ func testAccCheckOpenSearchAPIHasPrivateEndpoint(tt *acctest.TestTools, resource
 
 		var deployment *searchdbSDK.Deployment
 
-		err = transport.RetryOn403(tt.T.Context(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			deployment, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 
 			return err
 		})
@@ -458,11 +522,11 @@ func testAccCheckOpenSearchAPIHasNoPrivateEndpoint(tt *acctest.TestTools, resour
 
 		var deployment *searchdbSDK.Deployment
 
-		err = transport.RetryOn403(tt.T.Context(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			deployment, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 
 			return err
 		})
@@ -507,11 +571,11 @@ func testAccCheckOpenSearchAPIPrivateNetworkID(tt *acctest.TestTools, resourceNa
 
 		var deployment *searchdbSDK.Deployment
 
-		err = transport.RetryOn403(tt.T.Context(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			deployment, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 
 			return err
 		})
@@ -557,11 +621,11 @@ func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			err = transport.RetryOn403(tt.T.Context(), func() error {
+			err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 				_, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
 					Region:       region,
 					DeploymentID: id,
-				}, scw.WithContext(tt.T.Context()))
+				}, scw.WithContext(ctx))
 
 				return err
 			})

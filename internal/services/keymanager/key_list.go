@@ -2,8 +2,9 @@ package keymanager
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
@@ -17,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -52,15 +54,22 @@ func (r *KeyListResource) ListResourceConfigSchema(_ context.Context, _ list.Lis
 			"tags":        listscw.TagsAttribute("Tags to filter for"),
 			"name":        listscw.NameAttribute("Name of the key to filter for"),
 			"usage": schema.StringAttribute{
-				Description: "Usage of the key to filter for (symmetric_encryption, asymmetric_encryption, asymmetric_signing)",
+				Description: fmt.Sprintf("Usage of the key to filter for (%s)", strings.Join(verify.KnownValues[key_manager.ListKeysRequestUsage](), ", ")),
 				Optional:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOf("symmetric_encryption", "asymmetric_encryption", "asymmetric_signing"),
+					verify.ValidateEnumFramework[key_manager.ListKeysRequestUsage](),
 				},
 			},
 			"scheduled_for_deletion": schema.BoolAttribute{
 				Description: "Filter keys by deletion status",
 				Optional:    true,
+			},
+			"protection_level": schema.StringAttribute{
+				Description: fmt.Sprintf("Protection level of the key to filter for (%s)", strings.Join(verify.KnownValues[key_manager.KeyProtectionLevel](), ", ")),
+				Optional:    true,
+				Validators: []validator.String{
+					verify.ValidateEnumFramework[key_manager.KeyProtectionLevel](),
+				},
 			},
 		},
 	}
@@ -79,6 +88,7 @@ type KeyListResourceModel struct {
 	Tags                 types.List   `tfsdk:"tags"`
 	Name                 types.String `tfsdk:"name"`
 	Usage                types.String `tfsdk:"usage"`
+	ProtectionLevel      types.String `tfsdk:"protection_level"`
 	ScheduledForDeletion types.Bool   `tfsdk:"scheduled_for_deletion"`
 }
 
@@ -112,6 +122,10 @@ func (r *KeyListResource) FetchKeys(ctx context.Context, region scw.Region, proj
 
 	if !data.ScheduledForDeletion.IsNull() && !data.ScheduledForDeletion.IsUnknown() {
 		request.ScheduledForDeletion = data.ScheduledForDeletion.ValueBool()
+	}
+
+	if !data.ProtectionLevel.IsNull() && !data.ProtectionLevel.IsUnknown() {
+		request.ProtectionLevel = key_manager.KeyProtectionLevel(data.ProtectionLevel.ValueString())
 	}
 
 	response, err := r.keyAPI.ListKeys(request, scw.WithContext(ctx), scw.WithAllPages())

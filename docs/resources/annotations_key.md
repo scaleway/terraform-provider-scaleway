@@ -32,15 +32,16 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the annotation key.
+- `srn` - The Scaleway Resource Name (SRN) of the annotation key.
 
 ## Import
 
 Annotation keys can be imported using their `key_id` and optionally the `organization_id`. If no `organization_id` is specified, the default [provider](../index.md#arguments-reference) `organization_id` will be used.
 
 ```bash
-terraform import scaleway_annotations_key.main <key_id>
+terraform import scaleway_annotations_key.main KEY_ID
 ```
 
 ```bash
-terraform import scaleway_annotations_key.main <organization_id>/<key_id>
+terraform import scaleway_annotations_key.main ORGANIZATION_ID/KEY_ID
 ```

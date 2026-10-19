@@ -90,3 +90,5 @@ In addition to all above arguments, the following attributes are exported:
 - `autohealing` - True if the autohealing feature is enabled for this pool.
 
 - `container_runtime` - The container runtime of the pool.
+
+- `user_data` - The pool's user data, as a map of key to content.

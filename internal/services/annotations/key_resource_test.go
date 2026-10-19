@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -43,6 +44,7 @@ func TestAccAnnotationsKeyResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_annotations_key.main", "description", "Test annotation key"),
 					resource.TestCheckResourceAttrSet("scaleway_annotations_key.main", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_annotations_key.main", "organization_id"),
+					resource.TestMatchResourceAttr("scaleway_annotations_key.main", "srn", regexp.MustCompile(`^srn://annotations\..+/keys/.+$`)),
 				),
 			},
 			{
