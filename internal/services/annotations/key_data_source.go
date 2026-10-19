@@ -33,6 +33,7 @@ type annotationsKeyDataSourceModel struct {
 	ID          types.String `tfsdk:"id"`
 	KeyID       types.String `tfsdk:"key_id"`
 	Name        types.String `tfsdk:"name"`
+	SRN         types.String `tfsdk:"srn"`
 	Description types.String `tfsdk:"description"`
 }
 
@@ -62,6 +63,10 @@ func (d *AnnotationsKeyDataSource) Schema(ctx context.Context, req datasource.Sc
 			"id": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The ID of the annotation key.",
+			},
+			"srn": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the annotation key.",
 			},
 		},
 	}
@@ -120,6 +125,7 @@ func (d *AnnotationsKeyDataSource) Read(ctx context.Context, req datasource.Read
 	state.ID = types.StringValue(key.ID)
 	state.KeyID = types.StringValue(key.ID)
 	state.Name = types.StringValue(key.Name)
+	state.SRN = types.StringValue(key.Srn)
 
 	if key.Description != "" {
 		state.Description = types.StringValue(key.Description)

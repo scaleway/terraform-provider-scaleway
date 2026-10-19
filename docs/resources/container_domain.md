@@ -74,6 +74,8 @@ The `scaleway_container_domain` resource exports certain attributes once the con
 
 ~> **Important:** The `url` attribute is no longer available in the API v1.
 
+- `srn` - The Scaleway Resource Name (SRN) of the container domain.
+
 ## Import
 
 Container domain binding can be imported using `{region}/{id}`, as shown below:

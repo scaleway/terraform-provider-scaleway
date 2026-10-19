@@ -1,5 +1,5 @@
 # List keys in specific projects
-list "scaleway_keymanager_key" "by_projects" {
+list "scaleway_key_manager_key" "by_projects" {
   provider = scaleway
 
   config {

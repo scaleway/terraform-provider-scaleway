@@ -274,6 +274,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		billing.NewBudgetAlertNotificationResource,
 		billing.NewBudgetAlertResource,
 		billing.NewBudgetResource,
+		block.NewSnapshotResource,
 		datalab.NewDatalabResource,
 		file.NewFileSystemResource,
 		iam.NewSamlCertificateResource,
@@ -282,6 +283,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		iam.NewScimTokenResource,
 		instance.NewTemplateResource,
 		keymanager.NewKeyMaterialResource,
+		mailbox.NewAliasResource,
 		mailbox.NewDomainResource,
 		mailbox.NewMailboxResource,
 		messageq.NewDeploymentResource,
@@ -310,6 +312,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		billing.NewBudgetDataSource,
 		billing.NewBudgetAlertDataSource,
 		billing.NewBudgetAlertNotificationDataSource,
+		block.NewSnapshotDataSource,
 		block.NewSnapshotsDataSource,
 		cockpit.NewGrafanaProductDashboardDataSource,
 		cockpit.NewGrafanaProductDashboardsDataSource,
@@ -325,6 +328,9 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		messageq.NewDeploymentDataSource,
 		messageq.NewNodeTypeDataSource,
 		messageq.NewVersionDataSource,
+		rdb.NewInstanceLogDataSource,
+		rdb.NewInstanceLogsDataSource,
+		rdb.NewInstanceLogsDetailsDataSource,
 	}
 }
 

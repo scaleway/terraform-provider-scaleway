@@ -15,7 +15,7 @@ func TestAccDataSourceOfferSubscription_Basic(t *testing.T) {
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 
 	if !orgIDExists {
-		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+		orgID = "00000000-0000-0000-0000-000000000000"
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -35,7 +35,21 @@ func TestAccDataSourceOfferSubscription_Basic(t *testing.T) {
 				`, orgID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "project_id"),
-					resource.TestCheckResourceAttr("data.scaleway_tem_offer_subscription.test", "offer_name", "scale"),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "organization_id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "offer_name"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+
+					data "scaleway_tem_offer_subscription" "test" {
+						organization_id = "%s"
+					}
+				`, orgID),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "project_id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "organization_id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "offer_name"),
 				),
 			},
 		},

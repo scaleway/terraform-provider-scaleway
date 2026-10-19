@@ -3,6 +3,7 @@ package function_test
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/alexedwards/argon2id"
@@ -47,6 +48,7 @@ func TestAccFunction_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_function.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "tags.0", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "tags.1", "tag2"),
+					resource.TestMatchResourceAttr("scaleway_function.main", "srn", regexp.MustCompile(`^srn://functions\..+/regions/.+/functions/.+$`)),
 				),
 			},
 		},

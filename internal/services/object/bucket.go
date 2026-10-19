@@ -198,9 +198,10 @@ func bucketSchema() map[string]*schema.Schema {
 									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
 								},
 								"expired_object_delete_marker": {
-									Type:        schema.TypeBool,
-									Optional:    true,
-									Description: "Specifies whether Scaleway Object will remove a delete marker with no noncurrent versions. If set to `true`, the delete marker will be expired; if set to `false` the policy takes no action",
+									Type:     schema.TypeBool,
+									Optional: true,
+									Description: "Specifies whether Scaleway Object will remove a delete marker with no noncurrent versions. " +
+										"If set to `true`, the delete marker will be expired; if set to `false` the policy takes no action, and is counted as empty by Terraform.",
 								},
 							},
 						},
@@ -504,7 +505,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 
 			if val, ok := meta.GetRawConfigForKey(
 				d, fmt.Sprintf("lifecycle_rule.%d.expiration.0.expired_object_delete_marker", i), cty.Bool,
-			); ok {
+			); ok && val.(bool) { // We don't set the flag if it's "false"
 				expirationS3.ExpiredObjectDeleteMarker = aws.Bool(val.(bool))
 			}
 
@@ -984,16 +985,22 @@ func resourceBucketLifecycleRulesExpirationRead(expiration *s3Types.LifecycleExp
 		return
 	}
 
+	// In the following block, we check the validity of pointers but also the
+	// value of their variables for empty values (e.g. 0 for int, IsZero() for
+	// date...).
+
 	e := make(map[string]any)
-	if expiration.Days != nil {
+
+	switch {
+	case expiration.Days != nil && aws.ToInt32(expiration.Days) > 0:
 		e["days"] = int(aws.ToInt32(expiration.Days))
-	}
 
-	if expiration.Date != nil {
+	case expiration.Date != nil && !expiration.Date.IsZero():
 		e["date"] = aws.ToString(new(expiration.Date.Format("2006-01-02")))
-	}
 
-	if expiration.ExpiredObjectDeleteMarker != nil {
+	case expiration.ExpiredObjectDeleteMarker != nil:
+		// The function "validateBucket" considers this field empty when it is set
+		// "false". This means we can set it here without risks.
 		e["expired_object_delete_marker"] = aws.ToBool(expiration.ExpiredObjectDeleteMarker)
 	}
 
@@ -1169,7 +1176,17 @@ func validateLifecycleExpiration(diff *schema.ResourceDiff, i int) error {
 
 	_, daysOk := diff.GetOk(prefix + "days")
 	_, dateOk := diff.GetOk(prefix + "date")
-	_, markerOk := meta.GetRawConfigForKey(diff, prefix+"expired_object_delete_marker", cty.Bool)
+
+	// Note: if "expired_object_delete_marker" is present in the config but set as
+	// "false", it will not be counted.
+	//
+	// Using "meta.GetRawConfigForKey" is more reliable to read the field from the
+	// Terraform configuration file, but the READ step, which retrieves data from
+	// the API, still reads "false" when should be "empty".
+	//
+	// Ignoring the field is a reasonable choice, considering its business logic.
+
+	_, markerOk := diff.GetOk(prefix + "expired_object_delete_marker")
 
 	// Implement "ExactlyOneOf"
 	count := 0
