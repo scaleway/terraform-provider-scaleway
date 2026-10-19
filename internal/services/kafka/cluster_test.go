@@ -128,33 +128,33 @@ func TestAccCluster_MultiAZ(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "scaleway_vpc" "main" {
-  region = "fr-par"
-  name   = "TestAccCluster_MultiAZ"
-}
+					resource "scaleway_vpc" "main" {
+					  region = "fr-par"
+					  name   = "TestAccCluster_MultiAZ"
+					}
 
-resource "scaleway_vpc_private_network" "pn01" {
-  name   = "tf_test_kafka_multi_az_pn"
-  region = "fr-par"
-  vpc_id = scaleway_vpc.main.id
-}
+					resource "scaleway_vpc_private_network" "pn01" {
+					  name   = "tf_test_kafka_multi_az_pn"
+					  region = "fr-par"
+					  vpc_id = scaleway_vpc.main.id
+					}
 
-resource "scaleway_kafka_cluster" "main" {
-  name              = "tf-test-kafka-multi-az"
-  version           = "%s"
-  node_amount       = 3
-  node_type         = "%s"
-  volume_type       = "sbs_5k"
-  volume_size_in_gb = 10
-  multi_az          = true
-  user_name         = "admin"
-  password          = "password@1234567"
+					resource "scaleway_kafka_cluster" "main" {
+					  name              = "tf-test-kafka-multi-az"
+					  version           = "%s"
+					  node_amount       = 3
+					  node_type         = "%s"
+					  volume_type       = "sbs_5k"
+					  volume_size_in_gb = 10
+					  multi_az          = true
+					  user_name         = "admin"
+					  password          = "password@1234567"
 
-  private_network {
-    pn_id = scaleway_vpc_private_network.pn01.id
-  }
-}
-`, latestVersion, nodeType),
+					  private_network {
+					    pn_id = scaleway_vpc_private_network.pn01.id
+					  }
+					}
+				`, latestVersion, nodeType),
 				Check: resource.ComposeTestCheckFunc(
 					isClusterPresent(tt, "scaleway_kafka_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "multi_az", "true"),
@@ -179,33 +179,33 @@ func TestAccCluster_MonoAZ(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "scaleway_vpc" "main" {
-  region = "fr-par"
-  name   = "TestAccCluster_MonoAZ"
-}
+					resource "scaleway_vpc" "main" {
+					  region = "fr-par"
+					  name   = "TestAccCluster_MonoAZ"
+					}
 
-resource "scaleway_vpc_private_network" "pn01" {
-  name   = "tf_test_kafka_mono_az_pn"
-  region = "fr-par"
-  vpc_id = scaleway_vpc.main.id
-}
+					resource "scaleway_vpc_private_network" "pn01" {
+					  name   = "tf_test_kafka_mono_az_pn"
+					  region = "fr-par"
+					  vpc_id = scaleway_vpc.main.id
+					}
 
-resource "scaleway_kafka_cluster" "main" {
-  name              = "tf-test-kafka-mono-az"
-  version           = "%s"
-  node_amount       = 1
-  node_type         = "%s"
-  volume_type       = "sbs_5k"
-  volume_size_in_gb = 10
-  mono_az_zone      = "fr-par-2"
-  user_name         = "admin"
-  password          = "password@1234567"
+					resource "scaleway_kafka_cluster" "main" {
+					  name              = "tf-test-kafka-mono-az"
+					  version           = "%s"
+					  node_amount       = 1
+					  node_type         = "%s"
+					  volume_type       = "sbs_5k"
+					  volume_size_in_gb = 10
+					  mono_az_zone      = "fr-par-2"
+					  user_name         = "admin"
+					  password          = "password@1234567"
 
-  private_network {
-    pn_id = scaleway_vpc_private_network.pn01.id
-  }
-}
-`, latestVersion, nodeType),
+					  private_network {
+					    pn_id = scaleway_vpc_private_network.pn01.id
+					  }
+					}
+				`, latestVersion, nodeType),
 				Check: resource.ComposeTestCheckFunc(
 					isClusterPresent(tt, "scaleway_kafka_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "mono_az_zone", "fr-par-2"),

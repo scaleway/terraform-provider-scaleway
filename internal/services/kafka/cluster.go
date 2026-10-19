@@ -228,13 +228,10 @@ func resourceClusterCreate(ctx context.Context, d *schema.ResourceData, meta any
 		req.Password = new(v.(string))
 	}
 
-	multiAZ, monoAZ, err := expandClusterAvailability(d, meta)
+	req.MultiAz, req.MonoAz, err = expandClusterAvailability(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	req.MultiAz = multiAZ
-	req.MonoAz = monoAZ
 
 	// Configure endpoints
 	// Note: Public endpoints are not yet supported by the Kafka API (returns 501)
@@ -352,6 +349,8 @@ func setClusterState(d *schema.ResourceData, cluster *kafkaapi.Cluster) diag.Dia
 		_ = d.Set("mono_az_zone", "")
 	} else if cluster.MonoAz != nil && cluster.MonoAz.Zone != nil {
 		_ = d.Set("mono_az_zone", cluster.MonoAz.Zone.String())
+	} else {
+		return diag.Errorf("kafka cluster %s has neither multi_az nor mono_az.zone", cluster.ID)
 	}
 
 	publicBlock, hasPublic := flattenPublicNetwork(cluster.Endpoints, cluster.Region)
