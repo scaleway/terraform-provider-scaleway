@@ -16,8 +16,7 @@ output "upgradable_versions" {
   value = scaleway_rdb_instance.main.upgradable_versions
 }
 
-# To upgrade to PostgreSQL 15, change the engine value and explicitly allow the major version upgrade.
-# This triggers a blue/green upgrade: read the "Engine upgrade" section of this page before applying.
+# To upgrade to PostgreSQL 15, change engine and set allow_major_version_upgrade = true.
 # resource "scaleway_rdb_instance" "main" {
 #   name                        = "my-database"
 #   node_type                   = "DB-DEV-S"
@@ -27,8 +26,4 @@ output "upgradable_versions" {
 #   disable_backup              = true
 #   user_name                   = "my_user"
 #   password                    = "thiZ_is_v&ry_s3cret"
-#
-#   timeouts {
-#     update = "120m"
-#   }
 # }
