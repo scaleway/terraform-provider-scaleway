@@ -430,7 +430,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_routes":                                         vpc.DataSourceRoutes(),
 				"scaleway_vpcs":                                               vpc.DataSourceVPCs(),
 				"scaleway_webhosting":                                         webhosting.DataSourceWebhosting(),
-				"scaleway_webhosting_offer":                                   webhosting.DataSourceOffer(),
 			},
 		}
 

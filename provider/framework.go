@@ -333,6 +333,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		rdb.NewInstanceLogDataSource,
 		rdb.NewInstanceLogsDataSource,
 		rdb.NewInstanceLogsDetailsDataSource,
+		webhosting.NewOfferDataSource,
 	}
 }
 
