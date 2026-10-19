@@ -48,10 +48,12 @@ resource "scaleway_rdb_instance" "clone" {
   node_type  = "DB-DEV-M"
   clone_from = scaleway_rdb_instance.source.id
 
-  # Optional: set explicitly to override what CloneInstance inherits from the source
+  # Align with source (or set explicitly) — volume_type defaults to lssd in the schema
+  volume_type = "lssd"
+
+  # Optional same-apply overrides:
   # is_ha_cluster  = false
   # disable_backup = true
-  # volume_type    = "lssd"
 
   # Keep the public endpoint provisioned by CloneInstance
   load_balancer {}
@@ -307,13 +309,15 @@ interruption.
 
 ~> **Important** Updates to `clone_from` will recreate the Database Instance.
 
-~> **Note** `CloneInstance` only accepts `name` and optional `node_type`. Other settings are inherited from the source. Omitting `is_ha_cluster` or `disable_backup` keeps the source values; set them explicitly to override after clone.
+~> **Note** `CloneInstance` only accepts `name` and optional `node_type`. Everything else is inherited from the source. We do not `ConflictsWith` inherited attributes so you can still override some of them in the same apply.
 
-~> **Note** `volume_type` still defaults to `lssd` in the schema: set it explicitly to match a non-`lssd` source (e.g. `sbs_5k`) to avoid a plan diff.
+~> **Note** Same-apply overrides after clone: set `is_ha_cluster` or `disable_backup` explicitly to change HA/backups; `tags`, `settings`, `logs_policy`, and endpoints (`load_balancer` / `private_network`) are also applied during Create. If you omit `is_ha_cluster` / `disable_backup`, the source values are kept.
 
-~> **Note** When cloning from a Local Storage (`lssd`) instance to a Block Storage node type, change the volume type on the source instance first. See [How to clone a Database Instance](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/how-to/clone-a-database-instance/).
+~> **Note** Not applied during clone Create: `volume_type` (schema default `lssd` — set it to match a non-`lssd` source), `volume_size_in_gb`, and `project_id` (clone stays in the source project). Align these with the source or expect a follow-up plan/Update.
 
-~> **Note** `CloneInstance` always provisions a public load-balancer endpoint. Keep it with an empty `load_balancer {}` block, or omit the block to remove it (same behaviour as `snapshot_id`). Private Network endpoints can be attached with `private_network`.
+~> **Note** When cloning from Local Storage (`lssd`) to a Block Storage node type, change the volume type on the source first. See [How to clone a Database Instance](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/how-to/clone-a-database-instance/).
+
+~> **Note** `CloneInstance` always provisions a public load-balancer endpoint. Keep it with an empty `load_balancer {}` block, or omit the block to remove it (same behaviour as `snapshot_id`).
 
 ### Backups
 

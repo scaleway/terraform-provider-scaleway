@@ -15,10 +15,12 @@ resource "scaleway_rdb_instance" "clone" {
   node_type  = "DB-DEV-M"
   clone_from = scaleway_rdb_instance.source.id
 
-  # Optional: set explicitly to override what CloneInstance inherits from the source
+  # Align with source (or set explicitly) — volume_type defaults to lssd in the schema
+  volume_type = "lssd"
+
+  # Optional same-apply overrides:
   # is_ha_cluster  = false
   # disable_backup = true
-  # volume_type    = "lssd"
 
   # Keep the public endpoint provisioned by CloneInstance
   load_balancer {}
