@@ -3,15 +3,21 @@ package cockpit
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -94,7 +100,7 @@ func (a *GrafanaSyncDataSourcesAction) Invoke(ctx context.Context, req action.In
 		return
 	}
 
-	if a.globalAPI == nil {
+	if a.globalAPI == nil || a.meta == nil {
 		resp.Diagnostics.AddError(
 			"Unconfigured globalAPI",
 			"The action was not properly configured. The Scaleway client is missing. "+
@@ -113,15 +119,92 @@ func (a *GrafanaSyncDataSourcesAction) Invoke(ctx context.Context, req action.In
 		return
 	}
 
-	err := a.globalAPI.SyncGrafanaDataSources(&cockpit.GlobalAPISyncGrafanaDataSourcesRequest{
-		ProjectID: data.ProjectID.ValueString(),
-	}, scw.WithContext(ctx))
+	projectID := data.ProjectID.ValueString()
+
+	err := activateGrafanaViaIAM(ctx, a.meta, a.globalAPI, projectID)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error executing Cockpit SyncGrafanaDataSources action",
-			fmt.Sprintf("Failed to synchronize Grafana data sources for project %s: %s", data.ProjectID.ValueString(), err),
+			"Error activating Cockpit Grafana",
+			fmt.Sprintf("Failed to activate Grafana for project %s before sync: %s", projectID, err),
 		)
 
 		return
 	}
+
+	err = a.globalAPI.SyncGrafanaDataSources(&cockpit.GlobalAPISyncGrafanaDataSourcesRequest{
+		ProjectID: projectID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error executing Cockpit SyncGrafanaDataSources action",
+			fmt.Sprintf("Failed to synchronize Grafana data sources for project %s: %s", projectID, err),
+		)
+
+		return
+	}
+}
+
+// activateGrafanaViaIAM provisions Grafana by performing an IAM-authenticated first access
+// (GET {grafana_url}/api/org). Replaces the side-effect of the deprecated CreateGrafanaUser API.
+func activateGrafanaViaIAM(ctx context.Context, m *meta.Meta, api *cockpit.GlobalAPI, projectID string) error {
+	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
+		ProjectID: projectID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return fmt.Errorf("get grafana: %w", err)
+	}
+
+	if grafana == nil || grafana.GrafanaURL == "" {
+		return fmt.Errorf("empty grafana URL for project %s", projectID)
+	}
+
+	secretKey, hasSecretKey := m.ScwClient().GetSecretKey()
+	if !hasSecretKey || secretKey == "" {
+		return errors.New("missing secret key to activate grafana via IAM")
+	}
+
+	const maxAttempts = 5
+
+	retryWait := 5 * time.Second
+	if transport.DefaultWaitRetryInterval != nil {
+		retryWait = *transport.DefaultWaitRetryInterval
+	}
+
+	var lastStatus string
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, grafana.GrafanaURL+"/api/org", nil)
+		if err != nil {
+			return err
+		}
+
+		req.Header.Set("X-Auth-Token", secretKey)
+
+		httpResp, err := m.HTTPClient().Do(req)
+		if err != nil {
+			return fmt.Errorf("access grafana: %w", err)
+		}
+
+		_, _ = io.Copy(io.Discard, httpResp.Body)
+		_ = httpResp.Body.Close()
+
+		if httpResp.StatusCode == http.StatusOK {
+			return nil
+		}
+
+		lastStatus = httpResp.Status
+
+		// Grafana may return 5xx while it is still being provisioned after first access.
+		if httpResp.StatusCode < http.StatusInternalServerError || attempt == maxAttempts {
+			break
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(retryWait):
+		}
+	}
+
+	return fmt.Errorf("access grafana: unexpected status %s", lastStatus)
 }
