@@ -151,8 +151,6 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	var bucketName string
 	for {
 		bucketName = sdkacctest.RandomWithPrefix("tf-test-action-instance-export-snap-sbs")
@@ -175,7 +173,12 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_instance_export_snapshot_sbs"
+					}
+
 					resource "scaleway_instance_server" "to_snapshot" {
+						project_id = scaleway_account_project.project.id
 						name = "test-tf-action-instance-export-snap-sbs"
 						type = "DEV1-S"
 						image = "ubuntu_jammy"
@@ -186,6 +189,7 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "main" {
+						project_id = scaleway_account_project.project.id
 						volume_id = scaleway_instance_server.to_snapshot.root_volume.0.volume_id
 
 						lifecycle {
@@ -214,7 +218,12 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_instance_export_snapshot_sbs"
+					}
+
 					resource "scaleway_instance_server" "to_snapshot" {
+						project_id = scaleway_account_project.project.id
 						name = "test-tf-action-instance-export-snap-sbs"
 						type = "DEV1-S"
 						image = "ubuntu_jammy"
@@ -225,6 +234,7 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 					}
 			
 					resource "scaleway_block_snapshot" "main" {
+						project_id = scaleway_account_project.project.id
 						volume_id = scaleway_instance_server.to_snapshot.root_volume.0.volume_id
 			
 						lifecycle {
