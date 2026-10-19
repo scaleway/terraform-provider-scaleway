@@ -2,6 +2,7 @@ package instance_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -44,6 +45,7 @@ func TestAccInstanceTemplateResource_Basic(t *testing.T) {
 					}`, projectID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
+					resource.TestMatchResourceAttr("scaleway_instance_template.main", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/templates/.+$`)),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-1"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_template.main", "name"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "PRO2-M"),

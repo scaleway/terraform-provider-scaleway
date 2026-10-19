@@ -41,3 +41,4 @@ In addition to all above arguments, the following attributes are exported:
 - `tags` - A list of tags to apply to the placement group.
 - `policy_respected` - Is true when the policy is respected.
 - `organization_id` - The organization ID the placement group is associated with.
+- `srn` - The Scaleway Resource Name (SRN) of the placement group.
