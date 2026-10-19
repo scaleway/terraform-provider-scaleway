@@ -19,8 +19,6 @@ func TestAccActionSnapshotExport_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-export-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -32,12 +30,18 @@ func TestAccActionSnapshotExport_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_block_snapshot_export_action_basic"
+					}
+
 					resource "scaleway_block_volume" "main" {
+						project_id = scaleway_account_project.project.id
 						iops = 5000
 						size_in_gb = 10
 					}
 
 					resource "scaleway_block_snapshot" "main" {
+						project_id = scaleway_account_project.project.id
 						name = "test-terraform-export-snapshot-basic"
 						volume_id = scaleway_block_volume.main.id
 
@@ -71,12 +75,18 @@ func TestAccActionSnapshotExport_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_block_snapshot_export_action_basic"
+					}
+
 					resource "scaleway_block_volume" "main" {
+						project_id = scaleway_account_project.project.id
 						iops = 5000
 						size_in_gb = 10
 					}
 
 					resource "scaleway_block_snapshot" "main" {
+						project_id = scaleway_account_project.project.id
 						name = "test-terraform-export-snapshot-basic"
 						volume_id = scaleway_block_volume.main.id
 

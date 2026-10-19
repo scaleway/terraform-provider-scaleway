@@ -13,8 +13,6 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	snapshotName := "tf-snapshot-ds-basic"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -26,7 +24,12 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_instance_snapshot_datasource_basic"
+					}
+
 					resource "scaleway_instance_server" "test" {
+						project_id = scaleway_account_project.project.id
 						image = "ubuntu_noble"
 						type = "DEV1-S"
 						root_volume {
@@ -35,13 +38,19 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_instance_snapshot" "from_volume" {
+						project_id = scaleway_account_project.project.id
 						name = "%s"
 						volume_id = scaleway_instance_server.test.root_volume.0.volume_id
 					}`, snapshotName),
 			},
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_instance_snapshot_datasource_basic"
+					}
+
 					resource "scaleway_instance_server" "test" {
+						project_id = scaleway_account_project.project.id
 						image = "ubuntu_noble"
 						type = "DEV1-S"
 						root_volume {
@@ -50,15 +59,18 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_instance_snapshot" "from_volume" {
+						project_id = scaleway_account_project.project.id
 						name = "%s"
 						volume_id = scaleway_instance_server.test.root_volume.0.volume_id
 					}
 
 					data "scaleway_instance_snapshot" "by_id" {
+						project_id = scaleway_account_project.project.id
 						snapshot_id = scaleway_instance_snapshot.from_volume.id
 					}
 
 					data "scaleway_instance_snapshot" "by_name" {
+						project_id = scaleway_account_project.project.id
 						name = scaleway_instance_snapshot.from_volume.name
 					}`, snapshotName),
 				Check: resource.ComposeTestCheckFunc(

@@ -13,8 +13,6 @@ func TestAccDataSourceSnapshots_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -23,18 +21,25 @@ func TestAccDataSourceSnapshots_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_block_snapshots_datasource_basic"
+					}
+
 					resource scaleway_block_volume main {
+						project_id = scaleway_account_project.project.id
 						iops = 5000
 						size_in_gb = 10
 					}
 
 					resource scaleway_block_snapshot main {
+						project_id = scaleway_account_project.project.id
 						name = "test-ds-block-snapshots-basic-tf"
 						volume_id = scaleway_block_volume.main.id
 						tags = ["test-ds-block-snapshots-basic-tf", "first"]
 					}
 
 					resource scaleway_block_snapshot second {
+						project_id = scaleway_account_project.project.id
 						name = "test-ds-block-snapshots-other-tf"
 						volume_id = scaleway_block_volume.main.id
 						tags = ["test-ds-block-snapshots-basic-tf", "second"]
