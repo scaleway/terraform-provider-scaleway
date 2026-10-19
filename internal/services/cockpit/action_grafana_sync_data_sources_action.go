@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
@@ -17,7 +16,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -110,15 +108,6 @@ func (a *GrafanaSyncDataSourcesAction) Invoke(ctx context.Context, req action.In
 		return
 	}
 
-	if data.ProjectID.IsNull() || data.ProjectID.ValueString() == "" {
-		resp.Diagnostics.AddError(
-			"Missing project_id",
-			"The project_id attribute is required to synchronize Grafana data sources.",
-		)
-
-		return
-	}
-
 	projectID := data.ProjectID.ValueString()
 
 	err := activateGrafanaViaIAM(ctx, a.meta, a.globalAPI, projectID)
@@ -146,6 +135,7 @@ func (a *GrafanaSyncDataSourcesAction) Invoke(ctx context.Context, req action.In
 
 // activateGrafanaViaIAM provisions Grafana by performing an IAM-authenticated first access
 // (GET {grafana_url}/api/org). Replaces the side-effect of the deprecated CreateGrafanaUser API.
+// ponytail: single GET; retry on cold-start 5xx if that shows up in prod/cassettes.
 func activateGrafanaViaIAM(ctx context.Context, m *meta.Meta, api *cockpit.GlobalAPI, projectID string) error {
 	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
 		ProjectID: projectID,
@@ -154,7 +144,7 @@ func activateGrafanaViaIAM(ctx context.Context, m *meta.Meta, api *cockpit.Globa
 		return fmt.Errorf("get grafana: %w", err)
 	}
 
-	if grafana == nil || grafana.GrafanaURL == "" {
+	if grafana.GrafanaURL == "" {
 		return fmt.Errorf("empty grafana URL for project %s", projectID)
 	}
 
@@ -163,48 +153,24 @@ func activateGrafanaViaIAM(ctx context.Context, m *meta.Meta, api *cockpit.Globa
 		return errors.New("missing secret key to activate grafana via IAM")
 	}
 
-	const maxAttempts = 5
-
-	retryWait := 5 * time.Second
-	if transport.DefaultWaitRetryInterval != nil {
-		retryWait = *transport.DefaultWaitRetryInterval
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, grafana.GrafanaURL+"/api/org", nil)
+	if err != nil {
+		return err
 	}
 
-	var lastStatus string
+	req.Header.Set("X-Auth-Token", secretKey)
 
-	for attempt := 1; attempt <= maxAttempts; attempt++ {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, grafana.GrafanaURL+"/api/org", nil)
-		if err != nil {
-			return err
-		}
-
-		req.Header.Set("X-Auth-Token", secretKey)
-
-		httpResp, err := m.HTTPClient().Do(req)
-		if err != nil {
-			return fmt.Errorf("access grafana: %w", err)
-		}
-
-		_, _ = io.Copy(io.Discard, httpResp.Body)
-		_ = httpResp.Body.Close()
-
-		if httpResp.StatusCode == http.StatusOK {
-			return nil
-		}
-
-		lastStatus = httpResp.Status
-
-		// Grafana may return 5xx while it is still being provisioned after first access.
-		if httpResp.StatusCode < http.StatusInternalServerError || attempt == maxAttempts {
-			break
-		}
-
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(retryWait):
-		}
+	httpResp, err := m.HTTPClient().Do(req)
+	if err != nil {
+		return fmt.Errorf("access grafana: %w", err)
 	}
 
-	return fmt.Errorf("access grafana: unexpected status %s", lastStatus)
+	_, _ = io.Copy(io.Discard, httpResp.Body)
+	_ = httpResp.Body.Close()
+
+	if httpResp.StatusCode != http.StatusOK {
+		return fmt.Errorf("access grafana: unexpected status %s", httpResp.Status)
+	}
+
+	return nil
 }
