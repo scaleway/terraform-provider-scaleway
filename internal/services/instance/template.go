@@ -50,6 +50,7 @@ type templateResourceModel struct {
 	ServerType         types.String `tfsdk:"server_type"`
 	Name               types.String `tfsdk:"name"`
 	ProjectID          types.String `tfsdk:"project_id"`
+	SRN                types.String `tfsdk:"srn"`
 	UpdatedAt          types.String `tfsdk:"updated_at"`
 	WindowsRdpSSHKeyID types.String `tfsdk:"windows_rdp_ssh_key_id"`
 	ID                 types.String `tfsdk:"id"`
@@ -218,6 +219,13 @@ func (r *TemplateResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"srn": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the Instance Template.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -328,6 +336,7 @@ func flattenTemplate(ctx context.Context, tmpl *instanceV2.Template, reference a
 		ProjectID:       types.StringValue(tmpl.ProjectID),
 		ID:              types.StringValue(zonal.NewIDString(tmpl.Zone, tmpl.ID)),
 		Name:            types.StringValue(tmpl.Name),
+		SRN:             types.StringValue(tmpl.Srn),
 		ServerType:      types.StringValue(tmpl.ServerType),
 		PublicIPV4Count: types.Int32Value(int32(tmpl.PublicIPV4Count)),
 		PublicIPV6Count: types.Int32Value(int32(tmpl.PublicIPV6Count)),

@@ -3,6 +3,7 @@ package instance_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -28,6 +29,7 @@ func TestAccPlacementGroup_Basic(t *testing.T) {
 					resource "scaleway_instance_placement_group" "base" {}
 					`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_instance_placement_group.base", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/placement-groups/.+$`)),
 					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "optional"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "max_availability"),

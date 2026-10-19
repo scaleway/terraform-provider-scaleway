@@ -200,5 +200,5 @@ In addition to all arguments above, the following attributes are exported:
 AutoScaling Groups can be imported using their `id`:
 
 ```bash
-terraform import scaleway_autoscaling_group.main <group_id>
+terraform import scaleway_autoscaling_group.main GROUP_ID
 ```

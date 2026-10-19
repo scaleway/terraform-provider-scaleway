@@ -1,6 +1,7 @@
 package instance_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -67,6 +68,7 @@ func TestAccDataSourcePrivateNIC_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("data.scaleway_instance_private_nic.find_by_nic_id", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/private-network-interfaces/.+$`)),
 					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic"),
 
 					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic", "id", "data.scaleway_instance_private_nic.find_by_nic_id", "id"),
