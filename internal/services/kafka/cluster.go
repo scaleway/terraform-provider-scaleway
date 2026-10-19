@@ -344,12 +344,13 @@ func setClusterState(d *schema.ResourceData, cluster *kafkaapi.Cluster) diag.Dia
 		_ = d.Set("volume_size_in_gb", int(cluster.Volume.SizeBytes/scw.GB))
 	}
 
-	if cluster.MultiAz != nil {
+	switch {
+	case cluster.MultiAz != nil:
 		_ = d.Set("multi_az", true)
 		_ = d.Set("mono_az_zone", "")
-	} else if cluster.MonoAz != nil && cluster.MonoAz.Zone != nil {
+	case cluster.MonoAz != nil && cluster.MonoAz.Zone != nil:
 		_ = d.Set("mono_az_zone", cluster.MonoAz.Zone.String())
-	} else {
+	default:
 		return diag.Errorf("kafka cluster %s has neither multi_az nor mono_az.zone", cluster.ID)
 	}
 
