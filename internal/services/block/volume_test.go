@@ -108,31 +108,27 @@ func TestAccVolume_FromSnapshot(t *testing.T) {
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_block_volume_from_snapshot"
-					}
-
+				Config: tt.WithProject("tf_tests_block_volume_from_snapshot", `
 					resource scaleway_block_volume base {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot-base"
 						iops = 5000
 						size_in_gb = 20
 					}
 
 					resource scaleway_block_snapshot main {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot"
 						volume_id = scaleway_block_volume.base.id
 					}
 
 					resource scaleway_block_volume main {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot"
 						iops = 5000
 						snapshot_id = scaleway_block_snapshot.main.id
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
@@ -153,32 +149,28 @@ func TestAccVolume_FromSnapshotWithSize(t *testing.T) {
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_block_volume_from_snapshot_with_size"
-					}
-
+				Config: tt.WithProject("tf_tests_block_volume_from_snapshot_with_size", `
 					resource scaleway_block_volume base {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot-base"
 						iops = 5000
 						size_in_gb = 20
 					}
 
 					resource scaleway_block_snapshot main {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot"
 						volume_id = scaleway_block_volume.base.id
 					}
 
 					resource scaleway_block_volume main {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot"
 						iops = 5000
 						snapshot_id = scaleway_block_snapshot.main.id
 						size_in_gb = 30
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),

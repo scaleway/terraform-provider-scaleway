@@ -28,64 +28,52 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 		CheckDestroy:             accounttestfuncs.IsProjectDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "scaleway_account_project" "project" {
-					name = "tf_tests_file_filesystem_list_basic"
-				}
-
+				Config: tt.WithProject("tf_tests_file_filesystem_list_basic", `
 				resource "scaleway_file_filesystem" "fs1" {
-					project_id = scaleway_account_project.project.id
+					{{PROJECT_ID}}
 					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
-				}`,
+				}`),
 			},
 			{
-				Config: `
-				resource "scaleway_account_project" "project" {
-					name = "tf_tests_file_filesystem_list_basic"
-				}
-
+				Config: tt.WithProject("tf_tests_file_filesystem_list_basic", `
 				resource "scaleway_file_filesystem" "fs1" {
-					project_id = scaleway_account_project.project.id
+					{{PROJECT_ID}}
 					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
 				}
 
 				resource "scaleway_file_filesystem" "fs2" {
-					project_id = scaleway_account_project.project.id
+					{{PROJECT_ID}}
 					name = "test-fs02"
 					size_in_gb = 200
 					tags = ["foo"]
-				}`,
+				}`),
 			},
 			{
-				Config: `
-				resource "scaleway_account_project" "project" {
-					name = "tf_tests_file_filesystem_list_basic"
-				}
-
+				Config: tt.WithProject("tf_tests_file_filesystem_list_basic", `
 				resource "scaleway_file_filesystem" "fs1" {
-					project_id = scaleway_account_project.project.id
+					{{PROJECT_ID}}
 					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
 				}
 
 				resource "scaleway_file_filesystem" "fs2" {
-					project_id = scaleway_account_project.project.id
+					{{PROJECT_ID}}
 					name = "test-fs02"
 					size_in_gb = 200
 					tags = ["foo"]
 				}
 
 				resource "scaleway_file_filesystem" "fs3" {
-					project_id = scaleway_account_project.project.id
+					{{PROJECT_ID}}
 					name = "test-fs03"
 					size_in_gb = 300
 					tags = ["bar"]
-				}`,
+				}`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					identity1.GetIdentity("scaleway_file_filesystem.fs1"),
 					identity2.GetIdentity("scaleway_file_filesystem.fs2"),
