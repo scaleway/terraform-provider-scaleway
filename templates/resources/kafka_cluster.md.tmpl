@@ -21,6 +21,10 @@ For more information refer to the [product documentation](https://www.scaleway.c
 
 {{ tffile "examples/resources/scaleway_kafka_cluster/with_tags.tf" }}
 
+### Multi-AZ
+
+{{ tffile "examples/resources/scaleway_kafka_cluster/multi_az.tf" }}
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -34,6 +38,8 @@ The following arguments are supported:
 - `user_name` - (Optional, Forces new resource) Username for the Kafka user. If not specified, no user will be created. Changing this forces recreation of the cluster.
 - `password` - (Optional, Forces new resource, Sensitive) Password for the Kafka user. Required if `user_name` is specified. Changing this forces recreation of the cluster.
 - `tags` - (Optional) List of tags to apply to the cluster.
+- `multi_az` - (Optional, Computed, Forces new resource) Deploy the cluster across multiple availability zones. Conflicts with `mono_az_zone`. When unset, defaults to mono-AZ on the [provider](../index.md#arguments-reference) default `zone`.
+- `mono_az_zone` - (Optional, Computed, Forces new resource) Zone for a mono-AZ cluster (e.g. `fr-par-1`). Conflicts with `multi_az`. When unset, defaults to the provider default zone.
 - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the cluster is associated with.
 
