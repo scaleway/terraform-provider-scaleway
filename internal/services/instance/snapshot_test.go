@@ -59,11 +59,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_snapshot_from_s3"
-					}
-
+				Config: fmt.Sprintf(tt.WithProject("tf_tests_instance_snapshot_from_s3", `
 					resource "scaleway_object_bucket" "snapshot-bucket" {
 					  name = "%s"
 					}
@@ -75,14 +71,14 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 					}
 
 					resource "scaleway_instance_snapshot" "qcow-instance-snapshot" {
-					  project_id = scaleway_account_project.project.id
+					  {{PROJECT_ID}}
 					  name = "test-acc-snapshot-import-default"
 					  import {
 					    bucket = scaleway_object.qcow-object.bucket
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
-				`, bucketName),
+				`), bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.qcow-instance-snapshot"),
 					acctest.CheckResourceAttrUUID("scaleway_instance_snapshot.qcow-instance-snapshot", "id"),
@@ -91,11 +87,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_snapshot_from_s3"
-					}
-
+				Config: fmt.Sprintf(tt.WithProject("tf_tests_instance_snapshot_from_s3", `
 					resource "scaleway_object_bucket" "snapshot-bucket" {
 					  name = "%s"
 					}
@@ -107,7 +99,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 					}
 
 					resource "scaleway_instance_snapshot" "qcow-instance-snapshot" {
-					  project_id = scaleway_account_project.project.id
+					  {{PROJECT_ID}}
 					  name = "test-acc-snapshot-import-lssd"
 					  type = "l_ssd"
 					  import {
@@ -115,7 +107,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
-				`, bucketName),
+				`), bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.qcow-instance-snapshot"),
 					acctest.CheckResourceAttrUUID("scaleway_instance_snapshot.qcow-instance-snapshot", "id"),

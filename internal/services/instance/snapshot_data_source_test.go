@@ -23,13 +23,9 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_snapshot_datasource_basic"
-					}
-
+				Config: fmt.Sprintf(tt.WithProject("tf_tests_instance_snapshot_datasource_basic", `
 					resource "scaleway_instance_server" "test" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						image = "ubuntu_noble"
 						type = "DEV1-S"
 						root_volume {
@@ -38,19 +34,15 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_instance_snapshot" "from_volume" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "%s"
 						volume_id = scaleway_instance_server.test.root_volume.0.volume_id
-					}`, snapshotName),
+					}`), snapshotName),
 			},
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_snapshot_datasource_basic"
-					}
-
+				Config: fmt.Sprintf(tt.WithProject("tf_tests_instance_snapshot_datasource_basic", `
 					resource "scaleway_instance_server" "test" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						image = "ubuntu_noble"
 						type = "DEV1-S"
 						root_volume {
@@ -59,20 +51,20 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_instance_snapshot" "from_volume" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "%s"
 						volume_id = scaleway_instance_server.test.root_volume.0.volume_id
 					}
 
 					data "scaleway_instance_snapshot" "by_id" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						snapshot_id = scaleway_instance_snapshot.from_volume.id
 					}
 
 					data "scaleway_instance_snapshot" "by_name" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = scaleway_instance_snapshot.from_volume.name
-					}`, snapshotName),
+					}`), snapshotName),
 				Check: resource.ComposeTestCheckFunc(
 					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_id"),
 					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_name"),

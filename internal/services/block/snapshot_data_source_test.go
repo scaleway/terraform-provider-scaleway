@@ -20,19 +20,15 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_block_snapshot_datasource_basic"
-					}
-
+				Config: tt.WithProject("tf_tests_block_snapshot_datasource_basic", `
 					resource scaleway_block_volume main {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						iops = 5000
 						size_in_gb = 10
 					}
 
 					resource scaleway_block_snapshot main {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "test-ds-block-snapshot-basic-tf"
 						volume_id = scaleway_block_volume.main.id
 					}
@@ -44,7 +40,7 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					data scaleway_block_snapshot find_by_id {
 						snapshot_id = scaleway_block_snapshot.main.id
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 
