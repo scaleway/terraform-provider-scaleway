@@ -21,6 +21,7 @@ import (
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -297,10 +298,12 @@ func (r *SnapshotListResource) buildSnapshotListTargets(
 			continue
 		}
 
-		vol, err := r.blockAPI.GetVolume(&blockSDK.GetVolumeRequest{
-			Zone:     zone,
-			VolumeID: volumeUUID,
-		}, scw.WithContext(ctx))
+		vol, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*blockSDK.Volume, error) {
+			return r.blockAPI.GetVolume(&blockSDK.GetVolumeRequest{
+				Zone:     zone,
+				VolumeID: volumeUUID,
+			}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			diags.AddError("Listing block snapshots", fmt.Sprintf("Could not load volume %q: %v", rawID, err))
 
@@ -384,7 +387,9 @@ func (r *SnapshotListResource) fetchSnapshotRowsForProject(
 		listReq.IncludeDeleted = data.IncludeDeleted.ValueBool()
 	}
 
-	resp, err := r.blockAPI.ListSnapshots(listReq, scw.WithContext(ctx), scw.WithAllPages())
+	resp, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*blockSDK.ListSnapshotsResponse, error) {
+		return r.blockAPI.ListSnapshots(listReq, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, err
 	}

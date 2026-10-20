@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	providertypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -162,7 +163,9 @@ func (d *SnapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 			listReq.VolumeID = &volumeID
 		}
 
-		res, err := d.api.ListSnapshots(listReq, scw.WithContext(ctx))
+		res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.ListSnapshotsResponse, error) {
+			return d.api.ListSnapshots(listReq, scw.WithContext(ctx))
+		})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to list block snapshots", err.Error())
 
@@ -190,10 +193,12 @@ func (d *SnapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	snapshot, err := d.api.GetSnapshot(&block.GetSnapshotRequest{
-		Zone:       zone,
-		SnapshotID: snapshotID,
-	}, scw.WithContext(ctx))
+	snapshot, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
+		return d.api.GetSnapshot(&block.GetSnapshotRequest{
+			Zone:       zone,
+			SnapshotID: snapshotID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to read block snapshot", err.Error())
 

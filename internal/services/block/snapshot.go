@@ -24,6 +24,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	providertypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -271,13 +272,15 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 	var snapshot *block.Snapshot
 
 	if plan.Import.IsNull() || plan.Import.IsUnknown() || len(plan.Import.Elements()) == 0 {
-		snapshot, err = r.api.CreateSnapshot(&block.CreateSnapshotRequest{
-			Zone:      zone,
-			ProjectID: projectID,
-			Name:      name,
-			VolumeID:  locality.ExpandID(plan.VolumeID.ValueString()),
-			Tags:      tags,
-		}, scw.WithContext(ctx))
+		snapshot, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
+			return r.api.CreateSnapshot(&block.CreateSnapshotRequest{
+				Zone:      zone,
+				ProjectID: projectID,
+				Name:      name,
+				VolumeID:  locality.ExpandID(plan.VolumeID.ValueString()),
+				Tags:      tags,
+			}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to create block snapshot", err.Error())
 
@@ -291,14 +294,16 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 			return
 		}
 
-		snapshot, err = r.api.ImportSnapshotFromObjectStorage(&block.ImportSnapshotFromObjectStorageRequest{
-			Zone:      zone,
-			ProjectID: projectID,
-			Name:      name,
-			Bucket:    regional.ExpandID(importData.Bucket.ValueString()).ID,
-			Key:       importData.Key.ValueString(),
-			Tags:      tags,
-		}, scw.WithContext(ctx))
+		snapshot, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
+			return r.api.ImportSnapshotFromObjectStorage(&block.ImportSnapshotFromObjectStorageRequest{
+				Zone:      zone,
+				ProjectID: projectID,
+				Name:      name,
+				Bucket:    regional.ExpandID(importData.Bucket.ValueString()).ID,
+				Key:       importData.Key.ValueString(),
+				Tags:      tags,
+			}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to import block snapshot", err.Error())
 
@@ -321,12 +326,14 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 			return
 		}
 
-		_, err = r.api.ExportSnapshotToObjectStorage(&block.ExportSnapshotToObjectStorageRequest{
-			Zone:       zone,
-			SnapshotID: snapshot.ID,
-			Bucket:     regional.ExpandID(exportData.Bucket.ValueString()).ID,
-			Key:        exportData.Key.ValueString(),
-		}, scw.WithContext(ctx))
+		_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
+			return r.api.ExportSnapshotToObjectStorage(&block.ExportSnapshotToObjectStorageRequest{
+				Zone:       zone,
+				SnapshotID: snapshot.ID,
+				Bucket:     regional.ExpandID(exportData.Bucket.ValueString()).ID,
+				Key:        exportData.Key.ValueString(),
+			}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to export block snapshot", err.Error())
 
@@ -474,7 +481,10 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	if shouldUpdate {
-		if _, err := r.api.UpdateSnapshot(updateReq, scw.WithContext(ctx)); err != nil {
+		_, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
+			return r.api.UpdateSnapshot(updateReq, scw.WithContext(ctx))
+		})
+		if err != nil {
 			resp.Diagnostics.AddError("Failed to update block snapshot", err.Error())
 
 			return
@@ -489,12 +499,14 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 			return
 		}
 
-		_, err = r.api.ExportSnapshotToObjectStorage(&block.ExportSnapshotToObjectStorageRequest{
-			Zone:       snapshot.Zone,
-			SnapshotID: snapshot.ID,
-			Bucket:     regional.ExpandID(exportData.Bucket.ValueString()).ID,
-			Key:        exportData.Key.ValueString(),
-		}, scw.WithContext(ctx))
+		_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
+			return r.api.ExportSnapshotToObjectStorage(&block.ExportSnapshotToObjectStorageRequest{
+				Zone:       snapshot.Zone,
+				SnapshotID: snapshot.ID,
+				Bucket:     regional.ExpandID(exportData.Bucket.ValueString()).ID,
+				Key:        exportData.Key.ValueString(),
+			}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to export block snapshot", err.Error())
 
@@ -540,10 +552,12 @@ func (r *SnapshotResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	err = r.api.DeleteSnapshot(&block.DeleteSnapshotRequest{
-		Zone:       zone,
-		SnapshotID: id,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return r.api.DeleteSnapshot(&block.DeleteSnapshotRequest{
+			Zone:       zone,
+			SnapshotID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			return

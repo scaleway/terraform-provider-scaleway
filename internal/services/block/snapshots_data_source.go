@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -208,7 +209,9 @@ func (d *SnapshotsDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
-	listResp, err := d.api.ListSnapshots(listReq, scw.WithContext(ctx), scw.WithAllPages())
+	listResp, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.ListSnapshotsResponse, error) {
+		return d.api.ListSnapshots(listReq, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to list block snapshots", err.Error())
 

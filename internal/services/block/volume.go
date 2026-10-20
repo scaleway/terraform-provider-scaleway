@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -139,7 +140,9 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m an
 			}
 		}
 
-		volume, err = api.BlockAPI.CreateVolume(req, scw.WithContext(ctx))
+		volume, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Volume, error) {
+			return api.BlockAPI.CreateVolume(req, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -175,7 +178,7 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	setVolumeState(api, d, volume)
+	setVolumeState(ctx, api, d, volume)
 
 	err = identity.SetZonalIdentity(d, volume.Zone, id)
 	if err != nil {
@@ -224,7 +227,9 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m an
 		req.PerfIops = types.ExpandUint32Ptr(d.Get("iops"))
 	}
 
-	if _, err := api.UpdateVolume(req, scw.WithContext(ctx)); err != nil {
+	if _, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Volume, error) {
+		return api.UpdateVolume(req, scw.WithContext(ctx))
+	}); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -248,10 +253,12 @@ func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteVolume(&block.DeleteVolumeRequest{
-		Zone:     volume.Zone,
-		VolumeID: volume.ID,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return api.DeleteVolume(&block.DeleteVolumeRequest{
+			Zone:     volume.Zone,
+			VolumeID: volume.ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -264,7 +271,7 @@ func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m an
 	return nil
 }
 
-func setVolumeState(api *block.API, resourceData *schema.ResourceData, volume *block.Volume) {
+func setVolumeState(ctx context.Context, api *block.API, resourceData *schema.ResourceData, volume *block.Volume) {
 	if volume == nil {
 		return
 	}
@@ -278,9 +285,11 @@ func setVolumeState(api *block.API, resourceData *schema.ResourceData, volume *b
 	var snapshotID string
 
 	if volume.ParentSnapshotID != nil {
-		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
-			SnapshotID: *volume.ParentSnapshotID,
-			Zone:       volume.Zone,
+		_, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
+			return api.GetSnapshot(&block.GetSnapshotRequest{
+				SnapshotID: *volume.ParentSnapshotID,
+				Zone:       volume.Zone,
+			}, scw.WithContext(ctx))
 		})
 
 		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
