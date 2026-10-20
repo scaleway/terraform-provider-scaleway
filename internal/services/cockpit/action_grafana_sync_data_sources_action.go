@@ -3,7 +3,10 @@ package cockpit
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
@@ -94,7 +97,7 @@ func (a *GrafanaSyncDataSourcesAction) Invoke(ctx context.Context, req action.In
 		return
 	}
 
-	if a.globalAPI == nil {
+	if a.globalAPI == nil || a.meta == nil {
 		resp.Diagnostics.AddError(
 			"Unconfigured globalAPI",
 			"The action was not properly configured. The Scaleway client is missing. "+
@@ -104,24 +107,69 @@ func (a *GrafanaSyncDataSourcesAction) Invoke(ctx context.Context, req action.In
 		return
 	}
 
-	if data.ProjectID.IsNull() || data.ProjectID.ValueString() == "" {
+	projectID := data.ProjectID.ValueString()
+
+	err := activateGrafanaViaIAM(ctx, a.meta, a.globalAPI, projectID)
+	if err != nil {
 		resp.Diagnostics.AddError(
-			"Missing project_id",
-			"The project_id attribute is required to synchronize Grafana data sources.",
+			"Error activating Cockpit Grafana",
+			fmt.Sprintf("Failed to activate Grafana for project %s before sync: %s", projectID, err),
 		)
 
 		return
 	}
 
-	err := a.globalAPI.SyncGrafanaDataSources(&cockpit.GlobalAPISyncGrafanaDataSourcesRequest{
-		ProjectID: data.ProjectID.ValueString(),
+	err = a.globalAPI.SyncGrafanaDataSources(&cockpit.GlobalAPISyncGrafanaDataSourcesRequest{
+		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error executing Cockpit SyncGrafanaDataSources action",
-			fmt.Sprintf("Failed to synchronize Grafana data sources for project %s: %s", data.ProjectID.ValueString(), err),
+			fmt.Sprintf("Failed to synchronize Grafana data sources for project %s: %s", projectID, err),
 		)
 
 		return
 	}
+}
+
+// activateGrafanaViaIAM provisions Grafana by performing an IAM-authenticated first access
+// (GET {grafana_url}/api/org). Replaces the side-effect of the deprecated CreateGrafanaUser API.
+// ponytail: single GET; retry on cold-start 5xx if that shows up in prod/cassettes.
+func activateGrafanaViaIAM(ctx context.Context, m *meta.Meta, api *cockpit.GlobalAPI, projectID string) error {
+	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
+		ProjectID: projectID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return fmt.Errorf("get grafana: %w", err)
+	}
+
+	if grafana.GrafanaURL == "" {
+		return fmt.Errorf("empty grafana URL for project %s", projectID)
+	}
+
+	secretKey, hasSecretKey := m.ScwClient().GetSecretKey()
+	if !hasSecretKey || secretKey == "" {
+		return errors.New("missing secret key to activate grafana via IAM")
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, grafana.GrafanaURL+"/api/org", nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("X-Auth-Token", secretKey)
+
+	httpResp, err := m.HTTPClient().Do(req)
+	if err != nil {
+		return fmt.Errorf("access grafana: %w", err)
+	}
+
+	_, _ = io.Copy(io.Discard, httpResp.Body)
+	_ = httpResp.Body.Close()
+
+	if httpResp.StatusCode != http.StatusOK {
+		return fmt.Errorf("access grafana: unexpected status %s", httpResp.Status)
+	}
+
+	return nil
 }

@@ -786,7 +786,7 @@ func transitionHash(v any) int {
 		buf.WriteString(v.(string) + "-")
 	}
 
-	return types.StringHashcode(buf.String())
+	return schema.HashString(buf.String())
 }
 
 func noncurrentVersionTransitionHash(v any) int {
@@ -810,7 +810,7 @@ func noncurrentVersionTransitionHash(v any) int {
 		buf.WriteString(v.(string) + "-")
 	}
 
-	return types.StringHashcode(buf.String())
+	return schema.HashString(buf.String())
 }
 
 const (
