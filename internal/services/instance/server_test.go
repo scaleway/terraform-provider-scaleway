@@ -342,20 +342,16 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_server_attach_detach_file_system"
-					}
-
+				Config: fmt.Sprintf(tt.WithProject("tf_tests_server_attach_detach_file_system", `
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "filesystem-instance-terraform-test"
 						size_in_gb = 100
 						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs01" ]
 					}
 
 					resource "scaleway_instance_server" "base" {
-					  project_id = scaleway_account_project.project.id
+					  {{PROJECT_ID}}
 					  name  = "tf-acc-server-attach-detach-file-system"
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
@@ -364,7 +360,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					  filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem.id
 					  }
-					}`, ubuntuJammyImageLabel),
+					}`), ubuntuJammyImageLabel),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
@@ -382,27 +378,23 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
 			},
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_server_attach_detach_file_system"
-					}
-
+				Config: fmt.Sprintf(tt.WithProject("tf_tests_server_attach_detach_file_system", `
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "filesystem-instance-terraform-test"
 						size_in_gb = 100
 						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs01" ]
 					}
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "filesystem-instance-terraform-test-2"
 						size_in_gb = 110
 						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs02" ]
 					}
 
 					resource "scaleway_instance_server" "base" {
-					  project_id = scaleway_account_project.project.id
+					  {{PROJECT_ID}}
 					  name  = "tf-acc-server-attach-detach-file-system"
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
@@ -412,7 +404,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					   filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
 					  }
-					}`, ubuntuJammyImageLabel),
+					}`), ubuntuJammyImageLabel),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
@@ -431,27 +423,23 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
 			},
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_server_attach_detach_file_system"
-					}
-
+				Config: fmt.Sprintf(tt.WithProject("tf_tests_server_attach_detach_file_system", `
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "filesystem-instance-terraform-test"
 						size_in_gb = 100
 						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs01" ]
 					}
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "filesystem-instance-terraform-test-2"
 						size_in_gb = 110
 						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs02" ]
 					}
 
 					resource "scaleway_instance_server" "base" {
-					  project_id = scaleway_account_project.project.id
+					  {{PROJECT_ID}}
 					  name  = "tf-acc-server-attach-detach-file-system"
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
@@ -463,7 +451,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					  filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem.id
 					  }
-					}`, ubuntuJammyImageLabel),
+					}`), ubuntuJammyImageLabel),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
@@ -476,33 +464,29 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_server_attach_detach_file_system"
-					}
-
+				Config: fmt.Sprintf(tt.WithProject("tf_tests_server_attach_detach_file_system", `
 					resource "scaleway_block_volume" "volume" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						iops = 15000
 						size_in_gb = 15
 					}
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "filesystem-instance-terraform-test"
 						size_in_gb = 100
 						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs01" ]
 					}
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "filesystem-instance-terraform-test-2"
 						size_in_gb = 110
 						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs02" ]
 					}
 
 					resource "scaleway_instance_server" "base" {
-					  project_id = scaleway_account_project.project.id
+					  {{PROJECT_ID}}
 					  name  = "tf-acc-server-attach-detach-file-system"
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
@@ -512,7 +496,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					   filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
 					  }
-					}`, ubuntuJammyImageLabel),
+					}`), ubuntuJammyImageLabel),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),

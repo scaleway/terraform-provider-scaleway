@@ -29,19 +29,15 @@ func TestAccActionSnapshotExport_Basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_block_snapshot_export_action_basic"
-					}
-
+				Config: fmt.Sprintf(tt.WithProject("tf_tests_block_snapshot_export_action_basic", `
 					resource "scaleway_block_volume" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						iops = 5000
 						size_in_gb = 10
 					}
 
 					resource "scaleway_block_snapshot" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "test-terraform-export-snapshot-basic"
 						volume_id = scaleway_block_volume.main.id
 
@@ -66,7 +62,7 @@ func TestAccActionSnapshotExport_Basic(t *testing.T) {
 							wait = true
 						}
 					}
-				`, bucketName),
+				`), bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.main", "id"),
@@ -74,19 +70,15 @@ func TestAccActionSnapshotExport_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_block_snapshot_export_action_basic"
-					}
-
+				Config: fmt.Sprintf(tt.WithProject("tf_tests_block_snapshot_export_action_basic", `
 					resource "scaleway_block_volume" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						iops = 5000
 						size_in_gb = 10
 					}
 
 					resource "scaleway_block_snapshot" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name = "test-terraform-export-snapshot-basic"
 						volume_id = scaleway_block_volume.main.id
 
@@ -116,7 +108,7 @@ func TestAccActionSnapshotExport_Basic(t *testing.T) {
   						bucket = scaleway_object_bucket.export-bucket.name
   						key    = "exported-snapshot.qcow2"
 					}
-				`, bucketName),
+				`), bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.main", "id"),

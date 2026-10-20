@@ -27,27 +27,23 @@ func TestAccImage_Basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_image_basic"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_image_basic", `
 					resource "scaleway_block_volume" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 20
 						iops = 5000
 					}
 
 					resource "scaleway_block_snapshot" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.main.id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						project_id 	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						root_volume_id 	= scaleway_block_snapshot.main.id
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
@@ -65,31 +61,27 @@ func TestAccImage_Basic(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_image_basic"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_image_basic", `
 					resource "scaleway_block_volume" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 20
 						iops = 5000
 					}
 
 					resource "scaleway_block_snapshot" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.main.id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						project_id 		= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name 			= "tf-test-image-basic"
 						root_volume_id 	= scaleway_block_snapshot.main.id
 						tags 			= [ "add", "tags", "to-be", "removed", "later" ]
 						architecture	= "arm64"
 						public			= true
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
@@ -112,31 +104,27 @@ func TestAccImage_Basic(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_image_basic"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_image_basic", `
 					resource "scaleway_block_volume" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 20
 						iops = 5000
 					}
 
 					resource "scaleway_block_snapshot" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.main.id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						project_id 		= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name 			= "tf-test-image-basic-renamed"
 						root_volume_id 	= scaleway_block_snapshot.main.id
 						tags 			= [ "tags", "removed" ]
 						architecture	= "x86_64"
 						public			= false
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
@@ -172,42 +160,38 @@ func TestAccImage_ExternalBlockVolume(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_image_external_block_volume"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_image_external_block_volume", `
 					resource "scaleway_block_volume" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 20
 						iops = 5000
 					}
 					resource "scaleway_block_volume" "additional1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 20
 						iops = 15000
 					}
 					resource "scaleway_block_volume" "additional2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 40
 						iops = 5000
 					}
 
 					resource "scaleway_block_snapshot" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.main.id
 					}
 					resource "scaleway_block_snapshot" "additional1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.additional1.id
 					}
 					resource "scaleway_block_snapshot" "additional2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.additional2.id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						project_id 		= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name 			= "tf-test-image-external-block-volume"
 						root_volume_id 	= scaleway_block_snapshot.main.id
 						additional_volume_ids = [
@@ -215,7 +199,7 @@ func TestAccImage_ExternalBlockVolume(t *testing.T) {
 							scaleway_block_snapshot.additional2.id
 						]
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
@@ -232,47 +216,43 @@ func TestAccImage_ExternalBlockVolume(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"additional_volume_ids"},
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_image_external_block_volume"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_image_external_block_volume", `
 					resource "scaleway_block_volume" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 20
 						iops = 5000
 					}
 					resource "scaleway_block_volume" "additional1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 20
 						iops = 15000
 					}
 					resource "scaleway_block_volume" "additional2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 40
 						iops = 5000
 					}
 
 					resource "scaleway_block_snapshot" "main" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.main.id
 					}
 					resource "scaleway_block_snapshot" "additional1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.additional1.id
 					}
 					resource "scaleway_block_snapshot" "additional2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.additional2.id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						project_id 		= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name 			= "tf-test-image-external-block-volume"
 						root_volume_id 	= scaleway_block_snapshot.main.id
 						additional_volume_ids = []
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
@@ -442,27 +422,23 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_image_server_with_sbs_volume"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_image_server_with_sbs_volume", `
 					resource "scaleway_block_volume" "block01" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						iops       = 5000
 						size_in_gb = 21
 					}
 					resource "scaleway_block_snapshot" "block01" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id	= scaleway_block_volume.block01.id
 					}
 
 					resource "scaleway_instance_server" "server" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						image	= "ubuntu_focal"
 						type 	= "PLAY2-PICO"
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.block01"),
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server"),
@@ -470,39 +446,35 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 				),
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_image_server_with_sbs_volume"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_image_server_with_sbs_volume", `
 					resource "scaleway_block_volume" "block01" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						iops       = 5000
 						size_in_gb = 21
 					}
 					resource "scaleway_block_snapshot" "block01" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id	= scaleway_block_volume.block01.id
 					}
 
 					resource "scaleway_instance_server" "server" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						image	= "ubuntu_focal"
 						type 	= "PLAY2-PICO"
 					}
 					resource "scaleway_block_snapshot" "server" {
-						project_id 	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						project_id 	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						root_volume_id 	= scaleway_block_snapshot.server.id
 						additional_volume_ids = [
 							scaleway_block_snapshot.block01.id
 						]
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.block01"),
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server"),
@@ -524,49 +496,45 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"additional_volume_ids"},
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_image_server_with_sbs_volume"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_image_server_with_sbs_volume", `
 					resource "scaleway_block_volume" "block01" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						iops       = 5000
 						size_in_gb = 21
 					}
 					resource "scaleway_block_snapshot" "block01" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id	= scaleway_block_volume.block01.id
 					}
 
 					resource "scaleway_block_volume" "block02" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						iops       = 15000
 						size_in_gb = 22
 					}
 					resource "scaleway_block_snapshot" "block02" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id	= scaleway_block_volume.block02.id
 					}
 
 					resource "scaleway_instance_server" "server" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						image	= "ubuntu_focal"
 						type 	= "PLAY2-PICO"
 					}
 					resource "scaleway_block_snapshot" "server" {
-						project_id 	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						project_id 	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						root_volume_id 	= scaleway_block_snapshot.server.id
 						additional_volume_ids = [
 							scaleway_block_snapshot.block02.id,
 						]
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.block01"),
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.block02"),
@@ -609,13 +577,9 @@ func TestAccImage_MixedVolumes(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_image_mixed_volumes"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_image_mixed_volumes", `
 					resource "scaleway_instance_server" "local" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						image 	= "ubuntu_focal"
 						type 	= "DEV1-S"
 						root_volume {
@@ -623,38 +587,38 @@ func TestAccImage_MixedVolumes(t *testing.T) {
 						}
 					}
 					resource "scaleway_instance_server" "block_from_server" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						image 	= "ubuntu_focal"
 						type 	= "DEV1-S"
 					}
 					resource "scaleway_block_volume" "block_detached" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 20
 						iops = 5000
 					}
 
 					resource "scaleway_instance_snapshot" "local" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id	= scaleway_instance_server.local.root_volume.0.volume_id
 					}
 					resource "scaleway_block_snapshot" "block_from_server" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id	= scaleway_instance_server.block_from_server.root_volume.0.volume_id
 					}
 					resource "scaleway_block_snapshot" "block_detached" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id	= scaleway_block_volume.block_detached.id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						project_id 			= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						root_volume_id 			= scaleway_block_snapshot.block_detached.id
 						additional_volume_ids	= [
 							scaleway_block_snapshot.block_from_server.id,
 							scaleway_instance_snapshot.local.id
 						]
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.block_from_server"),
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.block_detached"),
@@ -673,13 +637,9 @@ func TestAccImage_MixedVolumes(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"additional_volume_ids"},
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_image_mixed_volumes"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_image_mixed_volumes", `
 					resource "scaleway_instance_server" "local" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						image 	= "ubuntu_focal"
 						type 	= "DEV1-S"
 						root_volume {
@@ -687,38 +647,38 @@ func TestAccImage_MixedVolumes(t *testing.T) {
 						}
 					}
 					resource "scaleway_instance_server" "block_from_server" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						image 	= "ubuntu_focal"
 						type 	= "DEV1-S"
 					}
 					resource "scaleway_block_volume" "block_detached" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 20
 						iops = 5000
 					}
 
 					resource "scaleway_instance_snapshot" "local" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id	= scaleway_instance_server.local.root_volume.0.volume_id
 					}
 					resource "scaleway_block_snapshot" "block_from_server" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id	= scaleway_instance_server.block_from_server.root_volume.0.volume_id
 					}
 					resource "scaleway_block_snapshot" "block_detached" {
-						project_id	= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id	= scaleway_block_volume.block_detached.id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						project_id 			= scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						root_volume_id 			= scaleway_instance_snapshot.local.id
 						additional_volume_ids	= [
 							scaleway_block_snapshot.block_from_server.id,
 							scaleway_block_snapshot.block_detached.id
 						]
 					}
-				`,
+				`),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.block_from_server"),
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.block_detached"),

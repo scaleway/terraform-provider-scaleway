@@ -28,94 +28,82 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_block_snapshot_list_basic"
-					}
-
+				Config: tt.WithProject("tf_tests_block_snapshot_list_basic", `
 					resource "scaleway_block_volume" "vol1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name       = "test-vol-snapshot-list-1"
 						size_in_gb = 10
 						iops       = 5000
 					}
 
 					resource "scaleway_block_snapshot" "snap1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name      = "test-snapshot-list-1"
 						volume_id = scaleway_block_volume.vol1.id
 					}
-				`,
+				`),
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_block_snapshot_list_basic"
-					}
-
+				Config: tt.WithProject("tf_tests_block_snapshot_list_basic", `
 					resource "scaleway_block_volume" "vol1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name       = "test-vol-snapshot-list-1"
 						size_in_gb = 10
 						iops       = 5000
 					}
 
 					resource "scaleway_block_snapshot" "snap1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name      = "test-snapshot-list-1"
 						volume_id = scaleway_block_volume.vol1.id
 					}
 
 					resource "scaleway_block_volume" "vol2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name       = "test-vol-snapshot-list-2"
 						size_in_gb = 10
 						iops       = 5000
 					}
 
 					resource "scaleway_block_snapshot" "snap2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name      = "test-snapshot-list-2"
 						volume_id = scaleway_block_volume.vol2.id
 						tags      = ["test-tag"]
 					}
-				`,
+				`),
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_block_snapshot_list_basic"
-					}
-
+				Config: tt.WithProject("tf_tests_block_snapshot_list_basic", `
 					resource "scaleway_block_volume" "vol1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name       = "test-vol-snapshot-list-1"
 						size_in_gb = 10
 						iops       = 5000
 					}
 
 					resource "scaleway_block_snapshot" "snap1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name      = "test-snapshot-list-1"
 						volume_id = scaleway_block_volume.vol1.id
 					}
 
 					resource "scaleway_block_volume" "vol2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name       = "test-vol-snapshot-list-2"
 						size_in_gb = 10
 						iops       = 5000
 					}
 
 					resource "scaleway_block_snapshot" "snap2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name      = "test-snapshot-list-2"
 						volume_id = scaleway_block_volume.vol2.id
 						tags      = ["test-tag"]
 					}
 
 					resource "scaleway_block_volume" "vol3" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name       = "test-vol-snapshot-list-3"
 						size_in_gb = 10
 						iops       = 5000
@@ -123,13 +111,13 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "snap3" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name      = "test-snapshot-list-3"
 						volume_id = scaleway_block_volume.vol3.id
 						tags      = ["test-tag"]
 						zone      = "pl-waw-2"
 					}
-				`,
+				`),
 			},
 
 			{

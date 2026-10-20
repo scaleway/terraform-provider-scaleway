@@ -121,13 +121,9 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_template_volumes"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_template_volumes", `
 					resource "scaleway_instance_template" "main" {
-						project_id  = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "GP1-L"
@@ -139,7 +135,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							size_in_gb  = 20
 							tags        = [ "local", "volume" ]
 						}]
-					}`,
+					}`),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-2"),
@@ -158,25 +154,21 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 				),
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_template_volumes"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_template_volumes", `
 					resource "scaleway_block_volume" "sbs" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 15
 						iops       = 5000
 						zone       = "fr-par-2"
 					}
 					resource "scaleway_block_snapshot" "snap" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.sbs.id
 						zone      = "fr-par-2"
 					}
 
 					resource "scaleway_instance_template" "main" {
-						project_id  = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "GP1-L"
@@ -194,7 +186,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							size_in_gb       = 30
 							perf_iops        = 15000
 						}]
-					}`,
+					}`),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.snap"),
@@ -216,25 +208,21 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 				),
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_template_volumes"
-					}
-
+				Config: tt.WithProject("tf_tests_instance_template_volumes", `
 					resource "scaleway_block_volume" "sbs" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 15
 						iops       = 5000
 						zone       = "fr-par-2"
 					}
 					resource "scaleway_block_snapshot" "snap" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						volume_id = scaleway_block_volume.sbs.id
 						zone      = "fr-par-2"
 					}
 
 					resource "scaleway_instance_template" "main" {
-						project_id  = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "L40S-1-48G"
@@ -249,7 +237,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							volume_type = "scratch"
 							size_in_gb  = 300
 						}]
-					}`,
+					}`),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "L40S-1-48G"),
@@ -750,22 +738,19 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_template_filesystems"
-					}
+				Config: tt.WithProject("tf_tests_instance_template_filesystems", `
 					resource "scaleway_file_filesystem" "fs0" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 25
 						tags = [ "scaleway_instance_template", "filesystems", "fs0" ]
 					}
 					resource "scaleway_file_filesystem" "fs1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 30
 						tags = [ "scaleway_instance_template", "filesystems", "fs1" ]
 					}
 					resource "scaleway_file_filesystem" "fs2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 40
 						tags = [ "scaleway_instance_template", "filesystems", "fs2" ]
 					}
@@ -782,7 +767,7 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 							scaleway_file_filesystem.fs0.id,
 							scaleway_file_filesystem.fs1.id,
 						]
-					}`,
+					}`),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "POP2-8C-32G"),
@@ -800,22 +785,19 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_template_filesystems"
-					}
+				Config: tt.WithProject("tf_tests_instance_template_filesystems", `
 					resource "scaleway_file_filesystem" "fs0" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 25
 						tags = [ "scaleway_instance_template", "filesystems", "fs0" ]
 					}
 					resource "scaleway_file_filesystem" "fs1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 30
 						tags = [ "scaleway_instance_template", "filesystems", "fs1" ]
 					}
 					resource "scaleway_file_filesystem" "fs2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 40
 						tags = [ "scaleway_instance_template", "filesystems", "fs2" ]
 					}
@@ -830,7 +812,7 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 							substr(scaleway_file_filesystem.fs1.id, 7, -1),
 							scaleway_file_filesystem.fs2.id,
 						]
-					}`,
+					}`),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "POP2-8C-32G"),
@@ -843,22 +825,19 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 				),
 			},
 			{
-				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf_tests_instance_template_filesystems"
-					}
+				Config: tt.WithProject("tf_tests_instance_template_filesystems", `
 					resource "scaleway_file_filesystem" "fs0" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 25
 						tags = [ "scaleway_instance_template", "filesystems", "fs0" ]
 					}
 					resource "scaleway_file_filesystem" "fs1" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 30
 						tags = [ "scaleway_instance_template", "filesystems", "fs1" ]
 					}
 					resource "scaleway_file_filesystem" "fs2" {
-						project_id = scaleway_account_project.project.id
+						{{PROJECT_ID}}
 						size_in_gb = 40
 						tags = [ "scaleway_instance_template", "filesystems", "fs2" ]
 					}
@@ -870,7 +849,7 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 						server_type = "POP2-8C-32G"
 
 						filesystem_ids = []
-					}`,
+					}`),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "POP2-8C-32G"),
