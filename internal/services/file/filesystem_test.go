@@ -18,8 +18,6 @@ func TestAccFileSystem_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	fileSystemName := "TestAccFileSystem_Basic"
 	fileSystemNameUpdated := "TestAccFileSystem_BasicUpdate"
 	sizeInGB := 100
@@ -30,12 +28,13 @@ func TestAccFileSystem_Basic(t *testing.T) {
 		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_file_system_basic", fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "fs" {
+						{{PROJECT_ID}}
 						name = "%s"
 						size_in_gb = %d
 					}
-				`, fileSystemName, sizeInGB),
+				`, fileSystemName, sizeInGB)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
@@ -46,24 +45,26 @@ func TestAccFileSystem_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_file_system_basic", fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "fs" {
+						{{PROJECT_ID}}
 						name = "%s"
 						size_in_gb = %d
 					}
-				`, fileSystemNameUpdated, sizeInGB),
+				`, fileSystemNameUpdated, sizeInGB)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_file_system_basic", fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "fs" {
+						{{PROJECT_ID}}
 						name = "%s"
 						size_in_gb = %d
 					}
-				`, fileSystemNameUpdated, sizeInGBUpdated),
+				`, fileSystemNameUpdated, sizeInGBUpdated)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGBUpdated)),
@@ -90,12 +91,13 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_file_system_size_too_small_fails", fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "fs" {
+						{{PROJECT_ID}}
 						name = "%s"
 						size_in_gb = %d
 					}
-				`, fileSystemName, sizeInGB),
+				`, fileSystemName, sizeInGB)),
 				ExpectError: regexp.MustCompile(`Attribute size_in_gb value must be between 25 and 50000, got: 24`),
 			},
 		},
@@ -106,8 +108,6 @@ func TestAccFileSystem_SizeGranularity(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	fileSystemName := "TestAccFileSystem_InvalidSizeGranularityFails"
 	sizeInGB := 250
 
@@ -116,12 +116,13 @@ func TestAccFileSystem_SizeGranularity(t *testing.T) {
 		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_file_system_size_granularity", fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "fs" {
+						{{PROJECT_ID}}
 						name = "%s"
 						size_in_gb = %d
 					}
-				`, fileSystemName, sizeInGB),
+				`, fileSystemName, sizeInGB)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
@@ -144,12 +145,13 @@ func TestAccFileSystem_SizeTooLargeFails(t *testing.T) {
 		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_file_system_size_too_large_fails", fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "fs" {
+						{{PROJECT_ID}}
 						name = "%s"
 						size_in_gb = %d
 					}
-				`, fileSystemName, sizeInGB),
+				`, fileSystemName, sizeInGB)),
 				ExpectError: regexp.MustCompile(`Attribute size_in_gb value must be between 25 and 50000, got: 50100`),
 			},
 		},
