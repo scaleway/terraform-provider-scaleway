@@ -121,7 +121,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_instance_template_volumes"
 					}
@@ -139,7 +139,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							size_in_gb  = 20
 							tags        = [ "local", "volume" ]
 						}]
-					}`),
+					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-2"),
@@ -158,7 +158,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_instance_template_volumes"
 					}
@@ -194,7 +194,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							size_in_gb       = 30
 							perf_iops        = 15000
 						}]
-					}`),
+					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.snap"),
@@ -216,7 +216,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_instance_template_volumes"
 					}
@@ -249,7 +249,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							volume_type = "scratch"
 							size_in_gb  = 300
 						}]
-					}`),
+					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "L40S-1-48G"),
