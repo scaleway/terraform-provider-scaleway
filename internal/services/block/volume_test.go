@@ -103,32 +103,31 @@ func TestAccVolume_FromSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: tt.WithProject("tf_tests_block_volume_from_snapshot", `
+				Config: `
 					resource scaleway_block_volume base {
-						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot-base"
 						iops = 5000
 						size_in_gb = 20
 					}
 
 					resource scaleway_block_snapshot main {
-						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot"
 						volume_id = scaleway_block_volume.base.id
 					}
 
 					resource scaleway_block_volume main {
-						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot"
 						iops = 5000
 						snapshot_id = scaleway_block_snapshot.main.id
 					}
-				`),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
@@ -144,33 +143,32 @@ func TestAccVolume_FromSnapshotWithSize(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: tt.WithProject("tf_tests_block_volume_from_snapshot_with_size", `
+				Config: `
 					resource scaleway_block_volume base {
-						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot-base"
 						iops = 5000
 						size_in_gb = 20
 					}
 
 					resource scaleway_block_snapshot main {
-						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot"
 						volume_id = scaleway_block_volume.base.id
 					}
 
 					resource scaleway_block_volume main {
-						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot"
 						iops = 5000
 						snapshot_id = scaleway_block_snapshot.main.id
 						size_in_gb = 30
 					}
-				`),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),

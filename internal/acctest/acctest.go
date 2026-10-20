@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"net/http"
 	"os"
 	"slices"
@@ -250,19 +249,4 @@ func SkipUnlessDefaultProjectID(t *testing.T, tt *TestTools) {
 	if _, ok := tt.Meta.ScwClient().GetDefaultProjectID(); !ok {
 		t.Skip("No default project ID found, skipping test")
 	}
-}
-
-// WithProject renders a Terraform test config, adapted depending on the
-// presence or not of a default project ID.
-func (tt *TestTools) WithProject(projectName, config string) string {
-	if _, ok := tt.Meta.ScwClient().GetDefaultProjectID(); ok {
-		// Remove placeholders
-		return strings.ReplaceAll(config, "{{PROJECT_ID}}", "")
-	}
-
-	// Create a new project from the test's config directly
-	block := fmt.Sprintf("resource \"scaleway_account_project\" \"project\" {\n\tname = %q\n}\n\n", projectName)
-
-	// Replace placeholders with the new project's ID
-	return block + strings.ReplaceAll(config, "{{PROJECT_ID}}", "project_id = scaleway_account_project.project.id")
 }

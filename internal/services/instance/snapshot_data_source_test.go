@@ -13,6 +13,8 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	snapshotName := "tf-snapshot-ds-basic"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -23,9 +25,8 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(tt.WithProject("tf_tests_instance_snapshot_datasource_basic", `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_server" "test" {
-						{{PROJECT_ID}}
 						image = "ubuntu_noble"
 						type = "DEV1-S"
 						root_volume {
@@ -34,15 +35,13 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_instance_snapshot" "from_volume" {
-						{{PROJECT_ID}}
 						name = "%s"
 						volume_id = scaleway_instance_server.test.root_volume.0.volume_id
-					}`), snapshotName),
+					}`, snapshotName),
 			},
 			{
-				Config: fmt.Sprintf(tt.WithProject("tf_tests_instance_snapshot_datasource_basic", `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_server" "test" {
-						{{PROJECT_ID}}
 						image = "ubuntu_noble"
 						type = "DEV1-S"
 						root_volume {
@@ -51,20 +50,17 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_instance_snapshot" "from_volume" {
-						{{PROJECT_ID}}
 						name = "%s"
 						volume_id = scaleway_instance_server.test.root_volume.0.volume_id
 					}
 
 					data "scaleway_instance_snapshot" "by_id" {
-						{{PROJECT_ID}}
 						snapshot_id = scaleway_instance_snapshot.from_volume.id
 					}
 
 					data "scaleway_instance_snapshot" "by_name" {
-						{{PROJECT_ID}}
 						name = scaleway_instance_snapshot.from_volume.name
-					}`), snapshotName),
+					}`, snapshotName),
 				Check: resource.ComposeTestCheckFunc(
 					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_id"),
 					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_name"),
