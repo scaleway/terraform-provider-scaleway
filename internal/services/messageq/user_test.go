@@ -15,6 +15,57 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
+func TestAccUser_Basic_WithProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestVersion(tt)
+	nodeType := fetchAvailableNodeType(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isUserDestroyed(tt),
+			isDeploymentDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_account_project" "project" {
+  name = "tf-tests-user-basic-with-project"
+}
+
+resource "scaleway_messageq_deployment" "main" {
+  project_id = scaleway_account_project.project.id
+  name       = "tf-test-messageq-user"
+  version    = "%s"
+  node_count = 1
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume = {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+
+resource "scaleway_messageq_user" "app" {
+  deployment_id = scaleway_messageq_deployment.main.id
+  name          = "app-user"
+  password      = "AnotherSecurePassword123!"
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
+					isUserPresent(tt, "scaleway_messageq_user.app"),
+					resource.TestCheckResourceAttr("scaleway_messageq_user.app", "name", "app-user"),
+					resource.TestCheckResourceAttrSet("scaleway_messageq_user.app", "deployment_id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

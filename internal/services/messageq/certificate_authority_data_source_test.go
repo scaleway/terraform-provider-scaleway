@@ -8,6 +8,54 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
+func TestAccDataSourceMessageQCertificateAuthority_Basic_WithProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestVersion(tt)
+	nodeType := fetchAvailableNodeType(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_account_project" "project" {
+  name = "tf-tests-data-source-message-qcertificate-authority-basic-with-project"
+}
+
+resource "scaleway_messageq_deployment" "main" {
+  project_id = scaleway_account_project.project.id
+  name       = "tf-test-ds-messageq-ca"
+  version    = "%s"
+  node_count = 1
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume = {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+
+data "scaleway_messageq_certificate_authority" "main" {
+  deployment_id = scaleway_messageq_deployment.main.id
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
+					resource.TestCheckResourceAttrSet("data.scaleway_messageq_certificate_authority.main", "pem"),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_messageq_certificate_authority.main", "deployment_id",
+						"scaleway_messageq_deployment.main", "id",
+					),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDataSourceMessageQCertificateAuthority_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
