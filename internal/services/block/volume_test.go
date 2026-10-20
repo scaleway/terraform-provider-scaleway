@@ -99,6 +99,51 @@ func TestAccVolume_UpdateSize(t *testing.T) {
 	})
 }
 
+func TestAccVolume_FromSnapshot_WithProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf-tests-block-volume-from-snapshot-with-project"
+					}
+
+					resource scaleway_block_volume base {
+						project_id = scaleway_account_project.project.id
+						name = "test-block-volume-from-snapshot-base"
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot main {
+						project_id = scaleway_account_project.project.id
+						name = "test-block-volume-from-snapshot"
+						volume_id = scaleway_block_volume.base.id
+					}
+
+					resource scaleway_block_volume main {
+						project_id = scaleway_account_project.project.id
+						name = "test-block-volume-from-snapshot"
+						iops = 5000
+						snapshot_id = scaleway_block_snapshot.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "snapshot_id", "scaleway_block_snapshot.main", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "size_in_gb", "scaleway_block_volume.base", "size_in_gb"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccVolume_FromSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
