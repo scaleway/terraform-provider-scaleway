@@ -16,24 +16,24 @@ func TestAccSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: tt.WithProject("tf_tests_block_snapshot_basic", `
+				Config: `
 					resource scaleway_block_volume main {
-						{{PROJECT_ID}}
 						iops = 5000
 						size_in_gb = 10
 					}
 
 					resource scaleway_block_snapshot main {
-						{{PROJECT_ID}}
 						name = "test-block-snapshot-basic"
 						volume_id = scaleway_block_volume.main.id
 					}
-				`),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.main", "id"),
@@ -79,6 +79,8 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -89,7 +91,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(tt.WithProject("tf_tests_block_snapshot_from_s3", `
+				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "snapshot-bucket" {
 					  name = "%s"
 					}
@@ -101,14 +103,13 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "qcow-block-snapshot" {
-					  {{PROJECT_ID}}
 					  name = "test-acc-block-snapshot-qcow2"
 					  import {
 					    bucket = scaleway_object.qcow-object.bucket
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
-				`), bucketName),
+				`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.qcow-block-snapshot"),
 					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.qcow-block-snapshot", "id"),
@@ -123,6 +124,8 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-export-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -133,9 +136,8 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(tt.WithProject("tf_tests_block_snapshot_to_s3", `
+				Config: fmt.Sprintf(`
 					resource scaleway_block_volume main {
-						{{PROJECT_ID}}
 						iops = 5000
 						size_in_gb = 10
 					}
@@ -151,7 +153,6 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "qcow-block-snapshot" {
-					  {{PROJECT_ID}}
 					  name = "test-acc-export-block-snapshot-qcow2"
 					  volume_id = scaleway_block_volume.main.id
 					  export {
@@ -159,7 +160,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					    key    = scaleway_object.qcow-object.key
 					  }
 					}
-				`), bucketName),
+				`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.qcow-block-snapshot"),
 					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.qcow-block-snapshot", "id"),
@@ -168,9 +169,8 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(tt.WithProject("tf_tests_block_snapshot_to_s3", `
+				Config: fmt.Sprintf(`
 					resource scaleway_block_volume main {
-						{{PROJECT_ID}}
 						iops = 5000
 						size_in_gb = 10
 					}
@@ -186,7 +186,6 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "qcow-block-export-snapshot" {
-					  {{PROJECT_ID}}
 					  name = "test-acc-export-block-snapshot-qcow2"
 					  volume_id = scaleway_block_volume.main.id
 					  export {
@@ -196,7 +195,6 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "qcow-block-import-snapshot" {
-					  {{PROJECT_ID}}
 					  name = "test-acc-block-snapshot-qcow2"
 					  import {
 					    bucket = scaleway_object.qcow-object.bucket
@@ -205,13 +203,12 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 					}
 
 					resource scaleway_block_volume new-volume {
-						{{PROJECT_ID}}
 						name = "test-block-volume-from-snapshot"
 						iops = 5000
 						snapshot_id = scaleway_block_snapshot.qcow-block-import-snapshot.id
 					}
 
-				`), bucketName),
+				`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.qcow-block-export-snapshot"),
 					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.qcow-block-export-snapshot", "id"),

@@ -19,6 +19,8 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	identity1 := identitycheck.Identity()
 	identity2 := identitycheck.Identity()
 	identity3 := identitycheck.Identity()
@@ -28,52 +30,46 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 		CheckDestroy:             accounttestfuncs.IsProjectDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: tt.WithProject("tf_tests_file_filesystem_list_basic", `
+				Config: `
 				resource "scaleway_file_filesystem" "fs1" {
-					{{PROJECT_ID}}
 					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
-				}`),
+				}`,
 			},
 			{
-				Config: tt.WithProject("tf_tests_file_filesystem_list_basic", `
+				Config: `
 				resource "scaleway_file_filesystem" "fs1" {
-					{{PROJECT_ID}}
 					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
 				}
 
 				resource "scaleway_file_filesystem" "fs2" {
-					{{PROJECT_ID}}
 					name = "test-fs02"
 					size_in_gb = 200
 					tags = ["foo"]
-				}`),
+				}`,
 			},
 			{
-				Config: tt.WithProject("tf_tests_file_filesystem_list_basic", `
+				Config: `
 				resource "scaleway_file_filesystem" "fs1" {
-					{{PROJECT_ID}}
 					name = "test-fs01"
 					size_in_gb = 100
 					tags = ["foo", "bar"]
 				}
 
 				resource "scaleway_file_filesystem" "fs2" {
-					{{PROJECT_ID}}
 					name = "test-fs02"
 					size_in_gb = 200
 					tags = ["foo"]
 				}
 
 				resource "scaleway_file_filesystem" "fs3" {
-					{{PROJECT_ID}}
 					name = "test-fs03"
 					size_in_gb = 300
 					tags = ["bar"]
-				}`),
+				}`,
 				ConfigStateChecks: []statecheck.StateCheck{
 					identity1.GetIdentity("scaleway_file_filesystem.fs1"),
 					identity2.GetIdentity("scaleway_file_filesystem.fs2"),

@@ -151,6 +151,8 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	var bucketName string
 	for {
 		bucketName = sdkacctest.RandomWithPrefix("tf-test-action-instance-export-snap-sbs")
@@ -172,9 +174,8 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(tt.WithProject("tf_tests_instance_export_snapshot_sbs", `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_server" "to_snapshot" {
-						{{PROJECT_ID}}
 						name = "test-tf-action-instance-export-snap-sbs"
 						type = "DEV1-S"
 						image = "ubuntu_jammy"
@@ -185,7 +186,6 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 					}
 
 					resource "scaleway_block_snapshot" "main" {
-						{{PROJECT_ID}}
 						volume_id = scaleway_instance_server.to_snapshot.root_volume.0.volume_id
 
 						lifecycle {
@@ -206,16 +206,15 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 							bucket = scaleway_object_bucket.main.name
 							key = %q
 						}
-					}`), size, bucketName, snapshotKey),
+					}`, size, bucketName, snapshotKey),
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
 				),
 			},
 			{
-				Config: fmt.Sprintf(tt.WithProject("tf_tests_instance_export_snapshot_sbs", `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_server" "to_snapshot" {
-						{{PROJECT_ID}}
 						name = "test-tf-action-instance-export-snap-sbs"
 						type = "DEV1-S"
 						image = "ubuntu_jammy"
@@ -226,7 +225,6 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 					}
 			
 					resource "scaleway_block_snapshot" "main" {
-						{{PROJECT_ID}}
 						volume_id = scaleway_instance_server.to_snapshot.root_volume.0.volume_id
 			
 						lifecycle {
@@ -252,7 +250,7 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 							bucket = scaleway_object_bucket.main.name
 							key =  %[3]q
 						}
-					}`), size, bucketName, snapshotKey),
+					}`, size, bucketName, snapshotKey),
 				// The check on this step is the data source.
 				// If the snapshot does not exist, the data source will raise an error
 			},
