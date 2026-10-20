@@ -14,6 +14,55 @@ import (
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
+func TestAccImage_Basic_WithProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isImageDestroyed(tt),
+			instancechecks.IsSnapshotDestroyed(tt),
+			instancechecks.IsVolumeDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf-tests-instance-image-basic-with-project"
+					}
+
+					resource "scaleway_block_volume" "main" {
+						project_id = scaleway_account_project.project.id
+						size_in_gb = 20
+						iops = 5000
+					}
+
+					resource "scaleway_block_snapshot" "main" {
+						project_id = scaleway_account_project.project.id
+						volume_id = scaleway_block_volume.main.id
+					}
+
+					resource "scaleway_instance_image" "main" {
+						project_id = scaleway_account_project.project.id
+						root_volume_id 	= scaleway_block_snapshot.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volume_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "state", "available"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccImage_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

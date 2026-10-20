@@ -11,6 +11,35 @@ import (
 	accounttestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account/testfuncs"
 )
 
+func TestAccListFileSystems_Basic_WithProject(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccListFileSystems_Basic_WithProject because list resources are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             accounttestfuncs.IsProjectDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_account_project" "project" {
+					name = "tf-tests-file-filesystem-list-basic-with-project"
+				}
+
+				resource "scaleway_file_filesystem" "fs1" {
+					project_id = scaleway_account_project.project.id
+					name = "test-fs01"
+					size_in_gb = 100
+					tags = ["foo", "bar"]
+				}`,
+			},
+		},
+	})
+}
+
 func TestAccListFileSystems_Basic(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
 		t.Skip("Skipping TestAccListFSs_Basic because list resources are not yet supported on OpenTofu")
