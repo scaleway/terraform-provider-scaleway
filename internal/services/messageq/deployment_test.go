@@ -22,8 +22,6 @@ func TestAccDeployment_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 
@@ -32,8 +30,9 @@ func TestAccDeployment_Basic(t *testing.T) {
 		CheckDestroy:             isDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_deployment_basic", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-basic"
   version    = "%s"
   node_count = 1
@@ -45,7 +44,7 @@ resource "scaleway_messageq_deployment" "main" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "name", "tf-test-messageq-basic"),
@@ -58,8 +57,9 @@ resource "scaleway_messageq_deployment" "main" {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_deployment_basic", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-basic"
   version    = "%s"
   node_count = 1
@@ -72,7 +72,7 @@ resource "scaleway_messageq_deployment" "main" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "tags.#", "2"),
@@ -94,8 +94,6 @@ func TestAccDeployment_Upgrade(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 	resourceID := ""
@@ -105,8 +103,9 @@ func TestAccDeployment_Upgrade(t *testing.T) {
 		CheckDestroy:             isDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_deployment_upgrade", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-upgrade"
   version    = "%s"
   node_count = 1
@@ -118,7 +117,7 @@ resource "scaleway_messageq_deployment" "main" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					acctest.CheckResourceIDPersisted("scaleway_messageq_deployment.main", &resourceID),
@@ -126,8 +125,9 @@ resource "scaleway_messageq_deployment" "main" {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_deployment_upgrade", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-upgrade"
   version    = "%s"
   node_count = 1
@@ -139,7 +139,7 @@ resource "scaleway_messageq_deployment" "main" {
     size_in_gb = 10
   }
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					acctest.CheckResourceIDPersisted("scaleway_messageq_deployment.main", &resourceID),
@@ -154,8 +154,6 @@ func TestAccDeployment_WithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 
@@ -167,17 +165,20 @@ func TestAccDeployment_WithPrivateNetwork(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_deployment_with_private_network", fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
+	{{PROJECT_ID}}
   name = "tf-test-messageq-vpc"
 }
 
 resource "scaleway_vpc_private_network" "main" {
+	{{PROJECT_ID}}
   name   = "tf-test-messageq-pn"
   vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_messageq_deployment" "pn" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-pn"
   version    = "%s"
   node_count = 1
@@ -192,7 +193,7 @@ resource "scaleway_messageq_deployment" "pn" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.pn", "name", "tf-test-messageq-pn"),
@@ -201,17 +202,20 @@ resource "scaleway_messageq_deployment" "pn" {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_deployment_with_private_network", fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
+	{{PROJECT_ID}}
   name = "tf-test-messageq-vpc"
 }
 
 resource "scaleway_vpc_private_network" "main" {
+	{{PROJECT_ID}}
   name   = "tf-test-messageq-pn"
   vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_messageq_deployment" "pn" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-pn"
   version    = "%s"
   node_count = 1
@@ -230,7 +234,7 @@ resource "scaleway_messageq_deployment" "pn" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.pn", "endpoints.#", "1"),
@@ -245,17 +249,20 @@ resource "scaleway_messageq_deployment" "pn" {
 				ImportStateVerifyIgnore: []string{"password", "user_name", "password_wo", "password_wo_version"},
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_deployment_with_private_network", fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
+	{{PROJECT_ID}}
   name = "tf-test-messageq-vpc"
 }
 
 resource "scaleway_vpc_private_network" "main" {
+	{{PROJECT_ID}}
   name   = "tf-test-messageq-pn"
   vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_messageq_deployment" "pn" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-pn"
   version    = "%s"
   node_count = 1
@@ -270,7 +277,7 @@ resource "scaleway_messageq_deployment" "pn" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.pn", "endpoints.#", "1"),
@@ -286,8 +293,6 @@ func TestAccDeployment_UpdatePrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 
@@ -299,23 +304,27 @@ func TestAccDeployment_UpdatePrivateNetwork(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_deployment_update_private_network", fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
+	{{PROJECT_ID}}
   name = "tf-test-messageq-vpc-update"
 }
 
 resource "scaleway_vpc_private_network" "pn1" {
+	{{PROJECT_ID}}
   name   = "tf-test-messageq-pn1"
   vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_vpc_private_network" "pn2" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-pn2"
   vpc_id     = scaleway_vpc.main.id
   depends_on = [scaleway_vpc_private_network.pn1]
 }
 
 resource "scaleway_messageq_deployment" "pn" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-pn-update"
   version    = "%s"
   node_count = 1
@@ -334,7 +343,7 @@ resource "scaleway_messageq_deployment" "pn" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.pn", "endpoints.#", "1"),
@@ -343,23 +352,27 @@ resource "scaleway_messageq_deployment" "pn" {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_deployment_update_private_network", fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
+	{{PROJECT_ID}}
   name = "tf-test-messageq-vpc-update"
 }
 
 resource "scaleway_vpc_private_network" "pn1" {
+	{{PROJECT_ID}}
   name   = "tf-test-messageq-pn1"
   vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_vpc_private_network" "pn2" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-pn2"
   vpc_id     = scaleway_vpc.main.id
   depends_on = [scaleway_vpc_private_network.pn1]
 }
 
 resource "scaleway_messageq_deployment" "pn" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-pn-update"
   version    = "%s"
   node_count = 1
@@ -378,7 +391,7 @@ resource "scaleway_messageq_deployment" "pn" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.pn", "endpoints.#", "1"),

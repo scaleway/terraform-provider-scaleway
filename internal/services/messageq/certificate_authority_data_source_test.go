@@ -12,8 +12,6 @@ func TestAccDataSourceMessageQCertificateAuthority_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 
@@ -22,8 +20,9 @@ func TestAccDataSourceMessageQCertificateAuthority_Basic(t *testing.T) {
 		CheckDestroy:             isDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_data_source_message_qcertificate_authority_basic", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-ds-messageq-ca"
   version    = "%s"
   node_count = 1
@@ -39,7 +38,7 @@ resource "scaleway_messageq_deployment" "main" {
 data "scaleway_messageq_certificate_authority" "main" {
   deployment_id = scaleway_messageq_deployment.main.id
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					resource.TestCheckResourceAttrSet("data.scaleway_messageq_certificate_authority.main", "pem"),
