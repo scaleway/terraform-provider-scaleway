@@ -108,15 +108,9 @@ func NewVersionAPIWithRegionAndID(m any, id string) (*secret.API, scw.Region, st
 func CreateSecretVersion(ctx context.Context, m any, secretID string, value string, description string) (*secret.SecretVersion, error) {
 	client := meta.ExtractScwClient(m)
 
-	region, id, err := regional.ParseID(secretID)
+	region, id, err := regional.ResolveID(secretID, "", client)
 	if err != nil {
-		id = secretID
-
-		if defaultRegion, hasDefaultRegion := client.GetDefaultRegion(); hasDefaultRegion {
-			region = defaultRegion
-		} else {
-			return nil, fmt.Errorf("cannot determine the region of the secret %s: use a regional ID (region/uuid) or set a default region in the provider configuration", secretID)
-		}
+		return nil, err
 	}
 
 	api := secret.NewAPI(client)
