@@ -2,6 +2,7 @@ package function_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -45,6 +46,7 @@ func TestAccFunctionCron_Basic(t *testing.T) {
 					testAccCheckFunctionCronExists(tt, "scaleway_function_cron.main"),
 					resource.TestCheckResourceAttr("scaleway_function_cron.main", "schedule", "0 0 * * *"),
 					resource.TestCheckResourceAttr("scaleway_function_cron.main", "name", "tf-tests-cron-basic"),
+					resource.TestMatchResourceAttr("scaleway_function_cron.main", "srn", regexp.MustCompile(`^srn://functions\..+/regions/.+/crons/.+$`)),
 				),
 			},
 		},

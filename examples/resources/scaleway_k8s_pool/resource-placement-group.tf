@@ -4,6 +4,10 @@ resource "scaleway_vpc_private_network" "main" {
   vpc_id = scaleway_vpc.main.id
 }
 
+resource "scaleway_vpc_private_network" "other" {
+  vpc_id = scaleway_vpc.main.id
+}
+
 resource "scaleway_k8s_cluster" "main" {
   version                     = "1.35.3"
   cni                         = "cilium"
@@ -20,6 +24,7 @@ resource "scaleway_k8s_pool" "main" {
   node_type          = "DEV1-M"
   size               = 3
   placement_group_id = scaleway_instance_placement_group.main.id
+  private_network_id = scaleway_vpc_private_network.other.id
 
   # Make sure that the new resource is created before destroying the old one on changes that require replacement
   lifecycle {

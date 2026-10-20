@@ -21,7 +21,7 @@ import (
 	"github.com/aws/smithy-go"
 	smithyendpoints "github.com/aws/smithy-go/endpoints"
 	"github.com/aws/smithy-go/middleware"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/hashicorp/aws-sdk-go-base/v2/tfawserr"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-multierror"
@@ -786,7 +786,7 @@ func transitionHash(v any) int {
 		buf.WriteString(v.(string) + "-")
 	}
 
-	return types.StringHashcode(buf.String())
+	return schema.HashString(buf.String())
 }
 
 func noncurrentVersionTransitionHash(v any) int {
@@ -810,7 +810,7 @@ func noncurrentVersionTransitionHash(v any) int {
 		buf.WriteString(v.(string) + "-")
 	}
 
-	return types.StringHashcode(buf.String())
+	return schema.HashString(buf.String())
 }
 
 const (

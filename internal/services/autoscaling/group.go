@@ -53,6 +53,7 @@ type autoScalingGroupResourceModel struct {
 	ProjectID                 types.String `tfsdk:"project_id"`
 	UpdatedAt                 types.String `tfsdk:"updated_at"`
 	CreatedAt                 types.String `tfsdk:"created_at"`
+	SRN                       types.String `tfsdk:"srn"`
 }
 
 func (r *AutoScalingGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -112,6 +113,10 @@ func (r *AutoScalingGroupResource) Schema(_ context.Context, _ resource.SchemaRe
 			"updated_at": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The last update timestamp of the AutoScaling Group.",
+			},
+			"srn": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the AutoScaling Group.",
 			},
 			"project_id": schema.StringAttribute{
 				Optional:            true,
@@ -424,6 +429,8 @@ func flattenGroup(ctx context.Context, group *autoscaling.Group, zone scw.Zone, 
 	} else {
 		model.UpdatedAt = types.StringNull()
 	}
+
+	model.SRN = types.StringValue(group.Srn)
 
 	return model
 }

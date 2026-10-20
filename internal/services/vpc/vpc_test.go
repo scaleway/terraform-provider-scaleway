@@ -128,6 +128,24 @@ func TestAccVPC_DisableRouting(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
+					  name           = "test-vpc-disable-routing"
+					  enable_routing = false
+					}
+				`,
+				ExpectError: regexp.MustCompile("routing cannot be disabled on this VPC"),
+			},
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name                             = "test-vpc-disable-routing"
+					  enable_custom_routes_propagation = false
+					}
+				`,
+				ExpectError: regexp.MustCompile("custom routes propagation cannot be disabled on this VPC"),
+			},
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
 					  name = "test-vpc-disable-routing"
 					}
 				`,

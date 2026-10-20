@@ -287,9 +287,10 @@ func (r *KeyMaterialResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	importReq := &key_manager.ImportKeyMaterialRequest{
-		Region:      region,
-		KeyID:       keyID,
-		KeyMaterial: keyMaterialBytes,
+		Region: region,
+		KeyID:  keyID,
+		//nolint:staticcheck // SA1019: KeyMaterial is deprecated, but alternative encrypted_key_material is not available in the API yet
+		KeyMaterial: &keyMaterialBytes,
 	}
 
 	if !configData.SaltWo.IsNull() && !configData.SaltWo.IsUnknown() {

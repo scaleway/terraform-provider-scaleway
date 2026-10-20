@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -136,7 +137,7 @@ func (a *TriggerTestAlertAction) Invoke(ctx context.Context, req action.InvokeRe
 		region = defaultRegion
 	}
 
-	err := retryOn403(ctx, func() error {
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		return a.regionalAPI.TriggerTestAlert(&cockpit.RegionalAPITriggerTestAlertRequest{
 			ProjectID: data.ProjectID.ValueString(),
 			Region:    region,

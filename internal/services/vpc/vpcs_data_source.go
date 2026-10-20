@@ -92,7 +92,7 @@ func DataSourceVPCsRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	res, err := transport.RetryOn403Value(ctx, func() (*vpc.ListVPCsResponse, error) {
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListVPCsResponse, error) {
 		return vpcAPI.ListVPCs(&vpc.ListVPCsRequest{
 			Region:    region,
 			Tags:      types.ExpandStrings(d.Get("tags")),

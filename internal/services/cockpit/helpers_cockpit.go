@@ -53,14 +53,6 @@ func NewAPIWithRegionAndID(m any, id string) (*cockpit.RegionalAPI, scw.Region, 
 	return api, region, id, nil
 }
 
-func retryOn403(ctx context.Context, fn func() error) error {
-	return transport.RetryOn403(ctx, fn)
-}
-
-func retryOn403Value[T any](ctx context.Context, fn func() (T, error)) (T, error) {
-	return transport.RetryOn403Value(ctx, fn)
-}
-
 func waitForExporter(
 	ctx context.Context,
 	api *cockpit.RegionalAPI,
@@ -68,7 +60,7 @@ func waitForExporter(
 	exporterID string,
 	timeout time.Duration,
 ) (*cockpit.Exporter, error) {
-	return retryOn403Value(ctx, func() (*cockpit.Exporter, error) {
+	return transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
 		return api.WaitForExporter(&cockpit.WaitForExporterRequest{
 			Region:        region,
 			ExporterID:    exporterID,

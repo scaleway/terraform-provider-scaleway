@@ -1,6 +1,7 @@
 package opensearch_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -102,11 +103,11 @@ func isDeploymentPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc
 			return err
 		}
 
-		err = transport.RetryOn403(tt.T.Context(), func() error {
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
 			_, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-			}, scw.WithContext(tt.T.Context()))
+			}, scw.WithContext(ctx))
 
 			return err
 		})

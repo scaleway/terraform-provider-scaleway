@@ -13,30 +13,74 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 299
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"test-ds-instance-placement-group-basic", "id":"d71de19f-1b23-46a6-b752-a95599adb839", "policy_type":"max_availability", "tags":[], "created_at":"2026-07-30T12:56:30.285941Z", "updated_at":"2026-07-30T12:56:30.285941Z", "zone":"fr-par-1"}'
+        content_length: 391
+        body: '{"srn":"srn://instance.scw.eu/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test-ds-instance-placement-group-basic","id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","policy_type":"max_availability","tags":[],"created_at":"2026-10-15T10:09:08.036097Z","updated_at":"2026-10-15T10:09:08.036097Z","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "299"
+                - "391"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:30 GMT
+                - Thu, 15 Oct 2026 10:09:08 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 64cf14d6-bb69-492b-b85c-fc3f5a640389
+                - 7a170686-ecc0-45fd-b9d7-bbde2a41431b
         status: 200 OK
         code: 200
-        duration: 329.551255ms
+        duration: 402.476348ms
     - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/metadata
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 59
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
+        headers:
+            Content-Length:
+                - "59"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 15 Oct 2026 10:09:08 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - fd27b9ff-0915-473e-9a46-fbe0050c64b6
+        status: 200 OK
+        code: 200
+        duration: 24.407347ms
+    - id: 2
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -48,61 +92,35 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: PATCH
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         content_length: 344
-        body: '{"placement_group": {"id": "d71de19f-1b23-46a6-b752-a95599adb839", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        body: '{"placement_group": {"id": "999eceff-eb8f-4d86-bcb3-67e0ee266090", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
                 - "344"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:30 GMT
+                - Thu, 15 Oct 2026 10:09:08 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 19b4a7e3-aead-4b7d-b361-3632a48d9384
+                - 47e2694e-3c46-4399-b980-510051ab222c
         status: 200 OK
         code: 200
-        duration: 126.901576ms
-    - id: 2
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/d71de19f-1b23-46a6-b752-a95599adb839
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 344
-        body: '{"placement_group": {"id": "d71de19f-1b23-46a6-b752-a95599adb839", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
-        headers:
-            Content-Length:
-                - "344"
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 30 Jul 2026 12:56:30 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 43bdd142-91db-406c-9457-38a182e12777
-        status: 200 OK
-        code: 200
-        duration: 42.267389ms
+        duration: 198.261411ms
     - id: 3
       request:
         proto: HTTP/1.1
@@ -112,29 +130,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 299
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"test-ds-instance-placement-group-basic", "id":"d71de19f-1b23-46a6-b752-a95599adb839", "policy_type":"max_availability", "tags":[], "created_at":"2026-07-30T12:56:30.285941Z", "updated_at":"2026-07-30T12:56:30.285941Z", "zone":"fr-par-1"}'
+        content_length: 344
+        body: '{"placement_group": {"id": "999eceff-eb8f-4d86-bcb3-67e0ee266090", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
-                - "299"
+                - "344"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:30 GMT
+                - Thu, 15 Oct 2026 10:09:08 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 0fad42a3-aed1-47eb-b1a3-675b982d00c1
+                - 3fc1dbca-7faf-4c5d-bb8c-e71b304aab4e
         status: 200 OK
         code: 200
-        duration: 48.749479ms
+        duration: 168.002458ms
     - id: 4
       request:
         proto: HTTP/1.1
@@ -144,30 +168,74 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 391
+        body: '{"srn":"srn://instance.scw.eu/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test-ds-instance-placement-group-basic","id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","policy_type":"max_availability","tags":[],"created_at":"2026-10-15T10:09:08.036097Z","updated_at":"2026-10-15T10:09:08.036097Z","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "391"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 15 Oct 2026 10:09:08 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - dc16f785-3d51-4ade-9082-883ff54461eb
+        status: 200 OK
+        code: 200
+        duration: 67.512841ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         content_length: 344
-        body: '{"placement_group": {"id": "d71de19f-1b23-46a6-b752-a95599adb839", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        body: '{"placement_group": {"id": "999eceff-eb8f-4d86-bcb3-67e0ee266090", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
                 - "344"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:30 GMT
+                - Thu, 15 Oct 2026 10:09:08 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - c0cf7ff7-9a37-4086-b74b-38e14d4ffc45
+                - 57bc5f50-4b2a-4e79-9519-4068096bd4d2
         status: 200 OK
         code: 200
-        duration: 48.801007ms
-    - id: 5
+        duration: 138.628951ms
+    - id: 6
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -183,61 +251,35 @@ interactions:
                 - 105bdce1-64c0-48ab-899d-868455867ecf
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups?name=test-ds-instance-placement-group-basic&order_by=created_at_desc&project_id=105bdce1-64c0-48ab-899d-868455867ecf
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 339
-        body: '{"placement_groups":[{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"test-ds-instance-placement-group-basic", "id":"d71de19f-1b23-46a6-b752-a95599adb839", "policy_type":"max_availability", "tags":[], "created_at":"2026-07-30T12:56:30.285941Z", "updated_at":"2026-07-30T12:56:30.285941Z", "zone":"fr-par-1"}], "total_count":1}'
+        content_length: 430
+        body: '{"placement_groups":[{"srn":"srn://instance.scw.eu/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test-ds-instance-placement-group-basic","id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","policy_type":"max_availability","tags":[],"created_at":"2026-10-15T10:09:08.036097Z","updated_at":"2026-10-15T10:09:08.036097Z","zone":"fr-par-1"}],"total_count":1}'
         headers:
             Content-Length:
-                - "339"
+                - "430"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:30 GMT
+                - Thu, 15 Oct 2026 10:09:08 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 9a0605bc-0646-4d0c-8254-3daad40a06d0
+                - b79b3712-7a04-4b07-80d1-20cfcdfa1516
         status: 200 OK
         code: 200
-        duration: 249.177126ms
-    - id: 6
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/d71de19f-1b23-46a6-b752-a95599adb839
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 344
-        body: '{"placement_group": {"id": "d71de19f-1b23-46a6-b752-a95599adb839", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
-        headers:
-            Content-Length:
-                - "344"
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 30 Jul 2026 12:56:30 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - b6753959-d267-4395-bf43-ef82f70c8a36
-        status: 200 OK
-        code: 200
-        duration: 49.836806ms
+        duration: 206.902533ms
     - id: 7
       request:
         proto: HTTP/1.1
@@ -247,29 +289,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 299
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"test-ds-instance-placement-group-basic", "id":"d71de19f-1b23-46a6-b752-a95599adb839", "policy_type":"max_availability", "tags":[], "created_at":"2026-07-30T12:56:30.285941Z", "updated_at":"2026-07-30T12:56:30.285941Z", "zone":"fr-par-1"}'
+        content_length: 344
+        body: '{"placement_group": {"id": "999eceff-eb8f-4d86-bcb3-67e0ee266090", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
-                - "299"
+                - "344"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:30 GMT
+                - Thu, 15 Oct 2026 10:09:08 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "45"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - ff8b79bb-22cb-41b9-af84-87fc5ea3f4e8
+                - 1a761846-ef09-4449-80cc-76c2ed4edf9c
         status: 200 OK
         code: 200
-        duration: 41.50748ms
+        duration: 143.238721ms
     - id: 8
       request:
         proto: HTTP/1.1
@@ -279,29 +327,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 299
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"test-ds-instance-placement-group-basic", "id":"d71de19f-1b23-46a6-b752-a95599adb839", "policy_type":"max_availability", "tags":[], "created_at":"2026-07-30T12:56:30.285941Z", "updated_at":"2026-07-30T12:56:30.285941Z", "zone":"fr-par-1"}'
+        content_length: 391
+        body: '{"srn":"srn://instance.scw.eu/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test-ds-instance-placement-group-basic","id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","policy_type":"max_availability","tags":[],"created_at":"2026-10-15T10:09:08.036097Z","updated_at":"2026-10-15T10:09:08.036097Z","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "299"
+                - "391"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:31 GMT
+                - Thu, 15 Oct 2026 10:09:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 74dff5a0-a899-4624-ab2e-3d82e61d46b6
+                - eb7721b4-5408-4d02-94b1-26ebc574182b
         status: 200 OK
         code: 200
-        duration: 50.063423ms
+        duration: 156.135988ms
     - id: 9
       request:
         proto: HTTP/1.1
@@ -311,29 +365,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 344
-        body: '{"placement_group": {"id": "d71de19f-1b23-46a6-b752-a95599adb839", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        content_length: 391
+        body: '{"srn":"srn://instance.scw.eu/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test-ds-instance-placement-group-basic","id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","policy_type":"max_availability","tags":[],"created_at":"2026-10-15T10:09:08.036097Z","updated_at":"2026-10-15T10:09:08.036097Z","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "344"
+                - "391"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:31 GMT
+                - Thu, 15 Oct 2026 10:09:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 6e36be6d-353a-4c7a-9cfb-9b22826254df
+                - 29231685-fab3-48a3-8093-b76c5915dd2d
         status: 200 OK
         code: 200
-        duration: 54.846324ms
+        duration: 148.396042ms
     - id: 10
       request:
         proto: HTTP/1.1
@@ -350,29 +410,35 @@ interactions:
                 - 105bdce1-64c0-48ab-899d-868455867ecf
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups?name=test-ds-instance-placement-group-basic&order_by=created_at_desc&project_id=105bdce1-64c0-48ab-899d-868455867ecf
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 339
-        body: '{"placement_groups":[{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"test-ds-instance-placement-group-basic", "id":"d71de19f-1b23-46a6-b752-a95599adb839", "policy_type":"max_availability", "tags":[], "created_at":"2026-07-30T12:56:30.285941Z", "updated_at":"2026-07-30T12:56:30.285941Z", "zone":"fr-par-1"}], "total_count":1}'
+        content_length: 430
+        body: '{"placement_groups":[{"srn":"srn://instance.scw.eu/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test-ds-instance-placement-group-basic","id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","policy_type":"max_availability","tags":[],"created_at":"2026-10-15T10:09:08.036097Z","updated_at":"2026-10-15T10:09:08.036097Z","zone":"fr-par-1"}],"total_count":1}'
         headers:
             Content-Length:
-                - "339"
+                - "430"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:31 GMT
+                - Thu, 15 Oct 2026 10:09:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 1547531f-f8f2-41b8-9993-42c35733c910
+                - 35433648-59ff-46f0-b2f0-c47d882124d5
         status: 200 OK
         code: 200
-        duration: 253.604147ms
+        duration: 171.311632ms
     - id: 11
       request:
         proto: HTTP/1.1
@@ -382,29 +448,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         content_length: 344
-        body: '{"placement_group": {"id": "d71de19f-1b23-46a6-b752-a95599adb839", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        body: '{"placement_group": {"id": "999eceff-eb8f-4d86-bcb3-67e0ee266090", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
                 - "344"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:31 GMT
+                - Thu, 15 Oct 2026 10:09:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - aa76199f-8e52-4157-a495-7b8b0a079ceb
+                - b79dd386-54e9-4a1f-b493-19237070405d
         status: 200 OK
         code: 200
-        duration: 60.253841ms
+        duration: 156.42339ms
     - id: 12
       request:
         proto: HTTP/1.1
@@ -414,29 +486,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 299
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"test-ds-instance-placement-group-basic", "id":"d71de19f-1b23-46a6-b752-a95599adb839", "policy_type":"max_availability", "tags":[], "created_at":"2026-07-30T12:56:30.285941Z", "updated_at":"2026-07-30T12:56:30.285941Z", "zone":"fr-par-1"}'
+        content_length: 344
+        body: '{"placement_group": {"id": "999eceff-eb8f-4d86-bcb3-67e0ee266090", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
-                - "299"
+                - "344"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:31 GMT
+                - Thu, 15 Oct 2026 10:09:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - b6ec6c9b-c3bc-457c-849f-5a3e7bcf703a
+                - 7fca5997-8fe7-4b7d-8cdc-bec64d00277b
         status: 200 OK
         code: 200
-        duration: 49.744763ms
+        duration: 179.347105ms
     - id: 13
       request:
         proto: HTTP/1.1
@@ -446,29 +524,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 344
-        body: '{"placement_group": {"id": "d71de19f-1b23-46a6-b752-a95599adb839", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        content_length: 391
+        body: '{"srn":"srn://instance.scw.eu/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test-ds-instance-placement-group-basic","id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","policy_type":"max_availability","tags":[],"created_at":"2026-10-15T10:09:08.036097Z","updated_at":"2026-10-15T10:09:08.036097Z","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "344"
+                - "391"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:31 GMT
+                - Thu, 15 Oct 2026 10:09:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - c673b163-0639-4d51-b706-12494a58b9db
+                - bf16aef9-a68f-4791-ad71-08bc7780f9f6
         status: 200 OK
         code: 200
-        duration: 249.398171ms
+        duration: 61.857555ms
     - id: 14
       request:
         proto: HTTP/1.1
@@ -478,29 +562,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 299
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"test-ds-instance-placement-group-basic", "id":"d71de19f-1b23-46a6-b752-a95599adb839", "policy_type":"max_availability", "tags":[], "created_at":"2026-07-30T12:56:30.285941Z", "updated_at":"2026-07-30T12:56:30.285941Z", "zone":"fr-par-1"}'
+        content_length: 344
+        body: '{"placement_group": {"id": "999eceff-eb8f-4d86-bcb3-67e0ee266090", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
-                - "299"
+                - "344"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:31 GMT
+                - Thu, 15 Oct 2026 10:09:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 6c3e51b1-c55d-4248-aebb-a9ac2650bafc
+                - 2932c2e6-336a-4355-a479-e31b0735d46a
         status: 200 OK
         code: 200
-        duration: 54.494121ms
+        duration: 132.318812ms
     - id: 15
       request:
         proto: HTTP/1.1
@@ -510,29 +600,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 344
-        body: '{"placement_group": {"id": "d71de19f-1b23-46a6-b752-a95599adb839", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        content_length: 391
+        body: '{"srn":"srn://instance.scw.eu/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test-ds-instance-placement-group-basic","id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","policy_type":"max_availability","tags":[],"created_at":"2026-10-15T10:09:08.036097Z","updated_at":"2026-10-15T10:09:08.036097Z","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "344"
+                - "391"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:31 GMT
+                - Thu, 15 Oct 2026 10:09:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - d677c7d7-23cc-48cf-ad96-993e89cd3431
+                - bb810694-4f46-44d2-a6ac-dde7a061e0ce
         status: 200 OK
         code: 200
-        duration: 41.744025ms
+        duration: 66.394398ms
     - id: 16
       request:
         proto: HTTP/1.1
@@ -549,29 +645,35 @@ interactions:
                 - 105bdce1-64c0-48ab-899d-868455867ecf
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups?name=test-ds-instance-placement-group-basic&order_by=created_at_desc&project_id=105bdce1-64c0-48ab-899d-868455867ecf
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 339
-        body: '{"placement_groups":[{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"test-ds-instance-placement-group-basic", "id":"d71de19f-1b23-46a6-b752-a95599adb839", "policy_type":"max_availability", "tags":[], "created_at":"2026-07-30T12:56:30.285941Z", "updated_at":"2026-07-30T12:56:30.285941Z", "zone":"fr-par-1"}], "total_count":1}'
+        content_length: 430
+        body: '{"placement_groups":[{"srn":"srn://instance.scw.eu/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test-ds-instance-placement-group-basic","id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","policy_type":"max_availability","tags":[],"created_at":"2026-10-15T10:09:08.036097Z","updated_at":"2026-10-15T10:09:08.036097Z","zone":"fr-par-1"}],"total_count":1}'
         headers:
             Content-Length:
-                - "339"
+                - "430"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:31 GMT
+                - Thu, 15 Oct 2026 10:09:10 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - d3e685e6-4177-4168-ad29-5d3a679552c9
+                - ab95046e-d3d4-4ba8-8020-983f718ad90e
         status: 200 OK
         code: 200
-        duration: 224.203624ms
+        duration: 169.995828ms
     - id: 17
       request:
         proto: HTTP/1.1
@@ -581,29 +683,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         content_length: 344
-        body: '{"placement_group": {"id": "d71de19f-1b23-46a6-b752-a95599adb839", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        body: '{"placement_group": {"id": "999eceff-eb8f-4d86-bcb3-67e0ee266090", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
                 - "344"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:32 GMT
+                - Thu, 15 Oct 2026 10:09:10 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "45"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 0bb977a5-bdc1-47db-9456-e9a117fd2e05
+                - c5140bbc-830d-41a9-ac8e-f8222f0f3e6a
         status: 200 OK
         code: 200
-        duration: 45.578752ms
+        duration: 162.543128ms
     - id: 18
       request:
         proto: HTTP/1.1
@@ -613,8 +721,46 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 344
+        body: '{"placement_group": {"id": "999eceff-eb8f-4d86-bcb3-67e0ee266090", "name": "test-ds-instance-placement-group-basic", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "optional", "policy_type": "max_availability", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "344"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 15 Oct 2026 10:09:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 3e94b19c-e8bc-4823-a7a0-8efdae8ae0b1
+        status: 200 OK
+        code: 200
+        duration: 141.716658ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: DELETE
       response:
         proto: HTTP/2.0
@@ -626,46 +772,20 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:32 GMT
+                - Thu, 15 Oct 2026 10:09:10 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - d05cee5a-b937-4fcb-a9fb-d9bc6b6e70fc
+                - f97351d8-21f3-4f34-86b2-7812040b339c
         status: 204 No Content
         code: 204
-        duration: 257.829669ms
-    - id: 19
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/d71de19f-1b23-46a6-b752-a95599adb839
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 145
-        body: '{"message":"resource is not found","resource":"instance_placement_group","resource_id":"d71de19f-1b23-46a6-b752-a95599adb839","type":"not_found"}'
-        headers:
-            Content-Length:
-                - "145"
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 30 Jul 2026 12:56:32 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 5800c405-d34f-456a-aae1-1433d2df296e
-        status: 404 Not Found
-        code: 404
-        duration: 40.680172ms
+        duration: 219.588783ms
     - id: 20
       request:
         proto: HTTP/1.1
@@ -675,29 +795,35 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         content_length: 145
-        body: '{"message":"resource is not found","resource":"instance_placement_group","resource_id":"d71de19f-1b23-46a6-b752-a95599adb839","type":"not_found"}'
+        body: '{"message":"resource is not found","resource":"instance_placement_group","resource_id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","type":"not_found"}'
         headers:
             Content-Length:
                 - "145"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:32 GMT
+                - Thu, 15 Oct 2026 10:09:10 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 0333b027-326a-4f66-a818-5c931fc458c8
+                - b02ffdfa-6c4f-4e5f-bf74-ac182bb3a96a
         status: 404 Not Found
         code: 404
-        duration: 31.77398ms
+        duration: 41.168833ms
     - id: 21
       request:
         proto: HTTP/1.1
@@ -707,26 +833,70 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/d71de19f-1b23-46a6-b752-a95599adb839
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         content_length: 145
-        body: '{"message":"resource is not found","resource":"instance_placement_group","resource_id":"d71de19f-1b23-46a6-b752-a95599adb839","type":"not_found"}'
+        body: '{"message":"resource is not found","resource":"instance_placement_group","resource_id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","type":"not_found"}'
         headers:
             Content-Length:
                 - "145"
             Content-Type:
                 - application/json
             Date:
-                - Thu, 30 Jul 2026 12:56:32 GMT
+                - Thu, 15 Oct 2026 10:09:10 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
             X-Request-Id:
-                - 7a820595-88bd-40ce-bb3f-2a5a46527671
+                - 3fdb7972-6a13-4229-81b8-eebe06ed6c13
         status: 404 Not Found
         code: 404
-        duration: 31.174372ms
+        duration: 40.20037ms
+    - id: 22
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/999eceff-eb8f-4d86-bcb3-67e0ee266090
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 145
+        body: '{"message":"resource is not found","resource":"instance_placement_group","resource_id":"999eceff-eb8f-4d86-bcb3-67e0ee266090","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "145"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 15 Oct 2026 10:09:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 396855b4-9e56-485b-9429-fae3681f373f
+        status: 404 Not Found
+        code: 404
+        duration: 37.68435ms

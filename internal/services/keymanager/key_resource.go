@@ -2,7 +2,9 @@ package keymanager
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -20,8 +22,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/key_resource.md
+var keyResourceDescription string
+
 func ResourceKeyManagerKey() *schema.Resource {
 	return &schema.Resource{
+		Description:   keyResourceDescription,
 		CreateContext: resourceKeyManagerKeyCreate,
 		ReadContext:   resourceKeyManagerKeyRead,
 		UpdateContext: resourceKeyManagerKeyUpdate,
@@ -47,23 +53,22 @@ func keySchema() map[string]*schema.Schema {
 		"project_id": account.ProjectIDSchema(),
 		"region":     regional.Schema(),
 		"usage": {
-			Type:     schema.TypeString,
-			Required: true,
-			ValidateFunc: validation.StringInSlice([]string{
-				"symmetric_encryption", "asymmetric_encryption", "asymmetric_signing",
-			}, false),
-			Description: "Key usage type. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.ValidateEnum[key_manager.ListKeysRequestUsage](),
+			Description:      fmt.Sprintf("Key usage type. Possible values: %s.", strings.Join(verify.KnownValues[key_manager.ListKeysRequestUsage](), ", ")),
 		},
 		"algorithm": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Algorithm to use for the key. The valid algorithms depend on the usage type.",
+			Description: "Algorithm to use for the key. The valid algorithms depend on the usage type. See the [Key Manager cryptographic details](https://www.scaleway.com/en/docs/key-manager/reference-content/cryptographic-details-key-manager/#encryption-algorithm) for the algorithms available for each usage.",
 			ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
 				symAlgos := key_manager.KeyAlgorithmSymmetricEncryption("").Values()
 				asymEncAlgos := key_manager.KeyAlgorithmAsymmetricEncryption("").Values()
 				asymSignAlgos := key_manager.KeyAlgorithmAsymmetricSigning("").Values()
+				keyEncAlgos := key_manager.KeyAlgorithmKeyEncapsulation("").Values()
 
-				allKnownAlgos := make([]string, 0, len(symAlgos)+len(asymEncAlgos)+len(asymSignAlgos))
+				allKnownAlgos := make([]string, 0, len(symAlgos)+len(asymEncAlgos)+len(asymSignAlgos)+len(keyEncAlgos))
 
 				for _, algo := range symAlgos {
 					allKnownAlgos = append(allKnownAlgos, string(algo))
@@ -74,6 +79,10 @@ func keySchema() map[string]*schema.Schema {
 				}
 
 				for _, algo := range asymSignAlgos {
+					allKnownAlgos = append(allKnownAlgos, string(algo))
+				}
+
+				for _, algo := range keyEncAlgos {
 					allKnownAlgos = append(allKnownAlgos, string(algo))
 				}
 
@@ -123,6 +132,14 @@ func keySchema() map[string]*schema.Schema {
 			}, false),
 			Description: "Origin of the key material. Possible values: scaleway_kms (Key Manager generates the key material), external (key material comes from an external source).",
 		},
+		"protection_level": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.ValidateEnum[key_manager.KeyProtectionLevel](),
+			Description:      "Protection level of the key. Possible values: software (cryptographic operations are performed in software), hsm (cryptographic operations are performed within a dedicated Hardware Security Module). Defaults to software.",
+		},
 		// Computed fields
 		"id":             {Type: schema.TypeString, Computed: true, Description: "ID of the key."},
 		"state":          {Type: schema.TypeString, Computed: true, Description: "State of the key. See the Key.State enum for possible values."},
@@ -171,6 +188,10 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		createReq.Origin = key_manager.KeyOrigin(v.(string))
 	}
 
+	if v, ok := d.GetOk("protection_level"); ok {
+		createReq.ProtectionLevel = key_manager.KeyProtectionLevel(v.(string))
+	}
+
 	usage := d.Get("usage").(string)
 	algorithm := d.Get("algorithm").(string)
 
@@ -183,7 +204,7 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	var key *key_manager.Key
 
-	err = transport.RetryOn403(ctx, func() error {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		var err error
 
 		key, err = api.CreateKey(createReq)
@@ -208,11 +229,13 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	// Retry on 404 to handle eventual consistency issues
-	key, err := transport.RetryOn404(ctx, func(ctx context.Context) (*key_manager.Key, error) {
-		return client.GetKey(&key_manager.GetKeyRequest{
-			Region: region,
-			KeyID:  keyID,
+	// Retry on 403 while IAM permissions propagate, and on 404 to handle eventual consistency issues
+	key, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*key_manager.Key, error) {
+		return transport.RetryOnStatusValue(ctx, transport.NotFound, func(_ context.Context) (*key_manager.Key, error) {
+			return client.GetKey(&key_manager.GetKeyRequest{
+				Region: region,
+				KeyID:  keyID,
+			})
 		})
 	})
 	if err != nil {
@@ -273,7 +296,11 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
-	_, err = client.UpdateKey(updateReq)
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		_, err := client.UpdateKey(updateReq)
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -287,7 +314,7 @@ func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	err = transport.RetryOn403(ctx, func() error {
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		return client.DeleteKey(&key_manager.DeleteKeyRequest{
 			Region: region,
 			KeyID:  keyID,
@@ -318,6 +345,9 @@ func expandUsageAlgorithm(usage, algorithm string) (*key_manager.KeyUsage, error
 
 	case usageAsymmetricSigning:
 		return &key_manager.KeyUsage{AsymmetricSigning: new(key_manager.KeyAlgorithmAsymmetricSigning(algorithm))}, nil
+
+	case usageKeyEncapsulation:
+		return &key_manager.KeyUsage{KeyEncapsulation: new(key_manager.KeyAlgorithmKeyEncapsulation(algorithm))}, nil
 
 	default:
 		return nil, fmt.Errorf("unknown usage type: %s", usage)

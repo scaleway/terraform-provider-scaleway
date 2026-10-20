@@ -24,7 +24,7 @@ func waitForDeployment(
 
 	var deployment *messageqapi.Deployment
 
-	err := transport.RetryOn403(ctx, func() error {
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		var err error
 
 		deployment, err = api.WaitForDeployment(&messageqapi.WaitForDeploymentRequest{
@@ -73,7 +73,7 @@ func waitForEndpointsDeleted(
 	for {
 		var deployment *messageqapi.Deployment
 
-		err := transport.RetryOn403(ctx, func() error {
+		err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 			var err error
 
 			deployment, err = api.GetDeployment(&messageqapi.GetDeploymentRequest{
