@@ -19,8 +19,6 @@ func TestAccUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 
@@ -32,8 +30,9 @@ func TestAccUser_Basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_user_basic", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-user"
   version    = "%s"
   node_count = 1
@@ -47,11 +46,12 @@ resource "scaleway_messageq_deployment" "main" {
 }
 
 resource "scaleway_messageq_user" "app" {
+	{{PROJECT_ID}}
   deployment_id = scaleway_messageq_deployment.main.id
   name          = "app-user"
   password      = "AnotherSecurePassword123!"
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					isUserPresent(tt, "scaleway_messageq_user.app"),
@@ -60,8 +60,9 @@ resource "scaleway_messageq_user" "app" {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_user_basic", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-user"
   version    = "%s"
   node_count = 1
@@ -75,11 +76,12 @@ resource "scaleway_messageq_deployment" "main" {
 }
 
 resource "scaleway_messageq_user" "app" {
+	{{PROJECT_ID}}
   deployment_id = scaleway_messageq_deployment.main.id
   name          = "app-user"
   password      = "RotatedSecurePassword123!"
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isUserPresent(tt, "scaleway_messageq_user.app"),
 					resource.TestCheckResourceAttr("scaleway_messageq_user.app", "password", "RotatedSecurePassword123!"),
@@ -99,8 +101,6 @@ func TestAccUser_PasswordWO(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 
@@ -112,8 +112,9 @@ func TestAccUser_PasswordWO(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_user_password_wo", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-user-wo"
   version    = "%s"
   node_count = 1
@@ -127,12 +128,13 @@ resource "scaleway_messageq_deployment" "main" {
 }
 
 resource "scaleway_messageq_user" "app" {
+	{{PROJECT_ID}}
   deployment_id       = scaleway_messageq_deployment.main.id
   name                = "app-user-wo"
   password_wo         = "WriteOnlySecurePassword123!"
   password_wo_version = 1
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					isUserPresent(tt, "scaleway_messageq_user.app"),
@@ -142,8 +144,9 @@ resource "scaleway_messageq_user" "app" {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_user_password_wo", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-user-wo"
   version    = "%s"
   node_count = 1
@@ -157,12 +160,13 @@ resource "scaleway_messageq_deployment" "main" {
 }
 
 resource "scaleway_messageq_user" "app" {
+	{{PROJECT_ID}}
   deployment_id       = scaleway_messageq_deployment.main.id
   name                = "app-user-wo"
   password_wo         = "WriteOnlySecurePassword456!"
   password_wo_version = 2
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isUserPresent(tt, "scaleway_messageq_user.app"),
 					resource.TestCheckNoResourceAttr("scaleway_messageq_user.app", "password_wo"),
@@ -170,8 +174,9 @@ resource "scaleway_messageq_user" "app" {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_user_password_wo", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-messageq-user-wo"
   version    = "%s"
   node_count = 1
@@ -185,11 +190,12 @@ resource "scaleway_messageq_deployment" "main" {
 }
 
 resource "scaleway_messageq_user" "app" {
+	{{PROJECT_ID}}
   deployment_id = scaleway_messageq_deployment.main.id
   name          = "app-user-wo"
   password      = "RegularSecurePassword789!"
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isUserPresent(tt, "scaleway_messageq_user.app"),
 					resource.TestCheckResourceAttr("scaleway_messageq_user.app", "password", "RegularSecurePassword789!"),

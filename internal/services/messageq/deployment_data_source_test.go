@@ -12,8 +12,6 @@ func TestAccDataSourceMessageQDeployment_ByName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 
@@ -22,8 +20,9 @@ func TestAccDataSourceMessageQDeployment_ByName(t *testing.T) {
 		CheckDestroy:             isDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_data_source_message_qdeployment_by_name", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-ds-messageq-by-name"
   version    = "%s"
   node_count = 1
@@ -39,7 +38,7 @@ resource "scaleway_messageq_deployment" "main" {
 data "scaleway_messageq_deployment" "by_name" {
   name = scaleway_messageq_deployment.main.name
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					resource.TestCheckResourceAttrPair(
@@ -61,8 +60,6 @@ func TestAccDataSourceMessageQDeployment_ByID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	acctest.SkipUnlessDefaultProjectID(t, tt)
-
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 
@@ -71,8 +68,9 @@ func TestAccDataSourceMessageQDeployment_ByID(t *testing.T) {
 		CheckDestroy:             isDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: tt.WithProject("tf_tests_data_source_message_qdeployment_by_id", fmt.Sprintf(`
 resource "scaleway_messageq_deployment" "main" {
+	{{PROJECT_ID}}
   name       = "tf-test-ds-messageq-by-id"
   version    = "%s"
   node_count = 1
@@ -88,7 +86,7 @@ resource "scaleway_messageq_deployment" "main" {
 data "scaleway_messageq_deployment" "by_id" {
   deployment_id = scaleway_messageq_deployment.main.id
 }
-`, latestVersion, nodeType, deploymentTestUserName),
+`, latestVersion, nodeType, deploymentTestUserName)),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					resource.TestCheckResourceAttrPair(
