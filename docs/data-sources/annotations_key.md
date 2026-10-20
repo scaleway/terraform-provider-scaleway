@@ -34,4 +34,5 @@ The following attributes are exported:
 
 - `id` - The ID of the annotation key
 - `name` - Name of the annotation key
+- `srn` - The Scaleway Resource Name (SRN) of the annotation key
 - `description` - Description of the annotation key

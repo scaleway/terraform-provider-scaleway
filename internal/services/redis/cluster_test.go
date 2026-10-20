@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"regexp"
 	"strconv"
 	"testing"
 	"time"
@@ -48,6 +49,7 @@ func TestAccCluster_Basic(t *testing.T) {
 				}
 				`, latestRedisVersion),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_redis_cluster.main", "srn", regexp.MustCompile(`^srn://redis\..+/zones/.+/clusters/.+$`)),
 					isClusterPresent(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_basic"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", latestRedisVersion),

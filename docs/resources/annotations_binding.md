@@ -59,5 +59,5 @@ In addition to all arguments above, the following attributes are exported:
 Annotation bindings can be imported using their `id`:
 
 ```bash
-terraform import scaleway_annotations_binding.main <binding_id>
+terraform import scaleway_annotations_binding.main BINDING_ID
 ```

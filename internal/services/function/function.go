@@ -182,6 +182,11 @@ func functionSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "ID of the Private Network the container is connected to",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the function",
+		},
 		"region":          regional.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -337,6 +342,7 @@ func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("sandbox", f.Sandbox)
 	_ = d.Set("secret_environment_variables", flattenFunctionSecrets(f.SecretEnvironmentVariables))
 	_ = d.Set("tags", types.FlattenSliceString(f.Tags))
+	_ = d.Set("srn", f.Srn)
 
 	if f.PrivateNetworkID != nil {
 		_ = d.Set("private_network_id", regional.NewID(region, types.FlattenStringPtr(f.PrivateNetworkID).(string)).String())

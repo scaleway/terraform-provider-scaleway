@@ -119,6 +119,11 @@ func privateNicSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "IPAM IDs of a pre-reserved IP addresses to assign to the Instance in the requested private network",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the private network interface",
+		},
 		"zone":       zonal.Schema(),
 		"project_id": account.ProjectIDSchema(),
 	}
@@ -190,6 +195,7 @@ func setPrivateNICState(ctx context.Context, d *schema.ResourceData, privateNIC 
 	_ = d.Set("private_network_id", regional.NewIDString(region, privateNIC.PrivateNetworkID))
 	_ = d.Set("mac_address", privateNIC.MacAddress)
 	_ = d.Set("project_id", privateNIC.ProjectID)
+	_ = d.Set("srn", privateNIC.Srn)
 
 	if len(privateNIC.Tags) > 0 {
 		_ = d.Set("tags", privateNIC.Tags)

@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -52,23 +53,22 @@ func keySchema() map[string]*schema.Schema {
 		"project_id": account.ProjectIDSchema(),
 		"region":     regional.Schema(),
 		"usage": {
-			Type:     schema.TypeString,
-			Required: true,
-			ValidateFunc: validation.StringInSlice([]string{
-				"symmetric_encryption", "asymmetric_encryption", "asymmetric_signing",
-			}, false),
-			Description: "Key usage type. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.ValidateEnum[key_manager.ListKeysRequestUsage](),
+			Description:      fmt.Sprintf("Key usage type. Possible values: %s.", strings.Join(verify.KnownValues[key_manager.ListKeysRequestUsage](), ", ")),
 		},
 		"algorithm": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Algorithm to use for the key. The valid algorithms depend on the usage type.",
+			Description: "Algorithm to use for the key. The valid algorithms depend on the usage type. See the [Key Manager cryptographic details](https://www.scaleway.com/en/docs/key-manager/reference-content/cryptographic-details-key-manager/#encryption-algorithm) for the algorithms available for each usage.",
 			ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
 				symAlgos := key_manager.KeyAlgorithmSymmetricEncryption("").Values()
 				asymEncAlgos := key_manager.KeyAlgorithmAsymmetricEncryption("").Values()
 				asymSignAlgos := key_manager.KeyAlgorithmAsymmetricSigning("").Values()
+				keyEncAlgos := key_manager.KeyAlgorithmKeyEncapsulation("").Values()
 
-				allKnownAlgos := make([]string, 0, len(symAlgos)+len(asymEncAlgos)+len(asymSignAlgos))
+				allKnownAlgos := make([]string, 0, len(symAlgos)+len(asymEncAlgos)+len(asymSignAlgos)+len(keyEncAlgos))
 
 				for _, algo := range symAlgos {
 					allKnownAlgos = append(allKnownAlgos, string(algo))
@@ -79,6 +79,10 @@ func keySchema() map[string]*schema.Schema {
 				}
 
 				for _, algo := range asymSignAlgos {
+					allKnownAlgos = append(allKnownAlgos, string(algo))
+				}
+
+				for _, algo := range keyEncAlgos {
 					allKnownAlgos = append(allKnownAlgos, string(algo))
 				}
 
@@ -341,6 +345,9 @@ func expandUsageAlgorithm(usage, algorithm string) (*key_manager.KeyUsage, error
 
 	case usageAsymmetricSigning:
 		return &key_manager.KeyUsage{AsymmetricSigning: new(key_manager.KeyAlgorithmAsymmetricSigning(algorithm))}, nil
+
+	case usageKeyEncapsulation:
+		return &key_manager.KeyUsage{KeyEncapsulation: new(key_manager.KeyAlgorithmKeyEncapsulation(algorithm))}, nil
 
 	default:
 		return nil, fmt.Errorf("unknown usage type: %s", usage)

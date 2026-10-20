@@ -166,9 +166,9 @@ You can automate this using scripting:
 
 OLD_RESOURCE_NAME="scaleway_server.main"
 NEW_RESOURCE_NAME="scaleway_instance_server.main"
-ID=$(terraform state show $OLD_RESOURCE_NAME | grep "id" | cut -d\= -f 2 | sed 's/"//g' | awk '{$1=$1};1')
-terraform state rm $OLD_RESOURCE_NAME
-terraform import $NEW_RESOURCE_NAME $ID
+ID=$(terraform state show "$OLD_RESOURCE_NAME" | grep "id" | cut -d= -f 2 | sed 's/"//g' | awk '{$1=$1};1')
+terraform state rm "$OLD_RESOURCE_NAME"
+terraform import "$NEW_RESOURCE_NAME" "$ID"
 ```
 
 ### Instance
@@ -306,25 +306,27 @@ This prevents the destruction of the IP from releasing the LBs resources.
 
 v1.X
 
-```shell
-resource scaleway_lb_ip ip01 {
+```terraform
+resource "scaleway_lb_ip" "ip01" {
 }
-resource scaleway_lb main {
-    ip_id = scaleway_lb_ip.ip01.id
-    name = "release-ip"
-    type = "LB-S"
-    release_ip = true
+
+resource "scaleway_lb" "main" {
+  ip_id      = scaleway_lb_ip.ip01.id
+  name       = "release-ip"
+  type       = "LB-S"
+  release_ip = true
 }
 ```
 
 v2.X
 
-```shell
-resource scaleway_lb_ip ip01 {
+```terraform
+resource "scaleway_lb_ip" "ip01" {
 }
-resource scaleway_lb main {
-    ip_id = scaleway_lb_ip.ip01.id
-    name = "release-ip"
-    type = "LB-S"
+
+resource "scaleway_lb" "main" {
+  ip_id = scaleway_lb_ip.ip01.id
+  name  = "release-ip"
+  type  = "LB-S"
 }
 ```

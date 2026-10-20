@@ -1,7 +1,7 @@
 package acctest_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"go/ast"

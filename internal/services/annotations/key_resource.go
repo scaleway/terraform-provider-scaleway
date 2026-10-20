@@ -38,6 +38,7 @@ type AnnotationsKeyResource struct {
 
 type annotationsKeyResourceModel struct {
 	ID             types.String `tfsdk:"id"`
+	SRN            types.String `tfsdk:"srn"`
 	Name           types.String `tfsdk:"name"`
 	Description    types.String `tfsdk:"description"`
 	OrganizationID types.String `tfsdk:"organization_id"`
@@ -77,6 +78,13 @@ func (r *AnnotationsKeyResource) Schema(ctx context.Context, req resource.Schema
 				MarkdownDescription: "ID of the organization. If not set, the organization ID is derived from the provider configuration.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"srn": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the annotation key.",
+				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
@@ -152,6 +160,7 @@ func (r *AnnotationsKeyResource) Create(ctx context.Context, req resource.Create
 	}
 
 	data.ID = types.StringValue(key.ID)
+	data.SRN = types.StringValue(key.Srn)
 	data.Name = types.StringValue(key.Name)
 
 	if key.Description != "" {
@@ -212,6 +221,7 @@ func (r *AnnotationsKeyResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	state.ID = types.StringValue(key.ID)
+	state.SRN = types.StringValue(key.Srn)
 	state.Name = types.StringValue(key.Name)
 	// OrganizationID is not returned by the API, preserve from state
 
@@ -259,6 +269,7 @@ func (r *AnnotationsKeyResource) Update(ctx context.Context, req resource.Update
 	}
 
 	data.ID = types.StringValue(key.ID)
+	data.SRN = types.StringValue(key.Srn)
 	data.Name = types.StringValue(key.Name)
 
 	if key.Description != "" {
