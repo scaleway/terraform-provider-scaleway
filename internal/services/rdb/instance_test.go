@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	rdbSDK "github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -2025,23 +2026,22 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
 						}
 
-						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+						// Wait until the previous instance is gone (delete is eventually consistent).
+						return retry.RetryContext(tt.T.Context(), rdbchecks.DestroyWaitTimeout, func() *retry.RetryError {
 							_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
 								Region:     region,
 								InstanceID: oldInstanceID,
 							})
 
-							return err
+							switch {
+							case err == nil:
+								return retry.RetryableError(fmt.Errorf("old instance %s still exists", oldInstanceID))
+							case httperrors.Is404(err):
+								return nil
+							default:
+								return retry.NonRetryableError(err)
+							}
 						})
-						if err == nil {
-							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
-						}
-
-						if !httperrors.Is404(err) {
-							return fmt.Errorf("expected 404 error for old instance %s, got: %w", oldInstanceID, err)
-						}
-
-						return nil
 					},
 				),
 			},
