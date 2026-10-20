@@ -2,7 +2,7 @@ package acctest
 
 import (
 	"encoding/base64"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"encoding/xml"
 	"net/http"
 	"os"
@@ -29,6 +29,12 @@ type TestTools struct {
 	Meta              *meta.Meta
 	ProviderFactories map[string]func() (tfprotov6.ProviderServer, error)
 	Cleanup           func()
+}
+
+func jsonValid(b []byte) bool {
+	return jsontext.Value(b).IsValid(
+		jsontext.AllowDuplicateNames(true),
+	)
 }
 
 var foldersUsingVCRv4 = []string{
@@ -68,7 +74,7 @@ func s3Encoder(i *cassette.Interaction) error {
 
 	if i.Request.Body != "" && i.Request.Headers.Get("Content-Type") == "application/octet-stream" {
 		requestBody := []byte(i.Request.Body)
-		if !json.Valid(requestBody) {
+		if !jsonValid(requestBody) {
 			err := xml.Unmarshal(requestBody, new(any))
 			if err != nil {
 				i.Request.Body = base64.StdEncoding.EncodeToString(requestBody)
@@ -78,7 +84,7 @@ func s3Encoder(i *cassette.Interaction) error {
 
 	if i.Response.Body != "" && i.Response.Headers.Get("Content-Type") == "binary/octet-stream" {
 		responseBody := []byte(i.Response.Body)
-		if !json.Valid(responseBody) {
+		if !jsonValid(responseBody) {
 			err := xml.Unmarshal(responseBody, new(any))
 			if err != nil {
 				i.Response.Body = base64.StdEncoding.EncodeToString(responseBody)
@@ -237,4 +243,16 @@ func IsTestResource(identifier string) bool {
 		strings.HasPrefix(identifier, "tf") &&
 		(identifier[2] == '_' || identifier[2] == '-') &&
 		identifier[3:7] == "test"
+}
+
+// SkipUnlessDefaultProjectID skips when SCW_DEFAULT_PROJECT_ID is unset, which
+// happens when opening a PR from a fork.
+// Framework Create resolves project_id via ExtractFrameworkProjectID and hard-fails
+// without a client default.
+func SkipUnlessDefaultProjectID(t *testing.T, tt *TestTools) {
+	t.Helper()
+
+	if _, ok := tt.Meta.ScwClient().GetDefaultProjectID(); !ok {
+		t.Skip("No default project ID found, skipping test")
+	}
 }

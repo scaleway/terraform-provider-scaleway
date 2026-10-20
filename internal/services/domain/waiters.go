@@ -24,7 +24,7 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 
 	var zone *domain.DNSZone
 
-	err := transport.RetryOn403(ctx, func() error {
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		var err error
 
 		zone, err = domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
@@ -47,7 +47,7 @@ func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, 
 
 	var record *domain.Record
 
-	err := transport.RetryOn403(ctx, func() error {
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		var err error
 
 		record, err = domainAPI.WaitForDNSRecordExist(&domain.WaitForDNSRecordExistRequest{
@@ -72,7 +72,7 @@ func waitForDomainsRegistration(ctx context.Context, api *domain.RegistrarAPI, d
 
 	var registeredDomain *domain.Domain
 
-	err := transport.RetryOn403(ctx, func() error {
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		var err error
 
 		registeredDomain, err = api.WaitForOrderDomain(&domain.WaitForOrderDomainRequest{
@@ -95,7 +95,7 @@ func waitForAutoRenewStatus(ctx context.Context, api *domain.RegistrarAPI, domai
 
 	var registeredDomain *domain.Domain
 
-	err := transport.RetryOn403(ctx, func() error {
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		var err error
 
 		registeredDomain, err = api.WaitForAutoRenewStatus(&domain.WaitForAutoRenewStatusRequest{
@@ -118,7 +118,7 @@ func waitForDNSSECStatus(ctx context.Context, api *domain.RegistrarAPI, domainNa
 
 	var registeredDomain *domain.Domain
 
-	err := transport.RetryOn403(ctx, func() error {
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		var err error
 
 		registeredDomain, err = api.WaitForDNSSECStatus(&domain.WaitForDNSSECStatusRequest{

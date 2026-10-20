@@ -27,6 +27,7 @@ func ResourceBackendStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    backendStageSchema,
+		CustomizeDiff: backendStageCustomizeDiff,
 		Identity:      identity.DefaultGlobal(),
 	}
 }

@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	usageSymmetricEncryption  = "symmetric_encryption"
-	usageAsymmetricEncryption = "asymmetric_encryption"
-	usageAsymmetricSigning    = "asymmetric_signing"
+	usageSymmetricEncryption  = string(key_manager.ListKeysRequestUsageSymmetricEncryption)
+	usageAsymmetricEncryption = string(key_manager.ListKeysRequestUsageAsymmetricEncryption)
+	usageAsymmetricSigning    = string(key_manager.ListKeysRequestUsageAsymmetricSigning)
+	usageKeyEncapsulation     = string(key_manager.ListKeysRequestUsageKeyEncapsulation)
 )
 
 func UsageToString(u *key_manager.KeyUsage) string {
@@ -34,6 +35,10 @@ func UsageToString(u *key_manager.KeyUsage) string {
 
 	if u.AsymmetricSigning != nil {
 		return usageAsymmetricSigning
+	}
+
+	if u.KeyEncapsulation != nil {
+		return usageKeyEncapsulation
 	}
 
 	return ""
@@ -74,6 +79,10 @@ func ExpandKeyUsageFromFields(d *schema.ResourceData) *key_manager.KeyUsage {
 		return &key_manager.KeyUsage{AsymmetricSigning: new(key_manager.KeyAlgorithmAsymmetricSigning(v.(string)))}
 	}
 
+	if v, ok := d.GetOk("usage_key_encapsulation"); ok {
+		return &key_manager.KeyUsage{KeyEncapsulation: new(key_manager.KeyAlgorithmKeyEncapsulation(v.(string)))}
+	}
+
 	if v, ok := d.GetOk("usage"); ok {
 		return ExpandKeyUsageLegacy(v.(string))
 	}
@@ -89,6 +98,8 @@ func ExpandKeyUsageLegacy(usage string) *key_manager.KeyUsage {
 		return &key_manager.KeyUsage{AsymmetricEncryption: new(key_manager.KeyAlgorithmAsymmetricEncryptionRsaOaep3072Sha256)}
 	case usageAsymmetricSigning:
 		return &key_manager.KeyUsage{AsymmetricSigning: new(key_manager.KeyAlgorithmAsymmetricSigningEcP256Sha256)}
+	case usageKeyEncapsulation:
+		return &key_manager.KeyUsage{KeyEncapsulation: new(key_manager.KeyAlgorithmKeyEncapsulationMlKem768)}
 	default:
 		return nil
 	}
@@ -109,6 +120,10 @@ func AlgorithmFromKeyUsage(u *key_manager.KeyUsage) string {
 
 	if u.AsymmetricSigning != nil {
 		return string(*u.AsymmetricSigning)
+	}
+
+	if u.KeyEncapsulation != nil {
+		return string(*u.KeyEncapsulation)
 	}
 
 	return ""
@@ -192,4 +207,5 @@ func setKeyState(d *schema.ResourceData, key *key_manager.Key) {
 	_ = d.Set("rotated_at", types.FlattenTime(key.RotatedAt))
 	_ = d.Set("rotation_policy", FlattenKeyRotationPolicy(key.RotationPolicy))
 	_ = d.Set("srn", key.Srn)
+	_ = d.Set("protection_level", key.ProtectionLevel.String())
 }

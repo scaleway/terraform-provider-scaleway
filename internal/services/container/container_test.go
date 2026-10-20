@@ -69,6 +69,7 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "privacy"),
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "protocol"),
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "timeout"),
+					resource.TestMatchResourceAttr("scaleway_container.main", "srn", regexp.MustCompile(`^srn://containers\..+/regions/.+/containers/.+$`)),
 				),
 			},
 			{

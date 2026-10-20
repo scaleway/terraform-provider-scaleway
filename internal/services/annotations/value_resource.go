@@ -39,6 +39,7 @@ type annotationsValueResourceModel struct {
 	ID          types.String `tfsdk:"id"`
 	KeyID       types.String `tfsdk:"key_id"`
 	Name        types.String `tfsdk:"name"`
+	SRN         types.String `tfsdk:"srn"`
 	ValueID     types.String `tfsdk:"value_id"`
 	Description types.String `tfsdk:"description"`
 }
@@ -81,6 +82,13 @@ func (r *AnnotationsValueResource) Schema(ctx context.Context, req resource.Sche
 			"value_id": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The ID of the annotation value.",
+			},
+			"srn": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the annotation value.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -141,6 +149,7 @@ func (r *AnnotationsValueResource) Create(ctx context.Context, req resource.Crea
 	data.ID = types.StringValue(value.ID)
 	data.ValueID = types.StringValue(value.ID)
 	data.KeyID = types.StringValue(value.KeyID)
+	data.SRN = types.StringValue(value.Srn)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
@@ -195,6 +204,7 @@ func (r *AnnotationsValueResource) Read(ctx context.Context, req resource.ReadRe
 	state.ValueID = types.StringValue(value.ID)
 	state.KeyID = types.StringValue(value.KeyID)
 	state.Name = types.StringValue(value.Name)
+	state.SRN = types.StringValue(value.Srn)
 
 	if value.Description != "" {
 		state.Description = types.StringValue(value.Description)
@@ -244,6 +254,7 @@ func (r *AnnotationsValueResource) Update(ctx context.Context, req resource.Upda
 	data.ValueID = types.StringValue(value.ID)
 	data.KeyID = types.StringValue(value.KeyID)
 	data.Name = types.StringValue(value.Name)
+	data.SRN = types.StringValue(value.Srn)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 

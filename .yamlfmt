@@ -1,0 +1,10 @@
+# Configuration for yamlfmt
+# https://github.com/google/yamlfmt
+formatter:
+  type: basic
+  retain_line_breaks: true      # keep the author's blank-line structure
+  scan_folded_as_literal: true  # don't collapse multi-line ">" block scalars
+
+# Note: yamlfmt cannot round-trip literal "|" blocks that contain trailing
+# whitespace (it falls back to an escaped single-line string). Avoid trailing
+# spaces inside workflow run: | blocks.

@@ -40,6 +40,7 @@ func TestAccDataSourceKey_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "description", "Test key"),
 					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "tags.0", "tf"),
 					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "tags.1", "test"),
+					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "protection_level", "software"),
 					resource.TestMatchResourceAttr("data.scaleway_key_manager_key.by_id", "srn", regexp.MustCompile(`^srn://key-manager\..+/regions/.+/keys/.+$`)),
 				),
 			},

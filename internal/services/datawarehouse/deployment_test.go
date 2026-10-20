@@ -47,6 +47,7 @@ resource "scaleway_datawarehouse_deployment" "main" {
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "cpu_min", "2"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "cpu_max", "4"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "ram_per_cpu", "4"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "move_factor", "0.1"),
 					resource.TestMatchResourceAttr("scaleway_datawarehouse_deployment.main", "srn", regexp.MustCompile(`^srn://datawarehouse\..+/regions/.+/deployments/.+$`)),
 
 					// Public endpoint is present
@@ -79,6 +80,66 @@ resource "scaleway_datawarehouse_deployment" "main" {
 					// Public network still present
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "public_network.#", "1"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccDeployment_MoveFactor(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestClickHouseVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name          = "tf-test-deploy-move-factor"
+  version       = "%s"
+  replica_count = 1
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "password@1234567"
+  move_factor  = 0.2
+
+  public_network {}
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "move_factor", "0.2"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name          = "tf-test-deploy-move-factor"
+  version       = "%s"
+  replica_count = 1
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "password@1234567"
+  move_factor  = 0.3
+
+  public_network {}
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "move_factor", "0.3"),
+				),
+			},
+			{
+				ResourceName:            "scaleway_datawarehouse_deployment.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password"},
 			},
 		},
 	})
