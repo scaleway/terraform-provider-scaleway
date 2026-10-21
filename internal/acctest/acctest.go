@@ -55,8 +55,11 @@ var foldersUsingVCRv4 = []string{
 }
 
 func init() {
-	// Cassettes store redacted secrets; ignore them when matching VCRv4 requests.
-	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password")
+	// Cassettes store redacted secrets, and request bodies may carry values
+	// derived from anonymized responses (e.g. a secret version whose data is
+	// an IAM API key secret key); ignore these fields when matching VCRv4
+	// requests.
+	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password", "data")
 }
 
 func FolderUsesVCRv4(fullFolderPath string) bool {
