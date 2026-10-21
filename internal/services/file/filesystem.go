@@ -21,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -195,7 +196,9 @@ func (r *FileSystemResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	fs, err := r.api.CreateFileSystem(createReq, scw.WithContext(ctx))
+	fs, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*file.FileSystem, error) {
+		return r.api.CreateFileSystem(createReq, scw.WithContext(ctx))
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create File FileSystem", err.Error())
 
@@ -314,7 +317,9 @@ func (r *FileSystemResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	_, err = r.api.UpdateFileSystem(updateReq, scw.WithContext(ctx))
+	_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*file.FileSystem, error) {
+		return r.api.UpdateFileSystem(updateReq, scw.WithContext(ctx))
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to update File FileSystem", err.Error())
 
@@ -367,10 +372,12 @@ func (r *FileSystemResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	err = r.api.DeleteFileSystem(&file.DeleteFileSystemRequest{
-		Region:       region,
-		FilesystemID: id,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return r.api.DeleteFileSystem(&file.DeleteFileSystemRequest{
+			Region:       region,
+			FilesystemID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			return

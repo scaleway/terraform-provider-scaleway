@@ -13,6 +13,7 @@ import (
 	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 var (
@@ -106,9 +107,11 @@ func (r *FileSystemListResource) FetchFileSystems(
 		FilesystemIDs:  fileSystemIDs,
 	}
 
-	response, err := r.fileAPI.ListFileSystems(
-		listRequest, scw.WithContext(ctx), scw.WithAllPages(),
-	)
+	response, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*file.ListFileSystemsResponse, error) {
+		return r.fileAPI.ListFileSystems(
+			listRequest, scw.WithContext(ctx), scw.WithAllPages(),
+		)
+	})
 	if err != nil {
 		return nil, err
 	}
