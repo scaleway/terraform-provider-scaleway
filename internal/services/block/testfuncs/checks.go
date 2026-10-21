@@ -79,7 +79,7 @@ func IsVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return fmt.Errorf("block volume (%s) still exists", rs.Primary.ID)
 			}
 
-			if !httperrors.Is404(err) && !httperrors.Is410(err) {
+			if !httperrors.Is404(err) && !httperrors.Is410(err) && !httperrors.Is403(err) {
 				return err
 			}
 		}
@@ -108,7 +108,7 @@ func IsSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return fmt.Errorf("block snapshot (%s) still exists", rs.Primary.ID)
 			}
 
-			if !httperrors.Is404(err) {
+			if !httperrors.Is404(err) && !httperrors.Is410(err) && !httperrors.Is403(err) {
 				return err
 			}
 		}
