@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
-	"github.com/hashicorp/terraform-plugin-testing/echoprovider"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -56,12 +55,12 @@ func TestAccEphemeralConfig_ActiveProfile(t *testing.T) {
 
 					return muxServer.ProviderServer(), nil
 				},
-				"echo": echoprovider.NewProviderServer(),
+				"echo": tt.ProviderFactories["echo"],
 			}
 		}(),
 		Steps: []resource.TestStep{
 			{
-				// lintignore:AT004
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: `
 					ephemeral "scaleway_config" "main" {
 						provider = "default"
@@ -132,12 +131,12 @@ func TestAccEphemeralConfig_OtherProfile(t *testing.T) {
 
 					return muxServer.ProviderServer(), nil
 				},
-				"echo": echoprovider.NewProviderServer(),
+				"echo": tt.ProviderFactories["echo"],
 			}
 		}(),
 		Steps: []resource.TestStep{
 			{
-				// lintignore:AT004
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: `
 					ephemeral "scaleway_config" "main" {
 						provider = "other"
@@ -209,12 +208,12 @@ func TestAccEphemeralConfig_MixedProfile(t *testing.T) {
 
 					return muxServer.ProviderServer(), nil
 				},
-				"echo": echoprovider.NewProviderServer(),
+				"echo": tt.ProviderFactories["echo"],
 			}
 		}(),
 		Steps: []resource.TestStep{
 			{
-				// lintignore:AT004
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: `
 					ephemeral "scaleway_config" "main" {
 						provider = "mixed"
