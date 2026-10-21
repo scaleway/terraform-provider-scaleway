@@ -51,6 +51,7 @@ func DataSourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m an
 				Name:      types.ExpandStringPtr(d.Get("name")),
 				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 			})
+
 			return err
 		})
 		if err != nil {
