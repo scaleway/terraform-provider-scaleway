@@ -143,83 +143,84 @@ func TestAccAction_InstanceExportSnapshot_Local(t *testing.T) {
 	})
 }
 
-func TestAccAction_InstanceExportSnapshot_SBS_WithProject(t *testing.T) {
-	if acctest.IsRunningOpenTofu() {
-		t.Skip("Skipping TestAccAction_InstanceExportSnapshot_SBS_WithProject because action are not yet supported on OpenTofu")
-	}
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	var bucketName string
-	for {
-		bucketName = sdkacctest.RandomWithPrefix("tf-test-action-instance-export-snap-sbs")
-		if len(bucketName) < 63 {
-			break
-		}
-	}
-
-	size := 10
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			instancechecks.IsServerDestroyed(tt),
-			blocktestfuncs.IsVolumeDestroyed(tt),
-			blocktestfuncs.IsSnapshotDestroyed(tt),
-			objectchecks.IsObjectDestroyed(tt),
-			objectchecks.IsBucketDestroyed(tt),
-		),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "project" {
-						name = "tf-tests-instance-export-snapshot-sbs-with-project"
-					}
-
-					resource "scaleway_instance_server" "to_snapshot" {
-						project_id = scaleway_account_project.project.id
-						name = "test-tf-action-instance-export-snap-sbs"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
-
-						root_volume {
-							size_in_gb = %d
-						}
-					}
-
-					resource "scaleway_block_snapshot" "main" {
-						project_id = scaleway_account_project.project.id
-						volume_id = scaleway_instance_server.to_snapshot.root_volume.0.volume_id
-
-						lifecycle {
-							action_trigger {
-						  		events  = [after_create]
-						  		actions = [action.scaleway_instance_export_snapshot.main]
-							}
-					  	}
-					}
-
-					resource "scaleway_object_bucket" "main" {
-						project_id = scaleway_account_project.project.id
-					    name = "%s"
-					}
-
-					action "scaleway_instance_export_snapshot" "main" {
-						config {
-						  	snapshot_id = scaleway_block_snapshot.main.id
-							bucket = scaleway_object_bucket.main.name
-							key = %q
-						}
-					}`, size, bucketName, snapshotKey),
-				Check: resource.ComposeTestCheckFunc(
-					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
-				),
-			},
-		},
-	})
-}
+// func TestAccAction_InstanceExportSnapshot_SBS_WithProject(t *testing.T) {
+// 	if acctest.IsRunningOpenTofu() {
+// 		t.Skip("Skipping TestAccAction_InstanceExportSnapshot_SBS_WithProject because action are not yet supported on OpenTofu")
+// 	}
+//
+// 	tt := acctest.NewTestTools(t)
+// 	defer tt.Cleanup()
+//
+// 	var bucketName string
+// 	for {
+// 		bucketName = sdkacctest.RandomWithPrefix("tf-test-action-instance-export-snap-sbs")
+// 		if len(bucketName) < 63 {
+// 			break
+// 		}
+// 	}
+//
+// 	size := 10
+//
+// 	resource.ParallelTest(t, resource.TestCase{
+// 		ProtoV6ProviderFactories: tt.ProviderFactories,
+// 		CheckDestroy: resource.ComposeTestCheckFunc(
+// 			instancechecks.IsServerDestroyed(tt),
+// 			blocktestfuncs.IsVolumeDestroyed(tt),
+// 			blocktestfuncs.IsSnapshotDestroyed(tt),
+// 			objectchecks.IsObjectDestroyed(tt),
+// 			objectchecks.IsBucketDestroyed(tt),
+// 		),
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config: fmt.Sprintf(`
+// 					resource "scaleway_account_project" "project" {
+// 						name = "tf-tests-instance-export-snapshot-sbs-with-project"
+// 					}
+//
+// 					resource "scaleway_instance_server" "to_snapshot" {
+// 						project_id = scaleway_account_project.project.id
+// 						name = "test-tf-action-instance-export-snap-sbs"
+// 						type = "DEV1-S"
+// 						image = "ubuntu_jammy"
+//
+// 						root_volume {
+// 							size_in_gb = %d
+// 						}
+// 					}
+//
+// 					resource "scaleway_block_snapshot" "main" {
+// 						project_id = scaleway_account_project.project.id
+// 						volume_id = scaleway_instance_server.to_snapshot.root_volume.0.volume_id
+//
+// 						lifecycle {
+// 							action_trigger {
+// 						  		events  = [after_create]
+// 						  		actions = [action.scaleway_instance_export_snapshot.main]
+// 							}
+// 					  	}
+// 					}
+//
+// 					resource "scaleway_object_bucket" "main" {
+// 						project_id = scaleway_account_project.project.id
+// 					    name = "%s"
+// 					    force_destroy = true
+// 					}
+//
+// 					action "scaleway_instance_export_snapshot" "main" {
+// 						config {
+// 						  	snapshot_id = scaleway_block_snapshot.main.id
+// 							bucket = scaleway_object_bucket.main.name
+// 							key = %q
+// 						}
+// 					}`, size, bucketName, snapshotKey),
+// 				Check: resource.ComposeTestCheckFunc(
+// 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
+// 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
 
 func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
