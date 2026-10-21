@@ -3,6 +3,7 @@ package instance_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -50,6 +51,7 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_instance_private_nic.nic01", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/private-network-interfaces/.+$`)),
 					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic01"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),

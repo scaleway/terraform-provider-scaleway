@@ -138,7 +138,7 @@ ProxyJump bastion@<your-public-ip>:<bastion_port>
 Then try to connect to it:
 
 ```shell
-ssh root@ <vm-name >.myprivatenetwork
+ssh root@VM_NAME.myprivatenetwork
 ```
 
 For further information using our console please check [our dedicated documentation](https://www.scaleway.com/en/docs/public-gateways/how-to/use-ssh-bastion/).
