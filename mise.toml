@@ -429,6 +429,10 @@ depends = [
 
 [tasks.sweep]
 run = '''
-go list ./internal/services/... | grep -v account | xargs go test -v -sweep=all_regions -timeout=60m
-go test -v -sweep=all_regions -timeout=60m ./internal/services/account
+go test $(go list ./internal/services/... | grep -v account) -v -sweep=all_regions -timeout=60m
+'''
+
+[tasks.'sweep:account']
+run = '''
+go test ./internal/services/account -v -sweep=all_regions -timeout=60m
 '''

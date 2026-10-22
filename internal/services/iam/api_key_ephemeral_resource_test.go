@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-testing/echoprovider"
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -31,8 +31,6 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	tt.ProviderFactories["echo"] = echoprovider.NewProviderServer()
-
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 
 	description := "tf_test_api_key_er_with_app"
@@ -46,7 +44,7 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				// lintignore:AT004
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "main" {
 						name = "%[1]s"
@@ -68,11 +66,12 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("access_key"), knownvalue.StringRegexp(accessKeyPattern)),
 					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("description"), knownvalue.StringExact(description)),
+					statecheck.CompareValuePairs(
+						"echo.test_api_key", dataPath.AtMapKey("application_id"),
+						"scaleway_iam_application.main", tfjsonpath.New("id"),
+						compare.ValuesSame()),
 				},
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEphemeralIamAPIKeyExists(tt, "echo.test_api_key"),
-					testAccCheckEchoAttributeMatches("echo.test_api_key", "application_id", "scaleway_iam_application.main", "id"),
-				),
+				Check: testAccCheckEphemeralIamAPIKeyExists(tt, "echo.test_api_key"),
 			},
 		},
 	})
@@ -85,8 +84,6 @@ func TestAccApiKeyEphemeralResource_DefaultProject(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-
-	tt.ProviderFactories["echo"] = echoprovider.NewProviderServer()
 
 	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
 	if !projectIDExists {
@@ -106,7 +103,7 @@ func TestAccApiKeyEphemeralResource_DefaultProject(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				// lintignore:AT004
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "main" {
 						name = "%[1]s"
@@ -147,8 +144,6 @@ func TestAccApiKeyEphemeralResource_DeleteOnCloseDefault(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	tt.ProviderFactories["echo"] = echoprovider.NewProviderServer()
-
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 
 	description := "tf_test_api_key_er_delete_default"
@@ -162,7 +157,7 @@ func TestAccApiKeyEphemeralResource_DeleteOnCloseDefault(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				// lintignore:AT004
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "main" {
 						name = "%[1]s"
@@ -199,8 +194,6 @@ func TestAccApiKeyEphemeralResource_DeleteOnCloseFalse(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	tt.ProviderFactories["echo"] = echoprovider.NewProviderServer()
-
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 
 	description := "tf_test_api_key_er_delete_false"
@@ -213,7 +206,7 @@ func TestAccApiKeyEphemeralResource_DeleteOnCloseFalse(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				// lintignore:AT004
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "main" {
 						name = "%[1]s"
@@ -270,29 +263,6 @@ func testAccCheckEphemeralIamAPIKeyDeleted(tt *acctest.TestTools, name string) r
 				return retry.NonRetryableError(err)
 			}
 		})
-	}
-}
-
-// testAccCheckEchoAttributeMatches asserts that the attribute echoed by the
-// given echo resource instance matches the value of an attribute of another
-// resource in state.
-func testAccCheckEchoAttributeMatches(echoResource, echoAttribute, expectedResource, expectedAttribute string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		echoValue, err := acctest.GetResourceAttributeValue(state, echoResource, "data."+echoAttribute)
-		if err != nil {
-			return err
-		}
-
-		expectedValue, err := acctest.GetResourceAttributeValue(state, expectedResource, expectedAttribute)
-		if err != nil {
-			return err
-		}
-
-		if echoValue != expectedValue {
-			return fmt.Errorf("echo data.%s (%s) does not match %s.%s (%s)", echoAttribute, echoValue, expectedResource, expectedAttribute, expectedValue)
-		}
-
-		return nil
 	}
 }
 

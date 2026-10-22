@@ -158,6 +158,33 @@ func CheckResourceAttrFunc(name string, key string, test func(string) error) res
 	}
 }
 
+func CheckEphemeralResourceNotInState(resource string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		if _, ok := state.RootModule().Resources[resource]; ok {
+			return fmt.Errorf("ephemeral resource %s should not be persisted in state", resource)
+		}
+
+		return nil
+	}
+}
+
+// CheckAttributeNotInState asserts that the given attribute of the given
+// resource is not persisted in the state.
+func CheckAttributeNotInState(resource, attribute string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[resource]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resource)
+		}
+
+		if _, exists := rs.Primary.Attributes[attribute]; exists {
+			return fmt.Errorf("%s should not be stored in the state", attribute)
+		}
+
+		return nil
+	}
+}
+
 func CheckResourceAttrIPv4(name string, key string) resource.TestCheckFunc {
 	return CheckResourceAttrFunc(name, key, func(value string) error {
 		ip := net.ParseIP(value)

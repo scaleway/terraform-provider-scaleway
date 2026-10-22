@@ -17,6 +17,15 @@ Most Scaleway Terraform resources support a timeouts block where you can specify
 - `delete` — Timeout duration for deleting the resource.
 - `default` — (Scaleway-specific) A unified timeout applied to all operations (create, update, delete) if specific keys are not set.
 
+Framework-based resources (such as `scaleway_block_snapshot`) expose the `timeouts` capability as a nested attribute with the following keywords.
+
+- `create` — Timeout duration for creating the resource.
+- `read` — Timeout duration for reading the resource.
+- `update` — Timeout duration for updating the resource.
+- `delete` — Timeout duration for deleting the resource.
+
+The `default` keyword is an SDKv2-only extension and is **not** accepted by Framework resources. Setting `timeouts = { default = "5m" }` on a Framework resource fails with an unknown-argument error.
+
 ### Example: Using Specific Operation Timeouts
 
 ```terraform
@@ -66,6 +75,20 @@ If no timeouts block is set, Terraform uses the provider's internal defaults.
 Not all Scaleway resources support timeouts.
 
 Custom timeouts are useful for long-running operations but do not affect retry intervals or polling frequency.
+
+### Example: Framework resource
+
+```terraform
+resource "scaleway_block_snapshot" "snapshot" {
+  name      = "tf-snapshot"
+  volume_id = "fr-par-1/11111111-1111-1111-1111-111111111111"
+
+  timeouts = {
+    create = "10m"
+    read   = "10m"
+  }
+}
+```
 
 ## Official Documentation
 

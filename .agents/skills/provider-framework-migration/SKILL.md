@@ -166,6 +166,36 @@ Translate schema and CRUD using the mapping table in
   differently, you need a `StateUpgrader` — treat that as a signal the
   resource may be in the do-not-migrate bucket.
 
+### Timeouts: keep a typed-null Value in models you build by hand
+
+A model field declared as `timeouts.Value` must never be left at its Go zero
+value. `timeouts.Value{}` wraps an empty object (`tftypes.Object[]`), which the
+Framework refuses to serialize where the schema declares `timeouts` as an
+object with the four keys `create`/`read`/`update`/`delete`. The failure is a
+`Value Conversion Error` — "Expected ... `tftypes.Object[...]`, Received ...
+`tftypes.Object[]`" at `Path: timeouts`. It only fires the first time the
+model is written to a state, a plan, or a list `include_resource` result, so a
+resource whose CRUD always copies `plan.Timeouts`/`state.Timeouts` looks fine
+until a flatten path (such as a list resource) touches the field.
+
+When you build the model from API data and no plan/state exists to copy from,
+construct a typed-null value instead of leaving the field unset:
+
+```go
+state.Timeouts = timeouts.Value{Object: types.ObjectNull(map[string]attr.Type{
+    "create": types.StringType,
+    "delete": types.StringType,
+    "read":   types.StringType,
+    "update": types.StringType,
+})}
+```
+
+Set it in the shared flatten helper when one exists — every caller then gets a
+valid value, and CRUD paths that copy a real plan/state value override it right
+after. Working example: `internal/services/block/snapshot.go`
+(`flattenBlockSnapshot`) in this repository; HashiCorp's kubernetes provider
+(`sdkv2TimeoutsToFramework`) builds the same value from the schema.
+
 ## Step 4: Move the Registration
 
 Register the resource in the Framework provider's `Resources()` and delete

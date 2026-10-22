@@ -4,8 +4,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
 func TestAccEncryptEphemeralResource_Basic(t *testing.T) {
@@ -16,14 +18,14 @@ func TestAccEncryptEphemeralResource_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	dataPath := tfjsonpath.New("data")
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			secrettestfuncs.CheckSecretDestroy(tt),
-			IsKeyManagerKeyDestroyed(tt),
-		),
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: `
 				resource "scaleway_key_manager_key" "test_key" {
 				  name        = "tf-test-encrypt-key"
@@ -39,26 +41,16 @@ func TestAccEncryptEphemeralResource_Basic(t *testing.T) {
 				  region     = "fr-par"
 				}
 
-				resource "scaleway_secret" "main" {
-					name        = "test-encrypted-secret"
+				provider "echo" {
+				  data = ephemeral.scaleway_key_manager_encrypt.test_encrypt
 				}
 
-				resource "scaleway_secret_version" "v1" {
-					description = "version1"
-					secret_id   = scaleway_secret.main.id
-					data_wo     = ephemeral.scaleway_key_manager_encrypt.test_encrypt.ciphertext
-					depends_on	= [ephemeral.scaleway_key_manager_encrypt.test_encrypt]
-				}
-
-				data "scaleway_secret_version" "data_v1" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "1"
-				  depends_on = [scaleway_secret_version.v1]
-				}
+				resource "echo" "test_encrypt" {}
 				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.scaleway_secret_version.data_v1", "data"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_encrypt", dataPath.AtMapKey("plaintext"), knownvalue.StringExact("test plaintext data")),
+					statecheck.ExpectKnownValue("echo.test_encrypt", dataPath.AtMapKey("ciphertext"), knownvalue.NotNull()),
+				},
 			},
 		},
 	})

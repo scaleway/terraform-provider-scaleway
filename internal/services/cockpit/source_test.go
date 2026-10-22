@@ -139,6 +139,17 @@ func TestAccCockpitSource_retention_days(t *testing.T) {
 	})
 }
 
+func TestCockpitSourceRetentionDaysBounds(t *testing.T) {
+	validate := cockpit.ResourceCockpitSource().SchemaMap()["retention_days"].ValidateFunc
+
+	for days, wantErr := range map[int]bool{0: true, 1: false, 1825: false, 1826: true} {
+		_, errs := validate(days, "retention_days")
+		if (len(errs) > 0) != wantErr {
+			t.Errorf("retention_days = %d: got %v, want error %t", days, errs, wantErr)
+		}
+	}
+}
+
 func TestAccCockpitSource_Update(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
