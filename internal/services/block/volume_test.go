@@ -73,6 +73,7 @@ func TestAccVolume_Basic_WithKMSKeyID(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "test-block-volume-basic"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "20"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "kms_key_id", "scaleway_key_manager_key.my_key", "id"),
 					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
 				),
 			},
