@@ -287,7 +287,7 @@ func (r *VolumeResource) Create(
 				}
 
 				if kmsKeyId != *snapshot.KmsKeyID {
-					resp.Diagnostics.AddError("The kms_key_id is different from the snapshot's", "")
+					resp.Diagnostics.AddError("The kms_key_id cannot be different from the snapshot's", "")
 
 					return
 				}
