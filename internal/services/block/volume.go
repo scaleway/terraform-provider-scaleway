@@ -118,7 +118,6 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				},
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("instance_volume_id")),
-					stringvalidator.ConflictsWith(path.MatchRoot("kms_key_id")),
 				},
 			},
 			"instance_volume_id": schema.StringAttribute{
@@ -142,7 +141,6 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 					"symmetric encryption with the \"AES-256-GCM\" algorithm",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("instance_volume_id")),
-					stringvalidator.ConflictsWith(path.MatchRoot("snapshot_id")),
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
