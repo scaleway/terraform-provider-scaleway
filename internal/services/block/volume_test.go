@@ -138,6 +138,55 @@ func TestAccVolume_KMS_WrongKey(t *testing.T) {
 		},
 	})
 }
+
+func TestAccVolume_KMS_NoKeys(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_key_manager_key" "key" {
+						name        = "tf-tests-volume-kms-no-keys"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-basic"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-block-snapshot-basic"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						volume_id = scaleway_block_volume.main.id
+					}
+
+					resource scaleway_block_volume imported {
+						name = "test-block-volume-basic-imported"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops = 5000
+						snapshot_id = scaleway_block_snapshot.main.id
+						kms_key_id = scaleway_key_manager_key.key.id
+					}
+				`,
+				ExpectError: regexp.MustCompile(
+					`Cannot use kms_key_id if the snapshot is not crypted`,
+				),
+			},
+		},
+	})
+}
+
 func TestAccVolume_BasicWithoutSizeInGB(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
