@@ -154,11 +154,8 @@ func (r *SnapshotResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				},
 			},
 			"kms_key_id": schema.StringAttribute{
-				Computed: true,
-				Description: "UUID of the KMS key used to protect the volume's encryption. " +
-					"Using this field will encrypt the new volume. " +
-					"Only available to the Private Beta's users. The KMS key must use " +
-					"symmetric encryption with the \"AES-256-GCM\" algorithm",
+				Computed:    true,
+				Description: "UUID of the KMS key used to protect the parent volume's encryption",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

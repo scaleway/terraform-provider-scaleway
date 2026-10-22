@@ -108,10 +108,8 @@ func (d *VolumeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				MarkdownDescription: "The instance volume to create the block volume from",
 			},
 			"kms_key_id": schema.StringAttribute{
-				Computed: true,
-				MarkdownDescription: "UUID of the KMS key used to protect the volume's encryption. " +
-					"Using this field will encrypt the new volume. " +
-					"Only available to the Private Beta's users",
+				Computed:            true,
+				MarkdownDescription: "UUID of the KMS key used to protect the volume's encryption",
 			},
 			"tags": schema.ListAttribute{
 				Computed:            true,
