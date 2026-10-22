@@ -22,7 +22,7 @@ func TestAccDataSourceMessageQCertificateAuthority_Basic_WithProject(t *testing.
 			{
 				Config: fmt.Sprintf(`
 resource "scaleway_account_project" "project" {
-  name = "tf-tests-data-source-message-qcertificate-authority-basic-with-project"
+  name = "tf-tests-data-source-message-qcert-authority-basic-w-project"
 }
 
 resource "scaleway_messageq_deployment" "main" {
