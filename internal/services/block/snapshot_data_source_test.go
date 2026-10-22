@@ -1,11 +1,9 @@
 package block_test
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
-	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
@@ -111,8 +109,6 @@ func TestAccDataSourceSnapshot_Basic_WithKMS(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	keyName := sdkacctest.RandomWithPrefix("tf-tests-ds-snapshot-basic-with-kms-")
-
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -120,9 +116,9 @@ func TestAccDataSourceSnapshot_Basic_WithKMS(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_key_manager_key" "my_key" {
-						name        = "%s"
+						name        = "tf-tests-ds-snapshot-basic-with-kms"
 						region      = "fr-par"
 						usage       = "symmetric_encryption"
 						algorithm   = "aes_256_gcm"
@@ -152,7 +148,7 @@ func TestAccDataSourceSnapshot_Basic_WithKMS(t *testing.T) {
 						snapshot_id = scaleway_block_snapshot.main.id
 						zone = "fr-par-3" # kms_key_id is not available everywhere yet
 					}
-				`, keyName),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 					resource.TestCheckResourceAttrPair(
