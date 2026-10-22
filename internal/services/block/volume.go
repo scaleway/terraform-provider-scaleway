@@ -257,15 +257,41 @@ func (r *VolumeResource) Create(
 			return
 		}
 
+		var snapshot *block.Snapshot
+
 		if !data.SnapshotID.IsNull() && data.SnapshotID.ValueString() != "" {
 			createReq.FromSnapshot = &block.CreateVolumeRequestFromSnapshot{
 				SnapshotID: locality.ExpandID(data.SnapshotID.ValueString()),
+			}
+
+			snapshot, err = r.api.WaitForSnapshot(&block.WaitForSnapshotRequest{
+				SnapshotID: createReq.FromSnapshot.SnapshotID,
+				Zone:       createReq.Zone,
+			})
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to wait for snapshot", err.Error())
+
+				return
 			}
 		}
 
 		if !data.KmsKeyID.IsNull() && data.KmsKeyID.ValueString() != "" {
 			kmsKeyId := locality.ExpandID(data.KmsKeyID.ValueString())
 			createReq.KmsKeyID = new(kmsKeyId)
+
+			if snapshot != nil {
+				if snapshot.KmsKeyID == nil {
+					resp.Diagnostics.AddError("Cannot use kms_key_id if the snapshot is not crypted", "")
+
+					return
+				}
+
+				if kmsKeyId != *snapshot.KmsKeyID {
+					resp.Diagnostics.AddError("The kms_key_id is different from the snapshot's", "")
+
+					return
+				}
+			}
 		}
 
 		if !data.SizeInGB.IsNull() && !data.SizeInGB.IsUnknown() {
@@ -280,16 +306,6 @@ func (r *VolumeResource) Create(
 		} else {
 			// size_in_gb was not specified, we set 5GB or the snapshot's size
 			if createReq.FromSnapshot != nil {
-				snapshot, err := r.api.WaitForSnapshot(&block.WaitForSnapshotRequest{
-					SnapshotID: createReq.FromSnapshot.SnapshotID,
-					Zone:       createReq.Zone,
-				})
-				if err != nil {
-					resp.Diagnostics.AddError("Failed to wait for snapshot", err.Error())
-
-					return
-				}
-
 				createReq.FromSnapshot.Size = &snapshot.Size // Already in bytes from the API
 			} else {
 				createReq.FromEmpty = &block.CreateVolumeRequestFromEmpty{
