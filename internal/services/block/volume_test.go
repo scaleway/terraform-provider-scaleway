@@ -40,6 +40,46 @@ func TestAccVolume_Basic(t *testing.T) {
 	})
 }
 
+func TestAccVolume_Basic_WithKMSKeyID(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				// FIXME: add clearer error for wrongly made aes_256_gcm
+				Config: `
+					resource "scaleway_key_manager_key" "my_key" {
+						name        = "my_key"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-basic"
+						zone = "fr-par-3"
+						iops = 5000
+						size_in_gb = 20
+						kms_key_id = scaleway_key_manager_key.my_key.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "test-block-volume-basic"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "20"),
+					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccVolume_BasicWithoutSizeInGB(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
