@@ -20,6 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
@@ -539,7 +540,14 @@ func flattenVolume(ctx context.Context, api *block.API, volume *block.Volume, re
 	}
 
 	if volume.KmsKeyID != nil && *volume.KmsKeyID != "" {
-		model.KmsKeyID = types.StringValue(*volume.KmsKeyID)
+		// KMS keys are regional resources, but the API returns a bare UUID.
+		// Localize it so state matches the regional ID the user configured.
+		region, err := volume.Zone.Region()
+		if err != nil {
+			*diags = append(*diags, diag.NewErrorDiagnostic("failed to parse zone region", err.Error()))
+		} else {
+			model.KmsKeyID = types.StringValue(regional.NewIDString(region, *volume.KmsKeyID))
+		}
 	}
 
 	if volume.ParentSnapshotID != nil {
