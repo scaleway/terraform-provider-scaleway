@@ -54,6 +54,7 @@ type snapshotResourceModel struct {
 	Export    types.List     `tfsdk:"export"`
 	Srn       types.String   `tfsdk:"srn"`
 	Zone      types.String   `tfsdk:"zone"`
+	KmsKeyID  types.String   `tfsdk:"kms_key_id"`
 	ProjectID types.String   `tfsdk:"project_id"`
 	Timeouts  timeouts.Value `tfsdk:"timeouts"`
 }
@@ -150,6 +151,16 @@ func (r *SnapshotResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				},
 				Validators: []validator.String{
 					verify.IsStringOneOfWithWarning(zonal.AllZones()),
+				},
+			},
+			"kms_key_id": schema.StringAttribute{
+				Computed: true,
+				Description: "UUID of the KMS key used to protect the volume's encryption. " +
+					"Using this field will encrypt the new volume. " +
+					"Only available to the Private Beta's users. The KMS key must use " +
+					"symmetric encryption with the \"AES-256-GCM\" algorithm",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"project_id": schema.StringAttribute{
@@ -622,6 +633,17 @@ func flattenBlockSnapshot(ctx context.Context, snapshot *block.Snapshot, referen
 			"read":   types.StringType,
 			"update": types.StringType,
 		})},
+	}
+
+	if snapshot.KmsKeyID != nil && *snapshot.KmsKeyID != "" {
+		// KMS keys are regional resources, but the API returns a bare UUID.
+		// Localize it so state matches the regional ID the user configured.
+		region, err := snapshot.Zone.Region()
+		if err != nil {
+			*diags = append(*diags, diag.NewErrorDiagnostic("failed to parse zone region", err.Error()))
+		} else {
+			state.KmsKeyID = types.StringValue(regional.NewIDString(region, *snapshot.KmsKeyID))
+		}
 	}
 
 	tags, tagsDiags := providertypes.FlattenStringList(ctx, "tags", snapshot.Tags, reference)
