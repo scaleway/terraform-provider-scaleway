@@ -41,6 +41,7 @@ type snapshotDataSourceModel struct {
 	VolumeID   types.String `tfsdk:"volume_id"`
 	Tags       types.List   `tfsdk:"tags"`
 	Srn        types.String `tfsdk:"srn"`
+	KmsKeyID   types.String `tfsdk:"kms_key_id"`
 	Zone       types.String `tfsdk:"zone"`
 	ProjectID  types.String `tfsdk:"project_id"`
 }
@@ -73,6 +74,10 @@ func (d *SnapshotDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "ID of the volume from which creates a snapshot",
+			},
+			"kms_key_id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "UUID of the KMS key used to protect the parent volume's encryption",
 			},
 			"tags": schema.ListAttribute{
 				Computed:            true,
@@ -210,6 +215,7 @@ func (d *SnapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 		Zone:       flat.Zone,
 		ProjectID:  flat.ProjectID,
 		SnapshotID: types.StringValue(zonal.NewIDString(snapshot.Zone, snapshot.ID)),
+		KmsKeyID:   flat.KmsKeyID,
 	}
 
 	if snapshot.ParentVolume != nil {
