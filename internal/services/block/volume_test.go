@@ -62,7 +62,7 @@ func TestAccVolume_Basic_WithKMSKeyID(t *testing.T) {
 
 					resource scaleway_block_volume main {
 						name = "test-block-volume-basic"
-						zone = "fr-par-3"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
 						iops = 5000
 						size_in_gb = 20
 						kms_key_id = scaleway_key_manager_key.my_key.id
