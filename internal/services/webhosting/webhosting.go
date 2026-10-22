@@ -87,6 +87,12 @@ func webhostingSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "IDs of the selected options for the hosting",
 		},
+		"delete_hosting_after_commitment": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Whether the hosting is deleted at the end of the commitment period instead of being automatically renewed",
+		},
 		"created_at": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -366,6 +372,10 @@ func setWebhostingState(ctx context.Context, d *schema.ResourceData, m any, webh
 	_ = d.Set("organization_id", "")
 	_ = d.Set("project_id", webhostingResponse.ProjectID)
 
+	if webhostingResponse.Commitment != nil {
+		_ = d.Set("delete_hosting_after_commitment", webhostingResponse.Commitment.DeleteHostingAtEnd)
+	}
+
 	return nil
 }
 
@@ -409,6 +419,11 @@ func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m any
 
 	if d.HasChange("tags") {
 		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if d.HasChange("delete_hosting_after_commitment") {
+		updateRequest.DeleteHostingAfterCommitment = types.ExpandBoolPtr(d.Get("delete_hosting_after_commitment"))
 		hasChanged = true
 	}
 

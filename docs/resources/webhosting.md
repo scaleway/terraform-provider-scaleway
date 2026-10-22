@@ -32,6 +32,7 @@ The following arguments are supported:
 - `email` - (Required) The contact email of the client for the hosting.
 - `domain` - (Required) The domain name of the hosting.
 - `option_ids` - (Optional) The IDs of the selected options for the hosting.
+- `delete_hosting_after_commitment` - (Optional, Computed) Whether the hosting is deleted at the end of the commitment period instead of being automatically renewed.
 - `tags` - (Optional) The tags associated with the hosting.
 - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Hosting.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the VPC is associated with.
