@@ -39,6 +39,8 @@ var BodyMatcherIgnore = []string{
 	"organization_id",
 	"project_id",
 	"project", // like project_id but should be deprecated
+	// rdb: deprecated; high_availability_mode is authoritative on create/upgrade
+	"is_ha_cluster",
 	// function related fields
 	"mnq_project_id",
 	"mnq_region",
