@@ -137,9 +137,9 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Optional: true,
 				Description: "UUID of the KMS key used to protect the volume's encryption. " +
 					"Using this field will encrypt the new volume. " +
-					"Only available to the Private Beta's users",
+					"Only available to the Private Beta's users. The KMS key must use " +
+					"symmetric encryption with the \"AES-256-GCM\" algorithm",
 				Validators: []validator.String{
-					verify.IsStringUUID(),
 					stringvalidator.ConflictsWith(path.MatchRoot("instance_volume_id")),
 					stringvalidator.ConflictsWith(path.MatchRoot("snapshot_id")),
 				},
@@ -265,7 +265,8 @@ func (r *VolumeResource) Create(
 		}
 
 		if !data.KmsKeyID.IsNull() && data.KmsKeyID.ValueString() != "" {
-			createReq.KmsKeyID = new(data.KmsKeyID.ValueString())
+			kmsKeyId := locality.ExpandID(data.KmsKeyID.ValueString())
+			createReq.KmsKeyID = new(kmsKeyId)
 		}
 
 		if !data.SizeInGB.IsNull() && !data.SizeInGB.IsUnknown() {
