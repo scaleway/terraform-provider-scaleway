@@ -51,7 +51,8 @@ func fetchAvailableNodeType(tt *acctest.TestTools) string {
 	}
 
 	for _, nodeType := range nodeTypesResp.NodeTypes {
-		if nodeType.StockStatus == messageqSDK.NodeTypeStockStatusAvailable && !nodeType.Disabled {
+		// Accept low_stock and available
+		if nodeType.StockStatus != messageqSDK.NodeTypeStockStatusOutOfStock && !nodeType.Disabled {
 			return nodeType.Name
 		}
 	}
