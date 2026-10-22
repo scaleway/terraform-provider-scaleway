@@ -81,6 +81,63 @@ func TestAccVolume_Basic_WithKMSKeyID(t *testing.T) {
 	})
 }
 
+func TestAccVolume_KMS_WrongKey(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_key_manager_key" "goodkey" {
+						name        = "tf-tests-volume-kms-wrong-key-1"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource "scaleway_key_manager_key" "wrongkey" {
+						name        = "tf-tests-volume-kms-wrong-key-2"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-basic"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops = 5000
+						size_in_gb = 20
+						kms_key_id = scaleway_key_manager_key.goodkey.id
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-block-snapshot-basic"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						volume_id = scaleway_block_volume.main.id
+					}
+
+					resource scaleway_block_volume imported {
+						name = "test-block-volume-basic-imported"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops = 5000
+						snapshot_id = scaleway_block_snapshot.main.id
+						kms_key_id = scaleway_key_manager_key.wrongkey.id
+					}
+				`,
+				ExpectError: regexp.MustCompile(
+					`The kms_key_id cannot be different from the snapshot's`,
+				),
+			},
+		},
+	})
+}
 func TestAccVolume_BasicWithoutSizeInGB(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
