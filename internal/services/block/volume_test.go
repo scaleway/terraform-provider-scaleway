@@ -52,7 +52,7 @@ func TestAccVolume_Basic_WithKMSKeyID(t *testing.T) {
 				// FIXME: add clearer error for wrongly made aes_256_gcm
 				Config: `
 					resource "scaleway_key_manager_key" "my_key" {
-						name        = "my_key"
+						name        = "tf-tests-volume-basic-with-kms"
 						region      = "fr-par"
 						usage       = "symmetric_encryption"
 						algorithm   = "aes_256_gcm"
