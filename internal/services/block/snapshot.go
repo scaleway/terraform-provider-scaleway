@@ -54,6 +54,7 @@ type snapshotResourceModel struct {
 	Export    types.List     `tfsdk:"export"`
 	Srn       types.String   `tfsdk:"srn"`
 	Zone      types.String   `tfsdk:"zone"`
+	KmsKeyID  types.String   `tfsdk:"kms_key_id"`
 	ProjectID types.String   `tfsdk:"project_id"`
 	Timeouts  timeouts.Value `tfsdk:"timeouts"`
 }
@@ -150,6 +151,13 @@ func (r *SnapshotResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				},
 				Validators: []validator.String{
 					verify.IsStringOneOfWithWarning(zonal.AllZones()),
+				},
+			},
+			"kms_key_id": schema.StringAttribute{
+				Computed:    true,
+				Description: "UUID of the KMS key used to protect the parent volume's encryption",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"project_id": schema.StringAttribute{
@@ -339,6 +347,13 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 
 			return
 		}
+
+		snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, snapshot.ID, defaultBlockTimeout)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed waiting for block snapshot export", err.Error())
+
+			return
+		}
 	}
 
 	state := flattenBlockSnapshot(ctx, snapshot, &plan, &resp.Diagnostics)
@@ -376,16 +391,25 @@ func (r *SnapshotResource) Read(
 		return
 	}
 
-	resourceID := state.ID.ValueString()
+	var (
+		id   string
+		zone scw.Zone
+	)
+
 	if identityAvailable {
-		resourceID = identity.ID.ValueString()
-	}
+		zone, id = identityfw.ResolveZonalIdentity(identity)
+	} else {
+		resourceID := state.ID.ValueString()
 
-	zone, id, err := zonal.ParseID(resourceID)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+		tmpZone, tmpId, err := zonal.ParseID(resourceID)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse block snapshot ID during READ", err.Error())
 
-		return
+			return
+		}
+
+		id = tmpId
+		zone = tmpZone
 	}
 
 	timeout, diags := state.Timeouts.Read(ctx, defaultBlockTimeout)
@@ -444,7 +468,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 
 	zone, id, err := zonal.ParseID(state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+		resp.Diagnostics.AddError("Failed to parse block snapshot ID during UPDATE", err.Error())
 
 		return
 	}
@@ -547,7 +571,7 @@ func (r *SnapshotResource) Delete(ctx context.Context, req resource.DeleteReques
 
 	zone, id, err := zonal.ParseID(state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+		resp.Diagnostics.AddError("Failed to parse block snapshot ID during DELETE", err.Error())
 
 		return
 	}
@@ -606,6 +630,17 @@ func flattenBlockSnapshot(ctx context.Context, snapshot *block.Snapshot, referen
 			"read":   types.StringType,
 			"update": types.StringType,
 		})},
+	}
+
+	if snapshot.KmsKeyID != nil && *snapshot.KmsKeyID != "" {
+		// KMS keys are regional resources, but the API returns a bare UUID.
+		// Localize it so state matches the regional ID the user configured.
+		region, err := snapshot.Zone.Region()
+		if err != nil {
+			*diags = append(*diags, diag.NewErrorDiagnostic("failed to parse zone region", err.Error()))
+		} else {
+			state.KmsKeyID = types.StringValue(regional.NewIDString(region, *snapshot.KmsKeyID))
+		}
 	}
 
 	tags, tagsDiags := providertypes.FlattenStringList(ctx, "tags", snapshot.Tags, reference)

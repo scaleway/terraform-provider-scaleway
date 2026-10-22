@@ -43,6 +43,52 @@ func TestAccSnapshot_Basic(t *testing.T) {
 	})
 }
 
+func TestAccSnapshot_Basic_WithKMS(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	keyName := sdkacctest.RandomWithPrefix("tf-tests-snapshot-basic-with-kms-")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_key_manager_key" "my_key" {
+						name        = "%s"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume main {
+						iops = 5000
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						size_in_gb = 10
+						kms_key_id = scaleway_key_manager_key.my_key.id
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-block-snapshot-basic"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						volume_id = scaleway_block_volume.main.id
+					}
+				`, keyName),
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
+					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_block_snapshot.main", "name", "test-block-snapshot-basic"),
+					resource.TestMatchResourceAttr("scaleway_block_snapshot.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "kms_key_id", "scaleway_block_snapshot.main", "kms_key_id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccSnapshot_VolumeIDConflict(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
