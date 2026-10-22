@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"strings"
 	"time"
 
@@ -133,6 +134,91 @@ func retryRDBReadOnTransient[T any](ctx context.Context, api *rdb.API, region sc
 			return waitForRDBInstance(ctx, api, region, instanceID, defaultInstanceTimeout)
 		},
 	)
+}
+
+// applyInstanceSettings merges user settings onto the instance defaults then calls SetInstanceSettings.
+// Unlike a bare Set of the config map, this preserves engine defaults not listed in Terraform.
+func applyInstanceSettings(ctx context.Context, api *rdb.API, region scw.Region, instanceID string, timeout time.Duration, oldManaged, newManaged map[string]string) error {
+	res, err := waitForRDBInstance(ctx, api, region, instanceID, timeout)
+	if err != nil {
+		return err
+	}
+
+	current, ok := flattenInstanceSettings(res.Settings).(map[string]string)
+	if !ok {
+		return errors.New("unexpected type for instance settings")
+	}
+
+	// Legacy state mirrored all API defaults as "settings"; treat that as unmanaged.
+	if maps.Equal(oldManaged, current) {
+		oldManaged = nil
+	}
+
+	merged := MergeInstanceSettings(current, oldManaged, newManaged)
+
+	_, err = api.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+		InstanceID: instanceID,
+		Region:     region,
+		Settings:   expandInstanceSettingsFromMap(merged),
+	}, scw.WithContext(ctx))
+
+	return err
+}
+
+func rawConfigSettingsKeys(d *schema.ResourceData) (map[string]bool, bool) {
+	raw := d.GetRawConfig()
+	if raw.IsNull() || !raw.IsKnown() {
+		return nil, false
+	}
+
+	attr := raw.GetAttr("settings")
+	if attr.IsNull() {
+		return nil, false
+	}
+
+	valueMap := attr.AsValueMap()
+	if len(valueMap) == 0 {
+		return nil, false
+	}
+
+	keys := make(map[string]bool, len(valueMap))
+	for key := range valueMap {
+		keys[key] = true
+	}
+
+	return keys, true
+}
+
+// setInstanceSettingsState persists only HCL-managed settings keys into state.
+func setInstanceSettingsState(d *schema.ResourceData, settings []*rdb.InstanceSetting) {
+	allSettings, ok := flattenInstanceSettings(settings).(map[string]string)
+	if !ok {
+		allSettings = map[string]string{}
+	}
+
+	configKeys, managed := rawConfigSettingsKeys(d)
+	raw := d.GetRawConfig()
+	rawKnown := !raw.IsNull() && raw.IsKnown()
+
+	switch {
+	case managed:
+		_ = d.Set("settings", FilterInstanceSettings(allSettings, configKeys))
+	case rawKnown:
+		// HCL is known and has no settings block — clear legacy computed defaults from state.
+		_ = d.Set("settings", nil)
+	default:
+		// Raw config unavailable (some create Read paths): fall back to GetOk keys only.
+		if v, ok := d.GetOk("settings"); ok {
+			fallbackKeys := make(map[string]bool)
+			for key := range v.(map[string]any) {
+				fallbackKeys[key] = true
+			}
+
+			_ = d.Set("settings", FilterInstanceSettings(allSettings, fallbackKeys))
+		} else {
+			_ = d.Set("settings", nil)
+		}
+	}
 }
 
 func isTimeoutErr(err error) bool {
