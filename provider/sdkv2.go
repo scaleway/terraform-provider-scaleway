@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -15,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/audittrail"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
@@ -150,6 +152,30 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Optional:    true,
 					Default:     false,
 					Description: "Whether to enable the request to use path-style addressing.",
+				},
+				"default_annotations": {
+					Type:        schema.TypeMap,
+					Optional:    true,
+					Description: "Default annotations to apply across all resources as key→value name pairs. Keys and values are created (or found by name) during provider configuration, and a binding is created for each annotated resource. To clean up the keys and values left by a previous configuration, first apply with default_annotations set to an empty map, then remove it from the configuration.",
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+						ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+							value, ok := v.(string)
+							if !ok {
+								return diag.Diagnostics{
+									diag.Diagnostic{Severity: diag.Error, Summary: "Invalid default annotation value", Detail: "value must be a string", AttributePath: p},
+								}
+							}
+
+							if err := annotations.ValidateAnnotationValueName(value); err != nil {
+								return diag.Diagnostics{
+									diag.Diagnostic{Severity: diag.Error, Summary: "Invalid default annotation value", Detail: err.Error(), AttributePath: p},
+								}
+							}
+
+							return nil
+						},
+					},
 				},
 			},
 
@@ -436,11 +462,24 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 
 		addBetaResources(p)
 
+		// Wrap all SDKv2 resources so that default annotation bindings are
+		// reconciled on Create, Read and Update (and all bindings are deleted
+		// on Delete) for any resource that exposes an "srn" attribute. This
+		// is a no-op when no default annotations are configured or when the
+		// resource has no "srn" field.
+		for name, r := range p.ResourcesMap {
+			p.ResourcesMap[name] = annotations.WithDefaultBindings(r)
+		}
+
 		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (any, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
 
 			// If we provide meta in config use it. This is useful for tests
 			if config != nil && config.Meta != nil {
+				if err := annotations.ResolveDefaultsOnMeta(ctx, config.Meta); err != nil {
+					return config.Meta, diag.FromErr(err)
+				}
+
 				return config.Meta, nil
 			}
 
@@ -460,13 +499,43 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 
 			s3UsePathStyle := types.ExpandBoolPtr(types.GetBool(data, "s3_use_path_style"))
 
+			var defaultAnnotations map[string]string
+
+			// Distinguish "default_annotations is set" (possibly to an empty
+			// map, which enables the cleanup of orphaned keys and values on
+			// the next CRUD operation) from "not set at all".
+			if rawConfig := data.GetRawConfig(); rawConfig != cty.NilVal {
+				if annValue := rawConfig.GetAttr("default_annotations"); !annValue.IsNull() && annValue.IsKnown() {
+					rawMap, _ := data.Get("default_annotations").(map[string]any)
+					defaultAnnotations = make(map[string]string, len(rawMap))
+
+					for k, v := range rawMap {
+						defaultAnnotations[k] = v.(string)
+					}
+
+					// SDKv2 cannot validate map keys at the schema level, so the
+					// key names are validated here (the values are validated by
+					// the Elem ValidateDiagFunc above).
+					for key := range defaultAnnotations {
+						if err := annotations.ValidateAnnotationKeyName(key); err != nil {
+							return nil, diag.FromErr(err)
+						}
+					}
+				}
+			}
+
 			m, err := meta.NewMeta(ctx, &meta.Config{
-				ProviderSchema:   data,
-				TerraformVersion: terraformVersion,
-				Endpoints:        endpoints,
-				S3UsePathStyle:   s3UsePathStyle,
+				ProviderSchema:     data,
+				TerraformVersion:   terraformVersion,
+				Endpoints:          endpoints,
+				S3UsePathStyle:     s3UsePathStyle,
+				DefaultAnnotations: defaultAnnotations,
 			})
 			if err != nil {
+				return nil, diag.FromErr(err)
+			}
+
+			if err := annotations.ResolveDefaultsOnMeta(ctx, m); err != nil {
 				return nil, diag.FromErr(err)
 			}
 

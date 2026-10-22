@@ -235,6 +235,12 @@ See the [Custom Service Endpoints Guide](https://registry.terraform.io/providers
 When using a different endpoint for your own S3 API, make sure to adjust the `s3_use_path_style`
 flag according to what your endpoint supports.
 
+- `default_annotations` - (Optional) Default annotations to apply across all resources as key→value name pairs.
+Keys and values are created (or found by name) during provider configuration, and a binding is
+created for each annotated resource.
+To clean up the keys and values left by a previous configuration, first apply with
+`default_annotations` set to an empty map, then remove it from the configuration.
+
 ## Store terraform state
 
 For detailed instructions and best practices, see the full [Backend guide](guides/backend_guide.md)
