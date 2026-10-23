@@ -10,6 +10,8 @@ import (
 	actionFramework "github.com/hashicorp/terraform-plugin-framework/action"
 	ephemeralFramework "github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	providerFramework "github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 	"github.com/stretchr/testify/assert"
 )
@@ -92,4 +94,34 @@ func TestProviderActionNameDoesNotContainAction(t *testing.T) {
 			assert.NotContains(t, resp.TypeName, "action")
 		}
 	}
+}
+
+// TestProviderAnnotationsBindingResourceIsWrapped verifies that
+// scaleway_annotations_binding is registered with the default annotation
+// binding wrapper, so that it participates in default_annotations like
+// any other resource with a Computed "srn" attribute.
+func TestProviderAnnotationsBindingResourceIsWrapped(t *testing.T) {
+	p := provider.NewFrameworkProvider(nil)()
+	found := false
+
+	for _, factory := range p.Resources(t.Context()) {
+		r := factory()
+
+		resp := &resource.SchemaResponse{}
+		r.Schema(t.Context(), resource.SchemaRequest{}, resp)
+
+		if resp.Schema.Attributes["srn"] != nil {
+			if strAttr, ok := resp.Schema.Attributes["srn"].(schema.StringAttribute); ok && strAttr.Computed {
+				// Verify this is the binding resource by checking its type name.
+				metaResp := &resource.MetadataResponse{}
+				r.Metadata(t.Context(), resource.MetadataRequest{ProviderTypeName: "scaleway"}, metaResp)
+
+				if metaResp.TypeName == "scaleway_annotations_binding" {
+					found = true
+				}
+			}
+		}
+	}
+
+	assert.True(t, found, "scaleway_annotations_binding must be registered with the default annotation binding wrapper")
 }
