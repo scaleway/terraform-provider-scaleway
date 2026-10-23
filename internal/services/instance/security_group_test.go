@@ -713,3 +713,37 @@ func TestAccSecurityGroup_EnableDefaultSecurity(t *testing.T) {
 		},
 	})
 }
+
+func TestAccSecurityGroup_EnableProjectDefault(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSecurityGroupDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "base" {
+						tags = [ "test-terraform" ]
+						project_default = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "project_default", "false"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "base" {
+						tags = [ "test-terraform" ]
+						project_default = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "project_default", "true"),
+				),
+			},
+		},
+	})
+}
