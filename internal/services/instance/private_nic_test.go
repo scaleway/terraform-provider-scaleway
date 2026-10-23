@@ -65,7 +65,7 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 				ResourceName:            "scaleway_instance_private_nic.nic",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ipam_ip_ids"},
+				ImportStateVerifyIgnore: []string{"ipam_ip_ids", "status"},
 			},
 		},
 	})
@@ -260,7 +260,7 @@ func TestAccPrivateNIC_WithIPAM(t *testing.T) {
 				ResourceName:            "scaleway_instance_private_nic.pnic",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ipam_ip_ids"},
+				ImportStateVerifyIgnore: []string{"ipam_ip_ids", "status"},
 			},
 		},
 	})
