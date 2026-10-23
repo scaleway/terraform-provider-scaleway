@@ -213,7 +213,11 @@ func customizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ any) e
 	// Check if any IP ID is being removed
 	for id := range oldIPIDsSet {
 		if _, ok := newIPIDsSet[id]; !ok {
-			return fmt.Errorf("forcing new resource on ip_ids: %w", diff.ForceNew("ip_ids"))
+			if err := diff.ForceNew("ip_ids"); err != nil {
+				return fmt.Errorf("forcing new resource on ip_ids: %w", err)
+			}
+
+			return nil
 		}
 	}
 
@@ -223,7 +227,11 @@ func customizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ any) e
 func customizeDiffAssignFlexibleIPv6(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 	oldValue, newValue := diff.GetChange("assign_flexible_ipv6")
 	if oldValue.(bool) && !newValue.(bool) {
-		return fmt.Errorf("forcing new resource on assign_flexible_ipv6: %w", diff.ForceNew("assign_flexible_ipv6"))
+		if err := diff.ForceNew("assign_flexible_ipv6"); err != nil {
+			return fmt.Errorf("forcing new resource on assign_flexible_ipv6: %w", err)
+		}
+
+		return nil
 	}
 
 	return nil
