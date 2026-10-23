@@ -35,7 +35,7 @@ func newAPIWithZone(d *schema.ResourceData, m any) (*baremetal.API, scw.Zone, er
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return api, zone, nil
@@ -47,7 +47,7 @@ func NewAPIWithZoneAndID(m any, id string) (*baremetal.API, zonal.ID, error) {
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
-		return nil, zonal.ID{}, err
+		return nil, zonal.ID{}, fmt.Errorf("parsing zonal id %q: %w", id, err)
 	}
 
 	return api, zonal.NewID(zone, ID), nil
@@ -59,7 +59,7 @@ func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m any) (*baremetalV3.P
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return privateNetworkAPI, zone, nil
@@ -71,7 +71,7 @@ func NewPrivateNetworkAPIWithZoneAndID(m any, id string) (*baremetalV3.PrivateNe
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
-		return nil, zonal.ID{}, err
+		return nil, zonal.ID{}, fmt.Errorf("parsing zonal id %q: %w", id, err)
 	}
 
 	return privateNetworkAPI, zonal.NewID(zone, ID), nil
@@ -88,7 +88,7 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 		ServerID: &serverID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("listing server private networks: %w", err)
 	}
 
 	for _, pn := range listPrivateNetwork.ServerPrivateNetworks {
@@ -98,7 +98,7 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 			PrivateNetworkID: pn.PrivateNetworkID,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return fmt.Errorf("deleting server private network: %w", err)
 		}
 	}
 
@@ -116,7 +116,7 @@ func installServer(ctx context.Context, d *schema.ResourceData, api *baremetal.A
 
 	_, err := api.InstallServer(installServerRequest, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("installing server: %w", err)
 	}
 
 	return nil
@@ -134,7 +134,7 @@ func FindOfferByID(ctx context.Context, api *baremetal.API, zone scw.Zone, offer
 			SubscriptionPeriod: subscriptionPeriod,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing offers: %w", err)
 		}
 
 		for _, offer := range res.Offers {
@@ -239,10 +239,15 @@ func getOfferInformations(ctx context.Context, offer any, id string, i any) (*ba
 
 		return FindOfferByID(ctx, api, zone.Zone, offerID.ID)
 	} else {
-		return api.GetOfferByName(&baremetal.GetOfferByNameRequest{
+		res, err := api.GetOfferByName(&baremetal.GetOfferByNameRequest{
 			OfferName: offer.(string),
 			Zone:      zone.Zone,
 		})
+		if err != nil {
+			return nil, fmt.Errorf("getting offer by name: %w", err)
+		}
+
+		return res, nil
 	}
 }
 

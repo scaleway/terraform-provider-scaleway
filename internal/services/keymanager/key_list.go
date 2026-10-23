@@ -130,7 +130,7 @@ func (r *KeyListResource) FetchKeys(ctx context.Context, region scw.Region, proj
 
 	response, err := r.keyAPI.ListKeys(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing keys: %w", err)
 	}
 
 	return response.Keys, nil

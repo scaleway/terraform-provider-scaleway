@@ -2,6 +2,7 @@ package instancehelpers
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
@@ -16,7 +17,7 @@ import (
 func InstanceAndBlockAPIWithZone(d *schema.ResourceData, m any) (*BlockAndInstanceAPI, scw.Zone, error) {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return NewBlockAndInstanceAPI(meta.ExtractScwClient(m)), zone, nil
@@ -26,7 +27,7 @@ func InstanceAndBlockAPIWithZone(d *schema.ResourceData, m any) (*BlockAndInstan
 func InstanceAndBlockAPIWithZoneAndID(m any, zonedID string) (*BlockAndInstanceAPI, scw.Zone, string, error) {
 	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing zonal id %q: %w", zonedID, err)
 	}
 
 	return NewBlockAndInstanceAPI(meta.ExtractScwClient(m)), zone, ID, nil
@@ -142,7 +143,7 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 	notFoundErr := &scw.ResourceNotFoundError{}
 
 	if err != nil && !errors.As(err, &notFoundErr) {
-		return nil, err
+		return nil, fmt.Errorf("getting volume: %w", err)
 	}
 
 	if getVolumeResponse != nil {
@@ -165,7 +166,7 @@ func (api *BlockAndInstanceAPI) GetUnknownVolume(req *GetUnknownVolumeRequest, o
 		VolumeID: req.VolumeID,
 	}, opts...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting block volume: %w", err)
 	}
 
 	vol := &UnknownVolume{
@@ -211,7 +212,11 @@ func (api *BlockAndInstanceAPI) ResizeUnknownVolume(req *ResizeUnknownVolumeRequ
 		}, opts...)
 	}
 
-	return err
+	if err != nil {
+		return fmt.Errorf("resizing volume: %w", err)
+	}
+
+	return nil
 }
 
 func (api *BlockAndInstanceAPI) RenameUnknownVolume(req *RenameUnknownVolumeRequest, opts ...scw.RequestOption) error {
@@ -237,7 +242,11 @@ func (api *BlockAndInstanceAPI) RenameUnknownVolume(req *RenameUnknownVolumeRequ
 		}, opts...)
 	}
 
-	return err
+	if err != nil {
+		return fmt.Errorf("renaming volume: %w", err)
+	}
+
+	return nil
 }
 
 func (api *BlockAndInstanceAPI) DeleteUnknownVolume(req *DeleteUnknownVolumeRequest, opts ...scw.RequestOption) error {
@@ -261,7 +270,11 @@ func (api *BlockAndInstanceAPI) DeleteUnknownVolume(req *DeleteUnknownVolumeRequ
 		}, opts...)
 	}
 
-	return err
+	if err != nil {
+		return fmt.Errorf("deleting volume: %w", err)
+	}
+
+	return nil
 }
 
 type GetUnknownSnapshotRequest struct {
@@ -277,7 +290,7 @@ func (api *BlockAndInstanceAPI) GetUnknownSnapshot(req *GetUnknownSnapshotReques
 	notFoundErr := &scw.ResourceNotFoundError{}
 
 	if err != nil && !errors.As(err, &notFoundErr) {
-		return nil, err
+		return nil, fmt.Errorf("getting snapshot: %w", err)
 	}
 
 	if getSnapshotResponse != nil {
@@ -296,7 +309,7 @@ func (api *BlockAndInstanceAPI) GetUnknownSnapshot(req *GetUnknownSnapshotReques
 		SnapshotID: req.SnapshotID,
 	}, opts...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting block snapshot: %w", err)
 	}
 
 	snap := &UnknownSnapshot{

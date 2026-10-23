@@ -25,7 +25,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*kafkaapi.API, scw.Region,
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -37,7 +37,7 @@ func NewAPIWithRegionAndID(m any, id string) (*kafkaapi.API, scw.Region, string,
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return api, region, id, nil

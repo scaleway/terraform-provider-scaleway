@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	_ "embed"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -271,7 +272,7 @@ func expandACL(data any) ([]*k8s.ACLRuleRequest, error) {
 		if ipRaw, ok := r["ip"]; ok && ipRaw != "" {
 			ip, err := types.ExpandIPNet(ipRaw.(string))
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("expanding ip net: %w", err)
 			}
 
 			expandedRule.IP = &ip

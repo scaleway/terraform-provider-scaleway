@@ -1337,7 +1337,7 @@ func terminateServer(ctx context.Context, api *instancehelpers.BlockAndInstanceA
 		Timeout:  &timeout,
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
-		return err
+		return fmt.Errorf("terminating server: %w", err)
 	}
 
 	return nil
@@ -1360,7 +1360,7 @@ func deleteServer(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI,
 		ServerID: id,
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
-		return err
+		return fmt.Errorf("deleting server: %w", err)
 	}
 
 	_, err = waitForServer(ctx, api.API, zone, id, timeout)
@@ -1385,7 +1385,7 @@ func instanceServerCanMigrate(api *instanceSDK.API, server *instanceSDK.Server, 
 		Name: requestedType,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("getting server type: %w", err)
 	}
 
 	if serverType.VolumesConstraint != nil &&
@@ -1420,7 +1420,11 @@ func customDiffInstanceRootVolumeSize(_ context.Context, diff *schema.ResourceDi
 
 	if rootVolume, hasRootVolume := resp.Server.Volumes["0"]; hasRootVolume {
 		if rootVolume.VolumeType == instanceSDK.VolumeServerVolumeTypeLSSD {
-			return diff.ForceNew("root_volume.0.size_in_gb")
+			if err := diff.ForceNew("root_volume.0.size_in_gb"); err != nil {
+				return fmt.Errorf("forcing new resource for %q: %w", "root_volume.0.size_in_gb", err)
+			}
+
+			return nil
 		}
 	}
 
@@ -1433,7 +1437,11 @@ func customDiffInstanceServerType(_ context.Context, diff *schema.ResourceDiff, 
 	}
 
 	if diff.Get("replace_on_type_change").(bool) {
-		return diff.ForceNew("type")
+		if err := diff.ForceNew("type"); err != nil {
+			return fmt.Errorf("forcing new resource for %q: %w", "type", err)
+		}
+
+		return nil
 	}
 
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(meta, diff.Id())
@@ -1476,12 +1484,16 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 		ServerID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("getting server: %w", err)
 	}
 
 	// If 'image' field is defined by the user and server.Image is empty, we should create a new server
 	if server.Server.Image == nil {
-		return diff.ForceNew("image")
+		if err := diff.ForceNew("image"); err != nil {
+			return fmt.Errorf("forcing new resource for %q: %w", "image", err)
+		}
+
+		return nil
 	}
 
 	// We get the image as it is defined by the user
@@ -1502,14 +1514,22 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 	if err != nil {
 		// If UUID is not in marketplace, then it's an image change
 		if httperrors.Is404(err) {
-			return diff.ForceNew("image")
+			if err := diff.ForceNew("image"); err != nil {
+				return fmt.Errorf("forcing new resource for %q: %w", "image", err)
+			}
+
+			return nil
 		}
 
-		return err
+		return fmt.Errorf("getting local image: %w", err)
 	}
 
 	if marketplaceImage.Label != image.ID {
-		return diff.ForceNew("image")
+		if err := diff.ForceNew("image"); err != nil {
+			return fmt.Errorf("forcing new resource for %q: %w", "image", err)
+		}
+
+		return nil
 	}
 
 	return nil
@@ -1517,7 +1537,9 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 
 func customDiffInstanceServerPublicIPs(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 	if diff.HasChange("ip_ids") || diff.HasChange("ip_id") || diff.HasChange("enable_dynamic_ip") {
-		return diff.SetNewComputed("public_ips")
+		if err := diff.SetNewComputed("public_ips"); err != nil {
+			return fmt.Errorf("setting %q to computed: %w", "public_ips", err)
+		}
 	}
 
 	return nil
@@ -1686,7 +1708,7 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 			Size:     new(scw.Size(d.Get("root_volume.0.size_in_gb").(int)) * scw.GB),
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("resizing root volume: %w", err)
 		}
 	}
 
@@ -1756,7 +1778,7 @@ func renameRootVolumeIfNeeded(d *schema.ResourceData, api *instancehelpers.Block
 				Name:     new(rootVolumeName.(string)),
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("renaming root volume: %w", err)
 			}
 		}
 	}

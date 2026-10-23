@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -95,8 +96,11 @@ func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m a
 				Region:        region,
 				NatsAccountID: id,
 			}, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("getting nats account: %w", err)
+			}
 
-			return err
+			return nil
 		})
 	}
 
@@ -165,7 +169,7 @@ func ResourceMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, m
 			return nil
 		}
 
-		return delErr
+		return fmt.Errorf("deleting nats account: %w", delErr)
 	})
 	// If the retry timed out on a namespace error, assume the account is gone
 	if err != nil && isMNQNamespaceReadRetryableError(err) {

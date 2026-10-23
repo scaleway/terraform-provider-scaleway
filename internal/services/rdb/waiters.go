@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -26,11 +27,17 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 			InstanceID:    id,
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("waiting for rdb instance to be ready: %w", err)
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for rdb instance to be ready: %w", err)
+	}
 
-	return instance, err
+	return instance, nil
 }
 
 func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.DatabaseBackup, error) {
@@ -50,11 +57,17 @@ func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Regi
 			DatabaseBackupID: id,
 			RetryInterval:    &retryInterval,
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("waiting for rdb database backup to be ready: %w", err)
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for rdb database backup to be ready: %w", err)
+	}
 
-	return backup, err
+	return backup, nil
 }
 
 func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.ReadReplica, error) {
@@ -74,11 +87,17 @@ func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region,
 			ReadReplicaID: id,
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("waiting for rdb read replica to be ready: %w", err)
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for rdb read replica to be ready: %w", err)
+	}
 
-	return replica, err
+	return replica, nil
 }
 
 func waitForRDBSnapshot(ctx context.Context, api *rdb.API, region scw.Region, snapshotID string, timeout time.Duration) (*rdb.Snapshot, error) {
@@ -98,9 +117,15 @@ func waitForRDBSnapshot(ctx context.Context, api *rdb.API, region scw.Region, sn
 			SnapshotID:    snapshotID,
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("waiting for rdb snapshot to be ready: %w", err)
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for rdb snapshot to be ready: %w", err)
+	}
 
-	return snapshot, err
+	return snapshot, nil
 }

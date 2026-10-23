@@ -2,6 +2,7 @@ package datawarehouse
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	datawarehouse "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
@@ -24,7 +25,7 @@ func waitForDatawarehouseDeployment(ctx context.Context, api *datawarehouse.API,
 
 	deployment, err := api.WaitForDeployment(req, scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("waiting for deployment: %w", err)
 	}
 
 	return deployment, nil

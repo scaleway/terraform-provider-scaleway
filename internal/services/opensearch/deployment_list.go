@@ -249,7 +249,7 @@ func (r *DeploymentListResource) fetchDeployments(ctx context.Context, target li
 
 	response, err := r.searchdbAPI.ListDeployments(req, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing deployments: %w", err)
 	}
 
 	filtered := make([]*searchdbapi.Deployment, 0, len(response.Deployments))

@@ -33,11 +33,17 @@ func waitForDeployment(
 			Timeout:       &timeout,
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("waiting for opensearch deployment to be ready: %w", err)
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for opensearch deployment to be ready: %w", err)
+	}
 
-	return deployment, err
+	return deployment, nil
 }
 
 // waitForEndpointsDeleted polls GetDeployment until every endpoint ID in endpointIDs
@@ -81,11 +87,14 @@ func waitForEndpointsDeleted(
 				Region:       region,
 				DeploymentID: deploymentID,
 			}, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("getting opensearch deployment: %w", err)
+			}
 
-			return err
+			return nil
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("getting opensearch deployment: %w", err)
 		}
 
 		anyStillPresent := false
@@ -112,7 +121,7 @@ func waitForEndpointsDeleted(
 
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("waiting for opensearch endpoints to be deleted: %w", ctx.Err())
 		case <-time.After(retryInterval):
 		}
 	}

@@ -85,11 +85,11 @@ func planSchema() map[string]*schema.Schema {
 func setPlanIdentity(d *schema.ResourceData, projectID, planName string) error {
 	resourceIdentity, err := d.Identity()
 	if err != nil {
-		return err
+		return fmt.Errorf("getting resource identity: %w", err)
 	}
 
 	if err = resourceIdentity.Set("project_id", projectID); err != nil {
-		return err
+		return fmt.Errorf("setting identity project_id: %w", err)
 	}
 
 	d.SetId(projectID + "/" + planName)

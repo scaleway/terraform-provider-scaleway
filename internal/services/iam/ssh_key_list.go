@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -87,7 +88,7 @@ func (r *SSHKeyListResource) FetchSSHKeys(ctx context.Context, projectID string,
 
 	response, err := r.iamAPI.ListSSHKeys(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing SSH keys: %w", err)
 	}
 
 	return response.SSHKeys, nil

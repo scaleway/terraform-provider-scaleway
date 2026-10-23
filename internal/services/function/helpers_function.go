@@ -34,7 +34,7 @@ func functionAPIWithRegion(d *schema.ResourceData, m any) (*function.API, scw.Re
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -46,7 +46,7 @@ func NewAPIWithRegionAndID(m any, id string) (*function.API, scw.Region, string,
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return api, region, id, nil
@@ -169,9 +169,18 @@ func retryCreateFunctionDomain(ctx context.Context, functionAPI *function.API, r
 				continue
 			}
 
-			return domain, err
+			if err != nil {
+				return nil, fmt.Errorf("creating function domain: %w", err)
+			}
+
+			return domain, nil
 		case <-timeoutChannel:
-			return functionAPI.CreateDomain(req, scw.WithContext(ctx))
+			domain, err := functionAPI.CreateDomain(req, scw.WithContext(ctx))
+			if err != nil {
+				return nil, fmt.Errorf("creating function domain: %w", err)
+			}
+
+			return domain, nil
 		}
 	}
 }

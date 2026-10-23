@@ -341,7 +341,7 @@ func resourceZoneCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m
 		}, scw.WithContext(ctx))
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("listing DNS zones: %w", err)
 	}
 
 	// If zone already exists, add an error to prevent duplicate creation

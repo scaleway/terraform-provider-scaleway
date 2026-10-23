@@ -10,7 +10,7 @@ import (
 // ExtractFrameworkRegion resolves the region from a Plugin Framework attribute or the client default.
 func ExtractFrameworkRegion(regionAttr types.String, client *scw.Client) (scw.Region, error) {
 	if !regionAttr.IsNull() && !regionAttr.IsUnknown() && regionAttr.ValueString() != "" {
-		return scw.ParseRegion(regionAttr.ValueString())
+		return parseRegion(regionAttr.ValueString())
 	}
 
 	region, exists := client.GetDefaultRegion()
@@ -24,7 +24,7 @@ func ExtractFrameworkRegion(regionAttr types.String, client *scw.Client) (scw.Re
 // ExtractFrameworkZone resolves the zone from a Plugin Framework attribute or the client default.
 func ExtractFrameworkZone(zoneAttr types.String, client *scw.Client) (scw.Zone, error) {
 	if !zoneAttr.IsNull() && !zoneAttr.IsUnknown() && zoneAttr.ValueString() != "" {
-		return scw.ParseZone(zoneAttr.ValueString())
+		return parseZone(zoneAttr.ValueString())
 	}
 
 	zone, exists := client.GetDefaultZone()

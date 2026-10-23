@@ -30,12 +30,12 @@ func TestParseRegionID(t *testing.T) {
 		{
 			name:       "empty",
 			localityID: "",
-			err:        "cant parse localized id: ",
+			err:        `parsing localized id "": cant parse localized id: `,
 		},
 		{
 			name:       "without locality",
 			localityID: "my-id",
-			err:        "cant parse localized id: my-id",
+			err:        `parsing localized id "my-id": cant parse localized id: my-id`,
 		},
 	}
 

@@ -250,8 +250,11 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		var err error
 
 		secretResponse, err = api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("creating secret: %w", err)
+		}
 
-		return err
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(err)

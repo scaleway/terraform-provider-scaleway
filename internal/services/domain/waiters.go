@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
@@ -32,11 +33,17 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 			Timeout:       new(timeout),
 			RetryInterval: new(retryInterval),
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("waiting for DNS zone: %w", err)
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for DNS zone: %w", err)
+	}
 
-	return zone, err
+	return zone, nil
 }
 
 func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, recordName string, recordType domain.RecordType, timeout time.Duration) (*domain.Record, error) {
@@ -57,11 +64,17 @@ func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, 
 			Timeout:       new(timeout),
 			RetryInterval: new(retryInterval),
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("waiting for DNS record to exist: %w", err)
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for DNS record to exist: %w", err)
+	}
 
-	return record, err
+	return record, nil
 }
 
 func waitForDomainsRegistration(ctx context.Context, api *domain.RegistrarAPI, domainName string, timeout time.Duration) (*domain.Domain, error) {
@@ -80,11 +93,17 @@ func waitForDomainsRegistration(ctx context.Context, api *domain.RegistrarAPI, d
 			Timeout:       new(timeout),
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("waiting for domain registration: %w", err)
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for domain registration: %w", err)
+	}
 
-	return registeredDomain, err
+	return registeredDomain, nil
 }
 
 func waitForAutoRenewStatus(ctx context.Context, api *domain.RegistrarAPI, domainName string, timeout time.Duration) (*domain.Domain, error) {
@@ -103,11 +122,17 @@ func waitForAutoRenewStatus(ctx context.Context, api *domain.RegistrarAPI, domai
 			Timeout:       new(timeout),
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("waiting for auto renew status: %w", err)
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for auto renew status: %w", err)
+	}
 
-	return registeredDomain, err
+	return registeredDomain, nil
 }
 
 func waitForDNSSECStatus(ctx context.Context, api *domain.RegistrarAPI, domainName string, timeout time.Duration) (*domain.Domain, error) {
@@ -126,9 +151,15 @@ func waitForDNSSECStatus(ctx context.Context, api *domain.RegistrarAPI, domainNa
 			Timeout:       new(timeout),
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("waiting for DNSSEC status: %w", err)
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for DNSSEC status: %w", err)
+	}
 
-	return registeredDomain, err
+	return registeredDomain, nil
 }

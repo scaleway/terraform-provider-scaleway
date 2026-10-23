@@ -550,7 +550,7 @@ func startDeploymentIfStopped(ctx context.Context, api *datawarehouseapi.API, re
 		DeploymentID: deploymentID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("getting deployment: %w", err)
 	}
 
 	if dep.Status != datawarehouseapi.DeploymentStatusStopped {
@@ -561,7 +561,7 @@ func startDeploymentIfStopped(ctx context.Context, api *datawarehouseapi.API, re
 		Region:       region,
 		DeploymentID: deploymentID,
 	}, scw.WithContext(ctx)); err != nil {
-		return err
+		return fmt.Errorf("starting deployment: %w", err)
 	}
 
 	_, err = waitForDatawarehouseDeployment(ctx, api, region, deploymentID, timeout)
@@ -575,7 +575,7 @@ func stopDeploymentIfReady(ctx context.Context, api *datawarehouseapi.API, regio
 		DeploymentID: deploymentID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("getting deployment: %w", err)
 	}
 
 	if dep.Status != datawarehouseapi.DeploymentStatusReady {
@@ -586,7 +586,7 @@ func stopDeploymentIfReady(ctx context.Context, api *datawarehouseapi.API, regio
 		Region:       region,
 		DeploymentID: deploymentID,
 	}, scw.WithContext(ctx)); err != nil {
-		return err
+		return fmt.Errorf("stopping deployment: %w", err)
 	}
 
 	_, err = waitForDatawarehouseDeployment(ctx, api, region, deploymentID, timeout)
@@ -602,7 +602,7 @@ func findInitialDeploymentUserName(ctx context.Context, api *datawarehouseapi.AP
 		PageSize:     new(uint32(100)),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("listing deployment users: %w", err)
 	}
 
 	if len(resp.Users) == 0 {

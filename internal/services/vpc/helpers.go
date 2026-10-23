@@ -22,10 +22,10 @@ func vpcAPIWithRegion(d *schema.ResourceData, m any) (*vpc.API, scw.Region, erro
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
-	return vpcAPI, region, err
+	return vpcAPI, region, nil
 }
 
 // NewAPIWithRegionAndID returns a new VPC API with locality and ID extracted from the state
@@ -34,10 +34,10 @@ func NewAPIWithRegionAndID(m any, id string) (*vpc.API, scw.Region, string, erro
 
 	region, ID, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
-	return vpcAPI, region, ID, err
+	return vpcAPI, region, ID, nil
 }
 
 func NewAPI(m any) (*vpc.API, error) {
@@ -50,10 +50,10 @@ func routesAPIWithRegion(d *schema.ResourceData, m any) (*vpc.RoutesWithNexthopA
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
-	return routesAPI, region, err
+	return routesAPI, region, nil
 }
 
 func vpcPrivateNetworkUpgradeV1SchemaType() cty.Type {
@@ -91,7 +91,7 @@ func vpcPrivateNetworkUpgradeV1ZonalToRegionalID(element string) (string, error)
 
 	fetchRegion, err := scw.Zone(l).Region()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("converting zone to region: %w", err)
 	}
 
 	return fmt.Sprintf("%s/%s", fetchRegion.String(), id), nil

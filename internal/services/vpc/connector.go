@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	_ "embed"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -195,8 +196,11 @@ func ResourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, m any)
 	if hasChanged {
 		err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := vpcAPI.UpdateVPCConnector(updateRequest, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("updating vpc connector: %w", err)
+			}
 
-			return err
+			return nil
 		})
 		if err != nil {
 			return diag.FromErr(err)

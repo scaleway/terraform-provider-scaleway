@@ -60,7 +60,7 @@ func ResourceInstance() *schema.Resource {
 					if len(parts) > 2 {
 						majorMinor := parts[0] + "." + parts[1]
 						if err := d.SetNew("version", majorMinor); err != nil {
-							return err
+							return fmt.Errorf("setting version: %w", err)
 						}
 					}
 				}
@@ -723,7 +723,7 @@ func deleteOldInstanceAfterUpgrade(ctx context.Context, mongodbAPI *mongodb.API,
 		if !deleteRequested {
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("waiting for old mongodb instance to be deleted: %w", ctx.Err())
 			case <-time.After(retryInterval):
 			}
 		}
@@ -997,7 +997,7 @@ func configureSnapshotScheduleOnCreate(ctx context.Context, d *schema.ResourceDa
 	if mustUpdate {
 		_, err := mongodbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return fmt.Errorf("updating mongodb instance: %w", err)
 		}
 
 		_, err = waitForInstance(ctx, mongodbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))

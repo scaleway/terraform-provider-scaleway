@@ -30,7 +30,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*secret.API, scw.Region, e
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -42,7 +42,7 @@ func newAPIWithRegionOptionalProjectIDAndDefault(d *schema.ResourceData, m any, 
 
 	region, err := meta.ExtractRegionWithDefault(d, m, defaultRegion)
 	if err != nil {
-		return nil, "", nil, err
+		return nil, "", nil, fmt.Errorf("extracting region: %w", err)
 	}
 
 	var projectIDPtr *string
@@ -61,7 +61,7 @@ func newAPIWithRegionAndProjectID(d *schema.ResourceData, m any) (*secret.API, s
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", nil, err
+		return nil, "", nil, fmt.Errorf("extracting region: %w", err)
 	}
 
 	var projectIDPtr *string
@@ -80,7 +80,7 @@ func NewAPIWithRegionAndID(m any, id string) (*secret.API, scw.Region, string, e
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return api, region, id, nil
@@ -90,7 +90,7 @@ func NewAPIWithRegionAndID(m any, id string) (*secret.API, scw.Region, string, e
 func NewVersionAPIWithRegionAndID(m any, id string) (*secret.API, scw.Region, string, string, error) {
 	region, id, revision, err := locality.ParseLocalizedNestedID(id)
 	if err != nil {
-		return nil, "", "", "", err
+		return nil, "", "", "", fmt.Errorf("parsing localized nested id %q: %w", id, err)
 	}
 
 	api := secret.NewAPI(meta.ExtractScwClient(m))
@@ -110,7 +110,7 @@ func CreateSecretVersion(ctx context.Context, m any, secretID string, value stri
 
 	region, id, err := regional.ResolveID(secretID, "", client)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("resolving secret id %q: %w", secretID, err)
 	}
 
 	api := secret.NewAPI(client)
@@ -151,7 +151,7 @@ func updateSecretProtection(api *secret.API, region scw.Region, secretID string,
 		SecretID: secretID,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("getting secret: %w", err)
 	}
 
 	if s.Protected == protected {

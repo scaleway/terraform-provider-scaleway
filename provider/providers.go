@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -16,7 +17,7 @@ func NewProviderList(ctx context.Context, providerConfig *Config) ([]func() tfpr
 		SDKProvider(providerConfig)().GRPCProvider,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("upgrading sdk provider server: %w", err)
 	}
 
 	var frameworkProvider func() provider.Provider

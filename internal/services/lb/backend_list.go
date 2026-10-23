@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -95,7 +96,7 @@ func (r *BackendListResource) FetchBackends(ctx context.Context, target backendL
 			return nil, nil
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("listing backends: %w", err)
 	}
 
 	return response.Backends, nil

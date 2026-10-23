@@ -2,6 +2,7 @@ package list
 
 import (
 	"context"
+	"fmt"
 	"runtime"
 	"slices"
 	"sync"
@@ -48,7 +49,7 @@ func FetchConcurrently[T any, Target any](ctx context.Context, targets []Target,
 	}
 
 	if err := g.Wait(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("fetching concurrently: %w", err)
 	}
 
 	if compare != nil {

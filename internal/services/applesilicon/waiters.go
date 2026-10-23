@@ -2,6 +2,7 @@ package applesilicon
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
@@ -26,8 +27,11 @@ func waitForAppleSiliconServer(ctx context.Context, api *applesilicon.API, zone 
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for server: %w", err)
+	}
 
-	return server, err
+	return server, nil
 }
 
 func waitForAppleSiliconPrivateNetworkServer(ctx context.Context, api *applesilicon.PrivateNetworkAPI, zone scw.Zone, serverID string, timeout time.Duration) ([]*applesilicon.ServerPrivateNetwork, error) {
@@ -42,8 +46,11 @@ func waitForAppleSiliconPrivateNetworkServer(ctx context.Context, api *applesili
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for server private networks: %w", err)
+	}
 
-	return privateNetwork, err
+	return privateNetwork, nil
 }
 
 func waitForTerminalVPCState(ctx context.Context, api *applesilicon.API, zone scw.Zone, serverID string, timeout time.Duration) error {
@@ -59,7 +66,7 @@ func waitForTerminalVPCState(ctx context.Context, api *applesilicon.API, zone sc
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("waiting for server VPC option terminal state: %w", err)
 	}
 
 	return nil

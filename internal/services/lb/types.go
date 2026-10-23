@@ -429,7 +429,7 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 			IpamIDs:          pnConfigs[i].IpamIDs,
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
-			return nil, err
+			return nil, fmt.Errorf("attaching private network: %w", err)
 		}
 
 		privateNetworks, err = waitForPrivateNetworks(ctx, lbAPI, zone, pn.LB.ID, timeout)
@@ -445,7 +445,7 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 					PrivateNetworkID: pn.PrivateNetworkID,
 				}, scw.WithContext(ctx))
 				if err != nil && !httperrors.Is404(err) {
-					return nil, err
+					return nil, fmt.Errorf("detaching private network: %w", err)
 				}
 
 				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))     //nolint:staticcheck

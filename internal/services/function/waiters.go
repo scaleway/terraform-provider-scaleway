@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
@@ -21,8 +22,11 @@ func waitForNamespace(ctx context.Context, functionAPI *function.API, region scw
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for namespace: %w", err)
+	}
 
-	return ns, err
+	return ns, nil
 }
 
 func waitForFunction(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Function, error) {
@@ -37,8 +41,11 @@ func waitForFunction(ctx context.Context, functionAPI *function.API, region scw.
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for function: %w", err)
+	}
 
-	return f, err
+	return f, nil
 }
 
 func waitForCron(ctx context.Context, functionAPI *function.API, region scw.Region, cronID string, timeout time.Duration) (*function.Cron, error) {
@@ -47,12 +54,17 @@ func waitForCron(ctx context.Context, functionAPI *function.API, region scw.Regi
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return functionAPI.WaitForCron(&function.WaitForCronRequest{
+	cron, err := functionAPI.WaitForCron(&function.WaitForCronRequest{
 		Region:        region,
 		CronID:        cronID,
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for cron: %w", err)
+	}
+
+	return cron, nil
 }
 
 func waitForDomain(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Domain, error) {
@@ -67,8 +79,11 @@ func waitForDomain(ctx context.Context, functionAPI *function.API, region scw.Re
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for domain: %w", err)
+	}
 
-	return domain, err
+	return domain, nil
 }
 
 func waitForTrigger(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Trigger, error) {
@@ -83,6 +98,9 @@ func waitForTrigger(ctx context.Context, functionAPI *function.API, region scw.R
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for trigger: %w", err)
+	}
 
-	return trigger, err
+	return trigger, nil
 }

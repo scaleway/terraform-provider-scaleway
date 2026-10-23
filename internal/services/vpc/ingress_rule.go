@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	_ "embed"
+	"fmt"
 	"net"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -245,8 +246,11 @@ func ResourceIngressRuleUpdate(ctx context.Context, d *schema.ResourceData, m an
 	if hasChanged {
 		err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := vpcAPI.UpdateIngressRule(updateRequest, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("updating vpc ingress rule: %w", err)
+			}
 
-			return err
+			return nil
 		})
 		if err != nil {
 			return diag.FromErr(err)

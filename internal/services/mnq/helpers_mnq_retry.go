@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -43,7 +44,7 @@ func RetryMNQNamespaceReadValue[T any](ctx context.Context, fn func() (T, error)
 
 		select {
 		case <-ctx.Done():
-			return result, ctx.Err()
+			return result, fmt.Errorf("retrying mnq namespace read: %w", ctx.Err())
 		case <-time.After(wait):
 		}
 	}

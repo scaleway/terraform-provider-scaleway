@@ -1,6 +1,8 @@
 package marketplace
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -13,7 +15,7 @@ func marketplaceAPIWithZone(d *schema.ResourceData, m any) (*marketplace.API, sc
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return marketplaceAPI, zone, nil

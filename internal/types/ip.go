@@ -38,7 +38,7 @@ func FlattenIPPtr(ip *net.IP) any {
 func FlattenIPNet(ipNet scw.IPNet) (string, error) {
 	raw, err := json.Marshal(ipNet)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("marshaling ip net: %w", err)
 	}
 
 	return string(raw[1 : len(raw)-1]), nil // remove quotes

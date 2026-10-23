@@ -235,7 +235,7 @@ func EncryptCustomerKey(encryptionKeyStr string) (string, *string, error) {
 
 	_, err := h.Write(encryptionKey)
 	if err != nil {
-		return "", nil, err
+		return "", nil, fmt.Errorf("hashing encryption key: %w", err)
 	}
 
 	digest := h.Sum(nil)

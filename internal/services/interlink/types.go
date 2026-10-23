@@ -1,6 +1,8 @@
 package interlink
 
 import (
+	"fmt"
+
 	interlink "github.com/scaleway/scaleway-sdk-go/api/interlink/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -21,7 +23,7 @@ func expandPrefixFilters(raw any) ([]scw.IPNet, error) {
 	for _, v := range rawList {
 		ipNet, err := types.ExpandIPNet(v.(string))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expanding IP net %q: %w", v.(string), err)
 		}
 
 		prefixes = append(prefixes, ipNet)
@@ -36,7 +38,7 @@ func flattenPrefixFilters(prefixes []scw.IPNet) ([]string, error) {
 	for _, p := range prefixes {
 		flattened, err := types.FlattenIPNet(p)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("flattening IP net: %w", err)
 		}
 
 		res = append(res, flattened)
@@ -70,12 +72,12 @@ func flattenBgpConfig(config *interlink.BgpConfig) (any, error) {
 
 	ipv4, err := types.FlattenIPNet(config.IPv4)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("flattening IPv4 net: %w", err)
 	}
 
 	ipv6, err := types.FlattenIPNet(config.IPv6)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("flattening IPv6 net: %w", err)
 	}
 
 	return []map[string]any{

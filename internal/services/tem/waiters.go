@@ -22,8 +22,11 @@ func WaitForDomain(ctx context.Context, api *tem.API, region scw.Region, id stri
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for tem domain to be ready: %w", err)
+	}
 
-	return domain, err
+	return domain, nil
 }
 
 func WaitForDomainAutoconfig(ctx context.Context, api *tem.API, region scw.Region, id string, want bool, timeout time.Duration) error {
@@ -43,7 +46,7 @@ func WaitForDomainAutoconfig(ctx context.Context, api *tem.API, region scw.Regio
 
 	for {
 		if err := ctx.Err(); err != nil {
-			return err
+			return fmt.Errorf("waiting for tem domain autoconfig: %w", err)
 		}
 
 		domain, err := api.GetDomain(&tem.GetDomainRequest{
@@ -51,7 +54,7 @@ func WaitForDomainAutoconfig(ctx context.Context, api *tem.API, region scw.Regio
 			DomainID: id,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return fmt.Errorf("getting tem domain: %w", err)
 		}
 
 		if domain.Autoconfig == want {
@@ -64,7 +67,7 @@ func WaitForDomainAutoconfig(ctx context.Context, api *tem.API, region scw.Regio
 
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("waiting for tem domain autoconfig: %w", ctx.Err())
 		case <-ticker.C:
 		}
 	}

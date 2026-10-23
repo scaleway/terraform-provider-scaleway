@@ -1,6 +1,8 @@
 package s2svpn
 
 import (
+	"fmt"
+
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -35,7 +37,7 @@ func expandConnectionRequestBgpConfig(raw any) (config *s2s_vpn.CreateConnection
 	if privateIPStr, ok := rawMap["private_ip"].(string); ok && privateIPStr != "" {
 		privateIPNet, err := types.ExpandIPNet(privateIPStr)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expanding ip net: %w", err)
 		}
 
 		config.PrivateIP = &privateIPNet
@@ -44,7 +46,7 @@ func expandConnectionRequestBgpConfig(raw any) (config *s2s_vpn.CreateConnection
 	if peerPrivateIPStr, ok := rawMap["peer_private_ip"].(string); ok && peerPrivateIPStr != "" {
 		peerPrivateIPNet, err := types.ExpandIPNet(peerPrivateIPStr)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expanding ip net: %w", err)
 		}
 
 		config.PeerPrivateIP = &peerPrivateIPNet
@@ -67,7 +69,7 @@ func expandPrefixFilters(raw any) ([]scw.IPNet, error) {
 	for _, v := range rawList {
 		ipNet, err := types.ExpandIPNet(v.(string))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expanding ip net: %w", err)
 		}
 
 		prefixes = append(prefixes, ipNet)
@@ -161,12 +163,12 @@ func flattenBGPSession(region scw.Region, session *s2s_vpn.BgpSession) (any, err
 
 	privateIP, err := types.FlattenIPNet(session.PrivateIP)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("flattening ip net: %w", err)
 	}
 
 	peerPrivateIP, err := types.FlattenIPNet(session.PeerPrivateIP)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("flattening ip net: %w", err)
 	}
 
 	return []map[string]any{
@@ -184,7 +186,7 @@ func FlattenPrefixFilters(prefixes []scw.IPNet) ([]string, error) {
 	for _, p := range prefixes {
 		flattened, err := types.FlattenIPNet(p)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("flattening ip net: %w", err)
 		}
 
 		res = append(res, flattened)

@@ -46,7 +46,7 @@ func (h *httpDebugLogger) Logf(classification smithylogging.Classification, form
 func SQSClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*sqs.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	endpoint := d.Get("sqs_endpoint").(string)
@@ -78,7 +78,7 @@ func NewSQSClient(ctx context.Context, httpClient *http.Client, region string, e
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("loading aws config: %w", err)
 	}
 
 	return sqs.NewFromConfig(customConfig), nil
@@ -90,7 +90,7 @@ func NATSClientWithRegion( //nolint:ireturn,nolintlint
 ) (nats.JetStreamContext, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	endpoint := d.Get("endpoint").(string)
@@ -116,12 +116,12 @@ func newNATSJetStreamClient( //nolint:ireturn,nolintlint
 
 	nc, err := nats.Connect(strings.ReplaceAll(endpoint, "{region}", region), nats.UserJWTAndSeed(jwt, seed))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("connecting to nats: %w", err)
 	}
 
 	js, err := nc.JetStream()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating nats jetstream context: %w", err)
 	}
 
 	return js, nil
@@ -130,17 +130,17 @@ func newNATSJetStreamClient( //nolint:ireturn,nolintlint
 func splitNATSJWTAndSeed(credentials string) (string, string, error) {
 	jwt, err := natsjwt.ParseDecoratedJWT([]byte(credentials))
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("parsing nats jwt: %w", err)
 	}
 
 	nkey, err := natsjwt.ParseDecoratedUserNKey([]byte(credentials))
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("parsing nats user nkey: %w", err)
 	}
 
 	seed, err := nkey.Seed()
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("getting nkey seed: %w", err)
 	}
 
 	return jwt, string(seed), nil

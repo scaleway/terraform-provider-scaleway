@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -112,7 +113,7 @@ func (r *GroupListResource) FetchGroups(ctx context.Context, data GroupListResou
 
 	response, err := r.iamAPI.ListGroups(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing groups: %w", err)
 	}
 
 	return response.Groups, nil

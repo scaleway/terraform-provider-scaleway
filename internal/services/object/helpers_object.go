@@ -51,7 +51,12 @@ type scalewayResolver struct {
 }
 
 func (r *scalewayResolver) ResolveEndpoint(ctx context.Context, params s3.EndpointParameters) (smithyendpoints.Endpoint, error) {
-	return s3.NewDefaultEndpointResolverV2().ResolveEndpoint(ctx, params)
+	endpoint, err := s3.NewDefaultEndpointResolverV2().ResolveEndpoint(ctx, params)
+	if err != nil {
+		return smithyendpoints.Endpoint{}, fmt.Errorf("resolving s3 endpoint: %w", err)
+	}
+
+	return endpoint, nil
 }
 
 func DefaultS3Endpoint(region string) string {
@@ -70,7 +75,7 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey, customEndpoi
 		config.WithHTTPClient(httpClient),
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("loading aws config: %w", err)
 	}
 
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
@@ -137,7 +142,7 @@ func NewS3ClientFromMetaWithProjectID(ctx context.Context, meta *meta.Meta, regi
 func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
@@ -164,7 +169,7 @@ func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3
 func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m any, id string) (*s3.Client, scw.Region, string, error) {
 	region, name, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	parts := strings.Split(name, "@")
@@ -206,7 +211,7 @@ func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m an
 func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData, m any, name string) (*s3.Client, scw.Region, string, string, error) {
 	region, outerID, innerID, err := regional.ParseNestedID(name)
 	if err != nil {
-		return nil, "", "", "", err
+		return nil, "", "", "", fmt.Errorf("parsing nested id %q: %w", name, err)
 	}
 
 	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
@@ -233,7 +238,7 @@ func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData
 func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, m any, name string) (*s3.Client, scw.Region, string, string, error) {
 	region, name, outerID, err := locality.ParseLocalizedNestedOwnerID(name)
 	if err != nil {
-		return nil, "", name, "", err
+		return nil, "", name, "", fmt.Errorf("parsing localized nested owner id %q: %w", name, err)
 	}
 
 	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
@@ -611,8 +616,11 @@ func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName stri
 	}
 
 	_, err := conn.DeleteObject(ctx, input)
+	if err != nil {
+		return fmt.Errorf("deleting s3 object: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 // removeS3ObjectVersionLegalHold remove legal hold from an ObjectVersion if it is on
@@ -671,7 +679,11 @@ func emptyBucket(ctx context.Context, conn *s3.Client, bucketName string, force 
 
 	nObject += nObjectMarker
 
-	return nObject, globalErr
+	if globalErr != nil {
+		return nObject, fmt.Errorf("emptying S3 bucket %s: %w", bucketName, globalErr)
+	}
+
+	return nObject, nil
 }
 
 func processAllPagesObject(ctx context.Context, bucketName string, conn *s3.Client, force bool, fn func(ctx context.Context, conn *s3.Client, bucket string, force bool, page *s3.ListObjectVersionsOutput, pool *workerpool.WorkerPool) (int64, error)) (int64, error) {
@@ -702,7 +714,7 @@ func processAllPagesObject(ctx context.Context, bucketName string, conn *s3.Clie
 	if errs := pool.CloseAndWait(); errs != nil {
 		globalErr = multierror.Append(nil, errs...)
 
-		return nObject, globalErr
+		return nObject, fmt.Errorf("waiting for S3 object deletions: %w", globalErr)
 	}
 
 	return nObject, nil
@@ -878,7 +890,7 @@ func SecondJSONUnlessEquivalent(old, newP string) (string, error) {
 
 	equivalent, err := awspolicy.PoliciesAreEquivalent(old, newP)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("comparing bucket policies: %w", err)
 	}
 
 	if equivalent {
@@ -1007,7 +1019,7 @@ func findServerSideEncryptionConfiguration(ctx context.Context, conn *s3.Client,
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting bucket encryption: %w", err)
 	}
 
 	if output == nil || output.ServerSideEncryptionConfiguration == nil {

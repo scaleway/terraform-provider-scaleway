@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	kafka "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
@@ -24,7 +25,7 @@ func waitForKafkaCluster(ctx context.Context, api *kafka.API, region scw.Region,
 
 	cluster, err := api.WaitForCluster(req, scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("waiting for kafka cluster to be ready: %w", err)
 	}
 
 	return cluster, nil

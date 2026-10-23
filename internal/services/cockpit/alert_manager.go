@@ -524,15 +524,15 @@ func ResourceCockpitAlertManagerID(region scw.Region, projectID string) (resourc
 func setCockpitAlertManagerIdentity(d *schema.ResourceData, region scw.Region, projectID string) error {
 	resourceIdentity, err := d.Identity()
 	if err != nil {
-		return err
+		return fmt.Errorf("getting resource identity: %w", err)
 	}
 
 	if err := resourceIdentity.Set("region", region.String()); err != nil {
-		return err
+		return fmt.Errorf("setting identity region: %w", err)
 	}
 
 	if err := resourceIdentity.Set("project_id", projectID); err != nil {
-		return err
+		return fmt.Errorf("setting identity project_id: %w", err)
 	}
 
 	d.SetId(ResourceCockpitAlertManagerID(region, projectID))

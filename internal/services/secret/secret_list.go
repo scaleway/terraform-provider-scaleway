@@ -2,6 +2,7 @@ package secret
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -146,7 +147,7 @@ func (r *SecretListResource) FetchSecrets(ctx context.Context, region scw.Region
 
 	response, err := r.secretAPI.ListSecrets(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing secrets: %w", err)
 	}
 
 	return response.Secrets, nil

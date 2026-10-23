@@ -344,7 +344,7 @@ func (r *VersionListResource) fetchVersionsForSecret(ctx context.Context, region
 
 	response, err := r.secretAPI.ListSecretVersions(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing secret versions: %w", err)
 	}
 
 	return response.Versions, nil

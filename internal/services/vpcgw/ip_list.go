@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -106,7 +107,7 @@ func (r *IPListResource) FetchIPs(ctx context.Context, zone scw.Zone, project *s
 
 	response, err := r.vpcgwAPI.ListIPs(listRequest, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing gateway ips: %w", err)
 	}
 
 	return response.IPs, nil

@@ -2,6 +2,7 @@ package block
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -247,7 +248,7 @@ func (r *VolumeListResource) fetchVolumeRows(ctx context.Context, target volumeL
 
 	resp, err := r.blockAPI.ListVolumes(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing block volumes: %w", err)
 	}
 
 	rows := make([]blockVolumeRow, 0, len(resp.Volumes))

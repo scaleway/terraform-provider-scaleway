@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -124,7 +125,7 @@ func (r *UserListResource) FetchUsers(ctx context.Context, data UserListResource
 
 	response, err := r.iamAPI.ListUsers(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing users: %w", err)
 	}
 
 	return response.Users, nil

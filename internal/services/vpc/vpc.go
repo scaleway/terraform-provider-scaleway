@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -126,8 +127,11 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 				Region: region,
 				VpcID:  res.ID,
 			}, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("enabling custom routes propagation: %w", err)
+			}
 
-			return err
+			return nil
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -220,8 +224,11 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.
 	if hasChanged {
 		err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := vpcAPI.UpdateVPC(updateRequest, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("updating vpc: %w", err)
+			}
 
-			return err
+			return nil
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -236,8 +243,11 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.
 					Region: region,
 					VpcID:  ID,
 				}, scw.WithContext(ctx))
+				if err != nil {
+					return fmt.Errorf("enabling routing: %w", err)
+				}
 
-				return err
+				return nil
 			})
 			if err != nil {
 				return diag.FromErr(err)
@@ -253,8 +263,11 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.
 					Region: region,
 					VpcID:  ID,
 				}, scw.WithContext(ctx))
+				if err != nil {
+					return fmt.Errorf("enabling custom routes propagation: %w", err)
+				}
 
-				return err
+				return nil
 			})
 			if err != nil {
 				return diag.FromErr(err)

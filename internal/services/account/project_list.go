@@ -3,6 +3,7 @@ package account
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -104,7 +105,7 @@ func (r *ProjectListResource) FetchProjects(ctx context.Context, data ProjectLis
 
 	response, err := r.accountAPI.ListProjects(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing projects: %w", err)
 	}
 
 	return response.Projects, nil

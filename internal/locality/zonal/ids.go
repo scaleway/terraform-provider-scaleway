@@ -68,22 +68,28 @@ func NewNestedIDString(zone scw.Zone, outerID, innerID string) string {
 func ParseID(zonedID string) (zone scw.Zone, id string, err error) {
 	rawZone, id, err := locality.ParseLocalizedID(zonedID)
 	if err != nil {
-		return zone, id, err
+		return zone, id, fmt.Errorf("parsing localized id %q: %w", zonedID, err)
 	}
 
 	zone, err = scw.ParseZone(rawZone)
+	if err != nil {
+		return zone, id, fmt.Errorf("parsing zone %q: %w", rawZone, err)
+	}
 
-	return zone, id, err
+	return zone, id, nil
 }
 
 // ParseNestedID parses a zonedNestedID and extracts the resource zone ,inner and outer ID.
 func ParseNestedID(zonedNestedID string) (zone scw.Zone, outerID, innerID string, err error) {
 	rawZone, innerID, outerID, err := locality.ParseLocalizedNestedID(zonedNestedID)
 	if err != nil {
-		return zone, outerID, innerID, err
+		return zone, outerID, innerID, fmt.Errorf("parsing localized nested id %q: %w", zonedNestedID, err)
 	}
 
 	zone, err = scw.ParseZone(rawZone)
+	if err != nil {
+		return zone, outerID, innerID, fmt.Errorf("parsing zone %q: %w", rawZone, err)
+	}
 
-	return zone, outerID, innerID, err
+	return zone, outerID, innerID, nil
 }

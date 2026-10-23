@@ -2,6 +2,7 @@ package sdb
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,7 +24,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*sdbSDK.API, scw.Region, e
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return sdbAPI, region, nil
@@ -35,7 +36,7 @@ func NewAPIWithRegionAndID(m any, regionalID string) (*sdbSDK.API, scw.Region, s
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", regionalID, err)
 	}
 
 	return sdbAPI, region, ID, nil
@@ -53,6 +54,9 @@ func waitForDatabase(ctx context.Context, sdbAPI *sdbSDK.API, region scw.Region,
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for sdb database to be ready: %w", err)
+	}
 
-	return database, err
+	return database, nil
 }

@@ -1,6 +1,8 @@
 package interlink
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	interlink "github.com/scaleway/scaleway-sdk-go/api/interlink/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -13,10 +15,10 @@ func interlinkAPIWithRegion(d *schema.ResourceData, m any) (*interlink.API, scw.
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
-	return interlinkAPI, region, err
+	return interlinkAPI, region, nil
 }
 
 func NewAPIWithRegionAndID(m any, id string) (*interlink.API, scw.Region, string, error) {
@@ -24,8 +26,8 @@ func NewAPIWithRegionAndID(m any, id string) (*interlink.API, scw.Region, string
 
 	region, ID, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
-	return interlinkAPI, region, ID, err
+	return interlinkAPI, region, ID, nil
 }

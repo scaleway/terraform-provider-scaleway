@@ -19,7 +19,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*audittrailSDK.API, scw.Re
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil

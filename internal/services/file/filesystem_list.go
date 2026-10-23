@@ -2,6 +2,7 @@ package file
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -110,7 +111,7 @@ func (r *FileSystemListResource) FetchFileSystems(
 		listRequest, scw.WithContext(ctx), scw.WithAllPages(),
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing filesystems: %w", err)
 	}
 
 	return response.Filesystems, nil

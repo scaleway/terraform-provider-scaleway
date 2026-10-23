@@ -2,6 +2,7 @@ package s2svpn
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
@@ -26,6 +27,9 @@ func waitForVPNGateway(ctx context.Context, api *s2s_vpn.API, region scw.Region,
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for s2s vpn gateway to be ready: %w", err)
+	}
 
-	return server, err
+	return server, nil
 }

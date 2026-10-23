@@ -1,6 +1,7 @@
 package tem
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -25,7 +26,7 @@ func temAPIWithRegion(d *schema.ResourceData, m any) (*tem.API, scw.Region, erro
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -37,7 +38,7 @@ func NewAPIWithRegionAndID(m any, id string) (*tem.API, scw.Region, string, erro
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return api, region, id, nil

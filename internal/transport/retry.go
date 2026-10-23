@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -124,7 +125,7 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	if r.Body != nil {
 		bs, err := io.ReadAll(r.Body)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("reading request body: %w", err)
 		}
 
 		body = bytes.NewReader(bs)
@@ -132,7 +133,7 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 
 	req, err := retryablehttp.NewRequest(r.Method, r.URL.String(), body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating retryable request: %w", err)
 	}
 
 	for key, val := range r.Header {
@@ -142,13 +143,18 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	req.GetBody = func() (io.ReadCloser, error) {
 		b, err := req.BodyBytes()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("reading request body: %w", err)
 		}
 
 		return io.NopCloser(bytes.NewReader(b)), err
 	}
 
-	return c.Do(req)
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("performing http request: %w", err)
+	}
+
+	return resp, nil
 }
 
 // RetryOnStatusValue retries fn while it returns an HTTP error with one of the policy.StatusCodes,
@@ -181,7 +187,7 @@ func RetryOnStatusValue[T any](ctx context.Context, policy RetryPolicy, fn func(
 
 		select {
 		case <-ctx.Done():
-			return result, ctx.Err()
+			return result, fmt.Errorf("retry on status value context error: %w", ctx.Err())
 		case <-time.After(wait):
 		}
 	}
