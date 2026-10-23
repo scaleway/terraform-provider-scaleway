@@ -50,7 +50,7 @@ This section lists the arguments that are supported:
 
 - `iops` - (Required) The maximum [IOPs](https://www.scaleway.com/en/docs/block-storage/concepts/#iops) expected, must match available options.
 - `name` - (Optional) The name of the volume. If not provided, a name will be randomly generated.
-- `size_in_gb` - (Optional) The size of the volume in gigabytes.
+- `size_in_gb` - (Optional) The size of the volume in gigabytes. Defaults to 5GB, or to the snapshot's size if `snapshot_id` is specified.
 - `snapshot_id` - (Optional) If set, the new volume will be created from this snapshot.
 - `tags` - (Optional) A list of tags to apply to the volume.
 - `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#arguments-reference)). The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
