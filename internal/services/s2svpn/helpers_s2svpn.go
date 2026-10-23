@@ -1,6 +1,8 @@
 package s2svpn
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	s2svpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -14,7 +16,7 @@ func NewAPIWithRegion(d *schema.ResourceData, m any) (*s2svpn.API, scw.Region, e
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return s2svpnAPI, region, nil
@@ -26,7 +28,7 @@ func NewAPIWithRegionAndID(m any, regionalID string) (*s2svpn.API, scw.Region, s
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", regionalID, err)
 	}
 
 	return s2svpnAPI, region, ID, nil

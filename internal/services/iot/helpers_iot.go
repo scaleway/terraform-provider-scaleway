@@ -2,6 +2,7 @@ package iot
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -25,16 +26,22 @@ func iotAPIWithRegion(d *schema.ResourceData, m any) (*iot.API, scw.Region, erro
 	iotAPI := iot.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
+	if err != nil {
+		return nil, "", fmt.Errorf("extracting region: %w", err)
+	}
 
-	return iotAPI, region, err
+	return iotAPI, region, nil
 }
 
 func NewAPIWithRegionAndID(m any, id string) (*iot.API, scw.Region, string, error) {
 	iotAPI := iot.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(id)
+	if err != nil {
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
+	}
 
-	return iotAPI, region, ID, err
+	return iotAPI, region, ID, nil
 }
 
 func waitIotHub(ctx context.Context, api *iot.API, region scw.Region, id string, timeout time.Duration) (*iot.Hub, error) {
@@ -49,8 +56,11 @@ func waitIotHub(ctx context.Context, api *iot.API, region scw.Region, id string,
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for hub: %w", err)
+	}
 
-	return hub, err
+	return hub, nil
 }
 
 func extractRestHeaders(d *schema.ResourceData, key string) map[string]string {
@@ -84,7 +94,7 @@ func computeIotHubMQTTCa(ctx context.Context, mqttCaURL string, m any) (string, 
 
 	mqttCa, err := meta.ExtractHTTPClient(m).Do(req)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("fetching IoT hub CA certificate: %w", err)
 	}
 
 	defer mqttCa.Body.Close() //nolint: errcheck

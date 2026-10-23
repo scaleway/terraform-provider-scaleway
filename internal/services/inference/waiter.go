@@ -2,6 +2,7 @@ package inference
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
@@ -21,8 +22,11 @@ func waitForDeployment(ctx context.Context, inferenceAPI *inference.API, region 
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for deployment: %w", err)
+	}
 
-	return deployment, err
+	return deployment, nil
 }
 
 func waitForModel(ctx context.Context, inferenceAPI *inference.API, region scw.Region, id string, timeout time.Duration) (*inference.Model, error) {
@@ -37,6 +41,9 @@ func waitForModel(ctx context.Context, inferenceAPI *inference.API, region scw.R
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for model: %w", err)
+	}
 
-	return model, err
+	return model, nil
 }

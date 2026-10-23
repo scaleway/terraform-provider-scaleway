@@ -387,7 +387,7 @@ func (r *SnapshotListResource) fetchSnapshotRowsForProject(
 
 	resp, err := r.blockAPI.ListSnapshots(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing block snapshots: %w", err)
 	}
 
 	rows := make([]blockSnapshotRow, 0, len(resp.Snapshots))

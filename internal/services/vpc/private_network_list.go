@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -101,7 +102,7 @@ func (r *PrivateNetworkListResource) FetchPrivateNetworks(ctx context.Context, r
 		return r.vpcAPI.ListPrivateNetworks(listRequest, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing private networks: %w", err)
 	}
 
 	return response.PrivateNetworks, nil

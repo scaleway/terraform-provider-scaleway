@@ -2,6 +2,7 @@ package container
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
@@ -21,8 +22,11 @@ func waitForNamespace(ctx context.Context, containerAPI *container.API, region s
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for namespace: %w", err)
+	}
 
-	return ns, err
+	return ns, nil
 }
 
 func waitForTrigger(ctx context.Context, api *container.API, triggerID string, region scw.Region, timeout time.Duration) (*container.Trigger, error) {
@@ -38,7 +42,12 @@ func waitForTrigger(ctx context.Context, api *container.API, triggerID string, r
 		RetryInterval: &retryInterval,
 	}
 
-	return api.WaitForTrigger(&request, scw.WithContext(ctx))
+	trigger, err := api.WaitForTrigger(&request, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for trigger: %w", err)
+	}
+
+	return trigger, nil
 }
 
 func waitForContainer(ctx context.Context, api *container.API, containerID string, region scw.Region, timeout time.Duration) (*container.Container, error) {
@@ -54,7 +63,12 @@ func waitForContainer(ctx context.Context, api *container.API, containerID strin
 		RetryInterval: &retryInterval,
 	}
 
-	return api.WaitForContainer(&request, scw.WithContext(ctx))
+	container, err := api.WaitForContainer(&request, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for container: %w", err)
+	}
+
+	return container, nil
 }
 
 func waitForDomain(ctx context.Context, api *container.API, domainID string, region scw.Region, timeout time.Duration) (*container.Domain, error) {
@@ -70,5 +84,10 @@ func waitForDomain(ctx context.Context, api *container.API, domainID string, reg
 		RetryInterval: &retryInterval,
 	}
 
-	return api.WaitForDomain(&request, scw.WithContext(ctx))
+	domain, err := api.WaitForDomain(&request, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for domain: %w", err)
+	}
+
+	return domain, nil
 }

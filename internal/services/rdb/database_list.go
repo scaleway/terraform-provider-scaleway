@@ -384,7 +384,7 @@ func (r *DatabaseListResource) fetchDatabaseRowsForAllInstances(ctx context.Cont
 
 	instances, err := r.rdbAPI.ListInstances(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing rdb instances: %w", err)
 	}
 
 	var rows []rdbDatabaseRow
@@ -443,7 +443,7 @@ func (r *DatabaseListResource) fetchDatabaseRowsForInstance(
 
 	resp, err := r.rdbAPI.ListDatabases(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing rdb databases: %w", err)
 	}
 
 	rows := make([]rdbDatabaseRow, 0, len(resp.Databases))

@@ -23,8 +23,11 @@ func waitCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, cluste
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for k8s cluster to be ready: %w", err)
+	}
 
-	return cluster, err
+	return cluster, nil
 }
 
 func waitClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) (*k8s.Cluster, error) {
@@ -33,12 +36,17 @@ func waitClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, cl
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
+	cluster, err := k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for k8s cluster pool to be ready: %w", err)
+	}
+
+	return cluster, nil
 }
 
 func waitClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Cluster, status k8s.ClusterStatus, timeout time.Duration) (*k8s.Cluster, error) {
@@ -58,7 +66,7 @@ func waitClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Cluste
 			return cluster, nil
 		}
 
-		return cluster, err
+		return cluster, fmt.Errorf("waiting for k8s cluster status: %w", err)
 	}
 
 	return cluster, nil
@@ -77,7 +85,7 @@ func waitPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, pool
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("waiting for k8s pool to be ready: %w", err)
 	}
 
 	if pool.Status != k8s.PoolStatusReady {

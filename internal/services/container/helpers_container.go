@@ -32,7 +32,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*containerV1.API, scw.Regi
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -44,7 +44,7 @@ func newAPIBetaWithRegion(d *schema.ResourceData, m any) (*containerV1Beta1.API,
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -56,7 +56,7 @@ func NewAPIWithRegionAndID(m any, id string) (*containerV1.API, scw.Region, stri
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return api, region, id, nil
@@ -68,7 +68,7 @@ func NewAPIBetaWithRegionAndID(m any, id string) (*containerV1Beta1.API, scw.Reg
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return api, region, id, nil
@@ -499,7 +499,7 @@ func expandHealthCheck(healthCheck map[string]any) (*containerV1Beta1.ContainerH
 	if interval, ok := healthCheck["interval"]; ok {
 		duration, err := types.ExpandDuration(interval)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expanding health check interval: %w", err)
 		}
 
 		healthCheckSpec.Interval = scw.NewDurationFromTimeDuration(*duration)
@@ -544,7 +544,7 @@ func expandContainerProbe(containerProbeSchema any, attributeName string) (*cont
 	if interval, ok := rawProbe["interval"]; ok {
 		duration, err := types.ExpandDuration(interval)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expanding probe interval: %w", err)
 		}
 
 		containerProbeSpec.Interval = scw.NewDurationFromTimeDuration(*duration)
@@ -553,7 +553,7 @@ func expandContainerProbe(containerProbeSchema any, attributeName string) (*cont
 	if timeout, ok := rawProbe["timeout"]; ok {
 		duration, err := types.ExpandDuration(timeout)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expanding probe timeout: %w", err)
 		}
 
 		containerProbeSpec.Timeout = scw.NewDurationFromTimeDuration(*duration)
@@ -708,9 +708,18 @@ func retryCreateContainerDomain(ctx context.Context, containerAPI *containerV1.A
 				continue
 			}
 
-			return domain, err
+			if err != nil {
+				return nil, fmt.Errorf("creating container domain: %w", err)
+			}
+
+			return domain, nil
 		case <-timeoutChannel:
-			return containerAPI.CreateDomain(req, scw.WithContext(ctx))
+			domain, err := containerAPI.CreateDomain(req, scw.WithContext(ctx))
+			if err != nil {
+				return nil, fmt.Errorf("creating container domain: %w", err)
+			}
+
+			return domain, nil
 		}
 	}
 }

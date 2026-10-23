@@ -244,7 +244,7 @@ func (r *InstanceListResource) fetchInstances(ctx context.Context, target listsc
 
 	response, err := r.rdbAPI.ListInstances(req, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing rdb instances: %w", err)
 	}
 
 	filtered := make([]*rdbSDK.Instance, 0, len(response.Instances))

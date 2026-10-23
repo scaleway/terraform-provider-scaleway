@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -17,7 +18,7 @@ func SharedS3ClientForRegion(region scw.Region) (*s3.Client, error) {
 		ForceZone:        region.GetZones()[0],
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating meta: %w", err)
 	}
 
 	return NewS3ClientFromMeta(ctx, m, region.String())
@@ -32,7 +33,7 @@ func SharedS3ClientForRegionWithProjectID(region scw.Region, projectID string) (
 		ForceZone:        region.GetZones()[0],
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating meta: %w", err)
 	}
 
 	return NewS3ClientFromMetaWithProjectID(ctx, m, region.String(), projectID)

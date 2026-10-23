@@ -35,7 +35,7 @@ func expandPrivateNetwork(data []any) ([]*redis.EndpointSpec, error) {
 			for _, rawIP := range rawIPs {
 				ip, err := types.ExpandIPNet(rawIP.(string))
 				if err != nil {
-					return epSpecs, err
+					return epSpecs, fmt.Errorf("expanding ip net: %w", err)
 				}
 
 				ips = append(ips, ip)

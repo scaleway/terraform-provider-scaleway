@@ -154,7 +154,7 @@ func activateGrafanaViaIAM(ctx context.Context, m *meta.Meta, api *cockpit.Globa
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, grafana.GrafanaURL+"/api/org", nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating grafana request: %w", err)
 	}
 
 	req.Header.Set("X-Auth-Token", secretKey)

@@ -30,7 +30,7 @@ func newAPI(m any) *redis.API {
 func newAPIWithZone(d *schema.ResourceData, m any) (*redis.API, scw.Zone, error) {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return newAPI(m), zone, nil
@@ -40,7 +40,7 @@ func newAPIWithZone(d *schema.ResourceData, m any) (*redis.API, scw.Zone, error)
 func NewAPIWithZoneAndID(m any, id string) (*redis.API, scw.Zone, string, error) {
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing zonal id %q: %w", id, err)
 	}
 
 	return newAPI(m), zone, ID, nil
@@ -52,12 +52,17 @@ func waitForCluster(ctx context.Context, api *redis.API, zone scw.Zone, id strin
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForCluster(&redis.WaitForClusterRequest{
+	cluster, err := api.WaitForCluster(&redis.WaitForClusterRequest{
 		Zone:          zone,
 		Timeout:       new(timeout),
 		ClusterID:     id,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for redis cluster to be ready: %w", err)
+	}
+
+	return cluster, nil
 }
 
 func privateNetworkSetHash(v any) int {

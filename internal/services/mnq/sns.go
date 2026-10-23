@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -75,8 +76,11 @@ func ResourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) diag
 				Region:    region,
 				ProjectID: id,
 			}, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("getting sns info: %w", err)
+			}
 
-			return err
+			return nil
 		})
 	}
 
@@ -109,8 +113,11 @@ func readSNSIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.D
 				Region:    region,
 				ProjectID: id,
 			}, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("getting sns info: %w", err)
+			}
 
-			return err
+			return nil
 		})
 	}
 
@@ -145,8 +152,11 @@ func ResourceMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 				Region:    region,
 				ProjectID: id,
 			}, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("getting sns info: %w", err)
+			}
 
-			return err
+			return nil
 		})
 	}
 
@@ -165,8 +175,11 @@ func ResourceMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 			Region:    region,
 			ProjectID: id,
 		}, scw.WithContext(ctx))
+		if e != nil {
+			return fmt.Errorf("deactivating sns: %w", e)
+		}
 
-		return e
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(err)

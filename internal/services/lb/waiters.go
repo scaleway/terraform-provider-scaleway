@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -21,8 +22,11 @@ func waitForLB(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, lbID stri
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for load balancer to be ready: %w", err)
+	}
 
-	return loadBalancer, err
+	return loadBalancer, nil
 }
 
 func waitForInstances(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, lbID string, timeout time.Duration) (*lb.LB, error) {
@@ -37,8 +41,11 @@ func waitForInstances(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, lb
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for load balancer instances to be ready: %w", err)
+	}
 
-	return loadBalancer, err
+	return loadBalancer, nil
 }
 
 func waitForPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, lbID string, timeout time.Duration) ([]*lb.PrivateNetwork, error) {
@@ -53,8 +60,11 @@ func waitForPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zo
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for load balancer private networks to be ready: %w", err)
+	}
 
-	return privateNetworks, err
+	return privateNetworks, nil
 }
 
 func waitForCertificate(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, id string, timeout time.Duration) (*lb.Certificate, error) {
@@ -69,6 +79,9 @@ func waitForCertificate(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, 
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for load balancer certificate to be ready: %w", err)
+	}
 
-	return certificate, err
+	return certificate, nil
 }

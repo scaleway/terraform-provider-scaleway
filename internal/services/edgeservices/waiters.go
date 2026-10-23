@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
@@ -24,6 +25,9 @@ func waitForPurge(ctx context.Context, edgeServicesapi *edgeservices.API, id str
 		RetryInterval:  &retryInterval,
 		Timeout:        new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for purge request: %w", err)
+	}
 
-	return purgeRequest, err
+	return purgeRequest, nil
 }

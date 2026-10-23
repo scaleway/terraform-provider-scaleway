@@ -147,17 +147,17 @@ func DefaultProjectID() *schema.ResourceIdentity {
 func SetZonalIdentity(d *schema.ResourceData, zone scw.Zone, id string) error {
 	identity, err := d.Identity()
 	if err != nil {
-		return err
+		return fmt.Errorf("getting identity: %w", err)
 	}
 
 	err = identity.Set("zone", zone.String())
 	if err != nil {
-		return err
+		return fmt.Errorf("setting identity zone: %w", err)
 	}
 
 	err = identity.Set("id", id)
 	if err != nil {
-		return err
+		return fmt.Errorf("setting identity id: %w", err)
 	}
 
 	d.SetId(zonal.NewIDString(zone, id))
@@ -168,17 +168,17 @@ func SetZonalIdentity(d *schema.ResourceData, zone scw.Zone, id string) error {
 func SetRegionalIdentity(d *schema.ResourceData, region scw.Region, id string) error {
 	identity, err := d.Identity()
 	if err != nil {
-		return err
+		return fmt.Errorf("getting identity: %w", err)
 	}
 
 	err = identity.Set("region", region.String())
 	if err != nil {
-		return err
+		return fmt.Errorf("setting identity region: %w", err)
 	}
 
 	err = identity.Set("id", id)
 	if err != nil {
-		return err
+		return fmt.Errorf("setting identity id: %w", err)
 	}
 
 	d.SetId(regional.NewIDString(region, id))
@@ -199,12 +199,12 @@ func SetRegionalCompositeIdentity(d *schema.ResourceData, region scw.Region, idP
 func SetGlobalIdentity(d *schema.ResourceData, id string) error {
 	identity, err := d.Identity()
 	if err != nil {
-		return err
+		return fmt.Errorf("getting identity: %w", err)
 	}
 
 	err = identity.Set("id", id)
 	if err != nil {
-		return err
+		return fmt.Errorf("setting identity id: %w", err)
 	}
 
 	d.SetId(id)
@@ -226,13 +226,13 @@ func SetMultiPartIdentity(d *schema.ResourceData, values map[string]string, keyO
 
 	identity, err := d.Identity()
 	if err != nil {
-		return err
+		return fmt.Errorf("getting identity: %w", err)
 	}
 
 	for key, value := range values {
 		err = identity.Set(key, value)
 		if err != nil {
-			return err
+			return fmt.Errorf("setting identity %q: %w", key, err)
 		}
 	}
 

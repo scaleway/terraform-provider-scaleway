@@ -40,8 +40,11 @@ func DataSourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m any) di
 				Region:    region,
 				ProjectID: d.Get("project_id").(string),
 			})
+			if err != nil {
+				return fmt.Errorf("getting sqs info: %w", err)
+			}
 
-			return err
+			return nil
 		})
 	}
 

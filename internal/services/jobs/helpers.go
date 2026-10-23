@@ -18,7 +18,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*jobs.API, scw.Region, err
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return jobsAPI, region, nil
@@ -30,7 +30,7 @@ func NewAPIWithRegionAndID(m any, regionalID string) (*jobs.API, scw.Region, str
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", regionalID, err)
 	}
 
 	return jobsAPI, region, ID, nil
@@ -245,8 +245,11 @@ func CreateJobDefinitionSecret(ctx context.Context, api *jobs.API, jobSecrets []
 		JobDefinitionID: jobID,
 		Secrets:         secretConfigs,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return fmt.Errorf("creating secrets: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func hashJobDefinitionSecret(secret *JobDefinitionSecret) int {

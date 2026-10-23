@@ -190,8 +190,11 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m an
 			Region:    region,
 			ProjectID: projectID,
 		})
+		if e != nil {
+			return fmt.Errorf("getting sqs info: %w", e)
+		}
 
-		return e
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("expected sqs to be enabled for given project: %w", err))

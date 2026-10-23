@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
@@ -20,10 +21,10 @@ func NewEdgeServicesAPIWithRegion(d *schema.ResourceData, m any) (*edgeservices.
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
-	return api, region, err
+	return api, region, nil
 }
 
 // edgeServicesAPIWithZoneAndRegion returns a new edge_services API, the zone and the region
@@ -32,12 +33,12 @@ func edgeServicesAPIWithZoneAndRegion(d *schema.ResourceData, m any) (*edgeservi
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, zone, region, nil
@@ -69,7 +70,9 @@ func backendStageCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, _ a
 	}
 
 	if oldType != "" && newType != "" && oldType != newType {
-		return diff.ForceNew(newType)
+		if err := diff.ForceNew(newType); err != nil {
+			return fmt.Errorf("forcing new resource for %q: %w", newType, err)
+		}
 	}
 
 	return nil

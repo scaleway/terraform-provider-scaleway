@@ -44,7 +44,7 @@ func ExtractProjects(ctx context.Context, model ProjectModel, meta *providerMeta
 
 			res, err := api.ListProjects(new(accountSDK.ProjectAPIListProjectsRequest{}), scw.WithContext(ctx), scw.WithAllPages())
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("listing projects: %w", err)
 			}
 
 			for _, p := range res.Projects {

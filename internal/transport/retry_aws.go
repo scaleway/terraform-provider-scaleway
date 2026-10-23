@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/aws-sdk-go-base/v2/tfawserr"
@@ -43,7 +44,7 @@ func retryWhen[T any](ctx context.Context, config *RetryWhenConfig[T], shouldRet
 			case <-timer.C:
 				return result, ErrRetryWhenTimeout
 			case <-ctx.Done():
-				return result, ctx.Err()
+				return result, fmt.Errorf("retry when context error: %w", ctx.Err())
 			default:
 				time.Sleep(retryInterval) // lintignore:R018
 

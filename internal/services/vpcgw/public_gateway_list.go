@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -104,7 +105,7 @@ func (r *PublicGatewayListResource) FetchPublicGateways(ctx context.Context, zon
 
 	response, err := r.publicGWAPI.ListGateways(listRequest, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing public gateways: %w", err)
 	}
 
 	return response.Gateways, nil

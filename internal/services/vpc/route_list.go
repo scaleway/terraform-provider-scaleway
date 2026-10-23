@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -148,7 +149,7 @@ func (r *RouteListResource) FetchRoutes(ctx context.Context, region scw.Region, 
 	if !data.Contains.IsNull() && !data.Contains.IsUnknown() {
 		ipNet, err := internaltypes.ExpandIPNet(data.Contains.ValueString())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expanding ip net: %w", err)
 		}
 
 		req.Contains = &ipNet
@@ -158,7 +159,7 @@ func (r *RouteListResource) FetchRoutes(ctx context.Context, region scw.Region, 
 		return r.routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing vpc routes: %w", err)
 	}
 
 	var routes []*vpc.Route

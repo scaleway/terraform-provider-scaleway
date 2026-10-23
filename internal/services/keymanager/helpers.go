@@ -49,7 +49,7 @@ func newKeyManagerAPI(d *schema.ResourceData, m any) (*key_manager.API, scw.Regi
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -58,7 +58,7 @@ func newKeyManagerAPI(d *schema.ResourceData, m any) (*key_manager.API, scw.Regi
 func NewKeyManagerAPIWithRegionAndID(m any, id string) (*key_manager.API, scw.Region, string, error) {
 	region, keyID, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	client := key_manager.NewAPI(meta.ExtractScwClient(m))
@@ -147,7 +147,7 @@ func ExpandKeyRotationPolicy(v any) (*key_manager.KeyRotationPolicy, error) {
 
 	period, err := time.ParseDuration(periodStr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parsing duration %q: %w", periodStr, err)
 	}
 
 	policy := &key_manager.KeyRotationPolicy{

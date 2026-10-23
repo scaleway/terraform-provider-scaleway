@@ -43,7 +43,7 @@ func ExtractRegions(ctx context.Context, model RegionalModel, meta *meta.Meta) (
 
 		parsedRegion, err := scw.ParseRegion(region)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parsing region %q: %w", region, err)
 		}
 
 		res = append(res, parsedRegion)

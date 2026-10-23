@@ -1,6 +1,7 @@
 package vpc
 
 import (
+	"fmt"
 	"net"
 	"regexp"
 	"strconv"
@@ -19,7 +20,7 @@ func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets
 
 			ipNet, err := types.ExpandIPNet(rawSubnet["subnet"].(string))
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, fmt.Errorf("expanding ip net: %w", err)
 			}
 
 			ipv4Subnets = append(ipv4Subnets, ipNet)
@@ -32,7 +33,7 @@ func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets
 
 			ipNet, err := types.ExpandIPNet(rawSubnet["subnet"].(string))
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, fmt.Errorf("expanding ip net: %w", err)
 			}
 
 			ipv6Subnets = append(ipv6Subnets, ipNet)
@@ -154,12 +155,12 @@ func expandACLRules(data any) ([]*vpc.ACLRule, error) {
 
 		source, err := types.ExpandIPNet(rawRule["source"].(string))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expanding ip net: %w", err)
 		}
 
 		destination, err := types.ExpandIPNet(rawRule["destination"].(string))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expanding ip net: %w", err)
 		}
 
 		ACLRule.Protocol = vpc.ACLRuleProtocol(rawRule["protocol"].(string))

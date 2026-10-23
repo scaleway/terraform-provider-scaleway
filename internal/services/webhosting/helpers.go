@@ -2,6 +2,7 @@ package webhosting
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -23,7 +24,7 @@ func newOfferAPIWithRegion(d *schema.ResourceData, m any) (*webhosting.OfferAPI,
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -35,7 +36,7 @@ func newHostingAPIWithRegion(d *schema.ResourceData, m any) (*webhosting.Hosting
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -46,7 +47,7 @@ func newDNSAPIWithRegion(d *schema.ResourceData, m any) (*webhosting.DnsAPI, scw
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -58,7 +59,7 @@ func NewAPIWithRegionAndID(m any, id string) (*webhosting.HostingAPI, scw.Region
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return api, region, id, nil
@@ -70,12 +71,17 @@ func waitForHosting(ctx context.Context, api *webhosting.HostingAPI, region scw.
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForHosting(&webhosting.WaitForHostingRequest{
+	hosting, err := api.WaitForHosting(&webhosting.WaitForHostingRequest{
 		HostingID:     hostingID,
 		Region:        region,
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for webhosting to be ready: %w", err)
+	}
+
+	return hosting, nil
 }
 
 func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]any {

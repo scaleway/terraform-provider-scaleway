@@ -22,7 +22,7 @@ func (ph *privateNICsHandler) flatPrivateNICs() error {
 		ProjectID: ph.projectID,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("listing private network interfaces: %w", err)
 	}
 
 	for _, p := range privateNics.PrivateNetworkInterfaces {

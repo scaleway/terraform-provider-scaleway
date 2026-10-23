@@ -1,6 +1,8 @@
 package applesilicon
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -14,7 +16,7 @@ func newAPIWithZone(d *schema.ResourceData, m any) (*applesilicon.API, scw.Zone,
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return asAPI, zone, nil
@@ -26,7 +28,7 @@ func NewAPIWithZoneAndID(m any, id string) (*applesilicon.API, scw.Zone, string,
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing zonal id %q: %w", id, err)
 	}
 
 	return asAPI, zone, ID, nil
@@ -37,7 +39,7 @@ func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m any) (*applesilicon.
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return privateNetworkAPI, zone, nil

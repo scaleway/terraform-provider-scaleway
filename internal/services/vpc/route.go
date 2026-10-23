@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -253,8 +254,11 @@ func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) dia
 	if hasChanged {
 		err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 			_, err := vpcAPI.UpdateRoute(updateRequest, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("updating vpc route: %w", err)
+			}
 
-			return err
+			return nil
 		})
 		if err != nil {
 			return diag.FromErr(err)

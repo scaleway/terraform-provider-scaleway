@@ -2,6 +2,7 @@ package baremetal
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
@@ -22,8 +23,11 @@ func waitForServer(ctx context.Context, api *baremetal.API, zone scw.Zone, serve
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for server: %w", err)
+	}
 
-	return server, err
+	return server, nil
 }
 
 func waitForServerInstall(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
@@ -38,8 +42,11 @@ func waitForServerInstall(ctx context.Context, api *baremetal.API, zone scw.Zone
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for server installation: %w", err)
+	}
 
-	return server, err
+	return server, nil
 }
 
 func waitForServerOptions(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
@@ -54,8 +61,11 @@ func waitForServerOptions(ctx context.Context, api *baremetal.API, zone scw.Zone
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for server options: %w", err)
+	}
 
-	return server, err
+	return server, nil
 }
 
 func waitForServerPrivateNetwork(ctx context.Context, api *baremetalV3.PrivateNetworkAPI, zone scw.Zone, serverID string, timeout time.Duration) ([]*baremetalV3.ServerPrivateNetwork, error) {
@@ -70,6 +80,9 @@ func waitForServerPrivateNetwork(ctx context.Context, api *baremetalV3.PrivateNe
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for server private networks: %w", err)
+	}
 
-	return serverPrivateNetwork, err
+	return serverPrivateNetwork, nil
 }

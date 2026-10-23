@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	v2 "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
@@ -21,8 +22,11 @@ func waitForVPCPublicGateway(ctx context.Context, api *v2.API, zone scw.Zone, id
 		RetryInterval: &retryInterval,
 		Zone:          zone,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for vpcgw gateway to be ready: %w", err)
+	}
 
-	return gateway, err
+	return gateway, nil
 }
 
 func waitForVPCGatewayNetwork(ctx context.Context, api *v2.API, zone scw.Zone, id string, timeout time.Duration) (*v2.GatewayNetwork, error) {
@@ -37,6 +41,9 @@ func waitForVPCGatewayNetwork(ctx context.Context, api *v2.API, zone scw.Zone, i
 		RetryInterval:    &retryIntervalGWNetwork,
 		Zone:             zone,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for vpcgw gateway network to be ready: %w", err)
+	}
 
-	return gatewayNetwork, err
+	return gatewayNetwork, nil
 }

@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -30,7 +31,7 @@ func newAPI(m any) *mongodb.API {
 func newAPIWithRegion(d *schema.ResourceData, m any) (*mongodb.API, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return newAPI(m), region, nil
@@ -40,7 +41,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*mongodb.API, scw.Region, 
 func NewAPIWithRegionAndID(m any, id string) (*mongodb.API, scw.Region, string, error) {
 	region, ID, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return newAPI(m), region, ID, nil
@@ -52,12 +53,17 @@ func waitForInstance(ctx context.Context, api *mongodb.API, region scw.Region, i
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForInstance(&mongodb.WaitForInstanceRequest{
+	instance, err := api.WaitForInstance(&mongodb.WaitForInstanceRequest{
 		Timeout:       new(timeout),
 		InstanceID:    id,
 		Region:        region,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for mongodb instance to be ready: %w", err)
+	}
+
+	return instance, nil
 }
 
 func waitForSnapshot(ctx context.Context, api *mongodb.API, region scw.Region, instanceID string, snapshotID string, timeout time.Duration) (*mongodb.Snapshot, error) {
@@ -66,13 +72,18 @@ func waitForSnapshot(ctx context.Context, api *mongodb.API, region scw.Region, i
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForSnapshot(&mongodb.WaitForSnapshotRequest{
+	snapshot, err := api.WaitForSnapshot(&mongodb.WaitForSnapshotRequest{
 		Timeout:       new(timeout),
 		InstanceID:    instanceID,
 		SnapshotID:    snapshotID,
 		Region:        region,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for mongodb snapshot to be ready: %w", err)
+	}
+
+	return snapshot, nil
 }
 
 // expandUserRoles converts Terraform roles to SDK UserRole slice

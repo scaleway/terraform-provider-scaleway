@@ -26,7 +26,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*k8s.API, scw.Region, erro
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return k8sAPI, region, nil
@@ -37,7 +37,7 @@ func NewAPIWithRegionAndID(m any, id string) (*k8s.API, scw.Region, string, erro
 
 	region, ID, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return k8sAPI, region, ID, nil
@@ -63,7 +63,7 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 		Region: region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("listing k8s versions: %w", err)
 	}
 
 	for _, v := range versionsResp.Versions {
@@ -114,7 +114,7 @@ func getNodes(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) ([]map[strin
 
 	nodes, err := k8sAPI.ListNodes(req, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing k8s nodes: %w", err)
 	}
 
 	return convertNodes(nodes), nil

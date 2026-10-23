@@ -31,7 +31,7 @@ func newAPIWithZone(d *schema.ResourceData, m any) (*vpcgw.API, scw.Zone, error)
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return api, zone, nil
@@ -42,7 +42,7 @@ func NewAPIWithZoneAndID(m any, id string) (*vpcgw.API, scw.Zone, string, error)
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing zonal id %q: %w", id, err)
 	}
 
 	return api, zone, ID, nil
@@ -59,11 +59,18 @@ func retryUpdateGatewayReverseDNS(ctx context.Context, api *vpcgw.API, req *vpcg
 				continue
 			}
 
-			return err
+			if err != nil {
+				return fmt.Errorf("updating gateway reverse dns: %w", err)
+			}
+
+			return nil
 		case <-timeoutChannel:
 			_, err := api.UpdateIP(req, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("updating gateway reverse dns: %w", err)
+			}
 
-			return err
+			return nil
 		}
 	}
 }
@@ -74,7 +81,7 @@ func flattenIPNetList(ipNets []scw.IPNet) ([]string, error) {
 	for _, ipNet := range ipNets {
 		flattened, err := types.FlattenIPNet(ipNet)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("flattening ip net: %w", err)
 		}
 
 		res = append(res, flattened)

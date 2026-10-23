@@ -2,6 +2,7 @@ package block
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -29,7 +30,7 @@ func blockAPIWithZone(d *schema.ResourceData, m any) (*block.API, scw.Zone, erro
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return blockAPI, zone, nil
@@ -41,7 +42,7 @@ func NewAPIWithZoneAndID(m any, zonedID string) (*block.API, scw.Zone, string, e
 
 	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing zonal id %q: %w", zonedID, err)
 	}
 
 	return blockAPI, zone, ID, nil
@@ -90,7 +91,7 @@ func migrateInstanceToBlockVolume(ctx context.Context, api *instancehelpers.Bloc
 		VolumeID: volumeID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting volume: %w", err)
 	}
 
 	plan, err := api.PlanBlockMigration(&instance.PlanBlockMigrationRequest{
@@ -98,7 +99,7 @@ func migrateInstanceToBlockVolume(ctx context.Context, api *instancehelpers.Bloc
 		VolumeID: &instanceVolumeResp.Volume.ID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("planning block migration: %w", err)
 	}
 
 	err = api.ApplyBlockMigration(&instance.ApplyBlockMigrationRequest{
@@ -107,12 +108,12 @@ func migrateInstanceToBlockVolume(ctx context.Context, api *instancehelpers.Bloc
 		ValidationKey: plan.ValidationKey,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("applying block migration: %w", err)
 	}
 
 	_, err = instancehelpers.WaitForVolume(ctx, api.API, zone, volumeID, timeout)
 	if err != nil && !httperrors.Is404(err) {
-		return nil, err
+		return nil, fmt.Errorf("waiting for volume: %w", err)
 	}
 
 	blockVolume, err := waitForBlockVolume(ctx, api.BlockAPI, zone, volumeID, timeout)

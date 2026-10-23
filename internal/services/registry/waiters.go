@@ -22,8 +22,11 @@ func WaitForNamespace(ctx context.Context, api *registry.API, region scw.Region,
 		RetryInterval: &retryInterval,
 		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for registry namespace to be ready: %w", err)
+	}
 
-	return ns, err
+	return ns, nil
 }
 
 func waitForNamespaceDelete(ctx context.Context, api *registry.API, region scw.Region, id string, timeout time.Duration) (*registry.Namespace, error) {
@@ -48,7 +51,7 @@ func waitForNamespaceDelete(ctx context.Context, api *registry.API, region scw.R
 			NamespaceID: id,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("getting registry namespace: %w", err)
 		}
 
 		if _, ok := terminalStatus[ns.Status]; ok {
@@ -61,7 +64,7 @@ func waitForNamespaceDelete(ctx context.Context, api *registry.API, region scw.R
 
 		select {
 		case <-ctx.Done():
-			return nil, ctx.Err()
+			return nil, fmt.Errorf("waiting for registry namespace to be deleted: %w", ctx.Err())
 		case <-time.After(retryInterval):
 		}
 	}

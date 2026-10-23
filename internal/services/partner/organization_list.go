@@ -2,6 +2,7 @@ package partner
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -127,7 +128,7 @@ func (r *PartnerOrganizationListResource) FetchOrganizations(ctx context.Context
 
 	response, err := r.partnerAPI.ListOrganizations(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing organizations: %w", err)
 	}
 
 	return response.Organizations, nil

@@ -2,6 +2,7 @@ package instancehelpers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -23,6 +24,9 @@ func WaitForVolume(ctx context.Context, api *instance.API, zone scw.Zone, id str
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for volume: %w", err)
+	}
 
-	return volume, err
+	return volume, nil
 }

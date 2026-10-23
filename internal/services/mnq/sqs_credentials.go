@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -137,8 +138,11 @@ func ResourceMNQSQSCredentialsRead(ctx context.Context, d *schema.ResourceData, 
 				Region:           region,
 				SqsCredentialsID: id,
 			}, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("getting sqs credentials: %w", err)
+			}
 
-			return err
+			return nil
 		})
 	}
 
@@ -204,8 +208,11 @@ func ResourceMNQSQSCredentialsUpdate(ctx context.Context, d *schema.ResourceData
 
 	err = retryMNQNamespaceRead(ctx, func() error {
 		_, e := api.UpdateSqsCredentials(req, scw.WithContext(ctx))
+		if e != nil {
+			return fmt.Errorf("updating sqs credentials: %w", e)
+		}
 
-		return e
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(err)

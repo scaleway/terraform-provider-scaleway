@@ -70,7 +70,7 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	if config.ForceZone != "" {
 		region, err := config.ForceZone.Region()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("determining region for zone %q: %w", config.ForceZone, err)
 		}
 
 		profile.DefaultRegion = new(region.String())
@@ -125,7 +125,7 @@ func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSo
 
 	scwClient, err := scw.NewClient(opts...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating scaleway client: %w", err)
 	}
 
 	return &Meta{
@@ -216,7 +216,7 @@ func (m Meta) HasMultipleVariableSources() (bool, string, error) {
 
 	_, err := fmt.Fprintln(w, "Variable\tAvailable sources\tCurrently using")
 	if err != nil {
-		return false, "", err
+		return false, "", fmt.Errorf("writing variable sources table header: %w", err)
 	}
 
 	for _, variable := range variables {
@@ -225,7 +225,7 @@ func (m Meta) HasMultipleVariableSources() (bool, string, error) {
 			if len(values) > 1 {
 				_, err := fmt.Fprintf(w, "%s\t%s\t%s\n", variable, strings.Join(values, ", "), values[len(values)-1])
 				if err != nil {
-					return false, "", err
+					return false, "", fmt.Errorf("writing variable sources table row: %w", err)
 				}
 
 				multiple = true
@@ -234,7 +234,7 @@ func (m Meta) HasMultipleVariableSources() (bool, string, error) {
 	}
 
 	if err := w.Flush(); err != nil {
-		return false, "", err
+		return false, "", fmt.Errorf("flushing variable sources table: %w", err)
 	}
 
 	return multiple, buf.String(), nil
@@ -282,7 +282,7 @@ func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProvid
 	if _, ok := errors.AsType[*scw.ConfigFileNotFoundError](err); ok {
 		scwConfig = &scw.Config{}
 	} else if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("loading scaleway config: %w", err)
 	}
 
 	defaultZoneProfile := &scw.Profile{
@@ -292,7 +292,7 @@ func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProvid
 
 	activeProfile, err := scwConfig.GetActiveProfile()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("getting active profile: %w", err)
 	}
 
 	envProfile := scw.LoadEnvProfile()
@@ -362,7 +362,7 @@ func LoadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 	if _, ok := errors.AsType[*scw.ConfigFileNotFoundError](err); ok {
 		config = &scw.Config{}
 	} else if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("loading scaleway config: %w", err)
 	}
 
 	// By default we set default zone and region to fr-par
@@ -373,7 +373,7 @@ func LoadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 
 	activeProfile, err := config.GetActiveProfile()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("getting active profile: %w", err)
 	}
 
 	envProfile := scw.LoadEnvProfile()

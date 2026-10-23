@@ -31,7 +31,7 @@ func newMNQNatsAPI(d *schema.ResourceData, m any) (*mnq.NatsAPI, scw.Region, err
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -42,7 +42,7 @@ func NewNatsAPIWithRegionAndID(m any, regionalID string) (*mnq.NatsAPI, scw.Regi
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", regionalID, err)
 	}
 
 	return api, region, ID, nil
@@ -53,7 +53,7 @@ func newSQSAPI(d *schema.ResourceData, m any) (*mnq.SqsAPI, scw.Region, error) {
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -64,7 +64,7 @@ func NewSQSAPIWithRegionAndID(m any, regionalID string) (*mnq.SqsAPI, scw.Region
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", regionalID, err)
 	}
 
 	return api, region, ID, nil
@@ -75,7 +75,7 @@ func newMNQSNSAPI(d *schema.ResourceData, m any) (*mnq.SnsAPI, scw.Region, error
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -86,7 +86,7 @@ func NewSNSAPIWithRegionAndID(m any, regionalID string) (*mnq.SnsAPI, scw.Region
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", regionalID, err)
 	}
 
 	return api, region, ID, nil
@@ -100,7 +100,7 @@ func DecomposeMNQID(id string) (region scw.Region, projectID string, name string
 
 	region, err = scw.ParseRegion(parts[0])
 	if err != nil {
-		return "", "", "", err
+		return "", "", "", fmt.Errorf("parsing region %q: %w", parts[0], err)
 	}
 
 	return region, parts[1], parts[2], nil

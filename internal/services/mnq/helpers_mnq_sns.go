@@ -22,7 +22,7 @@ import (
 func SNSClientWithRegion(ctx context.Context, m any, d *schema.ResourceData) (*sns.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	endpoint := d.Get("sns_endpoint").(string)
@@ -78,7 +78,7 @@ func NewSNSClient(ctx context.Context, httpClient *http.Client, region string, e
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("loading aws config: %w", err)
 	}
 
 	return sns.NewFromConfig(customConfig), nil
@@ -92,7 +92,7 @@ func DecomposeMNQSubscriptionID(id string) (arn *ARN, err error) {
 
 	region, err := scw.ParseRegion(parts[0])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parsing region %q: %w", parts[0], err)
 	}
 
 	return &ARN{

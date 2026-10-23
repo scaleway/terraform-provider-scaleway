@@ -1,6 +1,7 @@
 package inference
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,7 +24,7 @@ func NewAPIWithRegion(d *schema.ResourceData, m any) (*inference.API, scw.Region
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return inferenceAPI, region, nil
@@ -35,7 +36,7 @@ func NewAPIWithRegionAndID(m any, regionalID string) (*inference.API, scw.Region
 
 	region, ID, err := regional.ParseID(regionalID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", regionalID, err)
 	}
 
 	return inferenceAPI, region, ID, nil

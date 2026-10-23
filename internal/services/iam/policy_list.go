@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -179,7 +180,7 @@ func (r *PolicyListResource) FetchPolicies(ctx context.Context, data PolicyListR
 
 	response, err := r.iamAPI.ListPolicies(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing policies: %w", err)
 	}
 
 	return response.Policies, nil

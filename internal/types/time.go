@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 func FlattenDuration(duration *time.Duration) any {
 	if duration != nil {
@@ -17,7 +20,7 @@ func ExpandDuration(data any) (*time.Duration, error) {
 
 	d, err := time.ParseDuration(data.(string))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parsing duration %q: %w", data.(string), err)
 	}
 
 	return &d, nil

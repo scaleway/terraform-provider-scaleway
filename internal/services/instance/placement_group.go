@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -256,7 +257,7 @@ func fetchPlacementGroupV1(ctx context.Context, d *schema.ResourceData, m any, p
 		PlacementGroupID: pgID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting placement group: %w", err)
 	}
 
 	return pgV1.PlacementGroup, nil

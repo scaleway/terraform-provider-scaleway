@@ -27,7 +27,7 @@ func NewAPIWithZone(d *schema.ResourceData, m any) (*autoscalingAlpha1.API, scw.
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return autoscalingAPI, zone, nil
@@ -39,7 +39,7 @@ func NewAPIWithZoneAndID(m any, zonalID string) (*autoscalingAlpha1.API, scw.Zon
 
 	zone, ID, err := zonal.ParseID(zonalID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing zonal id %q: %w", zonalID, err)
 	}
 
 	return autoscalingAPI, zone, ID, nil

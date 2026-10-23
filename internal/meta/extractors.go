@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -28,18 +29,36 @@ var (
 	_ terraformResourceData = (*schema.ResourceDiff)(nil)
 )
 
+func parseZone(zone string) (scw.Zone, error) {
+	parsedZone, err := scw.ParseZone(zone)
+	if err != nil {
+		return parsedZone, fmt.Errorf("parsing zone %q: %w", zone, err)
+	}
+
+	return parsedZone, nil
+}
+
+func parseRegion(region string) (scw.Region, error) {
+	parsedRegion, err := scw.ParseRegion(region)
+	if err != nil {
+		return parsedRegion, fmt.Errorf("parsing region %q: %w", region, err)
+	}
+
+	return parsedRegion, nil
+}
+
 // ExtractZone will try to guess the zone from the following:
 //   - zone field of the resource data
 //   - default zone from config
 func ExtractZone(d terraformResourceData, m any) (scw.Zone, error) {
 	rawConfigZone, ok := GetRawConfigForKey(d, "zone", cty.String)
 	if ok && rawConfigZone != "" {
-		return scw.ParseZone(rawConfigZone.(string))
+		return parseZone(rawConfigZone.(string))
 	}
 
 	rawZone, exist := d.GetOk("zone")
 	if exist {
-		return scw.ParseZone(rawZone.(string))
+		return parseZone(rawZone.(string))
 	}
 
 	zone, exist := m.(*Meta).ScwClient().GetDefaultZone()
@@ -56,12 +75,12 @@ func ExtractZone(d terraformResourceData, m any) (scw.Zone, error) {
 func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 	rawConfigZone, ok := GetRawConfigForKey(d, "region", cty.String)
 	if ok && rawConfigZone != "" {
-		return scw.ParseRegion(rawConfigZone.(string))
+		return parseRegion(rawConfigZone.(string))
 	}
 
 	rawRegion, exist := d.GetOk("region")
 	if exist {
-		return scw.ParseRegion(rawRegion.(string))
+		return parseRegion(rawRegion.(string))
 	}
 
 	region, exist := m.(*Meta).ScwClient().GetDefaultRegion()
@@ -152,12 +171,12 @@ func ExtractS3Endpoint(d terraformResourceData, m any) string {
 func ExtractRegionWithDefault(d terraformResourceData, m any, defaultRegion scw.Region) (scw.Region, error) {
 	rawConfigZone, ok := GetRawConfigForKey(d, "region", cty.String)
 	if ok && rawConfigZone != "" {
-		return scw.ParseRegion(rawConfigZone.(string))
+		return parseRegion(rawConfigZone.(string))
 	}
 
 	rawRegion, exist := d.GetOk("region")
 	if exist {
-		return scw.ParseRegion(rawRegion.(string))
+		return parseRegion(rawRegion.(string))
 	}
 
 	if defaultRegion != "" {
