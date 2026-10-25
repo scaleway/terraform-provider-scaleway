@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
@@ -22,6 +23,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -45,10 +47,13 @@ func ResourceInstance() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
-		Importer:         identity.DefaultRegionalImporter(),
-		SchemaVersion:    0,
-		SchemaFunc:       instanceSchema,
-		CustomizeDiff:    cdf.LocalityCheck("private_network.#.pn_id"),
+		Importer:      identity.DefaultRegionalImporter(),
+		SchemaVersion: 0,
+		SchemaFunc:    instanceSchema,
+		CustomizeDiff: customdiff.All(
+			cdf.LocalityCheck("private_network.#.pn_id"),
+			customizeDiffInstanceHA,
+		),
 		Identity:         identity.DefaultRegional(),
 		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
 	}
@@ -88,10 +93,21 @@ func instanceSchema() map[string]*schema.Schema {
 			},
 		},
 		"is_ha_cluster": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			Description: "Enable or disable high availability for the database instance",
+			Type:       schema.TypeBool,
+			Optional:   true,
+			Computed:   true,
+			Deprecated: "Use high_availability_mode instead. Setting is_ha_cluster=true is equivalent to high_availability_mode=\"single_zone\".",
+			Description: "Deprecated: Enable or disable high availability for the database instance. " +
+				"Prefer high_availability_mode. true maps to single_zone, false maps to disabled.",
+		},
+		"high_availability_mode": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: verify.ValidateEnum[rdb.HighAvailabilityMode](),
+			Description: "High-availability mode of the database instance. " +
+				"Possible values: disabled, single_zone, multiple_zone. " +
+				"Prefer this over is_ha_cluster. is_ha_cluster=true is equivalent to single_zone.",
 		},
 		"disable_backup": {
 			Type:        schema.TypeBool,
@@ -453,6 +469,68 @@ func instanceSchema() map[string]*schema.Schema {
 	}
 }
 
+func customizeDiffInstanceHA(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	rawMode, modeInConfig := meta.GetRawConfigForKey(diff, "high_availability_mode", cty.String)
+	rawHA, haInConfig := meta.GetRawConfigForKey(diff, "is_ha_cluster", cty.Bool)
+
+	if modeInConfig && haInConfig {
+		mode, _ := rawMode.(string)
+		isHA, _ := rawHA.(bool)
+		expectsHA := mode == string(rdb.HighAvailabilityModeSingleZone) ||
+			mode == string(rdb.HighAvailabilityModeMultipleZone)
+
+		if isHA != expectsHA {
+			return fmt.Errorf(
+				"is_ha_cluster (%v) is inconsistent with high_availability_mode (%q); prefer setting only high_availability_mode",
+				isHA, mode,
+			)
+		}
+	}
+
+	// API rejects HA downgrade on upgrade ("You cannot downgrade a high availability instance").
+	// Force replacement so Terraform plans a destroy/create instead of a failing in-place update.
+	if diff.Id() == "" {
+		return nil
+	}
+
+	oldHA := haEnabledFromDiffChange(diff, true)
+	newHA := haEnabledFromDiffChange(diff, false)
+
+	if oldHA && !newHA {
+		if diff.HasChange("high_availability_mode") {
+			if err := diff.ForceNew("high_availability_mode"); err != nil {
+				return err
+			}
+		}
+
+		if diff.HasChange("is_ha_cluster") {
+			if err := diff.ForceNew("is_ha_cluster"); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// haEnabledFromDiffChange reports whether HA is enabled on the old (fromOld=true) or new side of the diff.
+func haEnabledFromDiffChange(diff *schema.ResourceDiff, fromOld bool) bool {
+	oldMode, newMode := diff.GetChange("high_availability_mode")
+	oldHA, newHA := diff.GetChange("is_ha_cluster")
+
+	modeVal, haVal := newMode, newHA
+	if fromOld {
+		modeVal, haVal = oldMode, oldHA
+	}
+
+	mode, _ := modeVal.(string)
+	isHA, _ := haVal.(bool)
+
+	_, enabled := FlattenHighAvailabilityMode(rdb.HighAvailabilityMode(mode), isHA)
+
+	return enabled
+}
+
 //gocyclo:ignore
 func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, err := newAPIWithRegion(d, m)
@@ -469,11 +547,11 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		}
 
 		createReqFromSnapshot := &rdb.CreateInstanceFromSnapshotRequest{
-			SnapshotID:   snapshotID,
-			Region:       region,
-			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "rdb"),
-			IsHaCluster:  new(d.Get("is_ha_cluster").(bool)), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
-			NodeType:     new(d.Get("node_type").(string)),
+			SnapshotID:           snapshotID,
+			Region:               region,
+			InstanceName:         types.ExpandOrGenerateString(d.Get("name"), "rdb"),
+			HighAvailabilityMode: ExpandHighAvailabilityMode(d),
+			NodeType:             new(d.Get("node_type").(string)),
 		}
 
 		res, err := rdbAPI.CreateInstanceFromSnapshot(createReqFromSnapshot, scw.WithContext(ctx))
@@ -553,16 +631,16 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		}
 
 		createReq := &rdb.CreateInstanceRequest{
-			Region:        region,
-			ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
-			Name:          types.ExpandOrGenerateString(d.Get("name"), "rdb"),
-			NodeType:      d.Get("node_type").(string),
-			Engine:        d.Get("engine").(string),
-			IsHaCluster:   d.Get("is_ha_cluster").(bool), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
-			DisableBackup: d.Get("disable_backup").(bool),
-			UserName:      d.Get("user_name").(string),
-			Password:      password,
-			VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
+			Region:               region,
+			ProjectID:            types.ExpandStringPtr(d.Get("project_id")),
+			Name:                 types.ExpandOrGenerateString(d.Get("name"), "rdb"),
+			NodeType:             d.Get("node_type").(string),
+			Engine:               d.Get("engine").(string),
+			HighAvailabilityMode: ExpandHighAvailabilityMode(d),
+			DisableBackup:        d.Get("disable_backup").(bool),
+			UserName:             d.Get("user_name").(string),
+			Password:             password,
+			VolumeType:           rdb.VolumeType(d.Get("volume_type").(string)),
 			Encryption: &rdb.EncryptionAtRest{
 				Enabled: d.Get("encryption_at_rest").(bool),
 			},
@@ -766,7 +844,11 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI
 	_ = d.Set("name", res.Name)
 	_ = d.Set("node_type", res.NodeType)
 	_ = d.Set("engine", res.Engine)
-	_ = d.Set("is_ha_cluster", res.IsHaCluster)
+
+	haMode, isHA := FlattenHighAvailabilityMode(res.HighAvailabilityMode, res.IsHaCluster)
+	_ = d.Set("high_availability_mode", haMode)
+	_ = d.Set("is_ha_cluster", isHA)
+
 	_ = d.Set("disable_backup", res.BackupSchedule.Disabled)
 	_ = d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
@@ -1078,12 +1160,13 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	// HA cluster
-	if d.HasChange("is_ha_cluster") {
+	if d.HasChanges("is_ha_cluster", "high_availability_mode") {
+		mode := ExpandHighAvailabilityMode(d)
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
 			rdb.UpgradeInstanceRequest{
-				Region:     region,
-				InstanceID: ID,
-				EnableHa:   new(d.Get("is_ha_cluster").(bool)), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
+				Region:               region,
+				InstanceID:           ID,
+				HighAvailabilityMode: &mode,
 			})
 	}
 
@@ -1171,13 +1254,15 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 				return majorUpgradeTimeoutOrErr(err, region, ID, oldInstanceID)
 			}
 
-			if d.Get("is_ha_cluster").(bool) && !upgradedInstance.IsHaCluster {
+			if InstanceWantsHA(d) && !InstanceHasHA(upgradedInstance) {
 				tflog.Info(ctx, "Re-enabling HA on upgraded instance "+ID)
 
+				mode := ExpandHighAvailabilityMode(d)
+
 				upgradedInstance, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
-					Region:     region,
-					InstanceID: ID,
-					EnableHa:   new(true), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
+					Region:               region,
+					InstanceID:           ID,
+					HighAvailabilityMode: &mode,
 				}, scw.WithContext(ctx))
 				if err != nil {
 					return diag.FromErr(err)

@@ -19,14 +19,14 @@ For enhanced security, we recommend using the [`password_wo` write-only argument
 ### Example Basic
 
 resource "scaleway_rdb_instance" "main" {
-  name               = "test-rdb"
-  node_type          = "DB-DEV-S"
-  engine             = "PostgreSQL-15"
-  is_ha_cluster      = true
-  disable_backup     = true
-  user_name          = "my_initial_user"
-  password           = "thiZ_is_v&ry_s3cret"
-  encryption_at_rest = true
+  name                   = "test-rdb"
+  node_type              = "DB-DEV-S"
+  engine                 = "PostgreSQL-15"
+  high_availability_mode = "single_zone"
+  disable_backup         = true
+  user_name              = "my_initial_user"
+  password               = "thiZ_is_v&ry_s3cret"
+  encryption_at_rest     = true
 }
 ```
 
@@ -257,9 +257,11 @@ interruption.
 
 - `password_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.
 
-- `is_ha_cluster` - (Optional) Enable or disable high availability for the Database Instance.
+- `high_availability_mode` - (Optional) High-availability mode of the Database Instance. Possible values are `disabled`, `single_zone` and `multiple_zone`. Prefer this attribute over `is_ha_cluster`. Enabling HA (`disabled` → `single_zone`) is applied in-place via upgrade. Disabling HA forces replacement because the API rejects HA downgrades.
 
-~> **Important** Updates to `is_ha_cluster` will recreate the Database Instance.
+~> **Note** At the time of writing, `multiple_zone` is not available yet on the Scaleway API (returns HTTP 501). `is_ha_cluster = true` is equivalent to `high_availability_mode = "single_zone"`.
+
+- `is_ha_cluster` - (Optional, Deprecated) Enable or disable high availability for the Database Instance. Use `high_availability_mode` instead (`true` maps to `single_zone`, `false` maps to `disabled`). Disabling HA forces replacement.
 
 - `name` - (Optional) The name of the Database Instance.
 
