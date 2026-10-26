@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	"fmt"
+	"sync/atomic"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -38,38 +39,32 @@ func resourceIamPolicyCustomizeDiff(ctx context.Context, diff *schema.ResourceDi
 	}
 
 	rules := expandPolicyRuleSpecs(diff.Get("rule"))
-	if !rulesNeedScopeCheck(rules) {
-		return nil
-	}
 
-	organizationID := diff.Get("organization_id").(string)
-
-	scopeTypes, err := listPermissionSetScopeTypes(ctx, NewAPI(m), organizationID)
-	if err != nil {
-		tflog.Warn(ctx, "skipping permission set scope type validation", map[string]any{
-			"error": err.Error(),
-		})
-
-		//nolint:nilerr // fetch failure is intentionally ignored and logged above
-		return nil
-	}
-
-	return checkRulesPermissionSetScopeTypes(rules, organizationID, scopeTypes)
+	return checkRulesPermissionSetScopeTypes(ctx, NewAPI(m), diff.Get("organization_id").(string), rules)
 }
 
-func rulesNeedScopeCheck(rules []*iam.RuleSpecs) bool {
-	for _, rule := range rules {
-		if rule.PermissionSetNames != nil && len(*rule.PermissionSetNames) >= 2 {
-			return true
-		}
+var permissionSetScopeTypes atomic.Pointer[map[string]iam.PermissionSetScopeType]
+
+// permission sets are loaded once and cached (only on success)
+func getPermissionSetScopeTypes(ctx context.Context, api *iam.API, organizationID string) (map[string]iam.PermissionSetScopeType, error) {
+	if cached := permissionSetScopeTypes.Load(); cached != nil {
+		return *cached, nil
 	}
 
-	return false
+	sets, err := listPermissionSetScopeTypes(ctx, api, organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	permissionSetScopeTypes.Store(&sets)
+
+	return sets, nil
 }
 
 func listPermissionSetScopeTypes(ctx context.Context, api *iam.API, organizationID string) (map[string]iam.PermissionSetScopeType, error) {
 	resp, err := api.ListPermissionSets(&iam.ListPermissionSetsRequest{
 		OrganizationID: organizationID,
+		PageSize:       new(uint32(100)),
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list permission sets: %w", err)
@@ -83,11 +78,28 @@ func listPermissionSetScopeTypes(ctx context.Context, api *iam.API, organization
 	return sets, nil
 }
 
-// validate that all permission-sets share the same scope type
-func checkRulesPermissionSetScopeTypes(rules []*iam.RuleSpecs, organizationID string, scopeTypes map[string]iam.PermissionSetScopeType) error {
+// checkRulesPermissionSetScopeTypes validates that all permission sets of a rule share the same scope type.
+// The permission sets are lazily loaded the first time a rule needs the check.
+func checkRulesPermissionSetScopeTypes(ctx context.Context, api *iam.API, organizationID string, rules []*iam.RuleSpecs) error {
+	var scopeTypes map[string]iam.PermissionSetScopeType
+
 	for i, rule := range rules {
 		if rule.PermissionSetNames == nil || len(*rule.PermissionSetNames) < 2 {
 			continue
+		}
+
+		if scopeTypes == nil {
+			loaded, err := getPermissionSetScopeTypes(ctx, api, organizationID)
+			if err != nil {
+				tflog.Warn(ctx, "skipping permission set scope type validation", map[string]any{
+					"error": err.Error(),
+				})
+
+				//nolint:nilerr // fetch failure is intentionally ignored and logged above
+				return nil
+			}
+
+			scopeTypes = loaded
 		}
 
 		var firstScopeType iam.PermissionSetScopeType
