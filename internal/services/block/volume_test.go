@@ -1,13 +1,13 @@
 package block_test
 
 import (
-	"errors"
-	"fmt"
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 )
@@ -254,7 +254,7 @@ func TestAccVolume_UpdateWithoutName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	var generatedName string
+	compareValuesSame := statecheck.CompareValue(compare.ValuesSame())
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -270,20 +270,13 @@ func TestAccVolume_UpdateWithoutName(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
 					resource.TestCheckResourceAttrSet("scaleway_block_volume.main", "name"),
-					func(state *terraform.State) error {
-						rs, ok := state.RootModule().Resources["scaleway_block_volume.main"]
-						if !ok {
-							return errors.New("resource not found: scaleway_block_volume.main")
-						}
-
-						generatedName = rs.Primary.Attributes["name"]
-						if generatedName == "" {
-							return errors.New("expected auto-generated name to be non-empty")
-						}
-
-						return nil
-					},
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					compareValuesSame.AddStateValue(
+						"scaleway_block_volume.main",
+						tfjsonpath.New("name"),
+					),
+				},
 			},
 			{
 				Config: `
@@ -295,21 +288,13 @@ func TestAccVolume_UpdateWithoutName(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "iops", "15000"),
-					func(state *terraform.State) error {
-						rs := state.RootModule().Resources["scaleway_block_volume.main"]
-
-						currentName := rs.Primary.Attributes["name"]
-						if currentName == "" {
-							return errors.New("name was overwritten to empty string after update (bug regression)")
-						}
-
-						if currentName != generatedName {
-							return fmt.Errorf("name changed from %q to %q after update without changing name config", generatedName, currentName)
-						}
-
-						return nil
-					},
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					compareValuesSame.AddStateValue(
+						"scaleway_block_volume.main",
+						tfjsonpath.New("name"),
+					),
+				},
 			},
 		},
 	})
