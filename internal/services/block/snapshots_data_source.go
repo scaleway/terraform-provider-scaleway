@@ -97,10 +97,6 @@ func (d *SnapshotsDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 					verify.IsStringOneOfWithWarning(zonal.AllZones()),
 				},
 			},
-			"kms_key_id": schema.StringAttribute{
-				Computed:            true,
-				MarkdownDescription: "UUID of the KMS key used to protect the parent volume's encryption",
-			},
 			"project_id": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: "Filter snapshots by project ID",
@@ -130,6 +126,10 @@ func (d *SnapshotsDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 							Computed:            true,
 							ElementType:         types.StringType,
 							MarkdownDescription: "List of tags assigned to the snapshot",
+						},
+						"kms_key_id": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "UUID of the KMS key used to protect the parent volume's encryption",
 						},
 						"srn": schema.StringAttribute{
 							Computed:            true,
@@ -260,6 +260,7 @@ func flattenSnapshotsList(ctx context.Context, snapshots []*block.Snapshot, diag
 			"name":       types.StringValue(snapshot.Name),
 			"volume_id":  volumeID,
 			"tags":       tags,
+			"kms_key_id": types.StringValue(""),
 			"srn":        types.StringValue(snapshot.Srn),
 			"zone":       types.StringValue(string(snapshot.Zone)),
 			"project_id": types.StringValue(snapshot.ProjectID),
