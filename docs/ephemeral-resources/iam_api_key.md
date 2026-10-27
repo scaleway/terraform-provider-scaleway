@@ -32,6 +32,7 @@ For more information, see [our guide to using Ephemeral Resources](https://regis
 - `created_at` (String) The date and time of the creation of the iam api key
 - `creation_ip` (String) The IPv4 Address of the device which created the API key
 - `secret_key` (String, Sensitive) The secret Key of the iam api key
+- `srn` (String) The Scaleway Resource Name (SRN) of the iam api key
 - `updated_at` (String) The date and time of the last update of the iam api key
 
 
