@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
@@ -20,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -45,10 +47,13 @@ func ResourceInstance() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
-		Importer:         identity.DefaultRegionalImporter(),
-		SchemaVersion:    0,
-		SchemaFunc:       instanceSchema,
-		CustomizeDiff:    cdf.LocalityCheck("private_network.#.pn_id"),
+		Importer:      identity.DefaultRegionalImporter(),
+		SchemaVersion: 0,
+		SchemaFunc:    instanceSchema,
+		CustomizeDiff: customdiff.All(
+			cdf.LocalityCheck("clone_from", "private_network.#.pn_id"),
+			customizeDiffCloneFromInherited,
+		),
 		Identity:         identity.DefaultRegional(),
 		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
 	}
@@ -76,28 +81,44 @@ func instanceSchema() map[string]*schema.Schema {
 			DiffSuppressFunc: dsf.IgnoreCase,
 			ConflictsWith: []string{
 				"snapshot_id",
+				"clone_from",
 			},
 		},
 		"snapshot_id": {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
-			Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` attribute.",
+			Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` and `clone_from` attributes.",
 			ConflictsWith: []string{
 				"engine",
+				"clone_from",
+			},
+		},
+		"clone_from": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of an existing Database Instance to clone. The clone includes all databases, users, and permissions. Conflicts with the `engine` and `snapshot_id` attributes.",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+			ConflictsWith: []string{
+				"engine",
+				"snapshot_id",
 			},
 		},
 		"is_ha_cluster": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			Description: "Enable or disable high availability for the database instance",
+			Type:             schema.TypeBool,
+			Optional:         true,
+			Computed:         true,
+			Description:      "Enable or disable high availability for the database instance",
+			DiffSuppressFunc: diffSuppressCloneInheritedBool("is_ha_cluster"),
 		},
 		"disable_backup": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			Description: "Disable automated backup for the database instance",
+			Type:             schema.TypeBool,
+			Optional:         true,
+			Computed:         true,
+			Description:      "Disable automated backup for the database instance",
+			DiffSuppressFunc: diffSuppressCloneInheritedBool("disable_backup"),
 		},
 		"backup_schedule_frequency": {
 			Type:        schema.TypeInt,
@@ -462,7 +483,79 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 
 	var id string
 
-	if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
+	if cloneFrom, ok := d.GetOk("clone_from"); ok {
+		cloneReq := &rdb.CloneInstanceRequest{
+			Region:     region,
+			InstanceID: locality.ExpandID(cloneFrom),
+			Name:       types.ExpandOrGenerateString(d.Get("name"), "rdb"),
+			NodeType:   types.ExpandStringPtr(d.Get("node_type")),
+		}
+
+		res, err := rdbAPI.CloneInstance(cloneReq, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// Set ID early so a later endpoint failure does not leave a billed instance out of state.
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
+		id = res.ID
+
+		instance, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// CloneInstance inherits HA from the source. Apply an explicit is_ha_cluster only.
+		if wantHA := types.GetBool(d, "is_ha_cluster"); wantHA != nil && wantHA.(bool) != instance.IsHaCluster {
+			_, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
+				Region:     region,
+				InstanceID: res.ID,
+				EnableHa:   types.ExpandBoolPtr(wantHA), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			instance, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		cloneUpdate := &rdb.UpdateInstanceRequest{
+			Region:     region,
+			InstanceID: res.ID,
+		}
+		cloneMustUpdate := false
+
+		if rawTag, tagExist := d.GetOk("tags"); tagExist {
+			cloneUpdate.Tags = new(types.ExpandStrings(rawTag))
+			cloneMustUpdate = true
+		}
+
+		// CloneInstance inherits the backup schedule. Apply an explicit disable_backup only.
+		if wantDisable := types.GetBool(d, "disable_backup"); wantDisable != nil {
+			disabled := wantDisable.(bool)
+			if instance.BackupSchedule == nil || instance.BackupSchedule.Disabled != disabled {
+				cloneUpdate.IsBackupScheduleDisabled = &disabled
+				cloneMustUpdate = true
+			}
+		}
+
+		if cloneMustUpdate {
+			_, err = rdbAPI.UpdateInstance(cloneUpdate, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		if diags := configureEndpointsAfterInheritedLB(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+			return diags
+		}
+	} else if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
 		_, snapshotID, err := regional.ParseID(regionalSnapshotID.(string))
 		if err != nil {
 			return diag.FromErr(err)
@@ -493,55 +586,12 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		rawTag, tagExist := d.GetOk("tags")
-		if tagExist {
-			updateReq := &rdb.UpdateInstanceRequest{
-				Region:     region,
-				InstanceID: res.ID,
-			}
-			updateReq.Tags = new(types.ExpandStrings(rawTag))
-
-			_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
+		if err := applyInstanceTagsFromConfig(ctx, rdbAPI, region, res.ID, d); err != nil {
+			return diag.FromErr(err)
 		}
 
-		// CreateInstanceFromSnapshot always provisions a default load-balancer endpoint and has no
-		// InitEndpoints field. Keep the inherited LB when load_balancer is set; never create a second one.
-		_, wantPrivateNetwork := d.GetOk("private_network")
-		_, wantLoadBalancer := d.GetOk("load_balancer")
-
-		if wantLoadBalancer {
-			// Instance already has a public LB from the snapshot restore: only attach PN if requested.
-			if wantPrivateNetwork {
-				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-					return diag.FromErr(err)
-				}
-
-				if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
-					return diags
-				}
-
-				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		} else {
-			// Preserve historical order (PN then remove inherited LB) for existing cassettes.
-			if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
-				return diags
-			}
-
-			if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
-				return diags
-			}
-
-			if wantPrivateNetwork {
-				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-					return diag.FromErr(err)
-				}
-			}
+		if diags := configureEndpointsAfterInheritedLB(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+			return diags
 		}
 	} else {
 		var password string
@@ -615,8 +665,25 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		InstanceID: id,
 	}
 	// Configure Schedule Backup
-	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
-	if !d.Get("disable_backup").(bool) {
+	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation.
+	// For clones, an omitted disable_backup inherits the source schedule (handled above / via diff suppress).
+	_, isClone := d.GetOk("clone_from")
+	if isClone {
+		if wantDisable := types.GetBool(d, "disable_backup"); wantDisable != nil && !wantDisable.(bool) {
+			updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
+			updateReq.IsBackupScheduleDisabled = new(false)
+
+			if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
+				updateReq.BackupScheduleFrequency = new(uint32(backupScheduleFrequency.(int)))
+			}
+
+			if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
+				updateReq.BackupScheduleRetention = new(uint32(backupScheduleRetention.(int)))
+			}
+
+			mustUpdate = true
+		}
+	} else if !d.Get("disable_backup").(bool) {
 		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
 		updateReq.IsBackupScheduleDisabled = new(d.Get("disable_backup").(bool))
 
@@ -666,6 +733,66 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	return ResourceRdbInstanceRead(ctx, d, m)
+}
+
+func applyInstanceTagsFromConfig(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) error {
+	rawTag, tagExist := d.GetOk("tags")
+	if !tagExist {
+		return nil
+	}
+
+	_, err := rdbAPI.UpdateInstance(&rdb.UpdateInstanceRequest{
+		Region:     region,
+		InstanceID: instanceID,
+		Tags:       new(types.ExpandStrings(rawTag)),
+	}, scw.WithContext(ctx))
+
+	return err
+}
+
+// configureEndpointsAfterInheritedLB configures PN/LB after APIs that always provision a default
+// load-balancer endpoint and have no InitEndpoints (CloneInstance, CreateInstanceFromSnapshot).
+// Keep the inherited LB when load_balancer is set; otherwise create PN then remove the LB
+// (order preserved for existing snapshot cassettes).
+func configureEndpointsAfterInheritedLB(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) diag.Diagnostics {
+	_, wantPrivateNetwork := d.GetOk("private_network")
+	_, wantLoadBalancer := d.GetOk("load_balancer")
+
+	if wantLoadBalancer {
+		if !wantPrivateNetwork {
+			return nil
+		}
+
+		if _, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); err != nil {
+			return diag.FromErr(err)
+		}
+
+		if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, instanceID, d); diags.HasError() {
+			return diags
+		}
+
+		if _, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); err != nil {
+			return diag.FromErr(err)
+		}
+
+		return nil
+	}
+
+	if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, instanceID, d); diags.HasError() {
+		return diags
+	}
+
+	if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
+		return diags
+	}
+
+	if wantPrivateNetwork {
+		if _, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return nil
 }
 
 // createPrivateNetworkEndpoints creates private network endpoints for an instance
