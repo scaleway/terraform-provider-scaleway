@@ -47,16 +47,14 @@ func TestAccSnapshot_Basic_WithKMS(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	keyName := sdkacctest.RandomWithPrefix("tf-tests-snapshot-basic-with-kms-")
-
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_key_manager_key" "my_key" {
-						name        = "%s"
+						name        = "tf-test-block-snapshot-kms-key"
 						region      = "fr-par"
 						usage       = "symmetric_encryption"
 						algorithm   = "aes_256_gcm"
@@ -76,7 +74,7 @@ func TestAccSnapshot_Basic_WithKMS(t *testing.T) {
 						zone = "fr-par-3" # kms_key_id is not available everywhere yet
 						volume_id = scaleway_block_volume.main.id
 					}
-				`, keyName),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.main", "id"),
