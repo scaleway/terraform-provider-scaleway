@@ -1,0 +1,46 @@
+Sweeps (lists and optionally deletes) Scaleway resources of a given type that
+are **not** necessarily managed by Terraform state.
+
+This action is designed to clean up **sensitive** resources — such as IAM API
+keys, SCIM tokens, Secret Manager secrets and Key Manager keys — that may have
+been leaked or left dangling outside of Terraform.
+
+## Arguments
+
+- `resource_type` *(required)* — the Terraform resource type to sweep, e.g.
+  `scaleway_iam_api_key`, `scaleway_secret`, `scaleway_key_manager_key`, or
+  `scaleway_iam_scim_token`.
+- `tags` *(optional)* — list of Scaleway tags to filter on. Only resources
+  carrying at least one of the given tags are swept. Supported by taggable types
+  (`scaleway_secret`, `scaleway_key_manager_key`); ignored (with a warning) for
+  non-taggable types.
+- `regions` *(optional)* — list of regions to scan. Use `*` to scan all regions.
+  Only used for regional resource types.
+- `project_ids` *(optional)* — list of project IDs to scope the sweep. Use `*`
+  to sweep across all projects. Only used for regional resource types.
+- `organization_id` *(optional)* — organization ID to scope the sweep. Only
+  used for global resource types. If omitted, the provider default organization
+  is used.
+- `dry_run` *(optional, default `true`)* — when `true`, lists the resources that
+  would be deleted without actually deleting them. Set to `false` to perform the
+  deletion.
+
+## Safety
+
+`dry_run` defaults to `true`: the action **never deletes anything by accident**.
+Progress events are emitted for every resource discovered (and deleted, when
+`dry_run` is `false`), and a summary is returned as a warning diagnostic.
+
+## Example
+
+```hcl
+action "scaleway_sweep_resources" "clean_secrets" {
+  config {
+    resource_type = "scaleway_secret"
+    tags          = ["to-rotate", "ephemeral"]
+    regions       = ["*"]
+    project_ids   = ["*"]
+    dry_run       = true
+  }
+}
+```
