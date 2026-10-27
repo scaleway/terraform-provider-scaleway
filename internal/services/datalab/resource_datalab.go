@@ -475,22 +475,18 @@ func (r *DatalabResource) Read(ctx context.Context, req resource.ReadRequest, re
 	var (
 		id     string
 		region scw.Region
+		err    error
 	)
 
 	if identityAvailable {
 		region, id = framework.ResolveRegionalIdentity(identity)
 	} else {
-		resourceID := state.ID.ValueString()
-
-		tmpRegion, tmpId, err := regional.ParseID(resourceID)
+		region, id, err = regional.ParseID(state.ID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to parse Datalab ID", err.Error())
 
 			return
 		}
-
-		id = tmpId
-		region = tmpRegion
 	}
 
 	dl, err := r.api.GetDatalab(&datalab.GetDatalabRequest{

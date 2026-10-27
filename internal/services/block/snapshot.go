@@ -386,22 +386,18 @@ func (r *SnapshotResource) Read(
 	var (
 		id   string
 		zone scw.Zone
+		err  error
 	)
 
 	if identityAvailable {
 		zone, id = identityfw.ResolveZonalIdentity(identity)
 	} else {
-		resourceID := state.ID.ValueString()
-
-		tmpZone, tmpId, err := zonal.ParseID(resourceID)
+		zone, id, err = zonal.ParseID(state.ID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to parse block snapshot ID during READ", err.Error())
 
 			return
 		}
-
-		id = tmpId
-		zone = tmpZone
 	}
 
 	timeout, diags := state.Timeouts.Read(ctx, defaultBlockTimeout)
