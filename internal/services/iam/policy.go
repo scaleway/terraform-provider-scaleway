@@ -3,7 +3,7 @@ package iam
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
+	"sync"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -38,83 +38,53 @@ func resourceIamPolicyCustomizeDiff(ctx context.Context, diff *schema.ResourceDi
 		return nil
 	}
 
-	rules := expandPolicyRuleSpecs(diff.Get("rule"))
+	organizationID := diff.Get("organization_id").(string)
+	api := NewAPI(m)
 
-	return checkRulesPermissionSetScopeTypes(ctx, NewAPI(m), diff.Get("organization_id").(string), rules)
-}
+	// The lazy fetcher will only be executed once and return the cached result. In
+	// case it returns an error we're returning anyway.
+	fetchScopeTypes := sync.OnceValues(func() (map[string]iam.PermissionSetScopeType, error) {
+		resp, err := api.ListPermissionSets(&iam.ListPermissionSetsRequest{
+			OrganizationID: organizationID,
+			PageSize:       new(uint32(100)),
+		}, scw.WithContext(ctx), scw.WithAllPages())
+		if err != nil {
+			return nil, fmt.Errorf("failed to list permission sets: %w", err)
+		}
 
-var permissionSetScopeTypes atomic.Pointer[map[string]iam.PermissionSetScopeType]
+		sets := make(map[string]iam.PermissionSetScopeType, len(resp.PermissionSets))
+		for _, set := range resp.PermissionSets {
+			sets[set.Name] = set.ScopeType
+		}
 
-// permission sets are loaded once and cached (only on success)
-func getPermissionSetScopeTypes(ctx context.Context, api *iam.API, organizationID string) (map[string]iam.PermissionSetScopeType, error) {
-	if cached := permissionSetScopeTypes.Load(); cached != nil {
-		return *cached, nil
-	}
+		return sets, nil
+	})
 
-	sets, err := listPermissionSetScopeTypes(ctx, api, organizationID)
-	if err != nil {
-		return nil, err
-	}
-
-	permissionSetScopeTypes.Store(&sets)
-
-	return sets, nil
-}
-
-func listPermissionSetScopeTypes(ctx context.Context, api *iam.API, organizationID string) (map[string]iam.PermissionSetScopeType, error) {
-	resp, err := api.ListPermissionSets(&iam.ListPermissionSetsRequest{
-		OrganizationID: organizationID,
-		PageSize:       new(uint32(100)),
-	}, scw.WithContext(ctx), scw.WithAllPages())
-	if err != nil {
-		return nil, fmt.Errorf("failed to list permission sets: %w", err)
-	}
-
-	sets := make(map[string]iam.PermissionSetScopeType, len(resp.PermissionSets))
-	for _, set := range resp.PermissionSets {
-		sets[set.Name] = set.ScopeType
-	}
-
-	return sets, nil
-}
-
-// checkRulesPermissionSetScopeTypes validates that all permission sets of a rule share the same scope type.
-// The permission sets are lazily loaded the first time a rule needs the check.
-func checkRulesPermissionSetScopeTypes(ctx context.Context, api *iam.API, organizationID string, rules []*iam.RuleSpecs) error {
-	var scopeTypes map[string]iam.PermissionSetScopeType
-
-	for i, rule := range rules {
+	for i, rule := range expandPolicyRuleSpecs(diff.Get("rule")) {
 		if rule.PermissionSetNames == nil || len(*rule.PermissionSetNames) < 2 {
 			continue
 		}
 
-		if scopeTypes == nil {
-			loaded, err := getPermissionSetScopeTypes(ctx, api, organizationID)
-			if err != nil {
-				tflog.Warn(ctx, "skipping permission set scope type validation", map[string]any{
-					"error": err.Error(),
-				})
+		scopeTypes, err := fetchScopeTypes()
+		if err != nil {
+			tflog.Warn(ctx, "skipping permission set scope type validation", map[string]any{
+				"error": err.Error(),
+			})
 
-				//nolint:nilerr // fetch failure is intentionally ignored and logged above
-				return nil
-			}
-
-			scopeTypes = loaded
+			//nolint:nilerr // fetch failure is intentionally ignored and logged above
+			return nil
 		}
 
-		var firstScopeType iam.PermissionSetScopeType
-
-		for j, name := range *rule.PermissionSetNames {
+		v := scopeTypes[(*rule.PermissionSetNames)[0]]
+		for _, name := range *rule.PermissionSetNames {
 			scopeType, ok := scopeTypes[name]
 			if !ok {
 				return fmt.Errorf("permission set %q not found in organization %s", name, organizationID)
 			}
 
-			if j > 0 && scopeType != firstScopeType {
+			if scopeType != v {
 				return fmt.Errorf("rule[%d].permission_set_names: permission sets must be of the same scope type", i)
 			}
-
-			firstScopeType = scopeType
 		}
 	}
 
