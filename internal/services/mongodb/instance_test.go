@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -38,6 +39,7 @@ func TestAccMongoDBInstance_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_mongodb_instance.main", "srn", regexp.MustCompile(`^srn://mongodb\..+/regions/.+/instances/.+$`)),
 					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-basic-1"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_type", "mgdb-play2-nano"),
