@@ -92,7 +92,7 @@ func TestAccVolume_KMS_WrongKey(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_key_manager_key" "goodkey" {
-						name        = "tf-tests-volume-kms-wrong-key-1"
+						name        = "tf-tests-volume-kms-wrong-key-good"
 						region      = "fr-par"
 						usage       = "symmetric_encryption"
 						algorithm   = "aes_256_gcm"
@@ -100,8 +100,8 @@ func TestAccVolume_KMS_WrongKey(t *testing.T) {
 						unprotected = true
 					}
 
-					resource "scaleway_key_manager_key" "wrongkey" {
-						name        = "tf-tests-volume-kms-wrong-key-2"
+					resource "scaleway_key_manager_key" "badkey" {
+						name        = "tf-tests-volume-kms-wrong-key-bad"
 						region      = "fr-par"
 						usage       = "symmetric_encryption"
 						algorithm   = "aes_256_gcm"
@@ -128,7 +128,7 @@ func TestAccVolume_KMS_WrongKey(t *testing.T) {
 						zone = "fr-par-3" # kms_key_id is not available everywhere yet
 						iops = 5000
 						snapshot_id = scaleway_block_snapshot.main.id
-						kms_key_id = scaleway_key_manager_key.wrongkey.id
+						kms_key_id = scaleway_key_manager_key.badkey.id
 					}
 				`,
 				ExpectError: regexp.MustCompile(
