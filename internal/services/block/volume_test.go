@@ -92,7 +92,7 @@ func TestAccVolume_KMS_WrongKey(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_key_manager_key" "goodkey" {
-						name        = "tf-tests-volume-kms-wrong-key-good"
+						name        = "tf-tests-good-volume-kms-wrong-key"
 						region      = "fr-par"
 						usage       = "symmetric_encryption"
 						algorithm   = "aes_256_gcm"
@@ -101,7 +101,7 @@ func TestAccVolume_KMS_WrongKey(t *testing.T) {
 					}
 
 					resource "scaleway_key_manager_key" "badkey" {
-						name        = "tf-tests-volume-kms-wrong-key-bad"
+						name        = "tf-tests-bad-volume-kms-wrong-key"
 						region      = "fr-par"
 						usage       = "symmetric_encryption"
 						algorithm   = "aes_256_gcm"
