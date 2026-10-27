@@ -9,9 +9,68 @@ import (
 	instancetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
+// func TestAccDataSourceSnapshot_Basic_WithProject(t *testing.T) {
+// 	tt := acctest.NewTestTools(t)
+// 	defer tt.Cleanup()
+//
+// 	snapshotName := "tf-snapshot-ds-basic-with-project"
+//
+// 	resource.ParallelTest(t, resource.TestCase{
+// 		ProtoV6ProviderFactories: tt.ProviderFactories,
+// 		CheckDestroy: resource.ComposeTestCheckFunc(
+// 			instancetestfuncs.IsVolumeDestroyed(tt),
+// 			instancetestfuncs.IsSnapshotDestroyed(tt),
+// 		),
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config: fmt.Sprintf(`
+// 					resource "scaleway_account_project" "project" {
+// 						name = "tf-tests-instance-snapshot-datasource-basic-with-project"
+// 					}
+//
+// 					resource "scaleway_instance_server" "test" {
+// 						project_id = scaleway_account_project.project.id
+// 						image = "ubuntu_noble"
+// 						type = "DEV1-S"
+// 						root_volume {
+// 							volume_type = "l_ssd"
+// 						}
+// 					}
+//
+// 					resource "scaleway_instance_snapshot" "from_volume" {
+// 						project_id = scaleway_account_project.project.id
+// 						name = "%s"
+// 						volume_id = scaleway_instance_server.test.root_volume.0.volume_id
+// 					}
+//
+// 					data "scaleway_instance_snapshot" "by_id" {
+// 						project_id = scaleway_account_project.project.id
+// 						snapshot_id = scaleway_instance_snapshot.from_volume.id
+// 					}
+//
+// 					data "scaleway_instance_snapshot" "by_name" {
+// 						project_id = scaleway_account_project.project.id
+// 						name = scaleway_instance_snapshot.from_volume.name
+// 					}`, snapshotName),
+// 				Check: resource.ComposeTestCheckFunc(
+// 					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_id"),
+// 					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_name"),
+// 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_id", "id", "scaleway_instance_snapshot.from_volume", "id"),
+// 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_id", "name", "scaleway_instance_snapshot.from_volume", "name"),
+//
+// 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_name", "id", "scaleway_instance_snapshot.from_volume", "id"),
+// 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_name", "name", "scaleway_instance_snapshot.from_volume", "name"),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
+
 func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	snapshotName := "tf-snapshot-ds-basic"
 

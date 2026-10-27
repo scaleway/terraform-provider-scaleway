@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -40,10 +41,18 @@ func DataSourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m an
 
 	volumeID, volumeIDExists := d.GetOk("volume_id")
 	if !volumeIDExists {
-		res, err := api.ListVolumes(&block.ListVolumesRequest{
-			Zone:      zone,
-			Name:      types.ExpandStringPtr(d.Get("name")),
-			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		var res *block.ListVolumesResponse
+
+		err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+			var err error
+
+			res, err = api.ListVolumes(&block.ListVolumesRequest{
+				Zone:      zone,
+				Name:      types.ExpandStringPtr(d.Get("name")),
+				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+			})
+
+			return err
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -72,15 +81,17 @@ func DataSourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	res, err := api.GetVolume(&block.GetVolumeRequest{
-		Zone:     zone,
-		VolumeID: zonal.ExpandID(volumeID).ID,
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Volume, error) {
+		return api.GetVolume(&block.GetVolumeRequest{
+			Zone:     zone,
+			VolumeID: zonal.ExpandID(volumeID).ID,
+		})
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	setVolumeState(api, d, res)
+	setVolumeState(ctx, api, d, res)
 
 	return nil
 }

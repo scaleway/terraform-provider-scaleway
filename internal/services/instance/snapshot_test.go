@@ -45,9 +45,62 @@ func TestAccSnapshot_Server(t *testing.T) {
 	})
 }
 
+func TestAccSnapshot_FromS3_WithProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-instance-snapshot")
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			instancechecks.IsSnapshotDestroyed(tt),
+			objectchecks.IsObjectDestroyed(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf-tests-instance-snapshot-from-s3-with-project"
+					}
+
+					resource "scaleway_object_bucket" "snapshot-bucket" {
+					  project_id = scaleway_account_project.project.id
+					  name = "%s"
+					}
+
+					resource "scaleway_object" "qcow-object" {
+					  project_id = scaleway_account_project.project.id
+					  bucket = scaleway_object_bucket.snapshot-bucket.name
+					  key    = "test-acc-instance-snapshot.qcow2"
+					  file   = "testfixture/small_image.qcow2"
+					}
+
+					resource "scaleway_instance_snapshot" "qcow-instance-snapshot" {
+					  project_id = scaleway_account_project.project.id
+					  name = "test-acc-snapshot-import-default"
+					  import {
+					    bucket = scaleway_object.qcow-object.bucket
+					    key    = scaleway_object.qcow-object.key
+					  }
+					}
+				`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.qcow-instance-snapshot"),
+					acctest.CheckResourceAttrUUID("scaleway_instance_snapshot.qcow-instance-snapshot", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_snapshot.qcow-instance-snapshot", "name", "test-acc-snapshot-import-default"),
+					resource.TestCheckResourceAttr("scaleway_instance_snapshot.qcow-instance-snapshot", "type", "l_ssd"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccSnapshot_FromS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-instance-snapshot")
 	resource.ParallelTest(t, resource.TestCase{

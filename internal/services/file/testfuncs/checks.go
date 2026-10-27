@@ -31,7 +31,7 @@ func CheckFileDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				return fmt.Errorf("filesystem (%s) still exists", rs.Primary.ID)
 			}
 
-			if !httperrors.Is404(err) {
+			if !httperrors.Is404(err) && !httperrors.Is410(err) && !httperrors.Is403(err) {
 				return err
 			}
 		}
