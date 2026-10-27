@@ -114,6 +114,7 @@ func flattenExporterWithProjectID(ctx context.Context, d *schema.ResourceData, a
 	_ = d.Set("region", region.String())
 	_ = d.Set("created_at", types.FlattenTime(exp.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(exp.UpdatedAt))
+	_ = d.Set("srn", exp.Srn)
 	_ = d.Set("exported_products", types.FlattenSliceString(exp.ExportedProducts))
 
 	ds, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
