@@ -3,7 +3,9 @@ package iam
 import (
 	"context"
 	"fmt"
+	"sync"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
@@ -27,7 +29,66 @@ func ResourcePolicy() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    policySchema,
+		CustomizeDiff: resourceIamPolicyCustomizeDiff,
 	}
+}
+
+func resourceIamPolicyCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	if !diff.HasChange("rule") {
+		return nil
+	}
+
+	organizationID := diff.Get("organization_id").(string)
+	api := NewAPI(m)
+
+	// The lazy fetcher will only be executed once and return the cached result. In
+	// case it returns an error we're returning anyway.
+	fetchScopeTypes := sync.OnceValues(func() (map[string]iam.PermissionSetScopeType, error) {
+		resp, err := api.ListPermissionSets(&iam.ListPermissionSetsRequest{
+			OrganizationID: organizationID,
+			PageSize:       new(uint32(100)),
+		}, scw.WithContext(ctx), scw.WithAllPages())
+		if err != nil {
+			return nil, fmt.Errorf("failed to list permission sets: %w", err)
+		}
+
+		sets := make(map[string]iam.PermissionSetScopeType, len(resp.PermissionSets))
+		for _, set := range resp.PermissionSets {
+			sets[set.Name] = set.ScopeType
+		}
+
+		return sets, nil
+	})
+
+	for i, rule := range expandPolicyRuleSpecs(diff.Get("rule")) {
+		if rule.PermissionSetNames == nil || len(*rule.PermissionSetNames) < 2 {
+			continue
+		}
+
+		scopeTypes, err := fetchScopeTypes()
+		if err != nil {
+			tflog.Warn(ctx, "skipping permission set scope type validation", map[string]any{
+				"error": err.Error(),
+			})
+
+			//nolint:nilerr // fetch failure is intentionally ignored and logged above
+			return nil
+		}
+
+		v := scopeTypes[(*rule.PermissionSetNames)[0]]
+		for _, name := range *rule.PermissionSetNames {
+			scopeType, ok := scopeTypes[name]
+			if !ok {
+				return fmt.Errorf("permission set %q not found in organization %s", name, organizationID)
+			}
+
+			if scopeType != v {
+				return fmt.Errorf("rule[%d].permission_set_names: permission sets must be of the same scope type", i)
+			}
+		}
+	}
+
+	return nil
 }
 
 func policySchema() map[string]*schema.Schema {
