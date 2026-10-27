@@ -331,6 +331,11 @@ E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL i
 			ValidateFunc: validation.IntBetween(0, math.MaxInt32),
 			Description:  "Number of retries when a backend server connection failed",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the backend",
+		},
 	}
 }
 
@@ -538,6 +543,7 @@ func setBackendState(d *schema.ResourceData, backend *lbSDK.Backend, zone scw.Zo
 	_ = d.Set("redispatch_attempt_count", types.FlattenInt32Ptr(backend.RedispatchAttemptCount))
 	_ = d.Set("max_retries", types.FlattenInt32Ptr(backend.MaxRetries))
 	_ = d.Set("timeout_queue", types.FlattenDuration(backend.TimeoutQueue.ToTimeDuration()))
+	_ = d.Set("srn", backend.Srn)
 
 	// HealthCheck
 	_ = d.Set("health_check_port", backend.HealthCheck.Port)

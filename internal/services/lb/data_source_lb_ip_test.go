@@ -1,6 +1,7 @@
 package lb_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -39,6 +40,7 @@ func TestAccDataSourceIP_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("data.scaleway_lb_ip.test2", "srn", regexp.MustCompile(`^srn://lb\..+/zones/.+/ips/.+$`)),
 					isIPPresent(tt, "data.scaleway_lb_ip.test"),
 					resource.TestCheckResourceAttrPair("data.scaleway_lb_ip.test", "ip_address", "scaleway_lb_ip.test", "ip_address"),
 					resource.TestCheckResourceAttrPair("data.scaleway_lb_ip.test2", "ip_address", "scaleway_lb_ip.test", "ip_address"),

@@ -214,6 +214,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `updated_at` - The date and time the frontend resource was updated.
 
+- `srn` - The Scaleway Resource Name (SRN) of the Load Balancer frontend.
+
 ## Import
 
 Load Balancer frontends can be imported using `{zone}/{id}`, e.g.

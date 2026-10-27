@@ -161,6 +161,11 @@ func aclSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "IsDate and time of ACL's update (RFC 3339 format)",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the ACL",
+		},
 	}
 }
 
@@ -224,6 +229,7 @@ func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 	_ = d.Set("index", int(acl.Index))
 	_ = d.Set("created_at", types.FlattenTime(acl.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(acl.UpdatedAt))
+	_ = d.Set("srn", acl.Srn)
 	_ = d.Set("action", flattenLbACLAction(acl.Action))
 
 	if acl.Match != nil {

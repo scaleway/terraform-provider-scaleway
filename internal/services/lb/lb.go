@@ -233,6 +233,11 @@ func lbSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the load balancer",
+		},
 		"region":          regional.ComputedSchema(),
 		"zone":            zonal.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
@@ -358,6 +363,7 @@ func setLBState(ctx context.Context, d *schema.ResourceData, m any, lbAPI *lbSDK
 	_ = d.Set("organization_id", lb.OrganizationID)
 	_ = d.Set("project_id", lb.ProjectID)
 	_ = d.Set("tags", lb.Tags)
+	_ = d.Set("srn", lb.Srn)
 	// For now API return lowercase lb type. This should be fixed in a near future on the API side
 	_ = d.Set("type", strings.ToUpper(lb.Type))
 	_ = d.Set("ssl_compatibility_level", lb.SslCompatibilityLevel.String())

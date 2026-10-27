@@ -136,6 +136,11 @@ func certificateSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The status of certificate",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the certificate",
+		},
 	}
 }
 
@@ -205,6 +210,7 @@ func setCertificateState(d *schema.ResourceData, certificate *lbSDK.Certificate,
 	_ = d.Set("not_valid_before", types.FlattenTime(certificate.NotValidBefore))
 	_ = d.Set("not_valid_after", types.FlattenTime(certificate.NotValidAfter))
 	_ = d.Set("status", certificate.Status)
+	_ = d.Set("srn", certificate.Srn)
 
 	diags := diag.Diagnostics(nil)
 
