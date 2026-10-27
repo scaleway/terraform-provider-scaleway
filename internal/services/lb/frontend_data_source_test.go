@@ -1,6 +1,7 @@
 package lb_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -46,6 +47,7 @@ func TestAccDataSourceFrontend_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("data.scaleway_lb_frontend.byID", "srn", regexp.MustCompile(`^srn://lb\..+/zones/.+/frontends/.+$`)),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_lb_frontend.byID", "name",
 						"scaleway_lb_frontend.frt01", "name"),

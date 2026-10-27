@@ -43,6 +43,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `type` - The Load Balancer type.
 
+- `srn` - The Scaleway Resource Name (SRN) of the Load Balancer.
+
 - `tags` - The tags associated with the Load Balancer.
 
 - `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Load Balancer exists.

@@ -251,6 +251,11 @@ func frontendSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the frontend",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the frontend",
+		},
 	}
 }
 
@@ -386,6 +391,7 @@ func setFrontendState(d *schema.ResourceData, frontend *lbSDK.Frontend, zone scw
 	_ = d.Set("enable_access_logs", frontend.EnableAccessLogs)
 	_ = d.Set("created_at", types.FlattenTime(frontend.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(frontend.UpdatedAt))
+	_ = d.Set("srn", frontend.Srn)
 
 	if frontend.Certificate != nil { //nolint:staticcheck
 		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID)) //nolint:staticcheck
