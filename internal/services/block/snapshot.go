@@ -340,7 +340,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 			return
 		}
 
-		snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, snapshot.ID, defaultBlockTimeout)
+		snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, snapshot.ID, timeout)
 		if err != nil {
 			resp.Diagnostics.AddError("Failed waiting for block snapshot export", err.Error())
 
