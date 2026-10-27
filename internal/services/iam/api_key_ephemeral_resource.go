@@ -71,6 +71,7 @@ type ApiKeyEphemeralResourceModel struct {
 	SecretKey        types.String `tfsdk:"secret_key"`
 	CreationIP       types.String `tfsdk:"creation_ip"`
 	DefaultProjectID types.String `tfsdk:"default_project_id"`
+	SRN              types.String `tfsdk:"srn"`
 	DeleteOnClose    types.Bool   `tfsdk:"delete_on_close"`
 }
 
@@ -140,6 +141,10 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 				Optional:    true,
 				Computed:    true,
 				Description: "Whether the API key should be deleted when the ephemeral resource is closed. Defaults to true. When set to false, the key is not deleted on close and must be managed manually (or let to expire via `expires_at`).",
+			},
+			"srn": schema.StringAttribute{
+				Computed:    true,
+				Description: "The Scaleway Resource Name (SRN) of the iam api key",
 			},
 		},
 	}
@@ -229,6 +234,8 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 
 	data.DeleteOnClose = types.BoolValue(deleteOnClose)
 	resp.Private.SetKey(ctx, "delete_on_close", []byte(strconv.FormatBool(deleteOnClose)))
+
+	data.SRN = types.StringValue(res.Srn)
 
 	resp.Result.Set(ctx, &data)
 }
