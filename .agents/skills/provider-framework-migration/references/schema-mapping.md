@@ -33,7 +33,7 @@ configuration syntax and state layout — the invariant of a safe migration.
 | `DiffSuppressFunc` | No direct equivalent. Use a custom type with semantic equality (preferred; e.g. case-insensitive or JSON-normalized string types) or a plan modifier. If the suppression logic is intricate, reconsider migrating this resource |
 | `StateFunc` | No equivalent — normalize in Create/Read before setting state, or use a custom type |
 | `CustomizeDiff` | Resource-level plan modification: `ResourceWithModifyPlan.ModifyPlan`, or per-attribute plan modifiers |
-| `Timeouts` in schema | `timeouts` block via `terraform-plugin-framework-timeouts`; read with `data.Timeouts.Create(ctx, defaultTimeout)` |
+| `Timeouts` in schema | `timeouts` block via `terraform-plugin-framework-timeouts`; read with `data.Timeouts.Create(ctx, defaultTimeout)`. When you build the model from API data with no plan/state to copy, store a typed-null `timeouts.Value{Object: types.ObjectNull(create/read/update/delete keys)}` — the Go zero value fails to serialize (`Value Conversion Error`, see SKILL.md) |
 
 ## Resource shape
 

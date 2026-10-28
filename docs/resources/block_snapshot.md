@@ -89,6 +89,32 @@ This section lists the arguments that are supported:
 - `export` - (Optional) Use this block to export the volume as a QCOW file to Object Storage.
       - `bucket` – (Required) The name of the bucket where the QCOW file will be saved.
       - `key` – (Required) The desired key (path) for the QCOW file within the bucket.
+- `timeouts` - (Optional) The `timeouts` block allows you to configure how long Terraform waits for certain long-running operations. See the [Increase Timeout in terraform apply](../guides/increase-resources-timeout.md) guide for more details.
+
+The following arguments are specific to the `timeouts` block:
+
+- `create` - (Defaults to `5m`) Duration to wait for the snapshot to be created.
+- `read` - (Defaults to `5m`) Duration to wait for the snapshot to be read.
+- `update` - (Defaults to `5m`) Duration to wait for the snapshot to be updated.
+- `delete` - (Defaults to `5m`) Duration to wait for the snapshot to be deleted.
+
+```terraform
+resource "scaleway_block_volume" "block_volume" {
+  iops       = 5000
+  name       = "some-volume-name"
+  size_in_gb = 20
+}
+
+resource "scaleway_block_snapshot" "block_snapshot" {
+  name      = "some-snapshot-name"
+  volume_id = scaleway_block_volume.block_volume.id
+
+  timeouts = {
+    create = "10m"
+    read   = "10m"
+  }
+}
+```
 
 ## Attributes Reference
 

@@ -182,7 +182,8 @@ func (r *SnapshotListResource) List(ctx context.Context, req list.ListRequest, s
 		return
 	}
 
-	allRows, err := listscw.FetchConcurrently(ctx, targets,
+	allRows, err := listscw.FetchConcurrently(
+		ctx, targets,
 		func(ctx context.Context, target snapshotListTarget) ([]blockSnapshotRow, error) {
 			return r.fetchSnapshotRows(ctx, target, data)
 		},

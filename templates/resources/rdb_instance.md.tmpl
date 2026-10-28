@@ -78,7 +78,21 @@ interruption.
 
 - `encryption_at_rest` - (Optional) Enable or disable encryption at rest for the Database Instance.
 
-- `snapshot_id` - (Optional) The ID of an existing snapshot to restore or create the Database Instance from. Conflicts with the `engine` parameter and backup settings.
+- `snapshot_id` - (Optional) The ID of an existing snapshot to restore or create the Database Instance from. Conflicts with the `engine` and `clone_from` parameters.
+
+- `clone_from` - (Optional) The ID of an existing Database Instance to clone. The clone includes all databases, users, and permissions, and is fully independent of its parent. You may keep the same `node_type` or upgrade to a larger one. Conflicts with the `engine` and `snapshot_id` parameters.
+
+~> **Important** Updates to `clone_from` will recreate the Database Instance.
+
+~> **Note** `CloneInstance` only accepts `name` and optional `node_type`. Everything else is inherited from the source. We do not `ConflictsWith` inherited attributes so you can still override some of them in the same apply.
+
+~> **Note** Same-apply overrides after clone: set `is_ha_cluster` or `disable_backup` explicitly to change HA/backups; `tags`, `settings`, `logs_policy`, and endpoints (`load_balancer` / `private_network`) are also applied during Create. If you omit `is_ha_cluster` / `disable_backup`, the source values are kept.
+
+~> **Note** Not applied during clone Create: `volume_type` (schema default `lssd` — set it to match a non-`lssd` source), `volume_size_in_gb`, and `project_id` (clone stays in the source project). Align these with the source or expect a follow-up plan/Update.
+
+~> **Note** When cloning from Local Storage (`lssd`) to a Block Storage node type, change the volume type on the source first. See [How to clone a Database Instance](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/how-to/clone-a-database-instance/).
+
+~> **Note** `CloneInstance` always provisions a public load-balancer endpoint. Keep it with an empty `load_balancer {}` block, or omit the block to remove it (same behaviour as `snapshot_id`).
 
 ### Backups
 
