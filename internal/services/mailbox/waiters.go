@@ -17,11 +17,16 @@ func waitForDomain(ctx context.Context, api *mailboxsdk.API, domainID string, ti
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForDomain(&mailboxsdk.WaitForDomainRequest{
+	domain, err := api.WaitForDomain(&mailboxsdk.WaitForDomainRequest{
 		DomainID:      domainID,
 		Timeout:       &timeout,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for mailbox domain to be ready: %w", err)
+	}
+
+	return domain, nil
 }
 
 // waitForMailbox waits until the mailbox leaves provisioning states.
@@ -38,7 +43,7 @@ func waitForMailbox(ctx context.Context, api *mailboxsdk.API, mailboxID string, 
 	for {
 		mb, err := api.GetMailbox(&mailboxsdk.GetMailboxRequest{MailboxID: mailboxID}, scw.WithContext(ctx))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("getting mailbox: %w", err)
 		}
 
 		keepWaiting := false
@@ -52,7 +57,7 @@ func waitForMailbox(ctx context.Context, api *mailboxsdk.API, mailboxID string, 
 		case mailboxsdk.MailboxStatusWaitingDomain:
 			domain, domainErr := api.GetDomain(&mailboxsdk.GetDomainRequest{DomainID: mb.DomainID}, scw.WithContext(ctx))
 			if domainErr != nil {
-				return nil, domainErr
+				return nil, fmt.Errorf("getting mailbox domain: %w", domainErr)
 			}
 
 			if domain.Status == mailboxsdk.DomainStatusReady {
@@ -78,7 +83,7 @@ func waitForMailbox(ctx context.Context, api *mailboxsdk.API, mailboxID string, 
 
 		select {
 		case <-ctx.Done():
-			return nil, ctx.Err()
+			return nil, fmt.Errorf("waiting for mailbox: %w", ctx.Err())
 		case <-time.After(retryInterval):
 		}
 	}
@@ -91,11 +96,16 @@ func waitForMailboxDeleted(ctx context.Context, api *mailboxsdk.API, mailboxID s
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForMailbox(&mailboxsdk.WaitForMailboxRequest{
+	mailbox, err := api.WaitForMailbox(&mailboxsdk.WaitForMailboxRequest{
 		MailboxID:     mailboxID,
 		Timeout:       &timeout,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for mailbox to be deleted: %w", err)
+	}
+
+	return mailbox, nil
 }
 
 func waitForAlias(ctx context.Context, api *mailboxsdk.API, aliasID string, timeout time.Duration) (*mailboxsdk.Alias, error) {
@@ -104,11 +114,16 @@ func waitForAlias(ctx context.Context, api *mailboxsdk.API, aliasID string, time
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForAlias(&mailboxsdk.WaitForAliasRequest{
+	alias, err := api.WaitForAlias(&mailboxsdk.WaitForAliasRequest{
 		AliasID:       aliasID,
 		Timeout:       &timeout,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for mailbox alias to be ready: %w", err)
+	}
+
+	return alias, nil
 }
 
 // waitForAliasDeleted waits until the alias is gone (GetAlias returns 404).

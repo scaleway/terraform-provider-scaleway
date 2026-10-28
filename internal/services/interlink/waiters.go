@@ -2,6 +2,7 @@ package interlink
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	interlink "github.com/scaleway/scaleway-sdk-go/api/interlink/v1beta1"
@@ -26,6 +27,9 @@ func waitForLink(ctx context.Context, api *interlink.API, region scw.Region, lin
 		Timeout:       &timeout,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for link: %w", err)
+	}
 
-	return link, err
+	return link, nil
 }

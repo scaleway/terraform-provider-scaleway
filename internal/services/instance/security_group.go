@@ -208,7 +208,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 		SecurityGroupID: locality.ExpandID(securityGroupID),
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("listing security group rules: %w", err)
 	}
 
 	sort.Slice(resRules.Rules, func(i, j int) bool {
@@ -377,7 +377,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 		Rules:           setGroupRules,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("setting security group rules: %w", err)
 	}
 
 	return nil
@@ -477,7 +477,7 @@ func securityGroupRuleExpand(i any) (*instanceSDK.SecurityGroupRule, error) {
 
 	ipnetRange, err := types.ExpandIPNet(ipRange)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("expanding IP range %q: %w", ipRange, err)
 	}
 
 	rule := &instanceSDK.SecurityGroupRule{
@@ -561,12 +561,12 @@ func SecurityGroupRuleEquals(ruleA, ruleB *instanceSDK.SecurityGroupRule) (bool,
 
 	ipRangeA, err := types.FlattenIPNet(ruleA.IPRange)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("flattening IP range: %w", err)
 	}
 
 	ipRangeB, err := types.FlattenIPNet(ruleB.IPRange)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("flattening IP range: %w", err)
 	}
 
 	ipEqual := ipRangeA == ipRangeB

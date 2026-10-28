@@ -2,6 +2,7 @@ package file
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
@@ -21,6 +22,9 @@ func waitForFileSystem(ctx context.Context, fileAPI *file.API, region scw.Region
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for filesystem: %w", err)
+	}
 
-	return fileSystem, err
+	return fileSystem, nil
 }

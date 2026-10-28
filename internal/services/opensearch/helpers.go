@@ -1,6 +1,7 @@
 package opensearch
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,7 +26,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*searchdbapi.API, scw.Regi
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return api, region, nil
@@ -37,7 +38,7 @@ func NewAPIWithRegionAndID(m any, id string) (*searchdbapi.API, scw.Region, stri
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return api, region, id, nil

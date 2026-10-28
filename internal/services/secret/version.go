@@ -2,6 +2,7 @@ package secret
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -154,8 +155,11 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		var err error
 
 		secretResponse, err = api.CreateSecretVersion(secretCreateVersionRequest, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("creating secret version: %w", err)
+		}
 
-		return err
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(err)

@@ -32,7 +32,7 @@ func newAPIWithZone(d *schema.ResourceData, m any) (*instance.API, scw.Zone, err
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return instanceAPI, zone, nil
@@ -44,7 +44,7 @@ func newAPIV2WithZone(d *schema.ResourceData, m any) (*instanceV2.API, scw.Zone,
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return instanceAPI, zone, nil
@@ -56,7 +56,7 @@ func NewAPIWithZoneAndID(m any, zonedID string) (*instance.API, scw.Zone, string
 
 	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing zonal id %q: %w", zonedID, err)
 	}
 
 	return instanceAPI, zone, ID, nil
@@ -68,7 +68,7 @@ func NewAPIV2WithZoneAndID(m any, zonedID string) (*instanceV2.API, scw.Zone, st
 
 	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing zonal id %q: %w", zonedID, err)
 	}
 
 	return instanceAPI, zone, ID, nil
@@ -80,7 +80,7 @@ func NewAPIWithZoneAndNestedID(m any, zonedNestedID string) (*instance.API, scw.
 
 	zone, innerID, outerID, err := zonal.ParseNestedID(zonedNestedID)
 	if err != nil {
-		return nil, "", "", "", err
+		return nil, "", "", "", fmt.Errorf("parsing zonal nested id %q: %w", zonedNestedID, err)
 	}
 
 	return instanceAPI, zone, innerID, outerID, nil
@@ -92,7 +92,7 @@ func NewAPIV2WithZoneAndNestedID(m any, zonedNestedID string) (*instanceV2.API, 
 
 	zone, innerID, outerID, err := zonal.ParseNestedID(zonedNestedID)
 	if err != nil {
-		return nil, "", "", "", err
+		return nil, "", "", "", fmt.Errorf("parsing zonal nested id %q: %w", zonedNestedID, err)
 	}
 
 	return instanceAPI, zone, innerID, outerID, nil
@@ -173,7 +173,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 		ServerID: serverID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("getting server: %w", err)
 	}
 
 	fromState := response.Server.State
@@ -206,7 +206,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 				RetryInterval: transport.DefaultWaitRetryInterval,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return err
+				return fmt.Errorf("waiting for block volume: %w", err)
 			}
 		} else if volume.State != nil && *volume.State != instance.VolumeServerStateAvailable {
 			_, err = api.WaitForVolume(&instance.WaitForVolumeRequest{
@@ -215,7 +215,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 				RetryInterval: transport.DefaultWaitRetryInterval,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return err
+				return fmt.Errorf("waiting for volume: %w", err)
 			}
 		}
 	}
@@ -229,7 +229,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 			RetryInterval: transport.DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return fmt.Errorf("waiting for server action to complete: %w", err)
 		}
 	}
 
@@ -305,7 +305,7 @@ func preparePrivateNIC(
 		if pnExist {
 			region, err := server.Zone.Region()
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("getting zone region: %w", err)
 			}
 
 			currentPN, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
@@ -313,7 +313,7 @@ func preparePrivateNIC(
 				Region:           region,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("getting private network: %w", err)
 			}
 
 			query := &instanceV2.CreatePrivateNetworkInterfaceRequest{
@@ -368,7 +368,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Du
 					return nil
 				}
 
-				return err
+				return fmt.Errorf("detaching server private network interface: %w", err)
 			}
 
 			_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, pnicID, timeout)
@@ -391,7 +391,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Du
 			},
 				scw.WithContext(ctx))
 			if err != nil {
-				return err
+				return fmt.Errorf("deleting private network interface: %w", err)
 			}
 
 			_, err = ph.instanceAPI.WaitForPrivateNetworkInterface(&instanceV2.WaitForPrivateNetworkInterfaceRequest{
@@ -401,7 +401,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Du
 				RetryInterval:             new(instancehelpers.DefaultInstanceRetryInterval),
 			})
 			if err != nil && !httperrors.Is404(err) {
-				return err
+				return fmt.Errorf("waiting for private network interface: %w", err)
 			}
 		}
 	}
@@ -420,7 +420,7 @@ func (ph *privateNICsHandler) attach(ctx context.Context, n any, timeout time.Du
 				PrivateNetworkID: privateNetworkID,
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("creating private network interface: %w", err)
 			}
 
 			_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, pn.ID, timeout)
@@ -454,7 +454,11 @@ func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 		privateNetworks = append(privateNetworks, keyRaw.(map[string]any))
 	}
 
-	return d.Set("private_network", privateNetworks)
+	if err := d.Set("private_network", privateNetworks); err != nil {
+		return fmt.Errorf("setting private_network in state: %w", err)
+	}
+
+	return nil
 }
 
 func (ph *privateNICsHandler) get(key string) (any, error) {
@@ -508,11 +512,18 @@ func retryUpdateReverseDNS(ctx context.Context, instanceAPI *instance.API, req *
 				continue
 			}
 
-			return err
+			if err != nil {
+				return fmt.Errorf("updating IP reverse DNS: %w", err)
+			}
+
+			return nil
 		case <-timeoutChannel:
 			_, err := instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("updating IP reverse DNS: %w", err)
+			}
 
-			return err
+			return nil
 		}
 	}
 }
@@ -548,7 +559,7 @@ func instanceServerAdditionalVolumeTemplate(api *instancehelpers.BlockAndInstanc
 		Zone:     zone,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting unknown volume: %w", err)
 	}
 
 	return vol.VolumeTemplate(), nil
@@ -649,7 +660,7 @@ func DeleteASGServers(
 		Name: types.ExpandStringPtr(groupID),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("listing servers: %w", err)
 	}
 
 	for _, srv := range resp.Servers {
@@ -660,14 +671,14 @@ func DeleteASGServers(
 				ServerID: srv.ID,
 				Action:   instance.ServerActionTerminate,
 			}, scw.WithContext(ctx)); err != nil {
-				return err
+				return fmt.Errorf("terminating server: %w", err)
 			}
 		case instance.ServerStateStopped, instance.ServerStateStoppedInPlace:
 			if err = api.DeleteServer(&instance.DeleteServerRequest{
 				Zone:     zone,
 				ServerID: srv.ID,
 			}, scw.WithContext(ctx)); err != nil {
-				return err
+				return fmt.Errorf("deleting server: %w", err)
 			}
 		}
 
@@ -677,7 +688,7 @@ func DeleteASGServers(
 			Timeout:  new(timeout),
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
-			return err
+			return fmt.Errorf("waiting for server: %w", err)
 		}
 	}
 

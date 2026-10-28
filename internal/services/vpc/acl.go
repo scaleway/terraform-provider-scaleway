@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -135,8 +136,11 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		_, err := vpcAPI.SetACL(req, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("setting vpc acl: %w", err)
+		}
 
-		return err
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -214,8 +218,11 @@ func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		_, err := vpcAPI.SetACL(req, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("setting vpc acl: %w", err)
+		}
 
-		return err
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -236,8 +243,11 @@ func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m any) di
 			Region:        region,
 			DefaultPolicy: vpc.ActionAccept,
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("setting vpc acl: %w", err)
+		}
 
-		return err
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(err)

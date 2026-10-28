@@ -1,6 +1,7 @@
 package file
 
 import (
+	"fmt"
 	"time"
 
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
@@ -19,7 +20,7 @@ func NewAPIWithRegionAndID(m any, regionID string) (*file.API, scw.Region, strin
 
 	region, ID, err := regional.ParseID(regionID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", regionID, err)
 	}
 
 	return fileAPI, region, ID, nil

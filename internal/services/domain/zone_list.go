@@ -356,7 +356,7 @@ func (r *ZoneListResource) fetchDNSZones(
 		return r.domainAPI.ListDNSZones(request, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing DNS zones: %w", err)
 	}
 
 	return response.DNSZones, nil

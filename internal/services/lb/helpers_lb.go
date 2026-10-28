@@ -35,7 +35,7 @@ func lbAPIWithZone(d *schema.ResourceData, m any) (*lbSDK.ZonedAPI, scw.Zone, er
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return lbAPI, zone, nil
@@ -47,7 +47,7 @@ func NewAPIWithZoneAndID(m any, id string) (*lbSDK.ZonedAPI, scw.Zone, string, e
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing zonal id %q: %w", id, err)
 	}
 
 	return lbAPI, zone, ID, nil
@@ -213,7 +213,11 @@ func customizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ any) e
 	// Check if any IP ID is being removed
 	for id := range oldIPIDsSet {
 		if _, ok := newIPIDsSet[id]; !ok {
-			return diff.ForceNew("ip_ids")
+			if err := diff.ForceNew("ip_ids"); err != nil {
+				return fmt.Errorf("forcing new resource on ip_ids: %w", err)
+			}
+
+			return nil
 		}
 	}
 
@@ -223,7 +227,11 @@ func customizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ any) e
 func customizeDiffAssignFlexibleIPv6(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 	oldValue, newValue := diff.GetChange("assign_flexible_ipv6")
 	if oldValue.(bool) && !newValue.(bool) {
-		return diff.ForceNew("assign_flexible_ipv6")
+		if err := diff.ForceNew("assign_flexible_ipv6"); err != nil {
+			return fmt.Errorf("forcing new resource on assign_flexible_ipv6: %w", err)
+		}
+
+		return nil
 	}
 
 	return nil
@@ -251,7 +259,7 @@ func getLBPrivateIPs(ctx context.Context, m any, region scw.Region, lbID string,
 
 		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("getting resource private ips: %w", err)
 		}
 
 		if privateIPs != nil {

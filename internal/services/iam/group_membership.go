@@ -195,6 +195,9 @@ func MakeGroupRequest(ctx context.Context, api *iam.API, request any) (*iam.Grou
 
 		return "", nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("making group membership request: %w", err)
+	}
 
-	return group, err
+	return group, nil
 }

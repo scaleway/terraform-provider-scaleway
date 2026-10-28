@@ -237,7 +237,7 @@ func (r *InstanceListResource) fetchInstances(ctx context.Context, target listsc
 
 	response, err := r.mongodbAPI.ListInstances(req, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing mongodb instances: %w", err)
 	}
 
 	// ListInstances can return instances from other projects when filtering by tags;

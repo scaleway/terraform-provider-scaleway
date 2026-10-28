@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -121,7 +122,7 @@ func (r *ApplicationListResource) FetchApplications(ctx context.Context, data Ap
 
 	response, err := r.iamAPI.ListApplications(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing applications: %w", err)
 	}
 
 	return response.Applications, nil

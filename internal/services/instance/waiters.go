@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -23,8 +24,11 @@ func waitForSnapshot(ctx context.Context, api *instance.API, zone scw.Zone, id s
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for snapshot: %w", err)
+	}
 
-	return snapshot, err
+	return snapshot, nil
 }
 
 func waitForServer(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Server, error) {
@@ -39,8 +43,11 @@ func waitForServer(ctx context.Context, api *instance.API, zone scw.Zone, id str
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for server: %w", err)
+	}
 
-	return server, err
+	return server, nil
 }
 
 func waitForPrivateNIC(ctx context.Context, instanceAPI *instanceV2.API, zone scw.Zone, privateNICID string, timeout time.Duration) (*instanceV2.PrivateNetworkInterface, error) {
@@ -55,8 +62,11 @@ func waitForPrivateNIC(ctx context.Context, instanceAPI *instanceV2.API, zone sc
 		Timeout:                   new(timeout),
 		RetryInterval:             new(retryInterval),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for private network interface: %w", err)
+	}
 
-	return nic, err
+	return nic, nil
 }
 
 func waitForMACAddress(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, privateNICID string, timeout time.Duration) error {
@@ -72,8 +82,11 @@ func waitForMACAddress(ctx context.Context, instanceAPI *instance.API, zone scw.
 		Timeout:       new(timeout),
 		RetryInterval: new(retryInterval),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return fmt.Errorf("waiting for MAC address: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func waitForImage(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Image, error) {
@@ -88,8 +101,11 @@ func waitForImage(ctx context.Context, api *instance.API, zone scw.Zone, id stri
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for image: %w", err)
+	}
 
-	return image, err
+	return image, nil
 }
 
 func waitForFilesystems(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Server, error) {
@@ -104,6 +120,9 @@ func waitForFilesystems(ctx context.Context, api *instance.API, zone scw.Zone, i
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for server filesystems: %w", err)
+	}
 
-	return server, err
+	return server, nil
 }

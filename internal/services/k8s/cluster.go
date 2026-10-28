@@ -95,7 +95,7 @@ func ResourceCluster() *schema.Resource {
 						if planned != "" {
 							_, plannedPNID, err := locality.ParseLocalizedID(planned.(string))
 							if err != nil {
-								return err
+								return fmt.Errorf("parsing localized id %q: %w", planned.(string), err)
 							}
 
 							if plannedPNID == actual {
@@ -106,7 +106,7 @@ func ResourceCluster() *schema.Resource {
 						// Any other change will result in ForceNew
 						err := diff.ForceNew("private_network_id")
 						if err != nil {
-							return err
+							return fmt.Errorf("forcing new resource on private_network_id: %w", err)
 						}
 					}
 				}
@@ -125,7 +125,7 @@ func ResourceCluster() *schema.Resource {
 						ClusterID: clusterID,
 					}, scw.WithContext(ctx))
 					if err != nil {
-						return err
+						return fmt.Errorf("listing cluster available types: %w", err)
 					}
 
 					planned := diff.Get("type")
@@ -137,7 +137,7 @@ func ResourceCluster() *schema.Resource {
 
 					err = diff.ForceNew("type")
 					if err != nil {
-						return err
+						return fmt.Errorf("forcing new resource on type: %w", err)
 					}
 				}
 

@@ -94,22 +94,22 @@ func flattenKubeconfig(ctx context.Context, k8sAPI *k8s.API, region scw.Region, 
 		ClusterID: clusterID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting kubeconfig: %w", err)
 	}
 
 	kubeconfigServer, err := kubeconfig.GetServer()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting kubeconfig server: %w", err)
 	}
 
 	kubeconfigCa, err := kubeconfig.GetCertificateAuthorityData()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting kubeconfig certificate authority data: %w", err)
 	}
 
 	kubeconfigToken, err := kubeconfig.GetToken()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting kubeconfig token: %w", err)
 	}
 
 	kubeconf := map[string]any{}

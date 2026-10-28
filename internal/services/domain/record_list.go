@@ -292,7 +292,7 @@ func (r *RecordListResource) listProjectDNSZoneNames(ctx context.Context, projec
 		}, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing DNS zones: %w", err)
 	}
 
 	zones := make([]string, 0, len(response.DNSZones))
@@ -324,7 +324,7 @@ func (r *RecordListResource) fetchRecordRows(ctx context.Context, target recordL
 		return r.domainAPI.ListDNSZoneRecords(request, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing DNS zone records: %w", err)
 	}
 
 	rootZone, err := r.isRootDNSZone(ctx, target.ProjectID, target.DNSZone)
@@ -357,7 +357,7 @@ func (r *RecordListResource) isRootDNSZone(ctx context.Context, projectID, dnsZo
 		}, scw.WithContext(ctx))
 	})
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("listing DNS zones: %w", err)
 	}
 
 	if len(response.DNSZones) == 0 {

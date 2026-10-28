@@ -2,6 +2,7 @@ package applesilicon
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
@@ -20,7 +21,7 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 		ServerID: &serverID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("listing server private networks: %w", err)
 	}
 
 	for _, pn := range listPrivateNetwork.ServerPrivateNetworks {
@@ -30,7 +31,7 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 			PrivateNetworkID: pn.PrivateNetworkID,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return fmt.Errorf("deleting server private network: %w", err)
 		}
 	}
 

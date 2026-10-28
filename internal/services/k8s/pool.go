@@ -58,7 +58,7 @@ func ResourcePool() *schema.Resource {
 					PoolID: poolID,
 				}, scw.WithContext(ctx))
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("getting pool: %w", err)
 				}
 
 				userData, err := fetchPoolUserData(ctx, k8sAPI, pool)
@@ -67,7 +67,7 @@ func ResourcePool() *schema.Resource {
 				}
 
 				if err := d.Set("user_data", userData); err != nil {
-					return nil, err
+					return nil, fmt.Errorf("setting user_data: %w", err)
 				}
 
 				return []*schema.ResourceData{d}, nil
@@ -704,7 +704,7 @@ func fetchPoolUserData(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) (ma
 		PoolID: pool.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing user data: %w", err)
 	}
 
 	userData := make(map[string]any, len(listResp.UserData))
@@ -715,12 +715,12 @@ func fetchPoolUserData(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) (ma
 			Key:    summary.Key,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("getting user data: %w", err)
 		}
 
 		content, err := io.ReadAll(file.Content)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("reading user data: %w", err)
 		}
 
 		userData[summary.Key] = string(content)
@@ -934,7 +934,7 @@ func ResourceK8SPoolCustomDiff(_ context.Context, diff *schema.ResourceDiff, _ a
 	if diff.HasChange("size") {
 		err := diff.SetNewComputed("nodes")
 		if err != nil {
-			return err
+			return fmt.Errorf("setting nodes to computed: %w", err)
 		}
 	}
 

@@ -527,8 +527,11 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 				_, err := registrarAPI.EnableDomainDNSSEC(&domain.RegistrarAPIEnableDomainDNSSECRequest{
 					Domain: domainName,
 				}, scw.WithContext(ctx))
+				if err != nil {
+					return fmt.Errorf("enabling domain DNSSEC: %w", err)
+				}
 
-				return err
+				return nil
 			})
 			if err != nil {
 				return diag.FromErr(err)
@@ -888,22 +891,22 @@ func setRegistrationIdentity(d *schema.ResourceData, projectID string, domainNam
 
 	ident, err := d.Identity()
 	if err != nil {
-		return err
+		return fmt.Errorf("getting resource identity: %w", err)
 	}
 
 	if err := ident.Set("project_id", projectID); err != nil {
-		return err
+		return fmt.Errorf("setting identity project_id: %w", err)
 	}
 
 	if err := ident.Set("domain_name", domainNames[0]); err != nil {
-		return err
+		return fmt.Errorf("setting identity domain_name: %w", err)
 	}
 
 	// Preserve the task ID in the identity for backward compatibility. It may be
 	// empty when the registration was imported by domain name and the task was
 	// already archived.
 	if err := ident.Set("task_id", d.Get("task_id").(string)); err != nil {
-		return err
+		return fmt.Errorf("setting identity task_id: %w", err)
 	}
 
 	d.SetId(strings.Join(domainNames, ","))

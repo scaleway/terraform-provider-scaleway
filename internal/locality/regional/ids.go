@@ -63,24 +63,30 @@ func NewIDString(region scw.Region, id string) string {
 func ParseNestedID(regionalNestedID string) (region scw.Region, outerID, innerID string, err error) {
 	loc, innerID, outerID, err := locality.ParseLocalizedNestedID(regionalNestedID)
 	if err != nil {
-		return region, outerID, innerID, err
+		return region, outerID, innerID, fmt.Errorf("parsing localized nested id %q: %w", regionalNestedID, err)
 	}
 
 	region, err = scw.ParseRegion(loc)
+	if err != nil {
+		return region, outerID, innerID, fmt.Errorf("parsing region %q: %w", loc, err)
+	}
 
-	return region, outerID, innerID, err
+	return region, outerID, innerID, nil
 }
 
 // ParseID parses a regionalID and extracts the resource region and id.
 func ParseID(regionalID string) (region scw.Region, id string, err error) {
 	loc, id, err := locality.ParseLocalizedID(regionalID)
 	if err != nil {
-		return region, id, err
+		return region, id, fmt.Errorf("parsing localized id %q: %w", regionalID, err)
 	}
 
 	region, err = scw.ParseRegion(loc)
+	if err != nil {
+		return region, id, fmt.Errorf("parsing region %q: %w", loc, err)
+	}
 
-	return region, id, err
+	return region, id, nil
 }
 
 // ResolveID resolves a regional ID (`region/uuid`) or a bare UUID.
@@ -103,7 +109,7 @@ func ResolveID(idValue string, regionValue string, client *scw.Client) (scw.Regi
 	if regionValue != "" {
 		parsedRegion, parseErr := scw.ParseRegion(regionValue)
 		if parseErr != nil {
-			return "", "", parseErr
+			return "", "", fmt.Errorf("parsing region %q: %w", regionValue, parseErr)
 		}
 
 		return parsedRegion, idValue, nil

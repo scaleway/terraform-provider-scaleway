@@ -355,7 +355,7 @@ func (r *DatabaseBackupListResource) fetchBackupRowsForAllInstances(ctx context.
 
 	instances, err := r.rdbAPI.ListInstances(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing rdb instances: %w", err)
 	}
 
 	var rows []rdbBackupRow
@@ -398,7 +398,7 @@ func (r *DatabaseBackupListResource) fetchBackupRowsForInstance(
 
 	resp, err := r.rdbAPI.ListDatabaseBackups(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing rdb database backups: %w", err)
 	}
 
 	rows := make([]rdbBackupRow, 0, len(resp.DatabaseBackups))

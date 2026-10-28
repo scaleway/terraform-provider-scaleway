@@ -72,7 +72,7 @@ func newAPI(m any) *rdb.API {
 func newAPIWithRegion(d *schema.ResourceData, m any) (*rdb.API, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return newAPI(m), region, nil
@@ -82,7 +82,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*rdb.API, scw.Region, erro
 func NewAPIWithRegionAndID(m any, id string) (*rdb.API, scw.Region, string, error) {
 	region, ID, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return newAPI(m), region, ID, nil
@@ -166,12 +166,17 @@ func LoadBalancerDiffSuppressFunc(k, oldValue, newValue string, d *schema.Resour
 // retryRDBReadOnTransient wraps a read action to handle transient_state (HTTP 409) by
 // waiting for the instance to be ready, then retrying the action.
 func retryRDBReadOnTransient[T any](ctx context.Context, api *rdb.API, region scw.Region, instanceID string, action func() (T, error)) (T, error) {
-	return transport.RetryOnTransientStateError(
+	result, err := transport.RetryOnTransientStateError(
 		action,
 		func() (*rdb.Instance, error) {
 			return waitForRDBInstance(ctx, api, region, instanceID, defaultInstanceTimeout)
 		},
 	)
+	if err != nil {
+		return result, fmt.Errorf("retrying rdb read on transient state: %w", err)
+	}
+
+	return result, nil
 }
 
 func isTimeoutErr(err error) bool {

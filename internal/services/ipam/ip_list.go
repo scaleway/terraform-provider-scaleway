@@ -201,7 +201,7 @@ func (r *IPListResource) FetchIPs(ctx context.Context, region scw.Region, projec
 
 	response, err := r.ipamAPI.ListIPs(req, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing IPs: %w", err)
 	}
 
 	return response.IPs, nil

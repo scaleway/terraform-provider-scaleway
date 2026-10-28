@@ -330,7 +330,7 @@ func flattenEvents(events []*audittrailSDK.Event) ([]map[string]any, error) {
 
 		requestBody, err := scw.EncodeJSONObject(*event.RequestBody, scw.NoEscape)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("encoding event request body: %w", err)
 		}
 
 		flattenedEvents[i] = map[string]any{

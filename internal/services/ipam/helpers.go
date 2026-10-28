@@ -24,7 +24,7 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*ipam.API, scw.Region, err
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return ipamAPI, region, nil
@@ -36,10 +36,10 @@ func NewAPIWithRegionAndID(m any, id string) (*ipam.API, scw.Region, string, err
 
 	region, ID, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
-	return ipamAPI, region, ID, err
+	return ipamAPI, region, ID, nil
 }
 
 type GetResourcePrivateIPsOptions struct {
@@ -84,7 +84,7 @@ func GetResourcePrivateIPs(ctx context.Context, m any, region scw.Region, opts *
 	resp, err := ipamAPI.ListIPs(req, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is403(err) {
-			return nil, err
+			return nil, fmt.Errorf("error fetching IPs from IPAM: %w", err)
 		}
 
 		return nil, fmt.Errorf("error fetching IPs from IPAM: %w", err)

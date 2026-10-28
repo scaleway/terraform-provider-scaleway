@@ -43,7 +43,7 @@ func ExtractZones(ctx context.Context, model ZonalModel, m *meta.Meta) ([]scw.Zo
 
 		parsedZone, err := scw.ParseZone(zone)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parsing zone %q: %w", zone, err)
 		}
 
 		res = append(res, parsedZone)

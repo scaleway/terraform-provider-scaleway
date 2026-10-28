@@ -264,7 +264,7 @@ func (r *ClusterListResource) fetchClusters(ctx context.Context, target zonalFet
 
 	response, err := r.redisAPI.ListClusters(req, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing redis clusters: %w", err)
 	}
 
 	filtered := make([]*redisapi.Cluster, 0, len(response.Clusters))
@@ -319,7 +319,7 @@ func extractZones(ctx context.Context, model ClusterListResourceModel, m *meta.M
 
 		parsedZone, err := scw.ParseZone(zone)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parsing zone %q: %w", zone, err)
 		}
 
 		res = append(res, parsedZone)

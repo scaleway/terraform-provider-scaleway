@@ -277,7 +277,7 @@ func rdbACLExpand(data []any) ([]*rdb.ACLRuleRequest, error) {
 
 			ip, err := types.ExpandIPNet(ipRaw.(string))
 			if err != nil {
-				return res, err
+				return res, fmt.Errorf("expanding ip net: %w", err)
 			}
 
 			aclRule.IP = ip
@@ -364,7 +364,7 @@ func maintainACLDuringUpgrade(ctx context.Context, api *rdb.API, region scw.Regi
 			return nil
 		}
 
-		return err
+		return fmt.Errorf("listing instance acl rules: %w", err)
 	}
 
 	if len(res.Rules) == 0 {
@@ -372,13 +372,17 @@ func maintainACLDuringUpgrade(ctx context.Context, api *rdb.API, region scw.Regi
 	}
 
 	rules := rdbACLRulesToRequests(res.Rules)
+
 	_, err = api.SetInstanceACLRules(&rdb.SetInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: locality.ExpandID(newInstanceID),
 		Rules:      rules,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return fmt.Errorf("setting instance acl rules: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func rdbACLRulesToRequests(rules []*rdb.ACLRule) []*rdb.ACLRuleRequest {

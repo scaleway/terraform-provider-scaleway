@@ -2,6 +2,7 @@ package webhosting
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -41,7 +42,7 @@ func ResourceWebhosting() *schema.Resource {
 				// If the 'internal' tag was present and is now removed, restore it.
 				if types.SliceContainsString(oldTags, "internal") && !types.SliceContainsString(newTags, "internal") {
 					if err := diff.SetNew("tags", oldTags); err != nil {
-						return err
+						return fmt.Errorf("setting tags: %w", err)
 					}
 				}
 			}

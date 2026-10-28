@@ -36,10 +36,10 @@ func cockpitAPIWithRegion(d *schema.ResourceData, m any) (*cockpit.RegionalAPI, 
 
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting region: %w", err)
 	}
 
-	return api, region, err
+	return api, region, nil
 }
 
 func NewAPIWithRegionAndID(m any, id string) (*cockpit.RegionalAPI, scw.Region, string, error) {
@@ -47,7 +47,7 @@ func NewAPIWithRegionAndID(m any, id string) (*cockpit.RegionalAPI, scw.Region, 
 
 	region, id, err := regional.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing regional id %q: %w", id, err)
 	}
 
 	return api, region, id, nil
@@ -60,7 +60,7 @@ func waitForExporter(
 	exporterID string,
 	timeout time.Duration,
 ) (*cockpit.Exporter, error) {
-	return transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
+	exporter, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
 		return api.WaitForExporter(&cockpit.WaitForExporterRequest{
 			Region:        region,
 			ExporterID:    exporterID,
@@ -68,6 +68,11 @@ func waitForExporter(
 			RetryInterval: new(defaultCockpitRetryInterval),
 		}, scw.WithContext(ctx))
 	})
+	if err != nil {
+		return nil, fmt.Errorf("waiting for exporter: %w", err)
+	}
+
+	return exporter, nil
 }
 
 // NewAPIWithRegionAndProjectID returns a new cockpit API with region and project ID extracted from composite ID.

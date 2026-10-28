@@ -22,7 +22,7 @@ import (
 func getBindingByID(ctx context.Context, api *annotations.API, bindingID string) (*annotations.Binding, error) {
 	resp, err := api.ListBindings(&annotations.ListBindingsRequest{}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing bindings: %w", err)
 	}
 
 	for _, binding := range resp.Bindings {

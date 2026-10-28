@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -333,8 +334,11 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 			Tags:                           types.ExpandUpdatedStringsPtr(d.Get("tags")),
 			DefaultRoutePropagationEnabled: types.ExpandBoolPtr(d.Get("enable_default_route_propagation").(bool)),
 		}, scw.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("updating private network: %w", err)
+		}
 
-		return err
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(err)

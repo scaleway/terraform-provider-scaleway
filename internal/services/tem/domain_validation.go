@@ -3,6 +3,7 @@ package tem
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -68,7 +69,7 @@ func parseDomainIDForIdentity(domainIDStr string, d *schema.ResourceData, m any)
 
 	region, err = meta.ExtractRegion(d, m)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("extracting region: %w", err)
 	}
 
 	return region, domainIDStr, nil

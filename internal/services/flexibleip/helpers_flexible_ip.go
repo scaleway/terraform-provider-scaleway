@@ -2,6 +2,7 @@ package flexibleip
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,7 +24,7 @@ func fipAPIWithZone(d *schema.ResourceData, m any) (*flexibleip.API, scw.Zone, e
 
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("extracting zone: %w", err)
 	}
 
 	return api, zone, nil
@@ -35,7 +36,7 @@ func NewAPIWithZoneAndID(m any, id string) (*flexibleip.API, scw.Zone, string, e
 
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", fmt.Errorf("parsing zonal id %q: %w", id, err)
 	}
 
 	return fipAPI, zone, ID, nil
@@ -47,12 +48,17 @@ func waitFlexibleIP(ctx context.Context, api *flexibleip.API, zone scw.Zone, id 
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForFlexibleIP(&flexibleip.WaitForFlexibleIPRequest{
+	fip, err := api.WaitForFlexibleIP(&flexibleip.WaitForFlexibleIPRequest{
 		FipID:         id,
 		Zone:          zone,
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("waiting for flexible IP: %w", err)
+	}
+
+	return fip, nil
 }
 
 func findFlexibleIPByMACID(ctx context.Context, api *flexibleip.API, zone scw.Zone, macID string) (*flexibleip.FlexibleIP, error) {
@@ -60,7 +66,7 @@ func findFlexibleIPByMACID(ctx context.Context, api *flexibleip.API, zone scw.Zo
 		Zone: zone,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing flexible IPs: %w", err)
 	}
 
 	for _, fip := range listResp.FlexibleIPs {

@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -149,7 +150,7 @@ func (r *APIKeyListResource) FetchAPIKeys(ctx context.Context, data APIKeyListRe
 
 	response, err := r.iamAPI.ListAPIKeys(request, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing API keys: %w", err)
 	}
 
 	return response.APIKeys, nil

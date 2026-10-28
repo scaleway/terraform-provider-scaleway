@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -112,7 +113,7 @@ func (r *VPCListResource) FetchVPCs(ctx context.Context, region scw.Region, proj
 		return r.vpcAPI.ListVPCs(listRequest, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing vpcs: %w", err)
 	}
 
 	return response.Vpcs, nil

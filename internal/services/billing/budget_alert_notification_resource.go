@@ -443,7 +443,7 @@ func findBudgetAlertNotification(billingAPI *billing.API, meta *meta.Meta, notif
 		OrganizationID: &orgID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing budgets: %w", err)
 	}
 
 	for _, budget := range listResp.Budgets {

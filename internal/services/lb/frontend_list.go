@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -95,7 +96,7 @@ func (r *FrontendListResource) FetchFrontends(ctx context.Context, target fronte
 			return nil, nil
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("listing frontends: %w", err)
 	}
 
 	return response.Frontends, nil

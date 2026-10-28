@@ -208,8 +208,11 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		var err error
 
 		key, err = api.CreateKey(createReq)
+		if err != nil {
+			return fmt.Errorf("creating key: %w", err)
+		}
 
-		return err
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -298,8 +301,11 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
 		_, err := client.UpdateKey(updateReq)
+		if err != nil {
+			return fmt.Errorf("updating key: %w", err)
+		}
 
-		return err
+		return nil
 	})
 	if err != nil {
 		return diag.FromErr(err)

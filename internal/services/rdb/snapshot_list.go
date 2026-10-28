@@ -356,7 +356,7 @@ func (r *SnapshotListResource) fetchSnapshotRowsForAllInstances(ctx context.Cont
 
 	instances, err := r.rdbAPI.ListInstances(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing rdb instances: %w", err)
 	}
 
 	var rows []rdbSnapshotRow
@@ -399,7 +399,7 @@ func (r *SnapshotListResource) fetchSnapshotRowsForInstance(
 
 	resp, err := r.rdbAPI.ListSnapshots(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing rdb snapshots: %w", err)
 	}
 
 	rows := make([]rdbSnapshotRow, 0, len(resp.Snapshots))

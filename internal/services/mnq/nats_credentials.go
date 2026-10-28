@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -99,8 +100,11 @@ func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData,
 				Region:            region,
 				NatsCredentialsID: id,
 			}, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("getting nats credentials: %w", err)
+			}
 
-			return err
+			return nil
 		})
 	}
 
