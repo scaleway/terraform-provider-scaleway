@@ -14,8 +14,8 @@ func TestEndpointHasOpenSearchAPI(t *testing.T) {
 
 	tests := []struct {
 		name string
-		ep   *searchdbapi.Endpoint
 		want bool
+		ep   *searchdbapi.Endpoint
 	}{
 		{name: "nil", ep: nil, want: false},
 		{
