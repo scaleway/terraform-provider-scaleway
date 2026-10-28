@@ -448,16 +448,19 @@ func (r *WebhostingResource) Read(
 		return
 	}
 
-	resourceID := state.ID.ValueString()
+	var (
+		id     string
+		region scw.Region
+		err    error
+	)
+
 	if identityAvailable {
-		resourceID = identity.ID.ValueString()
-	}
-
-	region, id, err := regional.ParseID(resourceID)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse webhosting ID", err.Error())
-
-		return
+		region, id = identityfw.ResolveRegionalIdentity(identity)
+	} else {
+		region, id, err = regional.ParseID(state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse webhosting ID during READ", err.Error())
+		}
 	}
 
 	hostingResponse, err := waitForHosting(ctx, r.api, region, id, defaultHostingTimeout)
@@ -483,22 +486,34 @@ func (r *WebhostingResource) Update(
 	ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse,
 ) {
 	var (
-		plan  webhostingResourceModel
-		state webhostingResourceModel
+		plan     webhostingResourceModel
+		state    webhostingResourceModel
+		identity webhostingResourceIdentityModel
 	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	region, id, err := regional.ParseID(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse webhosting ID", err.Error())
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
 
-		return
+	var (
+		id     string
+		region scw.Region
+		err    error
+	)
+
+	if identityAvailable {
+		region, id = identityfw.ResolveRegionalIdentity(identity)
+	} else {
+		region, id, err = regional.ParseID(state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse webhosting ID during UPDATE", err.Error())
+		}
 	}
 
 	res, err := waitForHosting(ctx, r.api, region, id, defaultHostingTimeout)
@@ -572,19 +587,33 @@ func (r *WebhostingResource) Update(
 func (r *WebhostingResource) Delete(
 	ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse,
 ) {
-	var state webhostingResourceModel
+	var (
+		state    webhostingResourceModel
+		identity webhostingResourceIdentityModel
+	)
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	region, id, err := regional.ParseID(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse webhosting ID", err.Error())
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
 
-		return
+	var (
+		id     string
+		region scw.Region
+		err    error
+	)
+
+	if identityAvailable {
+		region, id = identityfw.ResolveRegionalIdentity(identity)
+	} else {
+		region, id, err = regional.ParseID(state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse webhosting ID during DELETE", err.Error())
+		}
 	}
 
 	_, err = waitForHosting(ctx, r.api, region, id, defaultHostingTimeout)
