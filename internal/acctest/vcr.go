@@ -33,6 +33,18 @@ var QueryMatcherIgnore = []string{
 	"access_keys",
 }
 
+var HeaderMatcherIgnore = []string{
+	"Amz-Sdk-Invocation-Id", // unique per request
+	"Amz-Sdk-Request",       // AWS attempt counter (may carry a per-request ttl suffix)
+	"Authorization",         // stripped from cassettes before save
+	"User-Agent",            // changes on SDK updates
+	"X-Amz-Checksum-Crc32",  // payload checksum; absent from older cassettes (SDK version drift)
+	"X-Amz-Content-Sha256",  // payload hash; varies when body matcher forgives generated content
+	"X-Amz-Copy-Source",     // embeds generated bucket/object names
+	"X-Amz-Date",            // per-request timestamp
+	"X-Auth-Token",          // scw auth token
+}
+
 // BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes
 var BodyMatcherIgnore = []string{
 	"organization", // like organization_id but deprecated
@@ -217,10 +229,27 @@ func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
 		}
 	}
 
-	return request.Method == cassette.Method &&
-		compareFieldsStrings(request.URL.Path, cassetteURL.Path) &&
-		compareURLQueries(requestURLValues, cassetteURLValues) &&
-		cassetteBodyMatcher(request, cassette)
+	if request.Method != cassette.Method {
+		return false
+	}
+
+	if !compareFieldsStrings(request.URL.Path, cassetteURL.Path) {
+		return false
+	}
+
+	if !compareURLQueries(requestURLValues, cassetteURLValues) {
+		return false
+	}
+
+	if !compareHeaders(request.Header, cassette.Headers) {
+		return false
+	}
+
+	if !cassetteBodyMatcher(request, cassette) {
+		return false
+	}
+
+	return true
 }
 
 // compareURLQueries compares query maps, fuzzing generated name prefixes in values.
