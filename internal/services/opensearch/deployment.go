@@ -422,6 +422,10 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		// Never delete public endpoints when managing private_network: the API ignores
 		// (or never completes) those deletes, which would hang waitForEndpointsDeleted.
 		// Only reconcile private endpoints relative to the desired private_network_id.
+		//
+		// Creating with a private network leaves a Dashboards-only public endpoint
+		// (no api-opensearch). Removing the PN must CreateEndpoint(public) so the
+		// public OpenSearch API comes back — a dashboard-only public is not enough.
 		var deletedEndpointIDs []string
 
 		hasDesiredEndpoint := false
@@ -432,7 +436,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 
 			if endpoint.Public != nil && endpoint.PrivateNetwork == nil {
-				if !desiredPrivate {
+				if !desiredPrivate && EndpointHasOpenSearchAPI(endpoint) {
 					hasDesiredEndpoint = true
 				}
 
