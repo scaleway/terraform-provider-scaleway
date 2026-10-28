@@ -2,4 +2,4 @@ The [`scaleway_account_project`](https://registry.terraform.io/providers/scalewa
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
-If the project still contains resources at destroy time, the provider deletes the project along with all the resources it contains, including resources not managed by Terraform. Deleting a project is permanent and cannot be undone.
+By default, destroying a project that still contains resources fails. Set `delete_with_resources` to `true` to delete the project along with all the resources it contains, including resources not managed by Terraform. Deleting a project is permanent and cannot be undone.

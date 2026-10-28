@@ -70,6 +70,12 @@ func projectSchema() map[string]*schema.Schema {
 			Computed:         true,
 			ValidateDiagFunc: verify.IsUUID(),
 		},
+		"delete_with_resources": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, deleting the project also deletes all the resources it contains. Defaults to false.",
+		},
 	}
 }
 
@@ -164,8 +170,8 @@ func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m
 	accountAPI := NewProjectAPI(m)
 
 	// Try a plain delete first. If the project still contains resources the
-	// API answers 412 (resource_still_in_use) and we fall back to deleting it
-	// with its resources.
+	// API answers 412 (resource_still_in_use); when delete_with_resources is
+	// set we fall back to deleting it with its resources.
 	err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		err := accountAPI.DeleteProject(&accountSDK.ProjectAPIDeleteProjectRequest{
 			ProjectID: d.Id(),
@@ -181,7 +187,7 @@ func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m
 		return nil
 	})
 
-	if isProjectStillInUseError(err) {
+	if isProjectStillInUseError(err) && d.Get("delete_with_resources").(bool) {
 		err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 			_, err := accountAPI.DeleteProjectWithResources(&accountSDK.ProjectAPIDeleteProjectWithResourcesRequest{
 				ProjectID:   d.Id(),

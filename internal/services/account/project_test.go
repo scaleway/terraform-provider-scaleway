@@ -49,9 +49,10 @@ func TestAccProject_Basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "scaleway_account_project.main",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "scaleway_account_project.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_with_resources"},
 			},
 		},
 	})
@@ -86,9 +87,10 @@ func TestAccProject_NoUpdate(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "scaleway_account_project.main",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "scaleway_account_project.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_with_resources"},
 			},
 		},
 	})
