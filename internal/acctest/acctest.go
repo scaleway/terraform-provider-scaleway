@@ -14,6 +14,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	"github.com/hashicorp/terraform-plugin-testing/echoprovider"
 	"github.com/scaleway/scaleway-sdk-go/vcr"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -55,8 +56,11 @@ var foldersUsingVCRv4 = []string{
 }
 
 func init() {
-	// Cassettes store redacted secrets; ignore them when matching VCRv4 requests.
-	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password")
+	// Cassettes store redacted secrets, and request bodies may carry values
+	// derived from anonymized responses (e.g. a secret version whose data is
+	// an IAM API key secret key); ignore these fields when matching VCRv4
+	// requests.
+	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password", "data")
 }
 
 func FolderUsesVCRv4(fullFolderPath string) bool {
@@ -181,6 +185,7 @@ func NewTestTools(t *testing.T) *TestTools {
 
 				return muxServer.ProviderServer(), nil
 			},
+			"echo": echoprovider.NewProviderServer(),
 		},
 		Cleanup: cleanup,
 	}

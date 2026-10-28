@@ -49,6 +49,31 @@ resource "scaleway_iam_api_key" "main" {
 }
 ```
 
+### With secret (secret_key stored in Secret Manager)
+
+```terraform
+resource "scaleway_secret" "main" {
+  name = "My secret"
+}
+
+resource "scaleway_iam_application" "ci_cd" {
+  name = "My application"
+}
+
+resource "scaleway_iam_api_key" "main" {
+  application_id = scaleway_iam_application.main.id
+  secret_id      = scaleway_secret.main.id
+}
+```
+
+The `secret_key` is then not stored in the Terraform state and can be retrieved with the `scaleway_secret_version` ephemeral resource:
+
+```terraform
+ephemeral "scaleway_secret_version" "api_key_secret" {
+  secret_id = scaleway_secret.main.id
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -60,6 +85,7 @@ The following arguments are supported:
 - `expires_at` - (Optional) The date and time of the expiration of the IAM API key. Please note that in case of any changes,
   the resource will be recreated.
 - `default_project_id` - (Optional) The default Project ID to use with Object Storage.
+- `secret_id` - (Optional) ID of a [Secret Manager](https://www.scaleway.com/en/secret-manager/) secret. If set, the `secret_key` of the API key is stored as a new version of this secret and is not stored in the Terraform state. The secret itself is not managed by this resource. Can be a UUID or a regional ID (`region/UUID`).
 
 ## Attributes Reference
 
@@ -70,7 +96,7 @@ In addition to all arguments above, the following attributes are exported:
 - `updated_at` - The date and time of the last update of the IAM API key.
 - `editable` - Whether the IAM API key is editable.
 - `access_key` - The access key of the IAM API key.
-- `secret_key`: The secret Key of the IAM API key.
+- `secret_key`: The secret Key of the IAM API key. Not set when `secret_id` is specified, in which case the secret key is stored as a new version of the referenced secret and can be retrieved with the `scaleway_secret_version` ephemeral resource.
 - `creation_ip` - The IP Address of the device which created the API key.
 - `srn` - The Scaleway Resource Name (SRN) of the API key.
 
