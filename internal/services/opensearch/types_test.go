@@ -10,42 +10,28 @@ import (
 func TestEndpointHasOpenSearchAPI(t *testing.T) {
 	t.Parallel()
 
-	public := &searchdbapi.EndpointPublicDetails{}
-
-	tests := []struct {
-		name string
-		want bool
-		ep   *searchdbapi.Endpoint
-	}{
-		{name: "nil", ep: nil, want: false},
-		{
-			name: "dashboard only",
-			ep: &searchdbapi.Endpoint{
-				Public:   public,
-				Services: []*searchdbapi.EndpointService{{Name: "ui-dashboard", Port: 5601}},
-			},
-			want: false,
-		},
-		{
-			name: "public with api",
-			ep: &searchdbapi.Endpoint{
-				Public: public,
-				Services: []*searchdbapi.EndpointService{
-					{Name: "ui-dashboard", Port: 5601},
-					{Name: "api-opensearch", Port: 9200},
-				},
-			},
-			want: true,
-		},
+	if opensearch.EndpointHasOpenSearchAPI(nil) {
+		t.Fatal("nil endpoint: got true, want false")
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+	public := &searchdbapi.EndpointPublicDetails{}
 
-			if got := opensearch.EndpointHasOpenSearchAPI(tt.ep); got != tt.want {
-				t.Fatalf("EndpointHasOpenSearchAPI() = %v, want %v", got, tt.want)
-			}
-		})
+	dashboardOnly := &searchdbapi.Endpoint{
+		Public:   public,
+		Services: []*searchdbapi.EndpointService{{Name: "ui-dashboard", Port: 5601}},
+	}
+	if opensearch.EndpointHasOpenSearchAPI(dashboardOnly) {
+		t.Fatal("dashboard only: got true, want false")
+	}
+
+	withAPI := &searchdbapi.Endpoint{
+		Public: public,
+		Services: []*searchdbapi.EndpointService{
+			{Name: "ui-dashboard", Port: 5601},
+			{Name: "api-opensearch", Port: 9200},
+		},
+	}
+	if !opensearch.EndpointHasOpenSearchAPI(withAPI) {
+		t.Fatal("public with api: got false, want true")
 	}
 }
