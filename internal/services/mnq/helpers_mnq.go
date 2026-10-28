@@ -253,17 +253,7 @@ func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute st
 					scwARN = queueID
 				}
 
-				redrivePolicy := map[string]any{
-					"deadLetterTargetArn": scwARN,
-					"maxReceiveCount":     maxReceiveCount,
-				}
-
-				jsonData, err := json.Marshal(redrivePolicy)
-				if err != nil {
-					return fmt.Errorf("failed to marshal redrive policy: %w", err)
-				}
-
-				s = string(jsonData)
+				s = fmt.Sprintf(`{"deadLetterTargetArn":%q,"maxReceiveCount":%d}`, scwARN, maxReceiveCount)
 			}
 		} else {
 			return fmt.Errorf("unsupported list type for %s", resourcePath)
