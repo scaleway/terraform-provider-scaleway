@@ -163,6 +163,9 @@ func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m
 func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
 
+	// Try a plain delete first. If the project still contains resources the
+	// API answers 412 (resource_still_in_use) and we fall back to deleting it
+	// with its resources.
 	err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		err := accountAPI.DeleteProject(&accountSDK.ProjectAPIDeleteProjectRequest{
 			ProjectID: d.Id(),
@@ -177,7 +180,31 @@ func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m
 
 		return nil
 	})
-	if err != nil {
+
+	if isProjectStillInUseError(err) {
+		err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+			_, err := accountAPI.DeleteProjectWithResources(&accountSDK.ProjectAPIDeleteProjectWithResourcesRequest{
+				ProjectID:   d.Id(),
+				ProjectName: d.Get("name").(string),
+			}, scw.WithContext(ctx))
+			if err != nil && !httperrors.Is404(err) {
+				if isProjectNotUsableError(err) {
+					return retry.RetryableError(err)
+				}
+
+				return retry.NonRetryableError(err)
+			}
+
+			return nil
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if err := waitForProjectDeleted(ctx, accountAPI, d.Id(), d.Timeout(schema.TimeoutDelete)); err != nil {
+			return diag.FromErr(err)
+		}
+	} else if err != nil {
 		return diag.FromErr(err)
 	}
 
