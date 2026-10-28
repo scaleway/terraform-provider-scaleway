@@ -2,7 +2,7 @@ package acctest
 
 import (
 	"encoding/base64"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"encoding/xml"
 	"net/http"
 	"os"
@@ -14,6 +14,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	"github.com/hashicorp/terraform-plugin-testing/echoprovider"
 	"github.com/scaleway/scaleway-sdk-go/vcr"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -29,6 +30,12 @@ type TestTools struct {
 	Meta              *meta.Meta
 	ProviderFactories map[string]func() (tfprotov6.ProviderServer, error)
 	Cleanup           func()
+}
+
+func jsonValid(b []byte) bool {
+	return jsontext.Value(b).IsValid(
+		jsontext.AllowDuplicateNames(true),
+	)
 }
 
 var foldersUsingVCRv4 = []string{
@@ -49,8 +56,11 @@ var foldersUsingVCRv4 = []string{
 }
 
 func init() {
-	// Cassettes store redacted secrets; ignore them when matching VCRv4 requests.
-	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password")
+	// Cassettes store redacted secrets, and request bodies may carry values
+	// derived from anonymized responses (e.g. a secret version whose data is
+	// an IAM API key secret key); ignore these fields when matching VCRv4
+	// requests.
+	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password", "data")
 }
 
 func FolderUsesVCRv4(fullFolderPath string) bool {
@@ -68,7 +78,7 @@ func s3Encoder(i *cassette.Interaction) error {
 
 	if i.Request.Body != "" && i.Request.Headers.Get("Content-Type") == "application/octet-stream" {
 		requestBody := []byte(i.Request.Body)
-		if !json.Valid(requestBody) {
+		if !jsonValid(requestBody) {
 			err := xml.Unmarshal(requestBody, new(any))
 			if err != nil {
 				i.Request.Body = base64.StdEncoding.EncodeToString(requestBody)
@@ -78,7 +88,7 @@ func s3Encoder(i *cassette.Interaction) error {
 
 	if i.Response.Body != "" && i.Response.Headers.Get("Content-Type") == "binary/octet-stream" {
 		responseBody := []byte(i.Response.Body)
-		if !json.Valid(responseBody) {
+		if !jsonValid(responseBody) {
 			err := xml.Unmarshal(responseBody, new(any))
 			if err != nil {
 				i.Response.Body = base64.StdEncoding.EncodeToString(responseBody)
@@ -175,6 +185,7 @@ func NewTestTools(t *testing.T) *TestTools {
 
 				return muxServer.ProviderServer(), nil
 			},
+			"echo": echoprovider.NewProviderServer(),
 		},
 		Cleanup: cleanup,
 	}

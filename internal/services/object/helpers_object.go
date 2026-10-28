@@ -90,6 +90,11 @@ func NewS3ClientFromMeta(ctx context.Context, meta *meta.Meta, region string) (*
 	secretKey, _ := meta.ScwClient().GetSecretKey()
 	s3UsePathStyle := meta.S3UsePathStyle()
 
+	if region == "" {
+		defaultRegion, _ := meta.ScwClient().GetDefaultRegion()
+		region = defaultRegion.String()
+	}
+
 	s3Endpoint, err := retrieveS3Endpoint(ctx, meta, nil, nil, region)
 	if err != nil {
 		return nil, err
@@ -100,11 +105,6 @@ func NewS3ClientFromMeta(ctx context.Context, meta *meta.Meta, region string) (*
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 
-	if region == "" {
-		defaultRegion, _ := meta.ScwClient().GetDefaultRegion()
-		region = defaultRegion.String()
-	}
-
 	return newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.HTTPClient())
 }
 
@@ -112,6 +112,11 @@ func NewS3ClientFromMetaWithProjectID(ctx context.Context, meta *meta.Meta, regi
 	accessKey, _ := meta.ScwClient().GetAccessKey()
 	secretKey, _ := meta.ScwClient().GetSecretKey()
 	s3UsePathStyle := meta.S3UsePathStyle()
+
+	if region == "" {
+		defaultRegion, _ := meta.ScwClient().GetDefaultRegion()
+		region = defaultRegion.String()
+	}
 
 	s3Endpoint, err := retrieveS3Endpoint(ctx, meta, nil, nil, region)
 	if err != nil {
@@ -124,11 +129,6 @@ func NewS3ClientFromMetaWithProjectID(ctx context.Context, meta *meta.Meta, regi
 
 	if projectID != "" {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
-	}
-
-	if region == "" {
-		defaultRegion, _ := meta.ScwClient().GetDefaultRegion()
-		region = defaultRegion.String()
 	}
 
 	return newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.HTTPClient())
@@ -786,7 +786,7 @@ func transitionHash(v any) int {
 		buf.WriteString(v.(string) + "-")
 	}
 
-	return types.StringHashcode(buf.String())
+	return schema.HashString(buf.String())
 }
 
 func noncurrentVersionTransitionHash(v any) int {
@@ -810,7 +810,7 @@ func noncurrentVersionTransitionHash(v any) int {
 		buf.WriteString(v.(string) + "-")
 	}
 
-	return types.StringHashcode(buf.String())
+	return schema.HashString(buf.String())
 }
 
 const (

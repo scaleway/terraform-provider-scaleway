@@ -122,21 +122,53 @@ func CheckResourceAttrUUID(name string, key string) resource.TestCheckFunc {
 
 var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}`)
 
+// Returns the value of the given attribute of the given resource in the state.
+func GetResourceAttributeValue(s *terraform.State, name, attribute string) (string, error) {
+	rs, ok := s.RootModule().Resources[name]
+	if !ok {
+		return "", fmt.Errorf("given resource %s not found", name)
+	}
+
+	is := rs.Primary
+	if is == nil {
+		return "", fmt.Errorf("resource %s has no primary instance", name)
+	}
+
+	value, ok := is.Attributes[attribute]
+	if !ok {
+		return "", fmt.Errorf("given attribute %s does not exist", attribute)
+	}
+
+	return value, nil
+}
+
 func CheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", name)
+		value, err := GetResourceAttributeValue(s, name, key)
+		if err != nil {
+			return err
 		}
 
-		value, ok := rs.Primary.Attributes[key]
-		if !ok {
-			return fmt.Errorf("key not found: %s", key)
-		}
-
-		err := test(value)
+		err = test(value)
 		if err != nil {
 			return fmt.Errorf("test for %s %s did not pass test: %w", name, key, err)
+		}
+
+		return nil
+	}
+}
+
+// CheckAttributeNotInState asserts that the given attribute of the given
+// resource is not persisted in the state.
+func CheckAttributeNotInState(resource, attribute string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[resource]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resource)
+		}
+
+		if _, exists := rs.Primary.Attributes[attribute]; exists {
+			return fmt.Errorf("%s should not be stored in the state", attribute)
 		}
 
 		return nil
