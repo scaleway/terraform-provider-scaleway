@@ -65,6 +65,7 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 				`, description, expiresAt),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("access_key"), knownvalue.StringRegexp(accessKeyPattern)),
+					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("srn"), knownvalue.StringRegexp(regexp.MustCompile(`^srn://iam\..+/api-keys/.+$`))),
 					statecheck.ExpectKnownValue("echo.test_api_key", dataPath.AtMapKey("description"), knownvalue.StringExact(description)),
 					statecheck.CompareValuePairs(
 						"echo.test_api_key", dataPath.AtMapKey("application_id"),
