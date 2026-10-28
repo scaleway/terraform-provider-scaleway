@@ -680,7 +680,7 @@ func isSecurityGroupDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	}
 }
 
-func TestAccSecurityGroup_EnableProjectDefault(t *testing.T) {
+func TestAccSecurityGroup_EnableDefaultSecurity(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
