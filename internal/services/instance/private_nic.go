@@ -57,7 +57,7 @@ func privateNicSchema() map[string]*schema.Schema {
 		"server_id": {
 			Type:        schema.TypeString,
 			Description: "The server ID",
-			Required:    true,
+			Optional:    true,
 			ForceNew:    true,
 		},
 		"private_network_id": {
@@ -65,6 +65,12 @@ func privateNicSchema() map[string]*schema.Schema {
 			Description:      "The private network ID",
 			Required:         true,
 			ForceNew:         true,
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"security_group_id": {
+			Type:             schema.TypeString,
+			Description:      "The ID of the security group associated with this interface",
+			Optional:         true,
 			DiffSuppressFunc: dsf.Locality,
 		},
 		"mac_address": {
@@ -124,6 +130,11 @@ func privateNicSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The Scaleway Resource Name (SRN) of the private network interface",
 		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Current status of the private network interface",
+		},
 		"zone":       zonal.Schema(),
 		"project_id": account.ProjectIDSchema(),
 	}
@@ -135,23 +146,31 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	server, err := waitForServer(ctx, instanceAPIV1, zone, locality.ExpandID(d.Get("server_id")), d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	projectID := d.Get("project_id")
-	if projectID == nil || projectID == "" {
-		projectID = server.Project
-	}
+	projectID := d.Get("project_id").(string)
 
 	createPrivateNICRequest := &instance.CreatePrivateNetworkInterfaceRequest{
 		Zone:             zone,
-		ServerID:         new(zonal.ExpandID(d.Get("server_id").(string)).ID),
 		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
 		Tags:             types.ExpandStrings(d.Get("tags")),
 		IPIDs:            locality.ExpandIDs(d.Get("ipam_ip_ids")),
-		ProjectID:        projectID.(string),
+		ProjectID:        projectID,
+	}
+
+	if serverID := d.Get("server_id").(string); serverID != "" {
+		createPrivateNICRequest.ServerID = new(zonal.ExpandID(serverID).ID)
+
+		server, err := waitForServer(ctx, instanceAPIV1, zone, locality.ExpandID(serverID), d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if projectID == "" {
+			createPrivateNICRequest.ProjectID = server.Project
+		}
+	}
+
+	if sgID := d.Get("security_group_id").(string); sgID != "" {
+		createPrivateNICRequest.SecurityGroupID = new(zonal.ExpandID(sgID).ID)
 	}
 
 	instanceAPI, zone, err := newAPIV2WithZone(d, m)
@@ -191,14 +210,26 @@ func setPrivateNICState(ctx context.Context, d *schema.ResourceData, privateNIC 
 	}
 
 	_ = d.Set("zone", zone)
-	_ = d.Set("server_id", zonal.NewID(zone, privateNIC.ServerID).String())
 	_ = d.Set("private_network_id", regional.NewIDString(region, privateNIC.PrivateNetworkID))
 	_ = d.Set("mac_address", privateNIC.MacAddress)
 	_ = d.Set("project_id", privateNIC.ProjectID)
 	_ = d.Set("srn", privateNIC.Srn)
+	_ = d.Set("status", privateNIC.Status)
 
 	if len(privateNIC.Tags) > 0 {
 		_ = d.Set("tags", privateNIC.Tags)
+	}
+
+	if privateNIC.ServerID != "" {
+		_ = d.Set("server_id", zonal.NewIDString(zone, privateNIC.ServerID))
+	} else {
+		_ = d.Set("server_id", "")
+	}
+
+	if privateNIC.SecurityGroupID != "" {
+		_ = d.Set("security_group_id", zonal.NewIDString(zone, privateNIC.SecurityGroupID))
+	} else {
+		_ = d.Set("security_group_id", "")
 	}
 
 	// Get private NIC's private IPs if possible
@@ -291,6 +322,11 @@ func ResourceInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceDat
 		needsUpdate = true
 	}
 
+	if d.HasChange("security_group_id") {
+		updateReq.SecurityGroupID = new(zonal.ExpandID(d.Get("security_group_id")).ID)
+		needsUpdate = true
+	}
+
 	if needsUpdate {
 		_, err := instanceAPI.UpdatePrivateNetworkInterface(
 			updateReq,
@@ -324,11 +360,19 @@ func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	_, err = instanceAPI.DetachServerPrivateNetworkInterface(&instance.DetachServerPrivateNetworkInterfaceRequest{
-		PrivateNetworkInterfaceID: privateNICID,
-		ServerID:                  serverID,
-		Zone:                      zone,
-	}, scw.WithContext(ctx))
+	if serverID != "" {
+		_, err = instanceAPI.DetachServerPrivateNetworkInterface(&instance.DetachServerPrivateNetworkInterfaceRequest{
+			PrivateNetworkInterfaceID: privateNICID,
+			ServerID:                  serverID,
+			Zone:                      zone,
+		}, scw.WithContext(ctx))
+	} else {
+		err = instanceAPI.DeletePrivateNetworkInterface(&instance.DeletePrivateNetworkInterfaceRequest{
+			PrivateNetworkInterfaceID: privateNICID,
+			Zone:                      zone,
+		}, scw.WithContext(ctx))
+	}
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			return nil

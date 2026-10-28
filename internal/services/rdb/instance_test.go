@@ -105,6 +105,57 @@ func TestAccInstance_Basic(t *testing.T) {
 	})
 }
 
+func TestAccInstance_Clone(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "source" {
+						name           = "test-rdb-clone-source"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "my_initial_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "rdb-clone-source"]
+					}
+
+					resource "scaleway_rdb_instance" "clone" {
+						name           = "test-rdb-clone"
+						node_type      = "db-dev-m"
+						clone_from     = scaleway_rdb_instance.source.id
+						disable_backup = true
+						tags           = ["terraform-test", "rdb-clone"]
+
+						load_balancer {}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.source"),
+					isInstancePresent(tt, "scaleway_rdb_instance.clone"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "name", "test-rdb-clone"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "node_type", "db-dev-m"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "engine", latestEngineVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "tags.1", "rdb-clone"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.clone", "load_balancer.0.endpoint_id"),
+					acctest.CheckResourceAttrUUID("scaleway_rdb_instance.clone", "id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccInstance_WithCluster(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

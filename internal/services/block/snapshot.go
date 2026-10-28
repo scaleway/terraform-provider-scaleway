@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -44,15 +46,16 @@ type SnapshotResource struct {
 }
 
 type snapshotResourceModel struct {
-	ID        types.String `tfsdk:"id"`
-	Name      types.String `tfsdk:"name"`
-	VolumeID  types.String `tfsdk:"volume_id"`
-	Tags      types.List   `tfsdk:"tags"`
-	Import    types.List   `tfsdk:"import"`
-	Export    types.List   `tfsdk:"export"`
-	Srn       types.String `tfsdk:"srn"`
-	Zone      types.String `tfsdk:"zone"`
-	ProjectID types.String `tfsdk:"project_id"`
+	ID        types.String   `tfsdk:"id"`
+	Name      types.String   `tfsdk:"name"`
+	VolumeID  types.String   `tfsdk:"volume_id"`
+	Tags      types.List     `tfsdk:"tags"`
+	Import    types.List     `tfsdk:"import"`
+	Export    types.List     `tfsdk:"export"`
+	Srn       types.String   `tfsdk:"srn"`
+	Zone      types.String   `tfsdk:"zone"`
+	ProjectID types.String   `tfsdk:"project_id"`
+	Timeouts  timeouts.Value `tfsdk:"timeouts"`
 }
 
 type snapshotResourceIdentityModel = identityfw.ZonalIdentity
@@ -101,7 +104,7 @@ func (r *SnapshotResource) Metadata(_ context.Context, req resource.MetadataRequ
 	resp.TypeName = req.ProviderTypeName + "_block_snapshot"
 }
 
-func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *SnapshotResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Scaleway Block Snapshot",
 		Attributes: map[string]schema.Attribute{
@@ -161,6 +164,7 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 					verify.IsStringUUID(),
 				},
 			},
+			"timeouts": timeouts.AttributesAll(ctx),
 		},
 		Blocks: map[string]schema.Block{
 			"import": schema.ListNestedBlock{
@@ -306,7 +310,10 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 		}
 	}
 
-	snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, snapshot.ID, defaultBlockTimeout)
+	timeout, diags := plan.Timeouts.Create(ctx, defaultBlockTimeout)
+	resp.Diagnostics = append(resp.Diagnostics, diags...)
+
+	snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, snapshot.ID, timeout)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed waiting for block snapshot", err.Error())
 
@@ -338,6 +345,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 	state.VolumeID = plan.VolumeID
 	state.Import = plan.Import
 	state.Export = plan.Export
+	state.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	resp.Diagnostics.Append(
@@ -380,7 +388,10 @@ func (r *SnapshotResource) Read(
 		return
 	}
 
-	snapshot, err := waitForBlockSnapshot(ctx, r.api, zone, id, defaultBlockTimeout)
+	timeout, diags := state.Timeouts.Read(ctx, defaultBlockTimeout)
+	resp.Diagnostics = append(resp.Diagnostics, diags...)
+
+	snapshot, err := waitForBlockSnapshot(ctx, r.api, zone, id, timeout)
 	if err != nil {
 		if httperrors.Is404(err) {
 			resp.State.RemoveResource(ctx)
@@ -410,6 +421,7 @@ func (r *SnapshotResource) Read(
 
 	newState.Import = state.Import
 	newState.Export = state.Export
+	newState.Timeouts = state.Timeouts
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(
@@ -437,7 +449,10 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	snapshot, err := waitForBlockSnapshot(ctx, r.api, zone, id, defaultBlockTimeout)
+	timeout, diags := plan.Timeouts.Read(ctx, defaultBlockTimeout)
+	resp.Diagnostics = append(resp.Diagnostics, diags...)
+
+	snapshot, err := waitForBlockSnapshot(ctx, r.api, zone, id, timeout)
 	if err != nil {
 		if httperrors.Is404(err) {
 			resp.State.RemoveResource(ctx)
@@ -502,7 +517,10 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 		}
 	}
 
-	snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, id, defaultBlockTimeout)
+	timeout, diags = plan.Timeouts.Update(ctx, defaultBlockTimeout)
+	resp.Diagnostics = append(resp.Diagnostics, diags...)
+
+	snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, id, timeout)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to read block snapshot after update", err.Error())
 
@@ -513,6 +531,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 	newState.VolumeID = plan.VolumeID
 	newState.Import = plan.Import
 	newState.Export = plan.Export
+	newState.Timeouts = plan.Timeouts
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetZonalIdentity(snapshot.Zone, snapshot.ID))...)
@@ -533,7 +552,10 @@ func (r *SnapshotResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	_, err = waitForBlockSnapshotToBeAvailable(ctx, r.api, zone, id, defaultBlockTimeout)
+	timeout, diags := state.Timeouts.Read(ctx, defaultBlockTimeout)
+	resp.Diagnostics = append(resp.Diagnostics, diags...)
+
+	_, err = waitForBlockSnapshotToBeAvailable(ctx, r.api, zone, id, timeout)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed waiting for block snapshot before delete", err.Error())
 
@@ -554,7 +576,10 @@ func (r *SnapshotResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	_, err = waitForBlockSnapshot(ctx, r.api, zone, id, defaultBlockTimeout)
+	timeout, diags = state.Timeouts.Delete(ctx, defaultBlockTimeout)
+	resp.Diagnostics = append(resp.Diagnostics, diags...)
+
+	_, err = waitForBlockSnapshot(ctx, r.api, zone, id, timeout)
 	if err != nil && !httperrors.Is404(err) {
 		resp.Diagnostics.AddError("Failed waiting for block snapshot deletion", err.Error())
 	}
@@ -575,6 +600,12 @@ func flattenBlockSnapshot(ctx context.Context, snapshot *block.Snapshot, referen
 		ProjectID: types.StringValue(snapshot.ProjectID),
 		Zone:      types.StringValue(snapshot.Zone.String()),
 		Srn:       types.StringValue(snapshot.Srn),
+		Timeouts: timeouts.Value{Object: types.ObjectNull(map[string]attr.Type{
+			"create": types.StringType,
+			"delete": types.StringType,
+			"read":   types.StringType,
+			"update": types.StringType,
+		})},
 	}
 
 	tags, tagsDiags := providertypes.FlattenStringList(ctx, "tags", snapshot.Tags, reference)

@@ -19,6 +19,45 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+// customizeDiffCloneFromInherited marks clone-inherited attributes as computed on create when
+// omitted, so CloneInstance can keep the source values without an inconsistent-result error
+// (schema defaults would otherwise force false/lssd into the plan).
+func customizeDiffCloneFromInherited(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	if _, ok := diff.GetOk("clone_from"); !ok {
+		return nil
+	}
+
+	if diff.Id() != "" {
+		return nil
+	}
+
+	if types.GetBool(diff, "is_ha_cluster") == nil {
+		if err := diff.SetNewComputed("is_ha_cluster"); err != nil {
+			return err
+		}
+	}
+
+	if types.GetBool(diff, "disable_backup") == nil {
+		if err := diff.SetNewComputed("disable_backup"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// diffSuppressCloneInheritedBool suppresses diffs for bool attrs inherited by clone_from when
+// the user omitted them (Default would otherwise fight the inherited API value on every plan).
+func diffSuppressCloneInheritedBool(attr string) schema.SchemaDiffSuppressFunc {
+	return func(_, _, _ string, d *schema.ResourceData) bool {
+		if _, ok := d.GetOk("clone_from"); !ok {
+			return false
+		}
+
+		return types.GetBool(d, attr) == nil
+	}
+}
+
 const (
 	defaultInstanceTimeout       = 30 * time.Minute
 	defaultInstanceUpdateTimeout = 60 * time.Minute
