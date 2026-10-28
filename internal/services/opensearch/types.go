@@ -72,7 +72,13 @@ func EndpointHasOpenSearchAPI(endpoint *searchdbapi.Endpoint) bool {
 	}
 
 	for _, svc := range endpoint.Services {
-		if svc != nil && svc.Name == "api-opensearch" {
+		if svc == nil {
+			continue
+		}
+
+		// API historically used "api"; current SearchDB responses use "api-opensearch".
+		switch svc.Name {
+		case "api", "api-opensearch":
 			return true
 		}
 	}

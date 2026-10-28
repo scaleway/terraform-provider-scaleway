@@ -580,7 +580,7 @@ func testAccCheckOpenSearchAPIHasPublicAPI(tt *acctest.TestTools, resourceName s
 			}
 		}
 
-		return fmt.Errorf("expected a public api-opensearch service among %d endpoints", len(deployment.Endpoints))
+		return fmt.Errorf("expected a public OpenSearch API service among %d endpoints", len(deployment.Endpoints))
 	}
 }
 

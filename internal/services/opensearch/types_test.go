@@ -32,6 +32,14 @@ func TestEndpointHasOpenSearchAPI(t *testing.T) {
 		},
 	}
 	if !opensearch.EndpointHasOpenSearchAPI(withAPI) {
-		t.Fatal("public with api: got false, want true")
+		t.Fatal("public with api-opensearch: got false, want true")
+	}
+
+	legacyAPI := &searchdbapi.Endpoint{
+		Public:   public,
+		Services: []*searchdbapi.EndpointService{{Name: "api", Port: 9200}},
+	}
+	if !opensearch.EndpointHasOpenSearchAPI(legacyAPI) {
+		t.Fatal("legacy api service: got false, want true")
 	}
 }
