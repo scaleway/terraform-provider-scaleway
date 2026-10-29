@@ -4,7 +4,10 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 )
@@ -30,6 +33,33 @@ func TestAccVolume_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "test-block-volume-basic"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "20"),
+					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccVolume_BasicWithoutSizeInGB(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						name = "test-block-volume-basic-without-size"
+						iops = 5000
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "test-block-volume-basic-without-size"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "5"),
 					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
 				),
 			},
@@ -208,6 +238,214 @@ func TestAccVolume_UpdateIops(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "iops", "15000"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccVolume_UpdateWithoutName verifies that when a volume is created
+// without an explicit name (letting the API auto-generate one), subsequent
+// updates do not overwrite the generated name with an empty string.
+// This is a regression test for the bug where a computed+optional "name"
+// attribute marked as unknown in the plan during an update would cause
+// ValueString() to return "" and rename the volume to empty.
+func TestAccVolume_UpdateWithoutName(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	compareValuesSame := statecheck.CompareValue(compare.ValuesSame())
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						iops = 5000
+						size_in_gb = 20
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttrSet("scaleway_block_volume.main", "name"),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					compareValuesSame.AddStateValue(
+						"scaleway_block_volume.main",
+						tfjsonpath.New("name"),
+					),
+				},
+			},
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						iops = 15000
+						size_in_gb = 20
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "iops", "15000"),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					compareValuesSame.AddStateValue(
+						"scaleway_block_volume.main",
+						tfjsonpath.New("name"),
+					),
+				},
+			},
+		},
+	})
+}
+
+// TestAccVolume_SwapSnapshotID verifies that changing snapshot_id to a
+// different snapshot forces replacement of the volume. This exercises the
+// LocalityPlanModifier's "different UUID → RequiresReplace" path.
+func TestAccVolume_SwapSnapshotID(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	var volumeID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume base1 {
+						name = "test-block-volume-swap-snap-base1"
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot snap1 {
+						name = "test-block-volume-swap-snap1"
+						volume_id = scaleway_block_volume.base1.id
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-swap-snap"
+						iops = 5000
+						snapshot_id = scaleway_block_snapshot.snap1.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "snapshot_id", "scaleway_block_snapshot.snap1", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_block_volume.main", &volumeID),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_block_volume base1 {
+						name = "test-block-volume-swap-snap-base1"
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot snap1 {
+						name = "test-block-volume-swap-snap1"
+						volume_id = scaleway_block_volume.base1.id
+					}
+
+					resource scaleway_block_volume base2 {
+						name = "test-block-volume-swap-snap-base2"
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot snap2 {
+						name = "test-block-volume-swap-snap2"
+						volume_id = scaleway_block_volume.base2.id
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-swap-snap"
+						iops = 5000
+						snapshot_id = scaleway_block_snapshot.snap2.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "snapshot_id", "scaleway_block_snapshot.snap2", "id"),
+					// The volume should be replaced (new id) when snapshot_id changes.
+					acctest.CheckResourceIDChanged("scaleway_block_volume.main", &volumeID),
+				),
+			},
+		},
+	})
+}
+
+// TestAccVolume_RemoveSnapshotID verifies that removing snapshot_id from
+// config causes the volume to be replaced (recreated), not an inconsistent
+// result error. This is a regression test for the bug where the
+// LocalityPlanModifier did not trigger RequiresReplace on the value→null
+// transition, so Update was called instead, which left snapshot_id in state
+// while the plan had it as null — triggering Terraform core's
+// "Provider produced inconsistent result after apply" error.
+func TestAccVolume_RemoveSnapshotID(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	var volumeID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume base {
+						name = "test-block-volume-remove-snap-base"
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot snap {
+						name = "test-block-volume-remove-snap"
+						volume_id = scaleway_block_volume.base.id
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-remove-snap"
+						iops = 5000
+						snapshot_id = scaleway_block_snapshot.snap.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "snapshot_id", "scaleway_block_snapshot.snap", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_block_volume.main", &volumeID),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_block_volume base {
+						name = "test-block-volume-remove-snap-base"
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot snap {
+						name = "test-block-volume-remove-snap"
+						volume_id = scaleway_block_volume.base.id
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-remove-snap"
+						iops = 15000
+						size_in_gb = 20
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckNoResourceAttr("scaleway_block_volume.main", "snapshot_id"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "iops", "15000"),
+					// The volume should be replaced (new id) when snapshot_id is removed.
+					acctest.CheckResourceIDChanged("scaleway_block_volume.main", &volumeID),
 				),
 			},
 		},
