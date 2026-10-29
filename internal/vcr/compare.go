@@ -30,41 +30,44 @@ var BodyMatcherIgnore = []string{
 	"mnq_nats_subject",
 }
 
-// removeKeyRecursive removes a key from a map and all its nested maps
-func removeKeyRecursive(m map[string]any, key string) {
+// RemoveKeyRecursive removes a key from a map and all its nested maps/slices.
+func RemoveKeyRecursive(m map[string]any, key string) {
 	delete(m, key)
 
 	for _, v := range m {
-		if v, ok := v.(map[string]any); ok {
-			removeKeyRecursive(v, key)
+		switch nested := v.(type) {
+		case map[string]any:
+			RemoveKeyRecursive(nested, key)
+		case []any:
+			for _, item := range nested {
+				if child, ok := item.(map[string]any); ok {
+					RemoveKeyRecursive(child, key)
+				}
+			}
 		}
 	}
 }
 
-// compareJSONFields is the entry point for comparing two interface values
-// handle string with special cases, map[string]interface{} and []interface{} or any other primitive type
-func compareJSONFields(requestValue, cassetteValue any, strict bool) bool {
+// CompareJSONFields is the entry point for comparing two interface values
+// handle string with special cases, map[string]interface{} and []interface{} or any other primitive type.
+// Callers are responsible for stripping ignored keys before calling.
+func CompareJSONFields(requestValue, cassetteValue any, strict bool) bool {
 	switch requestValue := requestValue.(type) {
 	case string:
-		return compareFieldsStrings(requestValue, cassetteValue.(string))
+		return CompareFieldsStrings(requestValue, cassetteValue.(string))
 	case map[string]any:
-		return compareJSONBodies(requestValue, cassetteValue.(map[string]any), strict)
+		return CompareJSONBodies(requestValue, cassetteValue.(map[string]any), strict)
 	case []any:
-		return compareSlices(requestValue, cassetteValue.([]any))
+		return CompareSlices(requestValue, cassetteValue.([]any))
 	default:
 		return reflect.DeepEqual(requestValue, cassetteValue)
 	}
 }
 
-// compareJSONBodies compare two given maps that represent json bodies
-// Returns true if both json are equivalent
-func compareJSONBodies(request, cassette map[string]any, strict bool) bool {
-	// remove keys that should be ignored during comparison
-	for _, key := range BodyMatcherIgnore {
-		removeKeyRecursive(request, key)
-		removeKeyRecursive(cassette, key)
-	}
-
+// CompareJSONBodies compare two given maps that represent json bodies.
+// Returns true if both json are equivalent. Callers must strip ignored keys
+// (e.g. via RemoveKeyRecursive) before calling.
+func CompareJSONBodies(request, cassette map[string]any, strict bool) bool {
 	for key, requestValue := range request {
 		cassetteValue, ok := cassette[key]
 		if !ok {
@@ -79,7 +82,7 @@ func compareJSONBodies(request, cassette map[string]any, strict bool) bool {
 			return false
 		}
 
-		if !compareJSONFields(requestValue, cassetteValue, strict) {
+		if !CompareJSONFields(requestValue, cassetteValue, strict) {
 			return false
 		}
 	}
@@ -96,16 +99,10 @@ func compareJSONBodies(request, cassette map[string]any, strict bool) bool {
 	return true
 }
 
-// compareFormBodies compare two given url.Values
-// Returns true if both url.Values are equivalent
-func compareFormBodies(request, cassette url.Values) bool {
-	// Remove keys that should be ignored during comparison
-	for _, key := range BodyMatcherIgnore {
-		request.Del(key)
-	}
-
-	// Check for each key in actual requests
-	// Compare its value to cassette content if marshal-able to string
+// CompareFormBodies compare two given url.Values.
+// Returns true if both url.Values are equivalent. Callers must strip ignored
+// keys before calling.
+func CompareFormBodies(request, cassette url.Values) bool {
 	for key := range request {
 		requestValue, exists := request[key]
 		if !exists {
@@ -115,7 +112,7 @@ func compareFormBodies(request, cassette url.Values) bool {
 			continue
 		}
 
-		if !compareStringSlices(requestValue, cassette[key]) {
+		if !CompareStringSlices(requestValue, cassette[key]) {
 			return false
 		}
 	}
@@ -132,9 +129,9 @@ func compareFormBodies(request, cassette url.Values) bool {
 	return true
 }
 
-// compareFieldsStrings compare two strings from request JSON bodies
+// CompareFieldsStrings compare two strings from request JSON bodies
 // Has special case when string are terraform generated names
-func compareFieldsStrings(expected, actual string) bool {
+func CompareFieldsStrings(expected, actual string) bool {
 	if expected == actual {
 		return true
 	}
@@ -160,20 +157,20 @@ func compareFieldsStrings(expected, actual string) bool {
 
 	// Try to parse test generated name
 	if strings.Contains(actual, "-") {
-		expectedHandled = extractTestGeneratedNamePrefix(expected)
-		actualHandled = extractTestGeneratedNamePrefix(actual)
+		expectedHandled = ExtractTestGeneratedNamePrefix(expected)
+		actualHandled = ExtractTestGeneratedNamePrefix(actual)
 	}
 
 	// Try provider generated name
 	if actualHandled == actual && strings.HasPrefix(actual, "tf-") {
-		expectedHandled = extractGeneratedNamePrefix(expected)
-		actualHandled = extractGeneratedNamePrefix(actual)
+		expectedHandled = ExtractGeneratedNamePrefix(expected)
+		actualHandled = ExtractGeneratedNamePrefix(actual)
 	}
 
 	return expectedHandled == actualHandled
 }
 
-func compareStringSlices(request, cassette []string) bool {
+func CompareStringSlices(request, cassette []string) bool {
 	if len(request) != len(cassette) {
 		return false
 	}
@@ -182,7 +179,7 @@ func compareStringSlices(request, cassette []string) bool {
 	slices.Sort(cassette)
 
 	for i, v := range request {
-		if !compareFieldsStrings(v, cassette[i]) {
+		if !CompareFieldsStrings(v, cassette[i]) {
 			return false
 		}
 	}
@@ -190,9 +187,11 @@ func compareStringSlices(request, cassette []string) bool {
 	return true
 }
 
-// compareSlices compares two slices of interface{}
-// In case of slice of map[string]interface{}, it will attempt to find a match in the other slice without taking the order into account
-func compareSlices(request, cassette []any) bool {
+// CompareSlices compares two slices of interface{}.
+// In case of slice of map[string]interface{}, it will attempt to find a match
+// in the other slice without taking the order into account.
+// Callers are responsible for stripping ignored keys before calling.
+func CompareSlices(request, cassette []any) bool {
 	if len(request) != len(cassette) {
 		return false
 	}
@@ -213,7 +212,7 @@ func compareSlices(request, cassette []any) bool {
 			cassetteStrings[i] = v.(string)
 		}
 
-		return compareStringSlices(requestStrings, cassetteStrings)
+		return CompareStringSlices(requestStrings, cassetteStrings)
 	case float64:
 		sort.Slice(request, func(i, j int) bool {
 			return request[i].(float64) < request[j].(float64)
@@ -234,16 +233,7 @@ func compareSlices(request, cassette []any) bool {
 		matched := 0
 
 		for i := range request {
-			// Cleanup ignored keys
-			for _, key := range BodyMatcherIgnore {
-				removeKeyRecursive(request[i].(map[string]any), key)
-			}
-
-			for _, key := range BodyMatcherIgnore {
-				removeKeyRecursive(cassette[i].(map[string]any), key)
-			}
-
-			if compareJSONFields(request[i], cassette[i], false) {
+			if CompareJSONFields(request[i], cassette[i], false) {
 				matched++
 			}
 		}
@@ -267,7 +257,7 @@ func compareSlices(request, cassette []any) bool {
 					continue
 				}
 
-				if compareJSONFields(request[i], cassette[j], true) {
+				if CompareJSONFields(request[i], cassette[j], true) {
 					matched++
 					reqVisited[i] = true
 					casVisited[j] = true
@@ -283,9 +273,10 @@ func compareSlices(request, cassette []any) bool {
 	}
 }
 
+// ExtractTestGeneratedNamePrefix extracts the prefix from a test generated name.
 // Test Generated name has format: "{prefix}-{generated_number}"
 // example: test-acc-scaleway-project-3723338038624371236
-func extractTestGeneratedNamePrefix(name string) string {
+func ExtractTestGeneratedNamePrefix(name string) string {
 	// {prefix}-{generated}
 	//         ^
 	dashIndex := strings.LastIndex(name, "-")
@@ -302,9 +293,10 @@ func extractTestGeneratedNamePrefix(name string) string {
 	return name[:dashIndex]
 }
 
+// ExtractGeneratedNamePrefix extracts the prefix from a provider generated name.
 // Generated names have format: "tf-{prefix}-{generated1}-{generated2}"
 // example: tf-sg-gifted-yonath
-func extractGeneratedNamePrefix(name string) string {
+func ExtractGeneratedNamePrefix(name string) string {
 	if strings.Count(name, "-") < 3 {
 		return name
 	}
