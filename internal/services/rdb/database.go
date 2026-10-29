@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -23,9 +24,7 @@ func ResourceDatabase() *schema.Resource {
 		CreateContext: ResourceRdbDatabaseCreate,
 		ReadContext:   ResourceRdbDatabaseRead,
 		DeleteContext: ResourceRdbDatabaseDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.CompositeRegionalImporter("region", "instance_id", "database_name"),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
@@ -34,6 +33,7 @@ func ResourceDatabase() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    databaseSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.CompositeRegionalIdentity("instance_id", "database_name"),
 	}
 }
 
@@ -131,8 +131,13 @@ func ResourceRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	d.SetId(ResourceRdbDatabaseID(region, instanceID, db.Name))
-	_ = d.Set("region", region)
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":        region.String(),
+		"instance_id":   instanceID,
+		"database_name": db.Name,
+	}, "region", "instance_id", "database_name"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRdbDatabaseRead(ctx, d, m)
 }
@@ -156,7 +161,18 @@ func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, db
 	return res.Databases[0], nil
 }
 
-func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+func setDatabaseState(d *schema.ResourceData, region scw.Region, instanceID string, database *rdb.Database) {
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
+	_ = d.Set("name", database.Name)
+	_ = d.Set("owner", database.Owner)
+	_ = d.Set("managed", database.Managed)
+	_ = d.Set("size", database.Size.String())
+	_ = d.Set("region", string(region))
+}
+
+// readDatabaseIntoState fetches the database and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readDatabaseIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 
 	region, instanceID, databaseName, err := ResourceRdbDatabaseParseID(d.Id())
@@ -175,13 +191,33 @@ func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	d.SetId(ResourceRdbDatabaseID(region, instanceID, database.Name))
-	_ = d.Set("instance_id", regional.NewID(region, instanceID).String())
-	_ = d.Set("name", database.Name)
-	_ = d.Set("owner", database.Owner)
-	_ = d.Set("managed", database.Managed)
-	_ = d.Set("size", database.Size.String())
-	_ = d.Set("region", region)
+	setDatabaseState(d, region, instanceID, database)
+
+	return nil
+}
+
+func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readDatabaseIntoState(ctx, d, m)
+	if diags != nil {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return nil
+	}
+
+	region, instanceID, databaseName, err := ResourceRdbDatabaseParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":        region.String(),
+		"instance_id":   instanceID,
+		"database_name": databaseName,
+	}, "region", "instance_id", "database_name"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

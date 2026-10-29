@@ -1,7 +1,5 @@
 package types
 
-import "github.com/scaleway/scaleway-sdk-go/scw"
-
 func FlattenInt32Ptr(i *int32) any {
 	if i == nil {
 		return 0
@@ -23,7 +21,7 @@ func ExpandInt32Ptr(data any) *int32 {
 		return nil
 	}
 
-	return scw.Int32Ptr(int32(data.(int)))
+	return new(int32(data.(int)))
 }
 
 func ExpandUint32Ptr(data any) *uint32 {
@@ -31,7 +29,7 @@ func ExpandUint32Ptr(data any) *uint32 {
 		return nil
 	}
 
-	return scw.Uint32Ptr(uint32(data.(int)))
+	return new(uint32(data.(int)))
 }
 
 func ExpandUint64Ptr(data any) *uint64 {
@@ -39,5 +37,5 @@ func ExpandUint64Ptr(data any) *uint64 {
 		return nil
 	}
 
-	return scw.Uint64Ptr(uint64(data.(int)))
+	return new(uint64(data.(int)))
 }

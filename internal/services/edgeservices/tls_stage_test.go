@@ -38,6 +38,11 @@ func TestAccEdgeServicesTLS_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_tls_stage.main", "updated_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_edge_services_tls_stage.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

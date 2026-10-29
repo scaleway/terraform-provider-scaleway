@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func init() {
@@ -106,7 +107,19 @@ func TestAccDatabaseBackup_Basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr("scaleway_rdb_database_backup.main", "database_name", "foo"),
 					resource.TestCheckResourceAttr("scaleway_rdb_database_backup.main", "name", "test_backup"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_database_backup.main", "same_region"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_database_backup.main", "status"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_database_backup.main", "instance_name"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_database_backup.main", "size"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_rdb_database_backup.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"download_url", "download_url_expires_at",
+				},
 			},
 		},
 	})
@@ -159,9 +172,13 @@ func isBackupPresent(tt *acctest.TestTools, databaseBackup string) resource.Test
 			return err
 		}
 
-		_, err = rdbAPI.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
-			Region:           region,
-			DatabaseBackupID: id,
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+			_, err := rdbAPI.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
+				Region:           region,
+				DatabaseBackupID: id,
+			})
+
+			return err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to get database backup: %w", err)

@@ -53,6 +53,7 @@ func serversSchema() map[string]*schema.Schema {
 					"public_ips": {
 						Type:        schema.TypeList,
 						Description: "Public IPs associated with this server.",
+						Optional:    true,
 						Computed:    true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -63,8 +64,33 @@ func serversSchema() map[string]*schema.Schema {
 								},
 								"address": {
 									Type:        schema.TypeString,
-									Description: "Address of the server",
+									Description: "IP address.",
 									Computed:    true,
+								},
+								"gateway": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Gateway's IP address.",
+								},
+								"netmask": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "CIDR netmask.",
+								},
+								"family": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "IP address family (inet or inet6).",
+								},
+								"dynamic": {
+									Type:        schema.TypeBool,
+									Computed:    true,
+									Description: "Whether the IP is dynamic.",
+								},
+								"provisioning_mode": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Provisioning mode of the IP address.",
 								},
 							},
 						},
@@ -166,6 +192,11 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	instanceAPIV2, _, err := newAPIV2WithZone(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	res, err := instanceAPI.ListServers(&instance.ListServersRequest{
 		Zone:    zone,
 		Name:    types.ExpandStringPtr(d.Get("name")),
@@ -220,7 +251,7 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 			rawServer["placement_group_policy_respected"] = server.PlacementGroup.PolicyRespected
 		}
 
-		ph, err := newPrivateNICHandler(instanceAPI, server.ID, zone)
+		ph, err := newPrivateNICHandler(instanceAPIV2, instanceAPI, server.ID, zone, server.Project)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -284,7 +315,11 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.SetId(zone.String())
+	_ = d.Set("zone", zone)
 	_ = d.Set("servers", servers)
+	_ = d.Set("name", d.Get("name"))
+	_ = d.Set("project_id", d.Get("project_id"))
+	_ = d.Set("tags", d.Get("tags"))
 
 	return nil
 }

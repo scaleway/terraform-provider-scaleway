@@ -33,6 +33,16 @@ func TestAccIP_Basic(t *testing.T) {
 					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.scaleway"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_ip.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "scaleway_instance_ip.scaleway",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -98,6 +108,11 @@ func TestAccIP_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.1", "bar"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_ip.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -124,6 +139,11 @@ func TestAccIP_RoutedIPV6(t *testing.T) {
 					isIPValid("scaleway_instance_ip.main", "address", true),
 					isIPCIDRValid("scaleway_instance_ip.main", "prefix"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_ip.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -158,6 +178,14 @@ func TestAccIP_RoutedIPV6_Attached(t *testing.T) {
 					isIPValid("scaleway_instance_server.main", "public_ips.0.address", false),
 					isIPCIDRValid("scaleway_instance_ip.main", "prefix"),
 				),
+			},
+			{
+				RefreshState: true,
+			},
+			{
+				ResourceName:      "scaleway_instance_ip.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

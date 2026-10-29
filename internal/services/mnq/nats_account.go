@@ -8,6 +8,7 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +25,7 @@ func ResourceNatsAccount() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    natsAccountSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -60,7 +62,19 @@ func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, account.ID))
+	if err := identity.SetRegionalIdentity(d, account.Region, account.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = RetryMNQNamespaceReadValue(ctx, func() (*mnq.NatsAccount, error) {
+		return api.GetNatsAccount(&mnq.NatsAPIGetNatsAccountRequest{
+			Region:        account.Region,
+			NatsAccountID: account.ID,
+		}, scw.WithContext(ctx))
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQNatsAccountRead(ctx, d, m)
 }
@@ -75,6 +89,17 @@ func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m a
 		Region:        region,
 		NatsAccountID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			account, err = api.GetNatsAccount(&mnq.NatsAPIGetNatsAccountRequest{
+				Region:        region,
+				NatsAccountID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -82,6 +107,10 @@ func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m a
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, account.Region, account.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -121,11 +150,29 @@ func ResourceMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteNatsAccount(&mnq.NatsAPIDeleteNatsAccountRequest{
+	req := &mnq.NatsAPIDeleteNatsAccountRequest{
 		Region:        region,
 		NatsAccountID: id,
-	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is404(err) {
+	}
+
+	err = retryMNQNamespaceRead(ctx, func() error {
+		delErr := api.DeleteNatsAccount(req, scw.WithContext(ctx))
+		if delErr == nil {
+			return nil
+		}
+
+		if httperrors.Is404(delErr) {
+			return nil
+		}
+
+		return delErr
+	})
+	// If the retry timed out on a namespace error, assume the account is gone
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		return nil
+	}
+
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,14 +12,19 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/acl.md
+var aclDescription string
+
 func ResourceACL() *schema.Resource {
 	return &schema.Resource{
+		Description:   aclDescription,
 		CreateContext: ResourceACLCreate,
 		ReadContext:   ResourceACLRead,
 		UpdateContext: ResourceACLUpdate,
@@ -36,6 +42,7 @@ func ResourceACL() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    aclSchema,
 		CustomizeDiff: cdf.LocalityCheck("cluster_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -84,6 +91,11 @@ func aclSchema() map[string]*schema.Schema {
 						Computed:    true,
 						Description: "The ID of the ACL rule",
 					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the ACL rule",
+					},
 				},
 			},
 		},
@@ -124,8 +136,10 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	regionalID := regional.NewID(region, clusterID).String()
-	d.SetId(regionalID)
+	err = identity.SetRegionalIdentity(d, region, clusterID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceACLRead(ctx, d, m)
 }
@@ -152,6 +166,11 @@ func ResourceACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	err = identity.SetRegionalIdentity(d, region, clusterID)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -218,6 +237,10 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.
 				IP:          &allowedIPs,
 				Description: "Automatically generated after scaleway_k8s_acl resource deletion",
 			},
+			{
+				ScalewayRanges: new(true),
+				Description:    "Automatically generated after scaleway_k8s_acl resource deletion",
+			},
 		},
 	}
 
@@ -255,7 +278,7 @@ func expandACL(data any) ([]*k8s.ACLRuleRequest, error) {
 		}
 
 		if scwRangesRaw, ok := r["scaleway_ranges"]; ok && scwRangesRaw.(bool) {
-			expandedRule.ScalewayRanges = scw.BoolPtr(true)
+			expandedRule.ScalewayRanges = new(true)
 		}
 
 		if descriptionRaw, ok := r["description"]; ok && descriptionRaw.(string) != "" {
@@ -280,6 +303,7 @@ func flattenACL(rules []*k8s.ACLRule) any {
 			"id":              rule.ID,
 			"scaleway_ranges": rule.ScalewayRanges,
 			"description":     rule.Description,
+			"srn":             rule.Srn,
 		}
 		if rule.IP != nil {
 			flattenedRule["ip"] = rule.IP.String()

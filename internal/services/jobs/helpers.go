@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
+	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -159,11 +159,62 @@ func flattenJobDefinitionSecret(jobSecrets []*jobs.Secret) []any {
 	return secretRefs
 }
 
+type JobDefinitionRetryPolicy struct {
+	MaxRetries *uint32
+}
+
+func expandJobDefinitionRetryPolicy(retryPolicyI any) *JobDefinitionRetryPolicy {
+	retryPolicy := &JobDefinitionRetryPolicy{}
+
+	for _, retryPolicyElem := range retryPolicyI.([]any) {
+		retryPolicyMap := retryPolicyElem.(map[string]any)
+		if maxRetries, ok := retryPolicyMap["max_retries"]; ok {
+			retryPolicy.MaxRetries = new(uint32(maxRetries.(int)))
+		}
+	}
+
+	return retryPolicy
+}
+
+func (p *JobDefinitionRetryPolicy) ToCreateRequest() *jobs.RetryPolicy {
+	retryPolicyCreateReq := &jobs.RetryPolicy{}
+
+	if p != nil && p.MaxRetries != nil {
+		retryPolicyCreateReq.MaxRetries = *p.MaxRetries
+	}
+
+	return retryPolicyCreateReq
+}
+
+func (p *JobDefinitionRetryPolicy) ToUpdateRequest() *jobs.UpdateJobDefinitionRequestUpdateRetryPolicy {
+	if p == nil {
+		return nil
+	}
+
+	retryPolicyUpdateReq := &jobs.UpdateJobDefinitionRequestUpdateRetryPolicy{
+		MaxRetries: p.MaxRetries,
+	}
+
+	return retryPolicyUpdateReq
+}
+
+func flattenJobDefinitionRetryPolicy(policy *jobs.RetryPolicy) []map[string]any {
+	if policy == nil {
+		return []map[string]any{}
+	}
+
+	policyFlat := map[string]any{
+		"max_retries": policy.MaxRetries,
+	}
+
+	return []map[string]any{policyFlat}
+}
+
 func CreateJobDefinitionSecret(ctx context.Context, api *jobs.API, jobSecrets []JobDefinitionSecret, region scw.Region, jobID string) error {
-	secretConfigs := []*jobs.CreateJobDefinitionSecretsRequestSecretConfig{}
+	secretConfigs := make([]*jobs.CreateSecretsRequestSecretConfig, 0, len(jobSecrets))
 
 	for _, parsedSecretRef := range jobSecrets {
-		secretConfig := &jobs.CreateJobDefinitionSecretsRequestSecretConfig{}
+		secretConfig := &jobs.CreateSecretsRequestSecretConfig{}
 
 		secretConfigs = append(secretConfigs, secretConfig)
 
@@ -189,7 +240,7 @@ func CreateJobDefinitionSecret(ctx context.Context, api *jobs.API, jobSecrets []
 		}
 	}
 
-	_, err := api.CreateJobDefinitionSecrets(&jobs.CreateJobDefinitionSecretsRequest{
+	_, err := api.CreateSecrets(&jobs.CreateSecretsRequest{
 		Region:          region,
 		JobDefinitionID: jobID,
 		Secrets:         secretConfigs,

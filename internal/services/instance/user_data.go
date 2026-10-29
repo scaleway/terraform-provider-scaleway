@@ -3,6 +3,7 @@ package instance
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -34,6 +36,7 @@ func ResourceUserData() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    userDataSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: cdf.LocalityCheck("server_id"),
 	}
 }
@@ -92,9 +95,35 @@ func ResourceInstanceUserDataCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewNestedIDString(zone, key, server.ID))
+	err = identity.SetZonalIdentity(d, zone, fmt.Sprintf("%s/%s", key, server.ID))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return ResourceInstanceUserDataRead(ctx, d, m)
+	userData, err := instanceAPI.GetServerUserData(&instanceSDK.GetServerUserDataRequest{
+		Zone:     zone,
+		ServerID: server.ID,
+		Key:      key,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setUserDataState(d, userData, zone, serverID, key)
+}
+
+func setUserDataState(d *schema.ResourceData, serverUserDataRawValue io.Reader, zone scw.Zone, serverID, key string) diag.Diagnostics {
+	userDataValue, err := io.ReadAll(serverUserDataRawValue)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("server_id", zonal.NewID(zone, serverID).String())
+	_ = d.Set("key", key)
+	_ = d.Set("value", string(userDataValue))
+	_ = d.Set("zone", zone.String())
+
+	return nil
 }
 
 func ResourceInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -130,17 +159,12 @@ func ResourceInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	userDataValue, err := io.ReadAll(serverUserDataRawValue)
+	err = identity.SetZonalIdentity(d, zone, fmt.Sprintf("%s/%s", key, server.ID))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("server_id", zonal.NewID(zone, server.ID).String())
-	_ = d.Set("key", key)
-	_ = d.Set("value", string(userDataValue))
-	_ = d.Set("zone", zone.String())
-
-	return nil
+	return setUserDataState(d, serverUserDataRawValue, zone, server.ID, key)
 }
 
 func ResourceInstanceUserDataUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

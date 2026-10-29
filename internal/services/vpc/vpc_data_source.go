@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -58,7 +59,9 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}
 
-		res, err := vpcAPI.ListVPCs(request, scw.WithContext(ctx))
+		res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListVPCsResponse, error) {
+			return vpcAPI.ListVPCs(request, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -75,7 +78,9 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 				OrganizationID: types.ExpandStringPtr(d.Get("organization_id")),
 			}
 
-			res, err := vpcAPI.ListVPCs(request, scw.WithContext(ctx))
+			res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListVPCsResponse, error) {
+				return vpcAPI.ListVPCs(request, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -101,14 +106,15 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceVPCRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read VPC")...)
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.VPC, error) {
+		return vpcAPI.GetVPC(&vpc.GetVPCRequest{
+			Region: region,
+			VpcID:  regional.ExpandID(vpcID).ID,
+		}, scw.WithContext(ctx))
+	})
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("VPC (%s) not found", regionalID)
-	}
-
-	return nil
+	return setVPCState(d, res)
 }

@@ -8,8 +8,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -24,6 +26,7 @@ func ResourceACL() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    aclSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -130,12 +133,19 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.Rules = expandedRules
 	}
 
-	_, err = vpcAPI.SetACL(req, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		_, err := vpcAPI.SetACL(req, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, regional.ExpandID(d.Get("vpc_id").(string)).ID))
+	err = identity.SetRegionalIdentity(d, region, regional.ExpandID(d.Get("vpc_id").(string)).ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCACLRead(ctx, d, m)
 }
@@ -146,11 +156,13 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	acl, err := vpcAPI.GetACL(&vpc.GetACLRequest{
-		VpcID:  locality.ExpandID(ID),
-		Region: region,
-		IsIPv6: d.Get("is_ipv6").(bool),
-	}, scw.WithContext(ctx))
+	acl, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.GetACLResponse, error) {
+		return vpcAPI.GetACL(&vpc.GetACLRequest{
+			VpcID:  locality.ExpandID(ID),
+			Region: region,
+			IsIPv6: d.Get("is_ipv6").(bool),
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -161,6 +173,17 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	diags := setACLState(d, acl)
+
+	err = identity.SetRegionalIdentity(d, region, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setACLState(d *schema.ResourceData, acl *vpc.GetACLResponse) diag.Diagnostics {
 	_ = d.Set("rules", flattenACLRules(acl.Rules))
 	_ = d.Set("default_policy", acl.DefaultPolicy.String())
 
@@ -189,7 +212,11 @@ func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.Rules = expandedRules
 	}
 
-	_, err = vpcAPI.SetACL(req, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		_, err := vpcAPI.SetACL(req, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -203,11 +230,15 @@ func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcAPI.SetACL(&vpc.SetACLRequest{
-		VpcID:         locality.ExpandID(ID),
-		Region:        region,
-		DefaultPolicy: vpc.ActionAccept,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		_, err := vpcAPI.SetACL(&vpc.SetACLRequest{
+			VpcID:         locality.ExpandID(ID),
+			Region:        region,
+			DefaultPolicy: vpc.ActionAccept,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

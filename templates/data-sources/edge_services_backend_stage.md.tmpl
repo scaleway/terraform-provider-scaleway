@@ -1,0 +1,36 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Edge Services"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }} (Data Source)
+
+{{ .Description -}}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+One of `backend_stage_id` or filter arguments must be specified.
+
+- `backend_stage_id` - (Optional) The ID of the backend stage.
+
+The following filter arguments are supported (cannot be used with `backend_stage_id`):
+
+- `pipeline_id` - (Required when `backend_stage_id` is not set) The ID of the pipeline.
+- `bucket_name` - (Optional) Filter by S3 bucket name.
+- `bucket_region` - (Optional) Filter by S3 bucket region.
+- `lb_id` - (Optional) Filter by Load Balancer ID.
+
+## Attributes Reference
+
+Exported attributes are the ones from `scaleway_edge_services_backend_stage` [resource](../resources/edge_services_backend_stage.md).

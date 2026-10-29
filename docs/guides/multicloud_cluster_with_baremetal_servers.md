@@ -5,7 +5,7 @@ page_title: "Using Elastic Metal servers in a Kubernetes cluster"
 # How to use Elastic Metal servers with a Kosmos multicloud cluster
 
 In this guide you will learn how to deploy bare metal nodes on your Kubernetes cluster instead of Instances. To be able
-to do this, you need to have a [Kosmos multicloud cluster](../resources/k8s_cluster.md#multicloud) instead of a Kapsule
+to do this, you need to have a [Kosmos multicloud cluster](../resources/k8s_cluster.md) instead of a Kapsule
 cluster, and add your [pools](../resources/k8s_pool.md) as the "external" node type.
 Once you have set up your infrastructure, you will have to run a program on your server so it is configured and registered
 as a node by the apiserver. This can be achieved manually ([method A](#method-a-manually-via-ssh-connexion)), or you can automate the process ([method B](#method-b-fully-automated-with-terraform-remote-exec)).
@@ -18,7 +18,7 @@ as a node by the apiserver. This can be achieved manually ([method A](#method-a-
 
 ## Setup
 
-```hcl
+```terraform
 ###############################################
 #         CONFIGURE THE K8S CLUSTER           #
 ###############################################
@@ -81,7 +81,7 @@ raw values because it allows to check their availability in the zone you want to
 * If you want to link any already existing resource, you can import it to the Terraform state by running :
 
    ```bash
-   terraform import <scaleway_resource_type> <locality>/<id>
+   terraform import SCALEWAY_RESOURCE_TYPE LOCALITY/ID
    ```
 
 ## Configure the Elastic Metal server
@@ -91,7 +91,7 @@ raw values because it allows to check their availability in the zone you want to
 1. Get your server's public IP and SSH to the server :
 
     ```bash
-    ssh <user>@<baremetal_server_ip>
+    ssh USER@BAREMETAL_SERVER_IP
     ```
 
 2. Download the node-agent program :
@@ -103,7 +103,7 @@ raw values because it allows to check their availability in the zone you want to
 3. Export the required environment variables :
 
     ```bash
-    export POOL_ID=<pool_id>  POOL_REGION=<cluster_region>  SCW_SECRET_KEY=<secret_key>
+    export POOL_ID=POOL_ID POOL_REGION=CLUSTER_REGION SCW_SECRET_KEY=SECRET_KEY
     ```
 
 4. Execute the program to attach the node to the multicloud pool :
@@ -118,7 +118,7 @@ If you want the configuration process to be automated, you will have to add a fe
 In addition to the SSH key file and the data sources for the offer and the os, add your secret key and give the
 configuration instructions in the bare metal server spec.
 
-```hcl
+```terraform
 # Put your secret key in a file on your local machine
 data "local_sensitive_file" "secret_key" {
   filename = pathexpand("~/path/to/secret/key")
@@ -155,7 +155,11 @@ You check that everything went well by :
 * In the CLI : by listing the nodes of the cluster|pool with the CLI
 
     ```shell
-    scw k8s node list cluster-id=<cluster_id> [pool-id=<pool_id>]
+    scw k8s node list cluster-id=CLUSTER_ID
+    ```
+
+    ```shell
+    scw k8s node list cluster-id=CLUSTER_ID pool-id=POOL_ID
     ```
 
 * In the console : by checking the `Nodes` tab of your cluster.
@@ -163,13 +167,36 @@ You check that everything went well by :
 following lines :
 
 ```json lines
-[...]
-{"time":"2023-05-24T16:47:38.750041045Z","level":"DEBUG","msg":"writing kubelet config and CA"}
-{"time":"2023-05-24T16:47:38.750272845Z","level":"DEBUG","msg":"writing kubelet env file and systemd service"}
-{"time":"2023-05-24T16:47:38.750410725Z","level":"DEBUG","msg":"writing kubeconfig files"}
-{"time":"2023-05-24T16:47:38.751171166Z","level":"DEBUG","msg":"starting containerd systemd service"}
-{"time":"2023-05-24T16:47:39.042781246Z","level":"DEBUG","msg":"starting kubelet systemd service"}
-{"time":"2023-05-24T16:47:39.056392423Z","level":"INFO","msg":"successfully started kubelet"}
+{
+  "time": "2023-05-24T16:47:38.750041045Z",
+  "level": "DEBUG",
+  "msg": "writing kubelet config and CA"
+}
+{
+  "time": "2023-05-24T16:47:38.750272845Z",
+  "level": "DEBUG",
+  "msg": "writing kubelet env file and systemd service"
+}
+{
+  "time": "2023-05-24T16:47:38.750410725Z",
+  "level": "DEBUG",
+  "msg": "writing kubeconfig files"
+}
+{
+  "time": "2023-05-24T16:47:38.751171166Z",
+  "level": "DEBUG",
+  "msg": "starting containerd systemd service"
+}
+{
+  "time": "2023-05-24T16:47:39.042781246Z",
+  "level": "DEBUG",
+  "msg": "starting kubelet systemd service"
+}
+{
+  "time": "2023-05-24T16:47:39.056392423Z",
+  "level": "INFO",
+  "msg": "successfully started kubelet"
+}
 ```
 
   If something went wrong you should be able to find useful information for troubleshooting in here, like the

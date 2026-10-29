@@ -74,14 +74,12 @@ func DataSourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	diags := resourceIamGroupRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read iam group state")...)
+	res, err := api.GetGroup(&iam.GetGroupRequest{
+		GroupID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("iam group (%s) not found", groupID)
-	}
-
-	return nil
+	return setGroupState(d, res, false)
 }

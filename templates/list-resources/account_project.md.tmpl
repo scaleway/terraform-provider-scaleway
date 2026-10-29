@@ -1,0 +1,39 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "Account"
+description: |-
+  Lists Scaleway Account Projects.
+---
+
+# Resource: {{ .Name }}
+
+Lists Scaleway Account Projects.
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/iam/concepts/).
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+{{ end -}}
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `organization_id` - (Optional) Organization ID to filter for. If not specified, the provider default organization is used.
+- `name` - (Optional) Filter by project name containing a given string.
+- `project_ids` - (Optional) Filter projects by project IDs.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each Project:
+
+- `id` - The ID of the project.
+- `name` - The name of the project.
+- `description` - Description of the project.
+- `organization_id` - The organization ID the project belongs to.
+- `created_at` - The date and time of the creation of the project (Format ISO 8601).
+- `updated_at` - The date and time of the last update of the project (Format ISO 8601).

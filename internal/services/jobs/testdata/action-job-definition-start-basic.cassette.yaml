@@ -6,786 +6,583 @@ interactions:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 233
-        transfer_encoding: []
-        trailer: {}
+        content_length: 300
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"name":"test-jobs-action-start","cpu_limit":120,"memory_limit":256,"image_uri":"docker.io/alpine:latest","command":"echo ''Hello World''","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","environment_variables":{},"description":""}'
-        form: {}
+        body: '{"name":"test-jobs-action-start","cpu_limit":120,"memory_limit":256,"local_storage_capacity":5120,"image_uri":"docker.io/alpine:latest","command":"","startup_command":["echo","-e"],"args":["Hello World"],"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","environment_variables":{},"description":""}'
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-definitions
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 469
-        uncompressed: false
-        body: '{"command":"echo ''Hello World''","cpu_limit":120,"created_at":"2025-12-05T06:01:36.614706Z","cron_schedule":null,"description":"","environment_variables":{},"id":"c89e7982-53ef-4507-a60b-51ef36043ad4","image_uri":"docker.io/alpine:latest","job_timeout":"86400s","local_storage_capacity":5120,"memory_limit":256,"name":"test-jobs-action-start","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","region":"fr-par","updated_at":"2025-12-05T06:01:36.614706Z"}'
+        content_length: 509
+        body: '{"id":"3b508982-3117-40fb-b9ba-6e46b6b6d0bf", "name":"test-jobs-action-start", "project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "created_at":"2026-02-16T17:24:00.467867Z", "updated_at":"2026-02-16T17:24:00.467867Z", "cpu_limit":120, "memory_limit":256, "local_storage_capacity":5120, "image_uri":"docker.io/alpine:latest", "command":"", "environment_variables":{}, "job_timeout":"86400s", "description":"", "cron_schedule":null, "startup_command":["echo", "-e"], "args":["Hello World"], "region":"fr-par"}'
         headers:
             Content-Length:
-                - "469"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+                - "509"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:36 GMT
+                - Mon, 16 Feb 2026 17:24:00 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - e0563c5a-d48e-4cb1-ae16-ebb9d3a3215b
+                - b4089963-e16a-4ae7-969b-66620a9d2853
         status: 200 OK
         code: 200
-        duration: 280.174125ms
+        duration: 169.042776ms
     - id: 1
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-definitions/c89e7982-53ef-4507-a60b-51ef36043ad4
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/3b508982-3117-40fb-b9ba-6e46b6b6d0bf
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 469
-        uncompressed: false
-        body: '{"command":"echo ''Hello World''","cpu_limit":120,"created_at":"2025-12-05T06:01:36.614706Z","cron_schedule":null,"description":"","environment_variables":{},"id":"c89e7982-53ef-4507-a60b-51ef36043ad4","image_uri":"docker.io/alpine:latest","job_timeout":"86400s","local_storage_capacity":5120,"memory_limit":256,"name":"test-jobs-action-start","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","region":"fr-par","updated_at":"2025-12-05T06:01:36.614706Z"}'
+        content_length: 509
+        body: '{"id":"3b508982-3117-40fb-b9ba-6e46b6b6d0bf", "name":"test-jobs-action-start", "project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "created_at":"2026-02-16T17:24:00.467867Z", "updated_at":"2026-02-16T17:24:00.467867Z", "cpu_limit":120, "memory_limit":256, "local_storage_capacity":5120, "image_uri":"docker.io/alpine:latest", "command":"", "environment_variables":{}, "job_timeout":"86400s", "description":"", "cron_schedule":null, "startup_command":["echo", "-e"], "args":["Hello World"], "region":"fr-par"}'
         headers:
             Content-Length:
-                - "469"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+                - "509"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:36 GMT
+                - Mon, 16 Feb 2026 17:24:00 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - b4240f15-2d7c-49e3-848c-edd265159034
+                - 90076f1b-9741-42a2-a42f-a0a45755ab52
         status: 200 OK
         code: 200
-        duration: 117.654209ms
+        duration: 46.171518ms
     - id: 2
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
+        form:
+            job_definition_id:
+                - 3b508982-3117-40fb-b9ba-6e46b6b6d0bf
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-definitions/c89e7982-53ef-4507-a60b-51ef36043ad4/secrets
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/secrets?job_definition_id=3b508982-3117-40fb-b9ba-6e46b6b6d0bf
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
         content_length: 31
-        uncompressed: false
-        body: '{"secrets":[],"total_count":0}'
+        body: '{"secrets":[], "total_count":0}'
         headers:
             Content-Length:
                 - "31"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:36 GMT
+                - Mon, 16 Feb 2026 17:24:00 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - a77cc40c-00b6-4b67-b90f-0b2326db1868
+                - 4159bc91-4cc3-42ba-8247-0f4ba8df0c1a
         status: 200 OK
         code: 200
-        duration: 93.462375ms
+        duration: 46.965969ms
     - id: 3
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 2
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
         body: '{}'
-        form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-definitions/c89e7982-53ef-4507-a60b-51ef36043ad4/start
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/3b508982-3117-40fb-b9ba-6e46b6b6d0bf/start
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 448
-        uncompressed: false
-        body: '{"job_runs":[{"command":"echo ''Hello World''","cpu_limit":120,"created_at":"2025-12-05T06:01:37.662147Z","environment_variables":{},"error_message":"","exit_code":null,"id":"609bc841-58e3-4cd4-859a-95d50e8f23b2","job_definition_id":"c89e7982-53ef-4507-a60b-51ef36043ad4","local_storage_capacity":5120,"memory_limit":256,"region":"fr-par","run_duration":null,"started_at":null,"state":"queued","terminated_at":null,"updated_at":null}]}'
+        content_length: 478
+        body: '{"job_runs":[{"id":"bdd8d5e1-4466-4c8e-a18e-c360edbeec59", "job_definition_id":"3b508982-3117-40fb-b9ba-6e46b6b6d0bf", "created_at":"2026-02-16T17:24:00.679932Z", "updated_at":"2026-02-16T17:24:01.008186Z", "started_at":null, "terminated_at":null, "run_duration":null, "state":"validated", "cpu_limit":120, "memory_limit":256, "local_storage_capacity":5120, "command":"", "environment_variables":{}, "startup_command":["echo", "-e"], "args":["Hello World"], "region":"fr-par"}]}'
         headers:
             Content-Length:
-                - "448"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+                - "478"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:37 GMT
+                - Mon, 16 Feb 2026 17:24:01 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - 0aa129a0-6d82-4970-be0a-248cf6379f85
+                - c5adfa7d-0191-42c3-a509-298eb6bd82b5
         status: 200 OK
         code: 200
-        duration: 880.144791ms
+        duration: 466.135784ms
     - id: 4
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
+        form:
+            job_definition_id:
+                - 3b508982-3117-40fb-b9ba-6e46b6b6d0bf
+            order_by:
+                - created_at_asc
+            state:
+                - unknown_state
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-runs?job_definition_id=c89e7982-53ef-4507-a60b-51ef36043ad4&order_by=created_at_asc&state=unknown_state
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-runs?job_definition_id=3b508982-3117-40fb-b9ba-6e46b6b6d0bf&order_by=created_at_asc&state=unknown_state
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 490
-        uncompressed: false
-        body: '{"job_runs":[{"command":"echo ''Hello World''","cpu_limit":120,"created_at":"2025-12-05T06:01:37.662147Z","environment_variables":{},"error_message":"","exit_code":null,"id":"609bc841-58e3-4cd4-859a-95d50e8f23b2","job_definition_id":"c89e7982-53ef-4507-a60b-51ef36043ad4","local_storage_capacity":5120,"memory_limit":256,"region":"fr-par","run_duration":null,"started_at":null,"state":"queued","terminated_at":null,"updated_at":"2025-12-05T06:01:37.662147Z"}],"total_count":1}'
+        content_length: 495
+        body: '{"job_runs":[{"id":"bdd8d5e1-4466-4c8e-a18e-c360edbeec59", "job_definition_id":"3b508982-3117-40fb-b9ba-6e46b6b6d0bf", "created_at":"2026-02-16T17:24:00.679932Z", "updated_at":"2026-02-16T17:24:01.008186Z", "started_at":null, "terminated_at":null, "run_duration":null, "state":"validated", "cpu_limit":120, "memory_limit":256, "local_storage_capacity":5120, "command":"", "environment_variables":{}, "startup_command":["echo", "-e"], "args":["Hello World"], "region":"fr-par"}], "total_count":1}'
         headers:
             Content-Length:
-                - "490"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+                - "495"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:37 GMT
+                - Mon, 16 Feb 2026 17:24:01 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - f7a30ce2-af78-4a84-9814-e0b344a3288c
+                - b444c040-d4d7-4f40-95f9-63f45d27e65e
         status: 200 OK
         code: 200
-        duration: 106.500667ms
+        duration: 54.797909ms
     - id: 5
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-definitions/c89e7982-53ef-4507-a60b-51ef36043ad4
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/3b508982-3117-40fb-b9ba-6e46b6b6d0bf
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 469
-        uncompressed: false
-        body: '{"command":"echo ''Hello World''","cpu_limit":120,"created_at":"2025-12-05T06:01:36.614706Z","cron_schedule":null,"description":"","environment_variables":{},"id":"c89e7982-53ef-4507-a60b-51ef36043ad4","image_uri":"docker.io/alpine:latest","job_timeout":"86400s","local_storage_capacity":5120,"memory_limit":256,"name":"test-jobs-action-start","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","region":"fr-par","updated_at":"2025-12-05T06:01:36.614706Z"}'
+        content_length: 509
+        body: '{"id":"3b508982-3117-40fb-b9ba-6e46b6b6d0bf", "name":"test-jobs-action-start", "project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "created_at":"2026-02-16T17:24:00.467867Z", "updated_at":"2026-02-16T17:24:00.467867Z", "cpu_limit":120, "memory_limit":256, "local_storage_capacity":5120, "image_uri":"docker.io/alpine:latest", "command":"", "environment_variables":{}, "job_timeout":"86400s", "description":"", "cron_schedule":null, "startup_command":["echo", "-e"], "args":["Hello World"], "region":"fr-par"}'
         headers:
             Content-Length:
-                - "469"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+                - "509"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:38 GMT
+                - Mon, 16 Feb 2026 17:24:01 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - 73000d84-3e22-482a-836d-e90ead67f344
+                - 44279e75-6817-4721-b9c8-c8bcc905d01e
         status: 200 OK
         code: 200
-        duration: 117.535792ms
+        duration: 30.381784ms
     - id: 6
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
+        form:
+            job_definition_id:
+                - 3b508982-3117-40fb-b9ba-6e46b6b6d0bf
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-definitions/c89e7982-53ef-4507-a60b-51ef36043ad4/secrets
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/secrets?job_definition_id=3b508982-3117-40fb-b9ba-6e46b6b6d0bf
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
         content_length: 31
-        uncompressed: false
-        body: '{"secrets":[],"total_count":0}'
+        body: '{"secrets":[], "total_count":0}'
         headers:
             Content-Length:
                 - "31"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:38 GMT
+                - Mon, 16 Feb 2026 17:24:01 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - 28c9e8d1-366b-40f1-b5af-7ce06148bc15
+                - a2555166-583d-4440-bed2-01f1b36e0925
         status: 200 OK
         code: 200
-        duration: 97.255708ms
+        duration: 245.937179ms
     - id: 7
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-definitions/c89e7982-53ef-4507-a60b-51ef36043ad4
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/3b508982-3117-40fb-b9ba-6e46b6b6d0bf
         method: DELETE
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
         content_length: 52
-        uncompressed: false
         body: '{"message":"one or more job runs are still running"}'
         headers:
             Content-Length:
                 - "52"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:38 GMT
+                - Mon, 16 Feb 2026 17:24:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - 5e9695f2-f305-49b9-ad5e-b75d77c6e879
+                - 60ec0327-f3f3-4f70-9a7e-b7bbd8bbefca
         status: 403 Forbidden
         code: 403
-        duration: 110.401667ms
+        duration: 28.88742ms
     - id: 8
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
+        form:
+            job_definition_id:
+                - 3b508982-3117-40fb-b9ba-6e46b6b6d0bf
+            order_by:
+                - created_at_asc
+            state:
+                - unknown_state
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-runs?job_definition_id=c89e7982-53ef-4507-a60b-51ef36043ad4&order_by=created_at_asc&state=unknown_state
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-runs?job_definition_id=3b508982-3117-40fb-b9ba-6e46b6b6d0bf&order_by=created_at_asc&state=unknown_state
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 490
-        uncompressed: false
-        body: '{"job_runs":[{"command":"echo ''Hello World''","cpu_limit":120,"created_at":"2025-12-05T06:01:37.662147Z","environment_variables":{},"error_message":"","exit_code":null,"id":"609bc841-58e3-4cd4-859a-95d50e8f23b2","job_definition_id":"c89e7982-53ef-4507-a60b-51ef36043ad4","local_storage_capacity":5120,"memory_limit":256,"region":"fr-par","run_duration":null,"started_at":null,"state":"queued","terminated_at":null,"updated_at":"2025-12-05T06:01:37.662147Z"}],"total_count":1}'
+        content_length: 492
+        body: '{"job_runs":[{"id":"bdd8d5e1-4466-4c8e-a18e-c360edbeec59", "job_definition_id":"3b508982-3117-40fb-b9ba-6e46b6b6d0bf", "created_at":"2026-02-16T17:24:00.679932Z", "updated_at":"2026-02-16T17:24:01.920572Z", "started_at":null, "terminated_at":null, "run_duration":null, "state":"queued", "cpu_limit":120, "memory_limit":256, "local_storage_capacity":5120, "command":"", "environment_variables":{}, "startup_command":["echo", "-e"], "args":["Hello World"], "region":"fr-par"}], "total_count":1}'
         headers:
             Content-Length:
-                - "490"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+                - "492"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:39 GMT
+                - Mon, 16 Feb 2026 17:24:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - ad621144-53db-4621-92de-e6fd486f95b4
+                - cc69c730-049f-425d-9168-5863fc55f678
         status: 200 OK
         code: 200
-        duration: 99.094875ms
+        duration: 86.101843ms
     - id: 9
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 2
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
         body: '{}'
-        form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-runs/609bc841-58e3-4cd4-859a-95d50e8f23b2/stop
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-runs/bdd8d5e1-4466-4c8e-a18e-c360edbeec59/stop
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 485
-        uncompressed: false
-        body: '{"command":"echo ''Hello World''","cpu_limit":120,"created_at":"2025-12-05T06:01:37.662147Z","environment_variables":{},"error_message":"Job run has been canceled","exit_code":null,"id":"609bc841-58e3-4cd4-859a-95d50e8f23b2","job_definition_id":"c89e7982-53ef-4507-a60b-51ef36043ad4","local_storage_capacity":5120,"memory_limit":256,"region":"fr-par","run_duration":null,"started_at":null,"state":"canceled","terminated_at":null,"updated_at":"2025-12-05T06:01:39.162295Z"}'
+        content_length: 491
+        body: '{"id":"bdd8d5e1-4466-4c8e-a18e-c360edbeec59", "job_definition_id":"3b508982-3117-40fb-b9ba-6e46b6b6d0bf", "created_at":"2026-02-16T17:24:00.679932Z", "updated_at":"2026-02-16T17:24:02.497175Z", "started_at":null, "terminated_at":null, "run_duration":null, "state":"interrupting", "reason":"cancellation", "cpu_limit":120, "memory_limit":256, "local_storage_capacity":5120, "command":"", "environment_variables":{}, "startup_command":["echo", "-e"], "args":["Hello World"], "region":"fr-par"}'
         headers:
             Content-Length:
-                - "485"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+                - "491"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:39 GMT
+                - Mon, 16 Feb 2026 17:24:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - 89516c24-d9e1-4d97-bcde-c410e0b4ea88
+                - 9e8d02ad-b989-4ad5-a0af-a907a3228dcf
         status: 200 OK
         code: 200
-        duration: 136.672291ms
+        duration: 260.403662ms
     - id: 10
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-runs/609bc841-58e3-4cd4-859a-95d50e8f23b2
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-runs/bdd8d5e1-4466-4c8e-a18e-c360edbeec59
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 485
-        uncompressed: false
-        body: '{"command":"echo ''Hello World''","cpu_limit":120,"created_at":"2025-12-05T06:01:37.662147Z","environment_variables":{},"error_message":"Job run has been canceled","exit_code":null,"id":"609bc841-58e3-4cd4-859a-95d50e8f23b2","job_definition_id":"c89e7982-53ef-4507-a60b-51ef36043ad4","local_storage_capacity":5120,"memory_limit":256,"region":"fr-par","run_duration":null,"started_at":null,"state":"canceled","terminated_at":null,"updated_at":"2025-12-05T06:01:39.162295Z"}'
+        content_length: 491
+        body: '{"id":"bdd8d5e1-4466-4c8e-a18e-c360edbeec59", "job_definition_id":"3b508982-3117-40fb-b9ba-6e46b6b6d0bf", "created_at":"2026-02-16T17:24:00.679932Z", "updated_at":"2026-02-16T17:24:02.497175Z", "started_at":null, "terminated_at":null, "run_duration":null, "state":"interrupting", "reason":"cancellation", "cpu_limit":120, "memory_limit":256, "local_storage_capacity":5120, "command":"", "environment_variables":{}, "startup_command":["echo", "-e"], "args":["Hello World"], "region":"fr-par"}'
         headers:
             Content-Length:
-                - "485"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+                - "491"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:39 GMT
+                - Mon, 16 Feb 2026 17:24:02 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - 48cc0c5c-d33a-41ae-9692-3f99b5b74f86
+                - 3684ba60-604e-44d0-9cb2-61e3782429b1
         status: 200 OK
         code: 200
-        duration: 132.947833ms
+        duration: 37.925455ms
     - id: 11
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-definitions/c89e7982-53ef-4507-a60b-51ef36043ad4
-        method: DELETE
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-runs/bdd8d5e1-4466-4c8e-a18e-c360edbeec59
+        method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 0
-        uncompressed: false
-        body: ""
+        content_length: 490
+        body: '{"id":"bdd8d5e1-4466-4c8e-a18e-c360edbeec59", "job_definition_id":"3b508982-3117-40fb-b9ba-6e46b6b6d0bf", "created_at":"2026-02-16T17:24:00.679932Z", "updated_at":"2026-02-16T17:24:03.268696Z", "started_at":null, "terminated_at":null, "run_duration":null, "state":"interrupted", "reason":"cancellation", "cpu_limit":120, "memory_limit":256, "local_storage_capacity":5120, "command":"", "environment_variables":{}, "startup_command":["echo", "-e"], "args":["Hello World"], "region":"fr-par"}'
         headers:
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+            Content-Length:
+                - "490"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:39 GMT
+                - Mon, 16 Feb 2026 17:24:17 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - dc2ed406-2c6f-4522-89e2-c6fc1efa7027
-        status: 204 No Content
-        code: 204
-        duration: 118.273709ms
+                - 13e9db69-85c0-4309-80e1-35a0517be8c1
+        status: 200 OK
+        code: 200
+        duration: 41.931412ms
     - id: 12
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-runs?job_definition_id=c89e7982-53ef-4507-a60b-51ef36043ad4&order_by=created_at_asc&state=unknown_state
-        method: GET
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/3b508982-3117-40fb-b9ba-6e46b6b6d0bf
+        method: DELETE
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 32
-        uncompressed: false
-        body: '{"job_runs":[],"total_count":0}'
+        content_length: 0
+        body: ""
         headers:
-            Content-Length:
-                - "32"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:40 GMT
+                - Mon, 16 Feb 2026 17:24:17 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - c2cbca26-c035-4b8f-980c-c797e719a275
-        status: 200 OK
-        code: 200
-        duration: 959.832666ms
+                - 766c9607-02f2-4c02-8412-5afc5f48ac25
+        status: 204 No Content
+        code: 204
+        duration: 35.943854ms
     - id: 13
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
+        form:
+            job_definition_id:
+                - 3b508982-3117-40fb-b9ba-6e46b6b6d0bf
+            order_by:
+                - created_at_asc
+            state:
+                - unknown_state
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-definitions/c89e7982-53ef-4507-a60b-51ef36043ad4
-        method: DELETE
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-runs?job_definition_id=3b508982-3117-40fb-b9ba-6e46b6b6d0bf&order_by=created_at_asc&state=unknown_state
+        method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 41
-        uncompressed: false
-        body: '{"message":"job definition is not found"}'
+        content_length: 32
+        body: '{"job_runs":[], "total_count":0}'
         headers:
             Content-Length:
-                - "41"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+                - "32"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:40 GMT
+                - Mon, 16 Feb 2026 17:24:17 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - dfa8fdd7-d64b-402c-8134-c95d7c58cd37
-        status: 404 Not Found
-        code: 404
-        duration: 21.482541ms
+                - 99eba1dc-7149-4a19-a1d4-4fd423af597f
+        status: 200 OK
+        code: 200
+        duration: 44.327789ms
     - id: 14
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-runs?job_definition_id=c89e7982-53ef-4507-a60b-51ef36043ad4&order_by=created_at_asc&state=unknown_state
-        method: GET
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/3b508982-3117-40fb-b9ba-6e46b6b6d0bf
+        method: DELETE
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 32
-        uncompressed: false
-        body: '{"job_runs":[],"total_count":0}'
+        content_length: 41
+        body: '{"message":"job definition is not found"}'
         headers:
             Content-Length:
-                - "32"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
+                - "41"
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:40 GMT
+                - Mon, 16 Feb 2026 17:24:17 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - 6abc0965-4741-44c8-9e96-3263a809b7ea
-        status: 200 OK
-        code: 200
-        duration: 105.20125ms
+                - ee742cba-eefa-4030-8c7e-fc6c67c3ae06
+        status: 404 Not Found
+        code: 404
+        duration: 27.157683ms
     - id: 15
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
         content_length: 0
-        transfer_encoding: []
-        trailer: {}
         host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
+        form:
+            job_definition_id:
+                - 3b508982-3117-40fb-b9ba-6e46b6b6d0bf
+            order_by:
+                - created_at_asc
+            state:
+                - unknown_state
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/serverless-jobs/v1alpha1/regions/fr-par/job-definitions/c89e7982-53ef-4507-a60b-51ef36043ad4
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-runs?job_definition_id=3b508982-3117-40fb-b9ba-6e46b6b6d0bf&order_by=created_at_asc&state=unknown_state
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 32
+        body: '{"job_runs":[], "total_count":0}'
+        headers:
+            Content-Length:
+                - "32"
+            Content-Type:
+                - application/json
+            Date:
+                - Mon, 16 Feb 2026 17:24:17 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Request-Id:
+                - 898db9b1-7c05-4dba-b9cf-847029f4e983
+        status: 200 OK
+        code: 200
+        duration: 63.399514ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/serverless-jobs/v1alpha2/regions/fr-par/job-definitions/3b508982-3117-40fb-b9ba-6e46b6b6d0bf
         method: DELETE
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
         content_length: 41
-        uncompressed: false
         body: '{"message":"job definition is not found"}'
         headers:
             Content-Length:
                 - "41"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Fri, 05 Dec 2025 06:01:40 GMT
+                - Mon, 16 Feb 2026 17:24:17 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
+                - Scaleway API Gateway (fr-par-1;edge03)
             X-Request-Id:
-                - b79c4d55-a9ff-46c3-95c4-0669e231cd46
+                - c66c7da2-a8d1-4f8f-9a1d-2f99a56f6034
         status: 404 Not Found
         code: 404
-        duration: 18.990875ms
+        duration: 22.597019ms

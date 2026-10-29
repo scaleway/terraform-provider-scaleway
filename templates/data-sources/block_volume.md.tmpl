@@ -33,7 +33,7 @@ This section lists the arguments that you can provide to the `scaleway_block_vol
 
 - `volume_id` - (Optional) The unique identifier of the volume. Only one of `name` and `volume_id` should be specified.
 - `name` - (Optional) The name of the volume. Only one of `name` and `volume_id` should be specified.
-- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)). The [zone](../guides/regions_and_zones.md#zones) in which the volume exists.
+- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#arguments-reference)). The [zone](../guides/regions_and_zones.md#zones) in which the volume exists.
 - `project_id` - (Optional) The unique identifier of the Project to which the volume is associated.
 
 ## Attributes Reference

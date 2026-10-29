@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	usageSymmetricEncryption  = "symmetric_encryption"
-	usageAsymmetricEncryption = "asymmetric_encryption"
-	usageAsymmetricSigning    = "asymmetric_signing"
+	usageSymmetricEncryption  = string(key_manager.ListKeysRequestUsageSymmetricEncryption)
+	usageAsymmetricEncryption = string(key_manager.ListKeysRequestUsageAsymmetricEncryption)
+	usageAsymmetricSigning    = string(key_manager.ListKeysRequestUsageAsymmetricSigning)
+	usageKeyEncapsulation     = string(key_manager.ListKeysRequestUsageKeyEncapsulation)
 )
 
 func UsageToString(u *key_manager.KeyUsage) string {
@@ -34,6 +35,10 @@ func UsageToString(u *key_manager.KeyUsage) string {
 
 	if u.AsymmetricSigning != nil {
 		return usageAsymmetricSigning
+	}
+
+	if u.KeyEncapsulation != nil {
+		return usageKeyEncapsulation
 	}
 
 	return ""
@@ -63,21 +68,19 @@ func NewKeyManagerAPIWithRegionAndID(m any, id string) (*key_manager.API, scw.Re
 
 func ExpandKeyUsageFromFields(d *schema.ResourceData) *key_manager.KeyUsage {
 	if v, ok := d.GetOk("usage_symmetric_encryption"); ok {
-		alg := key_manager.KeyAlgorithmSymmetricEncryption(v.(string))
-
-		return &key_manager.KeyUsage{SymmetricEncryption: &alg}
+		return &key_manager.KeyUsage{SymmetricEncryption: new(key_manager.KeyAlgorithmSymmetricEncryption(v.(string)))}
 	}
 
 	if v, ok := d.GetOk("usage_asymmetric_encryption"); ok {
-		alg := key_manager.KeyAlgorithmAsymmetricEncryption(v.(string))
-
-		return &key_manager.KeyUsage{AsymmetricEncryption: &alg}
+		return &key_manager.KeyUsage{AsymmetricEncryption: new(key_manager.KeyAlgorithmAsymmetricEncryption(v.(string)))}
 	}
 
 	if v, ok := d.GetOk("usage_asymmetric_signing"); ok {
-		alg := key_manager.KeyAlgorithmAsymmetricSigning(v.(string))
+		return &key_manager.KeyUsage{AsymmetricSigning: new(key_manager.KeyAlgorithmAsymmetricSigning(v.(string)))}
+	}
 
-		return &key_manager.KeyUsage{AsymmetricSigning: &alg}
+	if v, ok := d.GetOk("usage_key_encapsulation"); ok {
+		return &key_manager.KeyUsage{KeyEncapsulation: new(key_manager.KeyAlgorithmKeyEncapsulation(v.(string)))}
 	}
 
 	if v, ok := d.GetOk("usage"); ok {
@@ -90,17 +93,13 @@ func ExpandKeyUsageFromFields(d *schema.ResourceData) *key_manager.KeyUsage {
 func ExpandKeyUsageLegacy(usage string) *key_manager.KeyUsage {
 	switch usage {
 	case usageSymmetricEncryption:
-		alg := key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm
-
-		return &key_manager.KeyUsage{SymmetricEncryption: &alg}
+		return &key_manager.KeyUsage{SymmetricEncryption: new(key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm)}
 	case usageAsymmetricEncryption:
-		alg := key_manager.KeyAlgorithmAsymmetricEncryptionRsaOaep3072Sha256
-
-		return &key_manager.KeyUsage{AsymmetricEncryption: &alg}
+		return &key_manager.KeyUsage{AsymmetricEncryption: new(key_manager.KeyAlgorithmAsymmetricEncryptionRsaOaep3072Sha256)}
 	case usageAsymmetricSigning:
-		alg := key_manager.KeyAlgorithmAsymmetricSigningEcP256Sha256
-
-		return &key_manager.KeyUsage{AsymmetricSigning: &alg}
+		return &key_manager.KeyUsage{AsymmetricSigning: new(key_manager.KeyAlgorithmAsymmetricSigningEcP256Sha256)}
+	case usageKeyEncapsulation:
+		return &key_manager.KeyUsage{KeyEncapsulation: new(key_manager.KeyAlgorithmKeyEncapsulationMlKem768)}
 	default:
 		return nil
 	}
@@ -121,6 +120,10 @@ func AlgorithmFromKeyUsage(u *key_manager.KeyUsage) string {
 
 	if u.AsymmetricSigning != nil {
 		return string(*u.AsymmetricSigning)
+	}
+
+	if u.KeyEncapsulation != nil {
+		return string(*u.KeyEncapsulation)
 	}
 
 	return ""
@@ -180,4 +183,29 @@ func FlattenKeyRotationPolicy(rp *key_manager.KeyRotationPolicy) []map[string]an
 			"next_rotation_at": types.FlattenTime(rp.NextRotationAt),
 		},
 	}
+}
+
+func setKeyState(d *schema.ResourceData, key *key_manager.Key) {
+	_ = d.Set("name", key.Name)
+	_ = d.Set("project_id", key.ProjectID)
+	_ = d.Set("region", key.Region.String())
+
+	usageType := UsageToString(key.Usage)
+	algorithm := AlgorithmFromKeyUsage(key.Usage)
+
+	_ = d.Set("usage", usageType)
+	_ = d.Set("algorithm", algorithm)
+
+	_ = d.Set("description", key.Description)
+	_ = d.Set("tags", key.Tags)
+	_ = d.Set("state", key.State.String())
+	_ = d.Set("rotation_count", int(key.RotationCount))
+	_ = d.Set("created_at", types.FlattenTime(key.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(key.UpdatedAt))
+	_ = d.Set("protected", key.Protected)
+	_ = d.Set("locked", key.Locked)
+	_ = d.Set("rotated_at", types.FlattenTime(key.RotatedAt))
+	_ = d.Set("rotation_policy", FlattenKeyRotationPolicy(key.RotationPolicy))
+	_ = d.Set("srn", key.Srn)
+	_ = d.Set("protection_level", key.ProtectionLevel.String())
 }

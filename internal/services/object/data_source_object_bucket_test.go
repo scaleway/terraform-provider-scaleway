@@ -92,7 +92,7 @@ func TestAccDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 
 	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket")
 
-	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(tt, "ObjectStorageReadOnly", "ObjectStorageObjectsRead", "ObjectStorageBucketsRead")
 	require.NoError(t, err)
 
 	ctx := t.Context()
@@ -139,9 +139,9 @@ func TestAccDataSourceObjectBucket_ProjectIDForbidden(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-bucket")
 
-	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(tt, "ObjectStorageReadOnly", "ObjectStorageObjectsRead", "ObjectStorageBucketsRead")
 	require.NoError(t, err)
 
 	ctx := t.Context()

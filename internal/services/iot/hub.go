@@ -11,6 +11,7 @@ import (
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -31,6 +32,7 @@ func ResourceHub() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    hubSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -146,11 +148,11 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if disableEvents, ok := d.GetOk("disable_events"); ok {
-		req.DisableEvents = scw.BoolPtr(disableEvents.(bool))
+		req.DisableEvents = new(disableEvents.(bool))
 	}
 
 	if eventsTopicPrefix, ok := d.GetOk("events_topic_prefix"); ok {
-		req.EventsTopicPrefix = scw.StringPtr(eventsTopicPrefix.(string))
+		req.EventsTopicPrefix = new(eventsTopicPrefix.(string))
 	}
 
 	res, err := iotAPI.CreateHub(req, scw.WithContext(ctx))
@@ -158,7 +160,9 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitIotHub(ctx, iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -181,7 +185,7 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	// Now user CA is set, set device auto provisioning if needed.
 	if devProv, ok := d.GetOk("device_autoprovisioning"); ok {
 		_, err = iotAPI.UpdateHub(&iot.UpdateHubRequest{
-			EnableDeviceAutoProvisioning: scw.BoolPtr(devProv.(bool)),
+			EnableDeviceAutoProvisioning: new(devProv.(bool)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -233,6 +237,39 @@ func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	if err := identity.SetRegionalIdentity(d, region, hubID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setHubState(ctx, d, m, response, region)
+}
+
+// readHubIntoState fetches the hub and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readHubIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	iotAPI, region, hubID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	response, err := iotAPI.GetHub(&iot.GetHubRequest{
+		Region: region,
+		HubID:  hubID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setHubState(ctx, d, m, response, region)
+}
+
+func setHubState(ctx context.Context, d *schema.ResourceData, m any, response *iot.Hub, region scw.Region) diag.Diagnostics {
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", response.OrganizationID)
 	_ = d.Set("project_id", response.ProjectID)
@@ -325,7 +362,7 @@ func ResourceIotHubUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
+		updateRequest.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("product_plan") {
@@ -333,15 +370,15 @@ func ResourceIotHubUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if d.HasChange("disable_events") {
-		updateRequest.DisableEvents = scw.BoolPtr(d.Get("disable_events").(bool))
+		updateRequest.DisableEvents = new(d.Get("disable_events").(bool))
 	}
 
 	if d.HasChange("events_topic_prefix") {
-		updateRequest.EventsTopicPrefix = scw.StringPtr(d.Get("events_topic_prefix").(string))
+		updateRequest.EventsTopicPrefix = new(d.Get("events_topic_prefix").(string))
 	}
 
 	if d.HasChange("device_auto_provisioning") {
-		updateRequest.EnableDeviceAutoProvisioning = scw.BoolPtr(d.Get("device_auto_provisioning").(bool))
+		updateRequest.EnableDeviceAutoProvisioning = new(d.Get("device_auto_provisioning").(bool))
 	}
 
 	////

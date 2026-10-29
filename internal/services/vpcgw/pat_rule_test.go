@@ -2,6 +2,7 @@ package vpcgw_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -84,7 +85,13 @@ func TestAccVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"scaleway_vpc_public_gateway_pat_rule.main", "gateway_id",
 						"scaleway_vpc_public_gateway.main", "id"),
+					resource.TestMatchResourceAttr("scaleway_vpc_public_gateway_pat_rule.main", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/pat-rules/.+$`)),
 				),
+			},
+			{
+				ResourceName:      "scaleway_vpc_public_gateway_pat_rule.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -97,7 +104,7 @@ func testAccCheckVPCPublicGatewayPATRuleExists(tt *acctest.TestTools, n string) 
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
+		api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -121,7 +128,7 @@ func testAccCheckVPCPublicGatewayPATRuleDestroy(tt *acctest.TestTools) resource.
 				continue
 			}
 
-			api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
+			api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}

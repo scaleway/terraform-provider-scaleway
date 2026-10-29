@@ -343,7 +343,9 @@ var objectBodyCassette = `{
 func newRequest(method, url string, body io.Reader) *http.Request {
 	req, err := http.NewRequestWithContext(context.Background(), method, url, body)
 	if err != nil {
-		panic(err) // lintignore: R009
+		// In test context, we can log the error and return nil since this is a test helper
+		// The test will fail when trying to use the nil request
+		return nil
 	}
 
 	return req

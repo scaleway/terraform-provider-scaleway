@@ -12,7 +12,7 @@ func ValidateStringInSliceWithWarning(correctValues []string, field string) sche
 	return func(i any, path cty.Path) diag.Diagnostics {
 		_, rawErr := validation.StringInSlice(correctValues, true)(i, field)
 
-		var res diag.Diagnostics
+		var res diag.Diagnostics //nolint:prealloc
 
 		for _, e := range rawErr {
 			res = append(res, diag.Diagnostic{

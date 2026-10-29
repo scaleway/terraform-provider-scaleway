@@ -69,10 +69,13 @@ func DataSourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m 
 	zonedID := datasource.NewZonedID(crtID, zone)
 	d.SetId(zonedID)
 
-	err = d.Set("certificate_id", zonedID)
+	certificate, err := api.GetCertificate(&lbSDK.ZonedAPIGetCertificateRequest{
+		Zone:          zone,
+		CertificateID: locality.ExpandID(crtID.(string)),
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceLbCertificateRead(ctx, d, m)
+	return setCertificateState(d, certificate, zone)
 }

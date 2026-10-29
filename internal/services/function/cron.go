@@ -66,6 +66,11 @@ func cronSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Cron job status.",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the function cron",
+		},
 		"region": regional.Schema(),
 	}
 }
@@ -142,6 +147,7 @@ func ResourceFunctionCronRead(ctx context.Context, d *schema.ResourceData, m any
 
 	_ = d.Set("args", args)
 	_ = d.Set("status", cron.Status)
+	_ = d.Set("srn", cron.Srn)
 	_ = d.Set("region", region.String())
 
 	return nil

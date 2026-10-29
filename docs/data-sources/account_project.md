@@ -9,6 +9,7 @@ The [`scaleway_account_project`](https://registry.terraform.io/providers/scalewa
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
+
 ## Retrieve a Scaleway Project
 
 The following commands allow you to:
@@ -17,18 +18,18 @@ The following commands allow you to:
 - retrieve a Project by its ID
 - retrieve the default project of an Organization
 
-```hcl
+```terraform
 # Get info by name
-data scaleway_account_project "by_name" {
+data "scaleway_account_project" "by_name" {
   name            = "myproject"
   organization_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
 # Get default project
-data scaleway_account_project "by_name" {
+data "scaleway_account_project" "by_name" {
   name = "default"
 }
 # Get info by ID
-data scaleway_account_project "by_id" {
+data "scaleway_account_project" "by_id" {
   project_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
 ```

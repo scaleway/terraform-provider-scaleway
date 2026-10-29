@@ -8,7 +8,7 @@ import (
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
-func TestAccServerUserData_Basic(t *testing.T) {
+func TestAccUserData_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -36,6 +36,11 @@ EOF
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_user_data.main", "key", "cloud-init"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_user_data.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

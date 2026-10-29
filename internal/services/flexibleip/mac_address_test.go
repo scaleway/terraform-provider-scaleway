@@ -38,6 +38,11 @@ func TestAccFlexibleIPMACAddress_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_flexible_ip_mac_address.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_flexible_ip_mac_address.main", "updated_at")),
 			},
+			{
+				ResourceName:      "scaleway_flexible_ip_mac_address.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

@@ -86,5 +86,5 @@ func DataSourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(fmt.Errorf("no clusters found with the id %s", clusterID))
 	}
 
-	return ResourceClusterRead(ctx, d, m)
+	return readClusterIntoState(ctx, d, m)
 }

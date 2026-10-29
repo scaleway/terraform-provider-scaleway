@@ -3,6 +3,7 @@ package lb_test
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -88,6 +89,12 @@ func TestAccFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "connection_rate_limit", "100"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_access_logs", "true"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_lb_frontend.frt01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_acls"},
 			},
 		},
 	})
@@ -178,10 +185,8 @@ func isFrontendCertificatePresent(tt *acctest.TestTools, f, c string) resource.T
 			return err
 		}
 
-		for _, id := range frEnd.CertificateIDs {
-			if locality.ExpandID(cs.Primary.ID) == id {
-				return nil
-			}
+		if slices.Contains(frEnd.CertificateIDs, locality.ExpandID(cs.Primary.ID)) {
+			return nil
 		}
 
 		return fmt.Errorf("certificate not found: %s", c)
@@ -242,6 +247,105 @@ func isFrontendDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func TestAccFrontend_ExternalACLsUpdate(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	var aclID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isFrontendDestroyed(tt),
+			isACLDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb lb01 {
+						ip_id = scaleway_lb_ip.ip01.id
+						name = "tf-test-lb-frontend-ext-acl"
+						type = "lb-s"
+					}
+					resource scaleway_lb_backend bkd01 {
+						lb_id = scaleway_lb.lb01.id
+						forward_protocol = "http"
+						forward_port = 80
+						proxy_protocol = "none"
+					}
+					resource scaleway_lb_frontend frt01 {
+						lb_id = scaleway_lb.lb01.id
+						backend_id = scaleway_lb_backend.bkd01.id
+						name = "tf-test"
+						inbound_port = 80
+						timeout_client = "30s"
+						external_acls = true
+					}
+					resource scaleway_lb_acl acl01 {
+						frontend_id = scaleway_lb_frontend.frt01.id
+						name = "tf-test-acl"
+						index = 0
+						action {
+							type = "allow"
+						}
+						match {
+							ip_subnet = ["0.0.0.0/0"]
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isFrontendPresent(tt, "scaleway_lb_frontend.frt01"),
+					isACLPresent(tt, "scaleway_lb_acl.acl01"),
+					acctest.CheckResourceIDPersisted("scaleway_lb_acl.acl01", &aclID),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", "30s"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb lb01 {
+						ip_id = scaleway_lb_ip.ip01.id
+						name = "tf-test-lb-frontend-ext-acl"
+						type = "lb-s"
+					}
+					resource scaleway_lb_backend bkd01 {
+						lb_id = scaleway_lb.lb01.id
+						forward_protocol = "http"
+						forward_port = 80
+						proxy_protocol = "none"
+					}
+					resource scaleway_lb_frontend frt01 {
+						lb_id = scaleway_lb.lb01.id
+						backend_id = scaleway_lb_backend.bkd01.id
+						name = "tf-test"
+						inbound_port = 80
+						timeout_client = "45s"
+						external_acls = true
+					}
+					resource scaleway_lb_acl acl01 {
+						frontend_id = scaleway_lb_frontend.frt01.id
+						name = "tf-test-acl"
+						index = 0
+						action {
+							type = "allow"
+						}
+						match {
+							ip_subnet = ["0.0.0.0/0"]
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isFrontendPresent(tt, "scaleway_lb_frontend.frt01"),
+					isACLPresent(tt, "scaleway_lb_acl.acl01"),
+					acctest.CheckResourceIDPersisted("scaleway_lb_acl.acl01", &aclID),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", "45s"),
+				),
+			},
+		},
+	})
 }
 
 func TestAccFrontend_ACLBasic(t *testing.T) {
@@ -391,7 +495,7 @@ func TestAccFrontend_ACLBasic(t *testing.T) {
 								IPSubnet:         scw.StringSlicePtr([]string{"0.0.0.0/0"}),
 								HTTPFilter:       lbSDK.ACLHTTPFilterHTTPHeaderMatch,
 								HTTPFilterValue:  scw.StringSlicePtr([]string{"example.com"}),
-								HTTPFilterOption: scw.StringPtr("host"),
+								HTTPFilterOption: new("host"),
 							},
 							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},

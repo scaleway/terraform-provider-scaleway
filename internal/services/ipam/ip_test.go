@@ -2,6 +2,7 @@ package ipam_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -48,7 +49,14 @@ func TestAccIPAMIP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "address_cidr"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "updated_at"),
+					resource.TestMatchResourceAttr("scaleway_ipam_ip.ip01", "srn", regexp.MustCompile(`^srn://ipam\..+/(zones|regions)/[^/]+/ips/[^/]+$`)),
 				),
+			},
+			{
+				ResourceName:            "scaleway_ipam_ip.ip01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"source.0.private_network_id"},
 			},
 		},
 	})

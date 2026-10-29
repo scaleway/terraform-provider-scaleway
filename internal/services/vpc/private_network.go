@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -10,10 +11,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -32,6 +35,7 @@ func ResourcePrivateNetwork() *schema.Resource {
 			{Version: 0, Type: vpcPrivateNetworkUpgradeV1SchemaType(), Upgrade: vpcPrivateNetworkV1SUpgradeFunc},
 		},
 		SchemaFunc: privateNetworkSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -90,6 +94,11 @@ func privateNetworkSchema() map[string]*schema.Schema {
 						Computed:    true,
 						Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
 					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the subnet",
+					},
 				},
 			},
 		},
@@ -138,6 +147,11 @@ func privateNetworkSchema() map[string]*schema.Schema {
 						Type:        schema.TypeInt,
 						Computed:    true,
 						Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
+					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the subnet",
 					},
 				},
 			},
@@ -192,6 +206,11 @@ func privateNetworkSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the private network",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the private network",
+		},
 	}
 }
 
@@ -227,12 +246,17 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 		req.Subnets = append(req.Subnets, ipv6Subnets...)
 	}
 
-	pn, err := vpcAPI.CreatePrivateNetwork(req, scw.WithContext(ctx))
+	pn, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.PrivateNetwork, error) {
+		return vpcAPI.CreatePrivateNetwork(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, pn.ID))
+	err = identity.SetRegionalIdentity(d, region, pn.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCPrivateNetworkRead(ctx, d, m)
 }
@@ -243,10 +267,12 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	pn, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
-		PrivateNetworkID: ID,
-		Region:           region,
-	}, scw.WithContext(ctx))
+	pn, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.PrivateNetwork, error) {
+		return vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
+			PrivateNetworkID: ID,
+			Region:           region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -257,22 +283,34 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	diags := setPrivateNetworkState(d, m, pn)
+
+	err = identity.SetRegionalIdentity(d, region, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPrivateNetworkState(d *schema.ResourceData, m any, pn *vpc.PrivateNetwork) diag.Diagnostics {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", pn.Name)
-	_ = d.Set("vpc_id", regional.NewIDString(region, pn.VpcID))
+	_ = d.Set("vpc_id", regional.NewIDString(pn.Region, pn.VpcID))
 	_ = d.Set("organization_id", pn.OrganizationID)
 	_ = d.Set("project_id", pn.ProjectID)
 	_ = d.Set("created_at", types.FlattenTime(pn.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(pn.UpdatedAt))
 	_ = d.Set("tags", pn.Tags)
 	_ = d.Set("enable_default_route_propagation", pn.DefaultRoutePropagationEnabled)
-	_ = d.Set("region", region)
+	_ = d.Set("region", pn.Region.String())
 	_ = d.Set("is_regional", true)
 	_ = d.Set("zone", zone)
+	_ = d.Set("srn", pn.Srn)
 
 	ipv4Subnet, ipv6Subnets := FlattenAndSortSubnets(pn.Subnets)
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
@@ -287,13 +325,17 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcAPI.UpdatePrivateNetwork(&vpc.UpdatePrivateNetworkRequest{
-		PrivateNetworkID:               ID,
-		Region:                         region,
-		Name:                           scw.StringPtr(d.Get("name").(string)),
-		Tags:                           types.ExpandUpdatedStringsPtr(d.Get("tags")),
-		DefaultRoutePropagationEnabled: types.ExpandBoolPtr(d.Get("enable_default_route_propagation").(bool)),
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		_, err := vpcAPI.UpdatePrivateNetwork(&vpc.UpdatePrivateNetworkRequest{
+			PrivateNetworkID:               ID,
+			Region:                         region,
+			Name:                           new(d.Get("name").(string)),
+			Tags:                           types.ExpandUpdatedStringsPtr(d.Get("tags")),
+			DefaultRoutePropagationEnabled: types.ExpandBoolPtr(d.Get("enable_default_route_propagation").(bool)),
+		}, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -307,11 +349,13 @@ func ResourceVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	err = retry.RetryContext(ctx, defaultVPCPrivateNetworkRetryInterval, func() *retry.RetryError {
-		err := vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
-			PrivateNetworkID: ID,
-			Region:           region,
-		}, scw.WithContext(ctx))
+	err = retry.RetryContext(ctx, 2*time.Minute, func() *retry.RetryError {
+		err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+			return vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
+				PrivateNetworkID: ID,
+				Region:           region,
+			}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			if httperrors.Is412(err) {
 				return retry.RetryableError(err)

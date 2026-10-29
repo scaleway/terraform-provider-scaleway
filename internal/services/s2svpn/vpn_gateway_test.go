@@ -2,6 +2,7 @@ package s2svpn_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -54,7 +55,13 @@ func TestAccVPNGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_gateway.main", "ipam_private_ipv6_id"),
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_gateway.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_gateway.main", "updated_at"),
+					resource.TestMatchResourceAttr("scaleway_s2s_vpn_gateway.main", "srn", regexp.MustCompile(`^srn://s2s-vpn\..+/zones/.+/vpn-gateways/.+$`)),
 				),
+			},
+			{
+				ResourceName:      "scaleway_s2s_vpn_gateway.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

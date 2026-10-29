@@ -13,11 +13,20 @@ Refer to the Serverless SQL Databases [documentation](https://www.scaleway.com/e
 
 ### Basic
 
-```hcl
-resource scaleway_sdb_sql_database "database" {
+```terraform
+resource "scaleway_sdb_sql_database" "database" {
   name    = "my-database"
   min_cpu = 0
   max_cpu = 8
+}
+```
+
+### With a specific PostgreSQL version
+
+```terraform
+resource "scaleway_sdb_sql_database" "database" {
+  name    = "my-database"
+  version = "16"
 }
 ```
 
@@ -27,16 +36,16 @@ This example creates an [IAM application](https://www.scaleway.com/en/docs/iam/c
 
 -> **Note:** For more information, see [How to connect to a Serverless SQL Database](https://www.scaleway.com/en/docs/serverless-sql-databases/how-to/connect-to-a-database/)
 
-```hcl
-data scaleway_account_project "default" {
+```terraform
+data "scaleway_account_project" "default" {
   name = "default"
 }
 
-resource scaleway_iam_application "app" {
+resource "scaleway_iam_application" "app" {
   name = "my app"
 }
 
-resource scaleway_iam_policy "db_access" {
+resource "scaleway_iam_policy" "db_access" {
   name           = "my policy"
   description    = "gives app access to serverless database in project"
   application_id = scaleway_iam_application.app.id
@@ -46,11 +55,11 @@ resource scaleway_iam_policy "db_access" {
   }
 }
 
-resource scaleway_iam_api_key "api_key" {
+resource "scaleway_iam_api_key" "api_key" {
   application_id = scaleway_iam_application.app.id
 }
 
-resource scaleway_sdb_sql_database "database" {
+resource "scaleway_sdb_sql_database" "database" {
   name    = "my-database"
   min_cpu = 0
   max_cpu = 8
@@ -72,13 +81,12 @@ output "database_connection_string" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the database (e.g. `my-new-database`).
-
-    ~> **Important:** Updates to the `name` argument will recreate the database.
-
+  ~> **Important:** Updates to the `name` argument will recreate the database.
 - `min_cpu` - (Optional) The minimum number of CPU units for your database. Defaults to 0.
 - `max_cpu` - (Optional) The maximum number of CPU units for your database. Defaults to 15.
-
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
+- `version` - (Optional, Computed) The major version of the PostgreSQL engine (e.g. `16`). If not specified, the default version is used.
+  ~> **Important:** Updates to the `version` argument will recreate the database.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
 
 ## Attributes Reference
 
@@ -89,6 +97,10 @@ In addition to all the arguments above, the following attributes are exported:
 - `id` - The unique identifier of the database, which is of the form `{region}/{id}` e.g. `fr-par/11111111-1111-1111-1111-111111111111`.
 
 - `endpoint` - The endpoint of the database.
+
+- `version_end_of_life_at` - The end of life date of the database version (RFC3339).
+
+- `srn` - The Scaleway Resource Name (SRN) of the database.
 
 ## Import
 

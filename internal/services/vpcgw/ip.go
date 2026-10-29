@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -23,6 +24,7 @@ func ResourceIP() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultZonal(),
 		SchemaVersion: 0,
 		SchemaFunc:    ipSchema,
 	}
@@ -63,11 +65,16 @@ func ipSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the public gateway IP",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the IP",
+		},
 	}
 }
 
 func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := newAPIWithZoneV2(d, m)
+	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -83,14 +90,19 @@ func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(res.Zone, res.ID))
+
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	reverse := d.Get("reverse")
 	if len(reverse.(string)) > 0 {
 		updateRequest := &vpcgw.UpdateIPRequest{
 			IPID:    res.ID,
 			Zone:    zone,
-			Tags:    scw.StringsPtr(types.ExpandStrings(d.Get("tags"))),
+			Tags:    new(types.ExpandStrings(d.Get("tags"))),
 			Reverse: types.ExpandStringPtr(reverse.(string)),
 		}
 
@@ -104,7 +116,7 @@ func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 }
 
 func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -123,20 +135,32 @@ func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 		return diag.FromErr(err)
 	}
 
+	diags := setIPState(d, ip)
+
+	err = identity.SetZonalIdentity(d, ip.Zone, ip.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setIPState(d *schema.ResourceData, ip *vpcgw.IP) diag.Diagnostics {
 	_ = d.Set("organization_id", ip.OrganizationID)
 	_ = d.Set("address", ip.Address.String())
 	_ = d.Set("project_id", ip.ProjectID)
 	_ = d.Set("created_at", ip.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", ip.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", ip.Zone)
 	_ = d.Set("tags", ip.Tags)
 	_ = d.Set("reverse", ip.Reverse)
+	_ = d.Set("srn", ip.Srn)
 
 	return nil
 }
 
 func ResourceVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -169,7 +193,7 @@ func ResourceVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func ResourceVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

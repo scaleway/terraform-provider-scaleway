@@ -122,6 +122,11 @@ func backendsSchema() map[string]*schema.Schema {
 						Description: "Scaleway Object Storage bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud",
 						Type:        schema.TypeString,
 					},
+					"host": {
+						Computed:    true,
+						Description: "Value used as the HTTP Host header or TLS SNI when connecting to backend servers",
+						Type:        schema.TypeString,
+					},
 					"ssl_bridging": {
 						Computed:    true,
 						Description: "Defines whether to enable SSL bridging between the Load Balancer and backend servers",
@@ -283,6 +288,7 @@ func DataSourceLbBackendsRead(ctx context.Context, d *schema.ResourceData, m any
 		rawBackend["on_marked_down_action"] = flattenLbBackendMarkdownAction(backend.OnMarkedDownAction)
 		rawBackend["proxy_protocol"] = flattenLbProxyProtocol(backend.ProxyProtocol)
 		rawBackend["failover_host"] = types.FlattenStringPtr(backend.FailoverHost)
+		rawBackend["host"] = types.FlattenStringPtr(backend.Host)
 		rawBackend["ssl_bridging"] = types.FlattenBoolPtr(backend.SslBridging)
 		rawBackend["ignore_ssl_server_verify"] = types.FlattenBoolPtr(backend.IgnoreSslServerVerify)
 		rawBackend["health_check_port"] = backend.HealthCheck.Port

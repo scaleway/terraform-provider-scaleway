@@ -2,6 +2,7 @@ package function_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -29,7 +30,7 @@ func TestAccFunctionTrigger_SQS(t *testing.T) {
 					resource scaleway_function main {
 						name = "test-function-trigger-sqs"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -63,6 +64,7 @@ func TestAccFunctionTrigger_SQS(t *testing.T) {
 							project_id = scaleway_mnq_sqs.main.project_id
 							region = scaleway_mnq_sqs.main.region
 						}
+						depends_on = [ "scaleway_mnq_sqs_credentials.main" ]
 					}
 				`
 
@@ -76,6 +78,7 @@ func TestAccFunctionTrigger_SQS(t *testing.T) {
 					testAccCheckFunctionTriggerExists(tt, "scaleway_function_trigger.main"),
 					acctest.CheckResourceAttrUUID("scaleway_function_trigger.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_function_trigger.main", "name", "test-function-trigger-sqs"),
+					resource.TestMatchResourceAttr("scaleway_function_trigger.main", "srn", regexp.MustCompile(`^srn://functions\..+/regions/.+/triggers/.+$`)),
 					testAccCheckFunctionTriggerStatusReady(tt, "scaleway_function_trigger.main"),
 				),
 			},
@@ -99,7 +102,7 @@ func TestAccFunctionTrigger_Nats(t *testing.T) {
 					resource scaleway_function main {
 						name = "test-function-trigger-sqs"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -158,7 +161,7 @@ func TestAccFunctionTrigger_Error(t *testing.T) {
 					resource scaleway_function main {
 						name = "test-function-trigger-error"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}

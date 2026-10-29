@@ -2,15 +2,21 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"io"
+	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -20,15 +26,52 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+const (
+	nodeMinVolumeSize = 20 * scw.GB
+	nodeMaxVolumeSize = 10 * scw.TB
+)
+
+//go:embed descriptions/pool.md
+var poolDescription string
+
 func ResourcePool() *schema.Resource {
 	return &schema.Resource{
+		Description:   poolDescription,
 		CreateContext: ResourceK8SPoolCreate,
 		ReadContext:   ResourceK8SPoolRead,
 		UpdateContext: ResourceK8SPoolUpdate,
 		DeleteContext: ResourceK8SPoolDelete,
 		CustomizeDiff: ResourceK8SPoolCustomDiff,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+				// user_data is create-only and the pool's Read only fetches it when it
+				// is already non-empty in state. A passthrough import leaves it empty,
+				// so an imported pool with user data would never record it and a spurious
+				// replacement would be planned. Fetch it explicitly during import.
+				k8sAPI, region, poolID, err := NewAPIWithRegionAndID(m, d.Id())
+				if err != nil {
+					return nil, err
+				}
+
+				pool, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
+					Region: region,
+					PoolID: poolID,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return nil, err
+				}
+
+				userData, err := fetchPoolUserData(ctx, k8sAPI, pool)
+				if err != nil {
+					return nil, err
+				}
+
+				if err := d.Set("user_data", userData); err != nil {
+					return nil, err
+				}
+
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultK8SPoolTimeout),
@@ -37,6 +80,7 @@ func ResourcePool() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    poolSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -50,9 +94,9 @@ func poolSchema() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			ForceNew:    true,
-			Description: "The name of the cluster",
+			Description: "The name of the pool",
 		},
 		"node_type": {
 			Type:             schema.TypeString,
@@ -81,7 +125,7 @@ func poolSchema() map[string]*schema.Schema {
 		"min_size": {
 			Type:        schema.TypeInt,
 			Optional:    true,
-			Default:     1,
+			Computed:    true,
 			Description: "Minimum size of the pool",
 		},
 		"max_size": {
@@ -172,6 +216,79 @@ func poolSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "Defines if the public IP should be removed from the nodes.",
 		},
+		"labels": {
+			Type: schema.TypeMap,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "Kubernetes labels applied and reconciled on the nodes.",
+		},
+		"taints": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Kubernetes taints applied and reconciled on the nodes.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Description: "Key of the taint",
+						Required:    true,
+					},
+					"value": {
+						Type:        schema.TypeString,
+						Description: "Value of the taint",
+						Required:    true,
+					},
+					"effect": {
+						Type:        schema.TypeString,
+						Description: "Effect of the taint",
+						Required:    true,
+					},
+				},
+			},
+		},
+		"startup_taints": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Kubernetes taints applied at node creation but not reconciled afterwards.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Description: "Key of the taint",
+						Required:    true,
+					},
+					"value": {
+						Type:        schema.TypeString,
+						Description: "Value of the taint",
+						Required:    true,
+					},
+					"effect": {
+						Type:        schema.TypeString,
+						Description: "Effect of the taint",
+						Required:    true,
+					},
+				},
+			},
+		},
+		"user_data": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "User data applied and reconciled with the pool, as a map of key to content",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"private_network_id": {
+			Type:             schema.TypeString,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			Description:      "ID of the private network in which the nodes are attached. Should be a member of the same VPC as the cluster.",
+		},
 		"zone":   zonal.Schema(),
 		"region": regional.Schema(),
 		// Computed elements
@@ -187,6 +304,7 @@ func poolSchema() map[string]*schema.Schema {
 		},
 		"version": {
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
 			Description: "The Kubernetes version of the pool",
 		},
@@ -248,6 +366,11 @@ func poolSchema() map[string]*schema.Schema {
 							},
 						},
 					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the node",
+					},
 				},
 			},
 		},
@@ -260,9 +383,13 @@ func poolSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Computed:         true,
 			Optional:         true,
-			ForceNew:         true,
 			Description:      "The ID of the security group",
 			DiffSuppressFunc: dsf.Locality,
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the pool",
 		},
 	}
 }
@@ -304,13 +431,17 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if minSize, ok := d.GetOk("min_size"); ok {
-		req.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
+		req.MinSize = new(uint32(minSize.(int)))
+	} else if req.Size == 0 {
+		req.MinSize = new(uint32(0))
+	} else {
+		req.MinSize = new(uint32(1))
 	}
 
 	if maxSize, ok := d.GetOk("max_size"); ok {
-		req.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+		req.MaxSize = new(uint32(maxSize.(int)))
 	} else {
-		req.MaxSize = scw.Uint32Ptr(req.Size)
+		req.MaxSize = new(req.Size)
 	}
 
 	if containerRuntime, ok := d.GetOk("container_runtime"); ok {
@@ -321,12 +452,12 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 
 	if maxSurge, ok := d.GetOk("upgrade_policy.0.max_surge"); ok {
 		req.UpgradePolicy = upgradePolicyReq
-		upgradePolicyReq.MaxSurge = scw.Uint32Ptr(uint32(maxSurge.(int)))
+		upgradePolicyReq.MaxSurge = new(uint32(maxSurge.(int)))
 	}
 
 	if maxUnavailable, ok := d.GetOk("upgrade_policy.0.max_unavailable"); ok {
 		req.UpgradePolicy = upgradePolicyReq
-		upgradePolicyReq.MaxUnavailable = scw.Uint32Ptr(uint32(maxUnavailable.(int)))
+		upgradePolicyReq.MaxUnavailable = new(uint32(maxUnavailable.(int)))
 	}
 
 	if volumeType, ok := d.GetOk("root_volume_type"); ok {
@@ -334,36 +465,74 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if volumeSize, ok := d.GetOk("root_volume_size_in_gb"); ok {
-		volumeSizeInBytes := scw.Size(uint64(volumeSize.(int)) * gb)
-		req.RootVolumeSize = &volumeSizeInBytes
+		req.RootVolumeSize = new(scw.Size(uint64(volumeSize.(int)) * gb))
 	}
 
 	if securityGroupID, ok := d.GetOk("security_group_id"); ok {
 		req.SecurityGroupID = types.ExpandStringPtr(locality.ExpandID(securityGroupID.(string)))
 	}
 
-	// check if the cluster is waiting for a pool
+	if labels, ok := d.GetOk("labels"); ok {
+		req.Labels = types.ExpandMapStringString(labels)
+	}
+
+	if taints, ok := d.GetOk("taints"); ok {
+		req.Taints = expandCoreV1Taints(taints)
+	}
+
+	if startupTaints, ok := d.GetOk("startup_taints"); ok {
+		req.StartupTaints = expandCoreV1Taints(startupTaints)
+	}
+
+	if rawUserData, ok := d.GetOk("user_data"); ok {
+		req.UserData = make(map[string][]byte)
+		for key, value := range rawUserData.(map[string]any) {
+			req.UserData[key] = []byte(value.(string))
+		}
+	}
+
+	if privateNetworkID, ok := d.GetOk("private_network_id"); ok {
+		req.PrivateNetworkID = types.ExpandStringPtr(locality.ExpandID(privateNetworkID))
+	}
+
+	// Validate pool configuration
+	diags := validateRootVolumeSpecs(ctx, m.(*meta.Meta).ScwClient(), req)
+	if diags.HasError() {
+		return diags
+	}
+
+	clusterID := locality.ExpandID(d.Get("cluster_id"))
+
 	cluster, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
-		ClusterID: locality.ExpandID(d.Get("cluster_id")),
+		ClusterID: clusterID,
 		Region:    region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diags, diag.FromErr(err)...)
 	}
 
+	diags = append(diags, validatePoolSize(ctx, k8sAPI, cluster, "", req)...)
+	if diags.HasError() {
+		return diags
+	}
+
+	// Check if the cluster is waiting for a pool
 	if cluster.Status == k8s.ClusterStatusCreating {
 		_, err = waitClusterStatus(ctx, k8sAPI, cluster, k8s.ClusterStatusReady, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.FromErr(err)
+			return append(diags, diag.FromErr(err)...)
 		}
 	}
 
 	res, err := k8sAPI.CreatePool(req, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diags, diag.FromErr(err)...)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
 		_, err = waitPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
@@ -410,7 +579,19 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("cluster_id", regional.NewIDString(region, pool.ClusterID))
+	diags := setPoolState(ctx, d, m, pool, k8sAPI, nodes)
+	diags = append(diags, setPoolUserData(ctx, d, k8sAPI, pool, false)...)
+
+	err = identity.SetRegionalIdentity(d, pool.Region, pool.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPoolState(ctx context.Context, d *schema.ResourceData, m any, pool *k8s.Pool, k8sAPI *k8s.API, nodes []map[string]any) diag.Diagnostics {
+	_ = d.Set("cluster_id", regional.NewIDString(pool.Region, pool.ClusterID))
 	_ = d.Set("name", pool.Name)
 	_ = d.Set("node_type", pool.NodeType)
 	_ = d.Set("autoscaling", pool.Autoscaling)
@@ -436,7 +617,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("updated_at", pool.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("status", pool.Status)
 	_ = d.Set("kubelet_args", flattenKubeletArgs(pool.KubeletArgs))
-	_ = d.Set("region", region)
+	_ = d.Set("region", pool.Region)
 	_ = d.Set("zone", pool.Zone)
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)
@@ -445,6 +626,15 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	if pool.PlacementGroupID != nil {
 		_ = d.Set("placement_group_id", zonal.NewID(pool.Zone, *pool.PlacementGroupID).String())
 	}
+
+	if pool.PrivateNetworkID != nil {
+		_ = d.Set("private_network_id", regional.NewID(pool.Region, *pool.PrivateNetworkID).String())
+	}
+
+	_ = d.Set("labels", flattenLabels(pool.Labels))
+	_ = d.Set("taints", flattenCoreV1Taints(pool.Taints))
+	_ = d.Set("startup_taints", flattenCoreV1Taints(pool.StartupTaints))
+	_ = d.Set("srn", pool.Srn)
 
 	// Get nodes' private IPs (if possible)
 	diags := diag.Diagnostics{}
@@ -474,7 +664,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 				ProjectID:    &projectID,
 			}
 
-			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, pool.Region, opts)
 
 			switch {
 			case err == nil:
@@ -506,6 +696,60 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	return diags
 }
 
+// fetchPoolUserData fetches the pool's user data from the API: it lists the user data
+// keys and then reads the content of each one.
+func fetchPoolUserData(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) (map[string]any, error) {
+	listResp, err := k8sAPI.ListUserData(&k8s.ListUserDataRequest{
+		Region: pool.Region,
+		PoolID: pool.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	userData := make(map[string]any, len(listResp.UserData))
+	for _, summary := range listResp.UserData {
+		file, err := k8sAPI.GetUserData(&k8s.GetUserDataRequest{
+			Region: pool.Region,
+			PoolID: pool.ID,
+			Key:    summary.Key,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
+
+		content, err := io.ReadAll(file.Content)
+		if err != nil {
+			return nil, err
+		}
+
+		userData[summary.Key] = string(content)
+	}
+
+	return userData, nil
+}
+
+// setPoolUserData reads the pool's user data from the API and stores it in state.
+// Unless alwaysFetch is true, it only performs the fetch when the pool is known to
+// have user data (i.e. user_data is non-empty in state or config), so pools without
+// user data do not trigger extra API calls. This enables drift detection: because
+// user_data is ForceNew and the API exposes no update endpoint, any change detected
+// here forces a pool replacement. The data source passes alwaysFetch, as it must
+// always expose the pool's user data.
+func setPoolUserData(ctx context.Context, d *schema.ResourceData, k8sAPI *k8s.API, pool *k8s.Pool, alwaysFetch bool) diag.Diagnostics {
+	existing, _ := d.Get("user_data").(map[string]any)
+	if !alwaysFetch && len(existing) == 0 {
+		return nil
+	}
+
+	userData, err := fetchPoolUserData(ctx, k8sAPI, pool)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diag.FromErr(d.Set("user_data", userData))
+}
+
 func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, poolID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
@@ -521,23 +765,23 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("autoscaling") {
-		updateRequest.Autoscaling = scw.BoolPtr(d.Get("autoscaling").(bool))
+		updateRequest.Autoscaling = new(d.Get("autoscaling").(bool))
 	}
 
 	if d.HasChange("autohealing") {
-		updateRequest.Autohealing = scw.BoolPtr(d.Get("autohealing").(bool))
+		updateRequest.Autohealing = new(d.Get("autohealing").(bool))
 	}
 
 	if d.HasChange("min_size") {
-		updateRequest.MinSize = scw.Uint32Ptr(uint32(d.Get("min_size").(int)))
+		updateRequest.MinSize = new(uint32(d.Get("min_size").(int)))
 	}
 
 	if d.HasChange("max_size") {
-		updateRequest.MaxSize = scw.Uint32Ptr(uint32(d.Get("max_size").(int)))
+		updateRequest.MaxSize = new(uint32(d.Get("max_size").(int)))
 	}
 
 	if !d.Get("autoscaling").(bool) && d.HasChange("size") {
-		updateRequest.Size = scw.Uint32Ptr(uint32(d.Get("size").(int)))
+		updateRequest.Size = new(uint32(d.Get("size").(int)))
 	}
 
 	if d.HasChange("tags") {
@@ -545,31 +789,107 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("kubelet_args") {
-		kubeletArgs := expandKubeletArgs(d.Get("kubelet_args"))
-		updateRequest.KubeletArgs = &kubeletArgs
+		updateRequest.KubeletArgs = new(expandKubeletArgs(d.Get("kubelet_args")))
 	}
 
 	upgradePolicyReq := &k8s.UpdatePoolRequestUpgradePolicy{}
 
 	if d.HasChange("upgrade_policy.0.max_surge") {
-		upgradePolicyReq.MaxSurge = scw.Uint32Ptr(uint32(d.Get("upgrade_policy.0.max_surge").(int)))
+		upgradePolicyReq.MaxSurge = new(uint32(d.Get("upgrade_policy.0.max_surge").(int)))
 	}
 
 	if d.HasChange("upgrade_policy.0.max_unavailable") {
-		upgradePolicyReq.MaxUnavailable = scw.Uint32Ptr(uint32(d.Get("upgrade_policy.0.max_unavailable").(int)))
+		upgradePolicyReq.MaxUnavailable = new(uint32(d.Get("upgrade_policy.0.max_unavailable").(int)))
 	}
 
 	updateRequest.UpgradePolicy = upgradePolicyReq
 
-	res, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
+	if d.HasChange("security_group_id") {
+		updateRequest.SecurityGroupID = types.ExpandStringPtr(locality.ExpandID(d.Get("security_group_id").(string)))
+	}
+
+	// Validate pool configuration
+	cluster, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
+		ClusterID: locality.ExpandID(d.Get("cluster_id")),
+		Region:    region,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	diags := validatePoolSize(ctx, k8sAPI, cluster, poolID, updateRequest)
+	if diags.HasError() {
+		return diags
+	}
+
+	pool, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
+	if err != nil {
+		return append(diags, diag.FromErr(err)...)
+	}
+
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
-		_, err = waitPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitPoolReady(ctx, k8sAPI, region, pool.ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	// Update pool labels and taints
+	if d.HasChange("labels") {
+		_, err := k8sAPI.SetPoolLabels(&k8s.SetPoolLabelsRequest{
+			Region: region,
+			PoolID: pool.ID,
+			Labels: types.ExpandMapStringString(d.Get("labels")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("taints") {
+		_, err := k8sAPI.SetPoolTaints(&k8s.SetPoolTaintsRequest{
+			Region: region,
+			PoolID: pool.ID,
+			Taints: expandCoreV1Taints(d.Get("taints")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("startup_taints") {
+		_, err := k8sAPI.SetPoolStartupTaints(&k8s.SetPoolStartupTaintsRequest{
+			Region:        region,
+			PoolID:        pool.ID,
+			StartupTaints: expandCoreV1Taints(d.Get("startup_taints")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if poolVersion, poolVersionSet := meta.GetRawConfigForKey(d, "version", cty.String); poolVersionSet {
+		if d.HasChange("version") {
+			_, err = k8sAPI.UpgradePool(&k8s.UpgradePoolRequest{
+				Region:  region,
+				PoolID:  poolID,
+				Version: poolVersion.(string),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	} else {
+		poolVersion = d.Get("version") // read computed value in state
+		if poolVersion != cluster.Version {
+			_, err = k8sAPI.UpgradePool(&k8s.UpgradePoolRequest{
+				Region:  region,
+				PoolID:  poolID,
+				Version: cluster.Version,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -615,6 +935,176 @@ func ResourceK8SPoolCustomDiff(_ context.Context, diff *schema.ResourceDiff, _ a
 		err := diff.SetNewComputed("nodes")
 		if err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func validatePoolSize(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Cluster, poolID string, requestRaw any) diag.Diagnostics {
+	var requestedSize, requestedMaxSize *uint32
+
+	switch req := requestRaw.(type) {
+	case *k8s.CreatePoolRequest:
+		requestedSize = new(req.Size)
+		requestedMaxSize = req.MaxSize
+	case *k8s.UpdatePoolRequest:
+		requestedSize = req.Size
+		requestedMaxSize = req.MaxSize
+	}
+
+	// If cluster is mutualized, we check that it has at least one other node
+	if !strings.Contains(cluster.Type, "dedicated") && requestedSize != nil && *requestedSize == 0 {
+		pools, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
+			Region:    cluster.Region,
+			ClusterID: cluster.ID,
+		}, scw.WithAllPages(), scw.WithContext(ctx))
+		if err != nil {
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Could not validate pool size",
+					Detail:   fmt.Sprintf("failed to list cluster pools: %v", err),
+				},
+			}
+		}
+
+		for _, pool := range pools.Pools {
+			if pool.ID == poolID {
+				continue
+			}
+
+			if pool.Size >= 1 {
+				return nil
+			}
+		}
+
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       "Invalid pool size",
+				Detail:        "a mutualized cluster cannot have less than 1 node",
+				AttributePath: cty.GetAttrPath("size"),
+			},
+		}
+	}
+
+	if requestedMaxSize != nil && *requestedMaxSize < 1 {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       "Invalid pool max_size",
+				Detail:        "Pool's max size must be at least 1. If max_size is unset but size is set to 0, max_size will also be automatically set to 0. In this case, please set max_size to at least 1.",
+				AttributePath: cty.GetAttrPath("max_size"),
+			},
+		}
+	}
+
+	return nil
+}
+
+func validateRootVolumeSpecs(ctx context.Context, scwClient *scw.Client, req *k8s.CreatePoolRequest) diag.Diagnostics {
+	instanceAPI := instance.NewAPI(scwClient)
+	requestedNodeType := strings.ToUpper(strings.ReplaceAll(req.NodeType, "_", "-"))
+	found := false
+
+	serverTypes, err := instanceAPI.ListServersTypes(&instance.ListServersTypesRequest{
+		Zone: req.Zone,
+	}, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Could not validate root volume specs",
+				Detail:   fmt.Sprintf("failed to list server types for comparison: %v", err),
+			},
+		}
+	}
+
+	for serverTypeName, serverTypeSpecs := range serverTypes.Servers {
+		if requestedNodeType != serverTypeName {
+			continue
+		}
+
+		found = true
+
+		if serverTypeSpecs.VolumesConstraint == nil {
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Could not validate root volume specs",
+					Detail:   "Server type had no volume constraints to check",
+				},
+			}
+		}
+
+		if req.RootVolumeSize != nil && *req.RootVolumeSize < nodeMinVolumeSize {
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Invalid root volume size",
+					Detail: fmt.Sprintf("requested size must be at least %dGB, got: %d,",
+						nodeMinVolumeSize/scw.GB, *req.RootVolumeSize/scw.GB),
+					AttributePath: cty.GetAttrPath("root_volume_size"),
+				},
+			}
+		}
+
+		switch req.RootVolumeType {
+		case k8s.PoolVolumeTypeLSSD:
+			if serverTypeSpecs.VolumesConstraint.MaxSize == 0 {
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  "Invalid root volume type",
+						Detail: fmt.Sprintf("unsupported volume type %q for node type %q",
+							req.RootVolumeType, req.NodeType),
+						AttributePath: cty.GetAttrPath("root_volume_type"),
+					},
+				}
+			}
+
+			if req.RootVolumeSize != nil && *req.RootVolumeSize > serverTypeSpecs.VolumesConstraint.MaxSize {
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  "Invalid root volume size",
+						Detail: fmt.Sprintf("local volume size must be between %dGB and %dGB, got: %d",
+							nodeMinVolumeSize/scw.GB, serverTypeSpecs.VolumesConstraint.MaxSize/scw.GB, *req.RootVolumeSize/scw.GB),
+						AttributePath: cty.GetAttrPath("root_volume_size"),
+					},
+				}
+			}
+		case k8s.PoolVolumeTypeSbs5k, k8s.PoolVolumeTypeSbs15k:
+			if req.RootVolumeSize != nil && *req.RootVolumeSize > nodeMaxVolumeSize {
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  "Invalid root volume size",
+						Detail: fmt.Sprintf("block volume size must be between %dGB and %dGB, got: %d",
+							nodeMinVolumeSize/scw.GB, nodeMaxVolumeSize/scw.GB, *req.RootVolumeSize/scw.GB),
+						AttributePath: cty.GetAttrPath("root_volume_size"),
+					},
+				}
+			}
+		default:
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Could not validate root volume specs",
+					Detail:   fmt.Sprintf("unknown root_volume_type %q", req.RootVolumeType),
+				},
+			}
+		}
+	}
+
+	if !found {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Could not validate root volume specs",
+				Detail:   fmt.Sprintf("could not find node type %q in server types list", req.NodeType),
+			},
 		}
 	}
 

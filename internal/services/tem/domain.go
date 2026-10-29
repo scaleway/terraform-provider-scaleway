@@ -10,6 +10,7 @@ import (
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -25,11 +26,14 @@ func ResourceDomain() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(DefaultDomainCreateTimeout),
+			Update:  schema.DefaultTimeout(DefaultDomainCreateTimeout),
 			Delete:  schema.DefaultTimeout(DefaultDomainTimeout),
-			Default: schema.DefaultTimeout(DefaultDomainTimeout),
+			Default: schema.DefaultTimeout(DefaultDomainCreateTimeout),
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    domainSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -127,7 +131,12 @@ func domainSchema() map[string]*schema.Schema {
 		"mx_config": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "MX record configuration for the domain blackhole",
+			Description: "MX exchange hostname for the domain blackhole (without priority), suitable for scaleway_domain_record.data",
+		},
+		"mx_priority": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "MX priority for the domain blackhole, suitable for scaleway_domain_record.priority",
 		},
 		"smtp_host": {
 			Type:        schema.TypeString,
@@ -218,14 +227,21 @@ func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		Region:     region,
 		ProjectID:  d.Get("project_id").(string),
 		DomainName: d.Get("name").(string),
-		AcceptTos:  types.ExpandBoolPtr(d.Get("accept_tos").(bool)),
+		AcceptTos:  types.ExpandBoolPtr(d.Get("accept_tos").(bool)), //nolint:staticcheck
 		Autoconfig: d.Get("autoconfig").(bool),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, domain.ID))
+	if err := identity.SetRegionalIdentity(d, region, domain.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = WaitForDomain(ctx, api, region, domain.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceDomainRead(ctx, d, m)
 }
@@ -250,6 +266,39 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	if err := identity.SetRegionalIdentity(d, region, id); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setDomainState(d, domain, region)
+}
+
+// readDomainIntoState fetches the domain and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readDomainIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	domain, err := api.GetDomain(&tem.GetDomainRequest{
+		Region:   region,
+		DomainID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setDomainState(d, domain, region)
+}
+
+func setDomainState(d *schema.ResourceData, domain *tem.Domain, region scw.Region) diag.Diagnostics {
 	_ = d.Set("name", domain.Name)
 	_ = d.Set("accept_tos", true)
 	_ = d.Set("autoconfig", domain.Autoconfig)
@@ -288,10 +337,24 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag
 
 		// MX
 		if domain.Records.Mx != nil {
-			_ = d.Set("mx_config", domain.Records.Mx.Value)
+			priority, exchange := FlattenMXRecordValue(domain.Records.Mx.Value)
+			_ = d.Set("mx_config", exchange)
+			_ = d.Set("mx_priority", priority)
+
+			if exchange != "" {
+				_ = d.Set("mx_blackhole", exchange)
+			} else {
+				_ = d.Set("mx_blackhole", tem.MXBlackhole)
+			}
 		} else {
 			_ = d.Set("mx_config", "")
+			_ = d.Set("mx_priority", 0)
+			_ = d.Set("mx_blackhole", tem.MXBlackhole)
 		}
+	} else {
+		_ = d.Set("mx_config", "")
+		_ = d.Set("mx_priority", 0)
+		_ = d.Set("mx_blackhole", tem.MXBlackhole)
 	}
 
 	_ = d.Set("smtp_host", tem.SMTPHost)
@@ -300,7 +363,6 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("smtp_port_alternative", tem.SMTPPortAlternative)
 	_ = d.Set("smtps_port", tem.SMTPSPort)
 	_ = d.Set("smtps_port_alternative", tem.SMTPSPortAlternative)
-	_ = d.Set("mx_blackhole", tem.MXBlackhole)
 	_ = d.Set("reputation", flattenDomainReputation(domain.Reputation))
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", domain.ProjectID)
@@ -322,7 +384,12 @@ func ResourceDomainUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			Region:     region,
 			DomainID:   id,
 			Autoconfig: &autoconfig,
-		})
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = WaitForDomainAutoconfig(ctx, api, region, id, autoconfig, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}

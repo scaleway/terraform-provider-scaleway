@@ -1,0 +1,35 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.DataSourceTemplateType */ -}}
+---
+subcategory: "Billing"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# Data Source: {{ .Name }}
+
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+- `notification_id` - (Required) The ID of the budget alert notification to retrieve.
+- `budget_alert_id` - (Optional) The ID of the budget alert. If not provided, it will be retrieved from the notification.
+- `organization_id` - (Optional) The organization ID. If not provided, the default organization configured in the provider is used.
+
+## Attributes Reference
+
+The following attributes are exported:
+
+- `id` - The ID of the budget alert notification
+- `created_at` - The date and time of budget alert notification creation
+- `updated_at` - The date and time when the budget alert notification was last updated
+- `type` - The type of notification (sms, email, or webhook)
+- `recipients` - List of recipients for this notification

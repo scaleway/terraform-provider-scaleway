@@ -238,6 +238,11 @@ func TestAccAcl_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_lb_acl.acl01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: `
 					resource scaleway_lb_ip ip01 {}
 				`,

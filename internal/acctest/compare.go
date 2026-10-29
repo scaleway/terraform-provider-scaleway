@@ -1,8 +1,10 @@
 package acctest
 
 import (
+	"net/http"
 	"net/url"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -49,6 +51,28 @@ func compareJSONBodies(request, cassette map[string]any, strict bool) bool {
 			// Fails match if cassettes contains a field not in actual requests
 			// Fields should not disappear from requests unless a sdk breaking change
 			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
+			return false
+		}
+	}
+
+	return true
+}
+
+// compareHeaders checks that every non-ignored header of the played request is present in the
+// cassette request with the same value. Extra headers in the cassette are allowed, mirroring the
+// body matcher: a request may add new headers without invalidating old cassettes.
+func compareHeaders(requestHeaders, cassetteHeaders http.Header) bool {
+	for key, requestValues := range requestHeaders {
+		if slices.Contains(HeaderMatcherIgnore, key) {
+			continue
+		}
+
+		cassetteValues, ok := cassetteHeaders[key]
+		if !ok {
+			return false
+		}
+
+		if !compareStringSlices(requestValues, cassetteValues) {
 			return false
 		}
 	}
@@ -108,8 +132,8 @@ func compareFieldsStrings(expected, actual string) bool {
 	actualHandled := actual
 
 	// Remove s3 url suffix to allow comparison
-	if strings.HasSuffix(actual, ".s3-website.fr-par.scw.cloud") {
-		actual = strings.TrimSuffix(actual, ".s3-website.fr-par.scw.cloud")
+	if before, ok := strings.CutSuffix(actual, ".s3-website.fr-par.scw.cloud"); ok {
+		actual = before
 		expected = strings.TrimSuffix(expected, ".s3-website.fr-par.scw.cloud")
 	}
 
@@ -133,12 +157,8 @@ func compareStringSlices(request, cassette []string) bool {
 		return false
 	}
 
-	sort.Slice(request, func(i, j int) bool {
-		return request[i] < request[j]
-	})
-	sort.Slice(cassette, func(i, j int) bool {
-		return cassette[i] < cassette[j]
-	})
+	slices.Sort(request)
+	slices.Sort(cassette)
 
 	for i, v := range request {
 		if !compareFieldsStrings(v, cassette[i]) {

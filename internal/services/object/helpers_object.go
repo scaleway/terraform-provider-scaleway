@@ -6,22 +6,28 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"os"
 	"runtime"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	smithyendpoints "github.com/aws/smithy-go/endpoints"
+	"github.com/aws/smithy-go/middleware"
+	"github.com/hashicorp/aws-sdk-go-base/v2/tfawserr"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -29,6 +35,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/workerpool"
+	"github.com/scaleway/terraform-provider-scaleway/v2/version"
 )
 
 const (
@@ -47,8 +54,15 @@ func (r *scalewayResolver) ResolveEndpoint(ctx context.Context, params s3.Endpoi
 	return s3.NewDefaultEndpointResolverV2().ResolveEndpoint(ctx, params)
 }
 
-func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpClient *http.Client) (*s3.Client, error) {
-	endpoint := "https://s3." + region + ".scw.cloud"
+func DefaultS3Endpoint(region string) string {
+	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
+}
+
+func newS3Client(ctx context.Context, region, accessKey, secretKey, customEndpoint string, usePathStyle bool, httpClient *http.Client) (*s3.Client, error) {
+	endpoint := customEndpoint
+	if endpoint == "" {
+		endpoint = DefaultS3Endpoint(region)
+	}
 
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(region),
@@ -62,6 +76,10 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String(endpoint)
 		o.EndpointResolverV2 = &scalewayResolver{region: region}
+		o.UsePathStyle = usePathStyle
+		o.APIOptions = append(o.APIOptions, func(stack *middleware.Stack) error {
+			return awsmiddleware.AddUserAgentKeyValue("terraform-provider-scaleway", version.Version)(stack)
+		})
 	})
 
 	return client, nil
@@ -70,18 +88,50 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 func NewS3ClientFromMeta(ctx context.Context, meta *meta.Meta, region string) (*s3.Client, error) {
 	accessKey, _ := meta.ScwClient().GetAccessKey()
 	secretKey, _ := meta.ScwClient().GetSecretKey()
-
-	projectID, _ := meta.ScwClient().GetDefaultProjectID()
-	if projectID != "" {
-		accessKey = accessKeyWithProjectID(accessKey, projectID)
-	}
+	s3UsePathStyle := meta.S3UsePathStyle()
 
 	if region == "" {
 		defaultRegion, _ := meta.ScwClient().GetDefaultRegion()
 		region = defaultRegion.String()
 	}
 
-	return newS3Client(ctx, region, accessKey, secretKey, meta.HTTPClient())
+	s3Endpoint, err := retrieveS3Endpoint(ctx, meta, nil, nil, region)
+	if err != nil {
+		return nil, err
+	}
+
+	projectID, _ := meta.ScwClient().GetDefaultProjectID()
+	if projectID != "" {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
+
+	return newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.HTTPClient())
+}
+
+func NewS3ClientFromMetaWithProjectID(ctx context.Context, meta *meta.Meta, region, projectID string) (*s3.Client, error) {
+	accessKey, _ := meta.ScwClient().GetAccessKey()
+	secretKey, _ := meta.ScwClient().GetSecretKey()
+	s3UsePathStyle := meta.S3UsePathStyle()
+
+	if region == "" {
+		defaultRegion, _ := meta.ScwClient().GetDefaultRegion()
+		region = defaultRegion.String()
+	}
+
+	s3Endpoint, err := retrieveS3Endpoint(ctx, meta, nil, nil, region)
+	if err != nil {
+		return nil, err
+	}
+
+	if projectID == "" {
+		projectID, _ = meta.ScwClient().GetDefaultProjectID()
+	}
+
+	if projectID != "" {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
+
+	return newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.HTTPClient())
 }
 
 func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3.Client, scw.Region, error) {
@@ -96,8 +146,14 @@ func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
+	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
 
-	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, meta.ExtractHTTPClient(m))
+	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
+	if err != nil {
+		return nil, "", err
+	}
+
+	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
 	if err != nil {
 		return nil, "", err
 	}
@@ -132,7 +188,14 @@ func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m an
 		}
 	}
 
-	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, meta.ExtractHTTPClient(m))
+	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
+
+	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -152,8 +215,14 @@ func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
+	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
 
-	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, meta.ExtractHTTPClient(m))
+	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
+	if err != nil {
+		return nil, "", "", "", err
+	}
+
+	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -173,8 +242,14 @@ func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
+	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
 
-	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, meta.ExtractHTTPClient(m))
+	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region)
+	if err != nil {
+		return nil, "", name, "", err
+	}
+
+	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -189,13 +264,131 @@ func s3ClientForceRegion(ctx context.Context, d *schema.ResourceData, m any, reg
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
+	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
 
-	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, meta.ExtractHTTPClient(m))
+	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region)
+	if err != nil {
+		return nil, err
+	}
+
+	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
 	if err != nil {
 		return nil, err
 	}
 
 	return s3Client, err
+}
+
+// retrieveS3Endpoint retrieves the S3 API URL according to various
+// configuration sources. The order priority follows is as follow:
+// - "provider" block
+// - SCW environment variable
+// - AWS configuration
+// - Profile field value
+// - Default value, built with the provided region
+func retrieveS3Endpoint(
+	ctx context.Context,
+	metaStruct *meta.Meta,
+	d *schema.ResourceData,
+	m any,
+	region string,
+) (string, error) {
+	// Provider block
+	if metaStruct != nil {
+		if ep := metaStruct.Endpoints()["s3"]; ep != "" {
+			return ep, nil
+		}
+	}
+
+	if d != nil && m != nil {
+		if ep := meta.ExtractS3Endpoint(d, m); ep != "" {
+			return ep, nil
+		}
+	}
+
+	// SCW environment variable
+	if ep := os.Getenv(scw.ScwS3EndpointEnv); ep != "" {
+		return ep, nil
+	}
+
+	// AWS configuration
+	if ep := scw.GetS3EndpointFromAWSConf(); ep != "" {
+		return ep, nil
+	}
+
+	// Profile field value
+	var (
+		profileS3Endpoint string
+		s3EndpointOk      bool
+	)
+
+	var scwClient *scw.Client
+
+	if m != nil {
+		scwClient = meta.ExtractScwClient(m)
+	} else if metaStruct != nil {
+		scwClient = metaStruct.ScwClient()
+	}
+
+	profileS3Endpoint, s3EndpointOk = scwClient.GetS3Endpoint()
+
+	if s3EndpointOk && profileS3Endpoint != "" {
+		// Don't use the default S3 endpoint with the default region,
+		// in case a different region was passed to this function
+
+		// The profileS3Endpoint will be automatically generated by the SDK,
+		// even when not explicitly set by the user in configuration.
+		// Since we cannot differentiate both cases, we need to use the endpoint
+		// set in config ONLY if different from the auto-generated one.
+		defaultRegion, _ := scwClient.GetDefaultRegion()
+
+		autoGeneratedEndpoint := fmt.Sprintf("https://s3.%s.scw.cloud", defaultRegion)
+		if profileS3Endpoint != autoGeneratedEndpoint {
+			return profileS3Endpoint, nil
+		}
+	}
+
+	// Default value, built with the provided region
+	return DefaultS3Endpoint(region), nil
+}
+
+// retrieveS3UsePathStyle retrieves the S3 UsePathStyle flag value according to
+// various configuration sources. The order priority follows is as follows:
+// - "provider" block
+// - SCW environment variable
+// - Profile field value
+// Defaults to false.
+func retrieveS3UsePathStyle(
+	metaStruct *meta.Meta,
+	d *schema.ResourceData,
+	m any,
+) bool {
+	// Provider block
+	if metaStruct != nil {
+		return metaStruct.S3UsePathStyle()
+	}
+
+	if usePathStyle, ok := meta.ExtractS3UsePathStyle(d, m); ok {
+		return usePathStyle
+	}
+
+	// SCW environment variable
+	usePathStyleStr := os.Getenv(scw.ScwS3UsePathStyleEnv)
+	switch usePathStyleStr {
+	case "true":
+		return true
+	case "false":
+		return false
+	}
+
+	// Profile field value
+	if m != nil {
+		scwClient := meta.ExtractScwClient(m)
+
+		return scwClient.GetS3UsePathStyle()
+	}
+
+	return false
 }
 
 func accessKeyWithProjectID(accessKey string, projectID string) string {
@@ -228,7 +421,7 @@ func ExpandObjectBucketTags(tags any) []s3Types.Tag {
 	tagsSet := make([]s3Types.Tag, 0, len(tags.(map[string]any)))
 	for key, value := range tags.(map[string]any) {
 		tagsSet = append(tagsSet, s3Types.Tag{
-			Key:   scw.StringPtr(key),
+			Key:   new(key),
 			Value: types.ExpandStringPtr(value),
 		})
 	}
@@ -236,12 +429,31 @@ func ExpandObjectBucketTags(tags any) []s3Types.Tag {
 	return tagsSet
 }
 
-func objectBucketEndpointURL(bucketName string, region scw.Region) string {
-	return fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region)
+func ComputeObjectBucketURLs(
+	d *schema.ResourceData, m any, bucketName string, region scw.Region,
+) (endpoint, apiEndpoint string) {
+	usePathStyle := retrieveS3UsePathStyle(nil, d, m)
+	apiEndpoint = objectBucketAPIEndpointURL(d, m, region)
+
+	if usePathStyle {
+		return fmt.Sprintf("%s/%s", apiEndpoint, bucketName), apiEndpoint
+	}
+
+	parsed, err := url.Parse(apiEndpoint)
+	if err == nil && parsed.Scheme != "" && parsed.Host != "" {
+		return fmt.Sprintf("%s://%s.%s", parsed.Scheme, bucketName, parsed.Host), apiEndpoint
+	}
+
+	return fmt.Sprintf("%s.%s", bucketName, apiEndpoint), apiEndpoint
 }
 
-func objectBucketAPIEndpointURL(region scw.Region) string {
-	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
+func objectBucketAPIEndpointURL(d *schema.ResourceData, m any, region scw.Region) string {
+	s3Endpoint := meta.ExtractS3Endpoint(d, m)
+	if s3Endpoint != "" {
+		return s3Endpoint
+	}
+
+	return DefaultS3Endpoint(region.String())
 }
 
 // IsS3Err returns true if the error matches all these conditions:
@@ -249,8 +461,7 @@ func objectBucketAPIEndpointURL(region scw.Region) string {
 //   - Error.Code() matches code
 //   - Error.Message() contains message
 func IsS3Err(err error, code string, message string) bool {
-	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
+	if awsErr, ok := errors.AsType[smithy.APIError](err); ok {
 		return awsErr.ErrorCode() == code && strings.Contains(awsErr.ErrorMessage(), message)
 	}
 
@@ -356,7 +567,7 @@ func expandBucketCORS(ctx context.Context, rawCors []any, bucket string) []s3Typ
 				rule.ExposeHeaders = toStringSlice(ctx, value)
 			case "max_age_seconds":
 				if maxAge, ok := value.(int); ok {
-					rule.MaxAgeSeconds = scw.Int32Ptr(int32(maxAge))
+					rule.MaxAgeSeconds = new(int32(maxAge))
 				} else {
 					tflog.Warn(ctx, fmt.Sprintf("Invalid type for max_age_seconds in bucket %s: %T", bucket, value))
 				}
@@ -392,11 +603,11 @@ func toStringSlice(ctx context.Context, input any) []string {
 
 func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName string, key string, versionID string, _ bool) error {
 	input := &s3.DeleteObjectInput{
-		Bucket: scw.StringPtr(bucketName),
-		Key:    scw.StringPtr(key),
+		Bucket: new(bucketName),
+		Key:    new(key),
 	}
 	if versionID != "" {
-		input.VersionId = scw.StringPtr(versionID)
+		input.VersionId = new(versionID)
 	}
 
 	_, err := conn.DeleteObject(ctx, input)
@@ -408,7 +619,7 @@ func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName stri
 // returns true if legal hold was removed
 func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucketName string, objectVersion *s3Types.ObjectVersion) (bool, error) {
 	objectHead, err := conn.HeadObject(ctx, &s3.HeadObjectInput{
-		Bucket:    scw.StringPtr(bucketName),
+		Bucket:    new(bucketName),
 		Key:       objectVersion.Key,
 		VersionId: objectVersion.VersionId,
 	})
@@ -423,7 +634,7 @@ func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucket
 	}
 
 	_, err = conn.PutObjectLegalHold(ctx, &s3.PutObjectLegalHoldInput{
-		Bucket:    scw.StringPtr(bucketName),
+		Bucket:    new(bucketName),
 		Key:       objectVersion.Key,
 		VersionId: objectVersion.VersionId,
 		LegalHold: &s3Types.ObjectLockLegalHold{
@@ -469,7 +680,7 @@ func processAllPagesObject(ctx context.Context, bucketName string, conn *s3.Clie
 	deletionWorkers := findDeletionWorkerCapacity()
 	nObject := int64(0)
 	input := &s3.ListObjectVersionsInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	}
 	pages := s3.NewListObjectVersionsPaginator(conn, input)
 	pool := workerpool.NewWorkerPool(deletionWorkers)
@@ -553,10 +764,7 @@ func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string
 }
 
 func findDeletionWorkerCapacity() int {
-	deletionWorkers := runtime.NumCPU()
-	if deletionWorkers > maxObjectVersionDeletionWorkers {
-		deletionWorkers = maxObjectVersionDeletionWorkers
-	}
+	deletionWorkers := min(runtime.NumCPU(), maxObjectVersionDeletionWorkers)
 
 	return deletionWorkers
 }
@@ -578,7 +786,31 @@ func transitionHash(v any) int {
 		buf.WriteString(v.(string) + "-")
 	}
 
-	return types.StringHashcode(buf.String())
+	return schema.HashString(buf.String())
+}
+
+func noncurrentVersionTransitionHash(v any) int {
+	var buf bytes.Buffer
+
+	m, ok := v.(map[string]any)
+
+	if !ok {
+		return 0
+	}
+
+	if v, ok := m["noncurrent_days"]; ok {
+		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
+	}
+
+	if v, ok := m["newer_noncurrent_versions"]; ok {
+		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
+	}
+
+	if v, ok := m["storage_class"]; ok {
+		buf.WriteString(v.(string) + "-")
+	}
+
+	return schema.HashString(buf.String())
 }
 
 const (
@@ -674,9 +906,7 @@ func WebsiteDomainURL(region string) string {
 }
 
 func buildBucketOwnerID(id *string) *string {
-	s := fmt.Sprintf("%[1]s:%[1]s", *id)
-
-	return &s
+	return new(fmt.Sprintf("%[1]s:%[1]s", *id))
 }
 
 func NormalizeOwnerID(id *string) *string {
@@ -734,4 +964,136 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 
 		return true, true
 	}
+}
+
+func setProjectIDFromACL(
+	ctx context.Context,
+	s3Client *s3.Client,
+	d *schema.ResourceData,
+	bucketName string,
+	diags diag.Diagnostics,
+) (
+	diag.Diagnostics, bool,
+) {
+	if s3Client == nil || d == nil || bucketName == "" {
+		return diags, false
+	}
+
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
+			return diags, false
+		}
+	} else if acl != nil && acl.Owner != nil {
+		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
+	}
+
+	return diags, true
+}
+
+func findServerSideEncryptionConfiguration(ctx context.Context, conn *s3.Client, bucketName string) (*s3Types.ServerSideEncryptionConfiguration, error) {
+	input := s3.GetBucketEncryptionInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	output, err := conn.GetBucketEncryption(ctx, &input)
+
+	if tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucket, ErrCodeServerSideEncryptionConfigurationNotFound) {
+		return nil, &retry.NotFoundError{
+			LastError: err,
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if output == nil || output.ServerSideEncryptionConfiguration == nil {
+		return nil, fmt.Errorf("no configuration found for bucket %q", bucketName)
+	}
+
+	return output.ServerSideEncryptionConfiguration, nil
+}
+
+func expandServerSideEncryptionByDefault(l []any) *s3Types.ServerSideEncryptionByDefault {
+	if len(l) == 0 || l[0] == nil {
+		return nil
+	}
+
+	tfMap, ok := l[0].(map[string]any)
+	if !ok {
+		return nil
+	}
+
+	sse := &s3Types.ServerSideEncryptionByDefault{}
+
+	if v, ok := tfMap["sse_algorithm"].(string); ok && v != "" {
+		sse.SSEAlgorithm = s3Types.ServerSideEncryption(v)
+	}
+
+	if v, ok := tfMap["kms_master_key_id"].(string); ok && v != "" {
+		sse.KMSMasterKeyID = new(v)
+	}
+
+	return sse
+}
+
+func expandServerSideEncryptionRules(l []any) []s3Types.ServerSideEncryptionRule {
+	var rules []s3Types.ServerSideEncryptionRule
+
+	for _, tfMapRaw := range l {
+		tfMap, ok := tfMapRaw.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		rule := s3Types.ServerSideEncryptionRule{}
+
+		if v, ok := tfMap["apply_server_side_encryption_by_default"].([]any); ok && len(v) > 0 && v[0] != nil {
+			rule.ApplyServerSideEncryptionByDefault = expandServerSideEncryptionByDefault(v)
+		}
+
+		if v, ok := tfMap["bucket_key_enabled"].(bool); ok && v {
+			rule.BucketKeyEnabled = aws.Bool(v)
+		}
+
+		rules = append(rules, rule)
+	}
+
+	return rules
+}
+
+func flattenServerSideEncryptionRules(rules []s3Types.ServerSideEncryptionRule) []any {
+	results := make([]any, 0, len(rules))
+
+	for _, rule := range rules {
+		m := make(map[string]any)
+
+		if rule.ApplyServerSideEncryptionByDefault != nil {
+			m["apply_server_side_encryption_by_default"] = flattenServerSideEncryptionByDefault(rule.ApplyServerSideEncryptionByDefault)
+		}
+
+		if rule.BucketKeyEnabled != nil {
+			m["bucket_key_enabled"] = rule.BucketKeyEnabled
+		}
+
+		results = append(results, m)
+	}
+
+	return results
+}
+
+func flattenServerSideEncryptionByDefault(sse *s3Types.ServerSideEncryptionByDefault) []any {
+	if sse == nil {
+		return nil
+	}
+
+	m := map[string]any{
+		"kms_master_key_id": sse.KMSMasterKeyID,
+		"sse_algorithm":     sse.SSEAlgorithm,
+	}
+
+	return []any{m}
 }

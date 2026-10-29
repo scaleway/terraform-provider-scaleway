@@ -5,22 +5,24 @@ page_title: "Scaleway: scaleway_k8s_acl"
 
 # Resource: scaleway_k8s_acl
 
-Creates and manages Scaleway Kubernetes Cluster authorized IPs.
-For more information, please refer to the [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/#path-access-control-list-add-new-acls).
+The [`scaleway_k8s_cluster_acl`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/k8s_cluster_acl) resource allows you to create and manage Scaleway Kubernetes Cluster authorized IPs.
+
+Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute/kubernetes/) and [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/) for more information.
 
 ~> **Important:** When creating a Cluster, it comes with a default ACL rule allowing all ranges `0.0.0.0/0`.
 Defining custom ACLs with Terraform will overwrite this rule, but it will be recreated automatically when deleting the ACL resource.
 
+
+
 ## Example Usage
 
-### Basic
-
 ```terraform
+# Basic ACL usage
 resource "scaleway_vpc_private_network" "acl_basic" {}
 
 resource "scaleway_k8s_cluster" "acl_basic" {
   name                        = "acl-basic"
-  version                     = "1.32.2"
+  version                     = "1.35.3"
   cni                         = "cilium"
   delete_additional_resources = true
   private_network_id          = scaleway_vpc_private_network.acl_basic.id
@@ -39,14 +41,14 @@ resource "scaleway_k8s_acl" "acl_basic" {
 }
 ```
 
-### Full-isolation
-
 ```terraform
+# Full isolation example
+
 resource "scaleway_vpc_private_network" "acl_basic" {}
 
 resource "scaleway_k8s_cluster" "acl_basic" {
   name                        = "acl-basic"
-  version                     = "1.32.2"
+  version                     = "1.35.3"
   cni                         = "cilium"
   delete_additional_resources = true
   private_network_id          = scaleway_vpc_private_network.acl_basic.id
@@ -57,6 +59,9 @@ resource "scaleway_k8s_acl" "acl_basic" {
   no_ip_allowed = true
 }
 ```
+
+
+
 
 ## Argument Reference
 
@@ -74,7 +79,7 @@ The following arguments are supported:
 
 ~> **Important:** This block cannot be defined if the `no_ip_allowed` field is set to true.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the ACL rule should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the ACL rule should be created.
 
 The `acl_rules` block supports:
 
@@ -98,6 +103,7 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** Kubernetes ACLs' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `acl_rules.#.id` - The ID of each individual ACL rule.
+- `acl_rules.#.srn` - The Scaleway Resource Name (SRN) of each individual ACL rule.
 
 ## Import
 

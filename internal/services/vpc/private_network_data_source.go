@@ -9,6 +9,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -52,13 +54,15 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	if !ok {
 		pnName := d.Get("name").(string)
 
-		res, err := vpcAPI.ListPrivateNetworks(
-			&vpc.ListPrivateNetworksRequest{
-				Name:      types.ExpandStringPtr(pnName),
-				Region:    region,
-				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-				VpcID:     types.ExpandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
-			}, scw.WithContext(ctx))
+		res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListPrivateNetworksResponse, error) {
+			return vpcAPI.ListPrivateNetworks(
+				&vpc.ListPrivateNetworksRequest{
+					Name:      types.ExpandStringPtr(pnName),
+					Region:    region,
+					ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+					VpcID:     types.ExpandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
+				}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -79,14 +83,15 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	d.SetId(regionalID)
 	_ = d.Set("private_network_id", regionalID)
 
-	diags := ResourceVPCPrivateNetworkRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read private network state")...)
+	pn, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.PrivateNetwork, error) {
+		return vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
+			PrivateNetworkID: regional.ExpandID(privateNetworkID).ID,
+			Region:           region,
+		}, scw.WithContext(ctx))
+	})
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("private network (%s) not found", regionalID)
-	}
-
-	return nil
+	return setPrivateNetworkState(d, m, pn)
 }

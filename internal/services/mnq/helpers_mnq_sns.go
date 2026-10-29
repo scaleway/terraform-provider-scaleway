@@ -84,10 +84,6 @@ func NewSNSClient(ctx context.Context, httpClient *http.Client, region string, e
 	return sns.NewFromConfig(customConfig), nil
 }
 
-func composeMNQSubscriptionID(region scw.Region, projectID string, topicName string, subscriptionID string) string {
-	return fmt.Sprintf("%s/%s/%s/%s", region, projectID, topicName, subscriptionID)
-}
-
 func DecomposeMNQSubscriptionID(id string) (arn *ARN, err error) {
 	parts := strings.Split(id, "/")
 	if len(parts) != 4 {

@@ -44,12 +44,8 @@ resource "scaleway_account_project" "project" {
   name = "my-observability-project"
 }
 
-resource "scaleway_cockpit" "main" {
-  project_id = scaleway_account_project.project.id
-}
-
 data "scaleway_cockpit_grafana" "main" {
-  project_id = scaleway_cockpit.main.project_id
+  project_id = scaleway_account_project.project.id
 }
 
 output "grafana_connection_info" {
@@ -98,6 +94,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the project (same as `project_id`).
 - `grafana_url` - The URL to access the Grafana dashboard. Use your Scaleway IAM credentials to authenticate.
+- `srn` - The Scaleway Resource Name (SRN) of the Grafana instance.
 
 ## Authentication
 

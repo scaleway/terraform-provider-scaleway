@@ -66,17 +66,20 @@ The following arguments are supported:
 
 - `cpu_limit` - (Required) The amount of vCPU computing resources to allocate to each container running the job.
 - `memory_limit` - (Required) The memory computing resources in MB to allocate to each container running the job.
+- `local_storage_capacity` - (Required) The local storage capacity of the job in MiB.
 - `image_uri` - (Required) The uri of the container image that will be used for the job run.
 - `name` - (Optional) The name of the job.
 - `description` - (Optional) The description of the job
-- `command` - (Optional) The command that will be run in the container if specified.
+- `command` - (Deprecated) The command that will be run in the container if specified.
+- `startup_command` - (Optional) The command (main executable or entrypoint script) that will be run in the container (in list of string format). Overrides the default command defined in the job image.
+- `args` - (Optional) The arguments that will be passed to the startup command at runtime (in list of string format). Overrides the default arguments defined in the job image. Environment variables and secrets can be included, and will be expanded before the arguments are used.
 - `timeout` - (Optional) The job run timeout, in Go Time format (ex: `2h30m25s`)
 - `env` - (Optional) The environment variables of the container.
 - `cron` - (Optional) The cron configuration
     - `schedule` - Cron format string.
     - `timezone` - The timezone, must be a canonical TZ identifier as found in this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the Job.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Job is associated with.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Job.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the Job is associated with.
 - `secret_reference` - (Optional) A reference to a secret stored in [Secret Manager](../resources/secret.md).
     - `secret_id` - (Required) The secret unique identifier, it could be formatted as region/UUID or UUID. In case the region is passed, it must be the same as the job definition. You could reference the same secret multiple times in the same job definition.
     - `secret_version` - (Default: `latest`) The secret version.

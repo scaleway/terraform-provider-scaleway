@@ -2,13 +2,16 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
@@ -17,6 +20,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -25,8 +30,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance.md
+var instanceDescription string
+
 func ResourceInstance() *schema.Resource {
 	return &schema.Resource{
+		Description:   instanceDescription,
 		CreateContext: ResourceRdbInstanceCreate,
 		ReadContext:   ResourceRdbInstanceRead,
 		UpdateContext: ResourceRdbInstanceUpdate,
@@ -34,16 +43,19 @@ func ResourceInstance() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),
-			Update:  schema.DefaultTimeout(defaultInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultInstanceUpdateTimeout),
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.DefaultRegionalImporter(),
 		SchemaVersion: 0,
 		SchemaFunc:    instanceSchema,
-		CustomizeDiff: cdf.LocalityCheck("private_network.#.pn_id"),
+		CustomizeDiff: customdiff.All(
+			cdf.LocalityCheck("clone_from", "private_network.#.pn_id"),
+			customizeDiffCloneFromInherited,
+		),
+		Identity:         identity.DefaultRegional(),
+		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
 	}
 }
 
@@ -69,28 +81,44 @@ func instanceSchema() map[string]*schema.Schema {
 			DiffSuppressFunc: dsf.IgnoreCase,
 			ConflictsWith: []string{
 				"snapshot_id",
+				"clone_from",
 			},
 		},
 		"snapshot_id": {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
-			Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` attribute.",
+			Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` and `clone_from` attributes.",
 			ConflictsWith: []string{
 				"engine",
+				"clone_from",
+			},
+		},
+		"clone_from": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of an existing Database Instance to clone. The clone includes all databases, users, and permissions. Conflicts with the `engine` and `snapshot_id` attributes.",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+			ConflictsWith: []string{
+				"engine",
+				"snapshot_id",
 			},
 		},
 		"is_ha_cluster": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			Description: "Enable or disable high availability for the database instance",
+			Type:             schema.TypeBool,
+			Optional:         true,
+			Computed:         true,
+			Description:      "Enable or disable high availability for the database instance",
+			DiffSuppressFunc: diffSuppressCloneInheritedBool("is_ha_cluster"),
 		},
 		"disable_backup": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			Description: "Disable automated backup for the database instance",
+			Type:             schema.TypeBool,
+			Optional:         true,
+			Computed:         true,
+			Description:      "Disable automated backup for the database instance",
+			DiffSuppressFunc: diffSuppressCloneInheritedBool("disable_backup"),
 		},
 		"backup_schedule_frequency": {
 			Type:        schema.TypeInt,
@@ -118,10 +146,25 @@ func instanceSchema() map[string]*schema.Schema {
 			Description: "Identifier for the first user of the database instance",
 		},
 		"password": {
-			Type:        schema.TypeString,
-			Sensitive:   true,
-			Optional:    true,
-			Description: "Password for the first user of the database instance",
+			Type:          schema.TypeString,
+			Sensitive:     true,
+			Optional:      true,
+			Description:   "Password for the first user of the database instance. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{"password_wo"},
+		},
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Password for the first user of the database instance in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
 		},
 		"settings": {
 			Type: schema.TypeMap,
@@ -184,11 +227,11 @@ func instanceSchema() map[string]*schema.Schema {
 						Description: "The endpoint ID",
 					},
 					"ip_net": {
-						Type:         schema.TypeString,
-						Optional:     true,
-						Computed:     true,
-						ValidateFunc: validation.IsCIDR,
-						Description:  "The IP with the given mask within the private subnet",
+						Type:             schema.TypeString,
+						Optional:         true,
+						Computed:         true,
+						ValidateDiagFunc: validateRdbPrivateNetworkIPNet,
+						Description:      "The IP with the given mask within the private subnet",
 					},
 					"ip": {
 						Type:        schema.TypeString,
@@ -307,11 +350,10 @@ func instanceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
-			Description: "Logs policy configuration",
+			Description: "Logs policy configuration for remote logs retention on the Database Instance",
 			MaxItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					// Computed
 					"max_age_retention": {
 						Type:        schema.TypeInt,
 						Optional:    true,
@@ -322,7 +364,7 @@ func instanceSchema() map[string]*schema.Schema {
 						Type:        schema.TypeInt,
 						Optional:    true,
 						Computed:    true,
-						Description: "The max disk size of remote logs to keep on the Database Instance.",
+						Description: "The max disk size (in bytes) of remote logs to keep on the Database Instance",
 					},
 				},
 			},
@@ -357,6 +399,50 @@ func instanceSchema() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: "Minor version string",
+					},
+				},
+			},
+		},
+		"maintenances": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of scheduled maintenance events on the database instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"starts_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Start date of the maintenance window",
+					},
+					"stops_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "End date of the maintenance window",
+					},
+					"closed_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Closed maintenance date",
+					},
+					"reason": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Maintenance information message",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Status of the maintenance",
+					},
+					"forced_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Time when Scaleway-side maintenance will be applied",
+					},
+					"is_applicable": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Description: "Whether the maintenance can be applied by the user",
 					},
 				},
 			},
@@ -397,10 +483,79 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 
 	var id string
 
-	if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
-		haCluster := d.Get("is_ha_cluster").(bool)
-		nodeType := d.Get("node_type").(string)
+	if cloneFrom, ok := d.GetOk("clone_from"); ok {
+		cloneReq := &rdb.CloneInstanceRequest{
+			Region:     region,
+			InstanceID: locality.ExpandID(cloneFrom),
+			Name:       types.ExpandOrGenerateString(d.Get("name"), "rdb"),
+			NodeType:   types.ExpandStringPtr(d.Get("node_type")),
+		}
 
+		res, err := rdbAPI.CloneInstance(cloneReq, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// Set ID early so a later endpoint failure does not leave a billed instance out of state.
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
+		id = res.ID
+
+		instance, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// CloneInstance inherits HA from the source. Apply an explicit is_ha_cluster only.
+		if wantHA := types.GetBool(d, "is_ha_cluster"); wantHA != nil && wantHA.(bool) != instance.IsHaCluster {
+			_, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
+				Region:     region,
+				InstanceID: res.ID,
+				EnableHa:   types.ExpandBoolPtr(wantHA), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			instance, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		cloneUpdate := &rdb.UpdateInstanceRequest{
+			Region:     region,
+			InstanceID: res.ID,
+		}
+		cloneMustUpdate := false
+
+		if rawTag, tagExist := d.GetOk("tags"); tagExist {
+			cloneUpdate.Tags = new(types.ExpandStrings(rawTag))
+			cloneMustUpdate = true
+		}
+
+		// CloneInstance inherits the backup schedule. Apply an explicit disable_backup only.
+		if wantDisable := types.GetBool(d, "disable_backup"); wantDisable != nil {
+			disabled := wantDisable.(bool)
+			if instance.BackupSchedule == nil || instance.BackupSchedule.Disabled != disabled {
+				cloneUpdate.IsBackupScheduleDisabled = &disabled
+				cloneMustUpdate = true
+			}
+		}
+
+		if cloneMustUpdate {
+			_, err = rdbAPI.UpdateInstance(cloneUpdate, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		if diags := configureEndpointsAfterInheritedLB(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+			return diags
+		}
+	} else if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
 		_, snapshotID, err := regional.ParseID(regionalSnapshotID.(string))
 		if err != nil {
 			return diag.FromErr(err)
@@ -410,8 +565,8 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			SnapshotID:   snapshotID,
 			Region:       region,
 			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "rdb"),
-			IsHaCluster:  &haCluster,
-			NodeType:     &nodeType,
+			IsHaCluster:  new(d.Get("is_ha_cluster").(bool)), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
+			NodeType:     new(d.Get("node_type").(string)),
 		}
 
 		res, err := rdbAPI.CreateInstanceFromSnapshot(createReqFromSnapshot, scw.WithContext(ctx))
@@ -419,48 +574,44 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
+		// Set ID early so a later endpoint failure does not leave a billed instance out of state.
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
+		id = res.ID
+
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		rawTag, tagExist := d.GetOk("tags")
-		if tagExist {
-			updateReq := &rdb.UpdateInstanceRequest{
-				Region:     region,
-				InstanceID: res.ID,
-			}
-			tags := types.ExpandStrings(rawTag)
-			updateReq.Tags = &tags
-
-			_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
+		if err := applyInstanceTagsFromConfig(ctx, rdbAPI, region, res.ID, d); err != nil {
+			return diag.FromErr(err)
 		}
 
-		// Configure endpoints after instance creation from snapshot
-		if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+		if diags := configureEndpointsAfterInheritedLB(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
 			return diags
 		}
-
-		if diags := createLoadBalancerEndpoint(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
-			return diags
-		}
-
-		d.SetId(regional.NewIDString(region, res.ID))
-		id = res.ID
 	} else {
+		var password string
+		if _, ok := d.GetOk("password_wo_version"); ok {
+			password = d.GetRawConfig().GetAttr("password_wo").AsString()
+		} else {
+			// If `password` is not set, it will be set as the default empty string
+			password = d.Get("password").(string)
+		}
+
 		createReq := &rdb.CreateInstanceRequest{
 			Region:        region,
 			ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
 			Name:          types.ExpandOrGenerateString(d.Get("name"), "rdb"),
 			NodeType:      d.Get("node_type").(string),
 			Engine:        d.Get("engine").(string),
-			IsHaCluster:   d.Get("is_ha_cluster").(bool),
+			IsHaCluster:   d.Get("is_ha_cluster").(bool), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			DisableBackup: d.Get("disable_backup").(bool),
 			UserName:      d.Get("user_name").(string),
-			Password:      d.Get("password").(string),
+			Password:      password,
 			VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
 			Encryption: &rdb.EncryptionAtRest{
 				Enabled: d.Get("encryption_at_rest").(bool),
@@ -501,7 +652,10 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
 		id = res.ID
 	}
 
@@ -511,17 +665,34 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		InstanceID: id,
 	}
 	// Configure Schedule Backup
-	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
-	if !d.Get("disable_backup").(bool) {
+	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation.
+	// For clones, an omitted disable_backup inherits the source schedule (handled above / via diff suppress).
+	_, isClone := d.GetOk("clone_from")
+	if isClone {
+		if wantDisable := types.GetBool(d, "disable_backup"); wantDisable != nil && !wantDisable.(bool) {
+			updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
+			updateReq.IsBackupScheduleDisabled = new(false)
+
+			if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
+				updateReq.BackupScheduleFrequency = new(uint32(backupScheduleFrequency.(int)))
+			}
+
+			if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
+				updateReq.BackupScheduleRetention = new(uint32(backupScheduleRetention.(int)))
+			}
+
+			mustUpdate = true
+		}
+	} else if !d.Get("disable_backup").(bool) {
 		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
-		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+		updateReq.IsBackupScheduleDisabled = new(d.Get("disable_backup").(bool))
 
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
-			updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
+			updateReq.BackupScheduleFrequency = new(uint32(backupScheduleFrequency.(int)))
 		}
 
 		if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
-			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
+			updateReq.BackupScheduleRetention = new(uint32(backupScheduleRetention.(int)))
 		}
 
 		mustUpdate = true
@@ -564,6 +735,66 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 	return ResourceRdbInstanceRead(ctx, d, m)
 }
 
+func applyInstanceTagsFromConfig(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) error {
+	rawTag, tagExist := d.GetOk("tags")
+	if !tagExist {
+		return nil
+	}
+
+	_, err := rdbAPI.UpdateInstance(&rdb.UpdateInstanceRequest{
+		Region:     region,
+		InstanceID: instanceID,
+		Tags:       new(types.ExpandStrings(rawTag)),
+	}, scw.WithContext(ctx))
+
+	return err
+}
+
+// configureEndpointsAfterInheritedLB configures PN/LB after APIs that always provision a default
+// load-balancer endpoint and have no InitEndpoints (CloneInstance, CreateInstanceFromSnapshot).
+// Keep the inherited LB when load_balancer is set; otherwise create PN then remove the LB
+// (order preserved for existing snapshot cassettes).
+func configureEndpointsAfterInheritedLB(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) diag.Diagnostics {
+	_, wantPrivateNetwork := d.GetOk("private_network")
+	_, wantLoadBalancer := d.GetOk("load_balancer")
+
+	if wantLoadBalancer {
+		if !wantPrivateNetwork {
+			return nil
+		}
+
+		if _, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); err != nil {
+			return diag.FromErr(err)
+		}
+
+		if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, instanceID, d); diags.HasError() {
+			return diags
+		}
+
+		if _, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); err != nil {
+			return diag.FromErr(err)
+		}
+
+		return nil
+	}
+
+	if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, instanceID, d); diags.HasError() {
+		return diags
+	}
+
+	if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
+		return diags
+	}
+
+	if wantPrivateNetwork {
+		if _, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return nil
+}
+
 // createPrivateNetworkEndpoints creates private network endpoints for an instance
 func createPrivateNetworkEndpoints(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) diag.Diagnostics {
 	if pn, pnExist := d.GetOk("private_network"); pnExist {
@@ -591,13 +822,20 @@ func createPrivateNetworkEndpoints(ctx context.Context, rdbAPI *rdb.API, region 
 	return nil
 }
 
-// createLoadBalancerEndpoint creates load balancer endpoint for an instance
-func createLoadBalancerEndpoint(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) diag.Diagnostics {
-	if _, lbExists := d.GetOk("load_balancer"); lbExists {
-		_, err := rdbAPI.CreateEndpoint(&rdb.CreateEndpointRequest{
-			Region:       region,
-			InstanceID:   instanceID,
-			EndpointSpec: expandLoadBalancer(),
+func deleteLoadBalancerEndpoints(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, timeout time.Duration) diag.Diagnostics {
+	res, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, timeout)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	for _, endpoint := range res.Endpoints {
+		if endpoint.LoadBalancer == nil {
+			continue
+		}
+
+		err := rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
+			EndpointID: endpoint.ID,
+			Region:     region,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -605,6 +843,22 @@ func createLoadBalancerEndpoint(ctx context.Context, rdbAPI *rdb.API, region scw
 	}
 
 	return nil
+}
+
+// validateRdbPrivateNetworkIPNet validates that ip_net is a valid CIDR and warns that setting it
+// provisions the endpoint in `static` mode, which is not registered in the VPC IPAM and DNS.
+func validateRdbPrivateNetworkIPNet(v any, path cty.Path) diag.Diagnostics {
+	diags := validation.ToDiagFunc(validation.IsCIDR)(v, path)
+	if diags.HasError() {
+		return diags
+	}
+
+	return append(diags, diag.Diagnostic{
+		Severity:      diag.Warning,
+		Summary:       "Private Network endpoint will use `static` provisioning mode",
+		Detail:        "Setting `ip_net` creates a static service IP that is not registered in the VPC IPAM and DNS. The endpoint may be unreachable from other resources in the same VPC (no dataplane routing, no `.internal` DNS record). Reserved IPs (`scaleway_ipam_ip`) are not supported for Managed Databases. Use `enable_ipam = true` instead for an IPAM-managed endpoint with working VPC routing and DNS.",
+		AttributePath: path,
+	})
 }
 
 // collectEndpointSpecs collects all endpoint specifications for instance creation
@@ -635,24 +889,7 @@ func collectEndpointSpecs(d *schema.ResourceData) ([]*rdb.EndpointSpec, diag.Dia
 	return endpoints, diags
 }
 
-func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// verify resource is ready
-	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI *rdb.API, region scw.Region, res *rdb.Instance) diag.Diagnostics {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("node_type", res.NodeType)
 	_ = d.Set("engine", res.Engine)
@@ -714,6 +951,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	_ = d.Set("upgradable_versions", upgradableVersions)
+	_ = d.Set("maintenances", FlattenInstanceMaintenances(res.Maintenances))
 
 	// set user and password
 	if user, ok := d.GetOk("user_name"); ok {
@@ -736,12 +974,14 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	_ = d.Set("password", d.Get("password").(string))
+	if v, ok := d.GetOk("password"); ok {
+		_ = d.Set("password", v.(string))
+	}
 
 	// set certificate
 	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: res.ID,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -775,10 +1015,9 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 				continue
 			}
 
-			resourceType := ipamAPI.ResourceTypeRdbInstance
 			opts := &ipam.GetResourcePrivateIPsOptions{
 				ResourceID:       &res.ID,
-				ResourceType:     &resourceType,
+				ResourceType:     new(ipamAPI.ResourceTypeRdbInstance),
 				PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
 				ProjectID:        &res.ProjectID,
 			}
@@ -818,6 +1057,51 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
+	}
+
+	return diags
+}
+
+// readInstanceIntoState fetches the instance and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readInstanceIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// verify resource is ready
+	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setInstanceState(ctx, d, m, rdbAPI, region, res)
+}
+
+func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readInstanceIntoState(ctx, d, m)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	_, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return diags
@@ -876,7 +1160,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					rdb.UpgradeInstanceRequest{
 						Region:     region,
 						InstanceID: ID,
-						VolumeSize: scw.Uint64Ptr(newSize * uint64(scw.GB)),
+						VolumeSize: new(newSize * uint64(scw.GB)),
 					})
 			}
 		case rdb.VolumeTypeLssd:
@@ -902,7 +1186,9 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	if d.HasChange("node_type") {
 		// Upgrading the node_type with block storage is not allowed when the disk is full, so if we are in this case,
 		// we can only allow this action if an increase of the size of the volume is also scheduled before it.
-		if !diskIsFull || len(upgradeInstanceRequests) > 0 {
+		// With local storage (lssd), the volume size is tied to the node_type, so bumping the node_type is the only
+		// way to increase storage and must therefore be allowed even when the disk is full.
+		if !diskIsFull || len(upgradeInstanceRequests) > 0 || volType == rdb.VolumeTypeLssd {
 			upgradeInstanceRequests = append(upgradeInstanceRequests,
 				rdb.UpgradeInstanceRequest{
 					Region:     region,
@@ -924,7 +1210,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: ID,
-				EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
+				EnableHa:   new(d.Get("is_ha_cluster").(bool)), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			})
 	}
 
@@ -951,7 +1237,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:           region,
 				InstanceID:       ID,
-				EnableEncryption: scw.BoolPtr(newValue.(bool)),
+				EnableEncryption: new(newValue.(bool)),
 			})
 	}
 
@@ -1001,12 +1287,39 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 		if upgradeInstanceRequests[i].MajorUpgradeWorkflow != nil && upgradedInstance.ID != ID {
 			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
 			oldInstanceID := ID
+
 			ID = upgradedInstance.ID
-			d.SetId(regional.NewIDString(region, ID))
+			if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+				return diag.FromErr(err)
+			}
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {
-				return diag.FromErr(err)
+				return majorUpgradeTimeoutOrErr(err, region, ID, oldInstanceID)
+			}
+
+			if d.Get("is_ha_cluster").(bool) && !upgradedInstance.IsHaCluster {
+				tflog.Info(ctx, "Re-enabling HA on upgraded instance "+ID)
+
+				upgradedInstance, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
+					Region:     region,
+					InstanceID: ID,
+					EnableHa:   new(true), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				_, err = waitForRDBInstance(ctx, rdbAPI, region, upgradedInstance.ID, d.Timeout(schema.TimeoutUpdate))
+				if err != nil && !httperrors.Is404(err) {
+					return majorUpgradeTimeoutOrErr(err, region, ID, oldInstanceID)
+				}
+			}
+
+			if err := maintainACLDuringUpgrade(ctx, rdbAPI, region, oldInstanceID, ID); err != nil {
+				tflog.Warn(ctx, fmt.Sprintf("Failed to maintain ACL during upgrade: %v", err))
+			} else {
+				tflog.Warn(ctx, "ACL rules were copied to the upgraded instance. Because the instance ID changed during the blue/green upgrade, dependent resources such as scaleway_rdb_acl may require a second terraform apply to reconcile their state.")
 			}
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate))
@@ -1023,7 +1336,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 						Region:     region,
 						InstanceID: oldInstanceID,
-						Timeout:    scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
+						Timeout:    new(d.Timeout(schema.TimeoutUpdate)),
 					}, scw.WithContext(ctx))
 					if err != nil && !httperrors.Is404(err) {
 						tflog.Warn(ctx, fmt.Sprintf("Error waiting for old instance %s deletion: %v", oldInstanceID, err))
@@ -1051,15 +1364,15 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	if d.HasChange("disable_backup") {
-		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+		req.IsBackupScheduleDisabled = new(d.Get("disable_backup").(bool))
 	}
 
 	if d.HasChange("backup_schedule_frequency") {
-		req.BackupScheduleFrequency = scw.Uint32Ptr(uint32(d.Get("backup_schedule_frequency").(int)))
+		req.BackupScheduleFrequency = new(uint32(d.Get("backup_schedule_frequency").(int)))
 	}
 
 	if d.HasChange("backup_schedule_retention") {
-		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
+		req.BackupScheduleRetention = new(uint32(d.Get("backup_schedule_retention").(int)))
 	}
 
 	if d.HasChange("backup_same_region") {
@@ -1109,7 +1422,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	////////////////////
 	// Update user
 	////////////////////
-	if d.HasChange("password") {
+	if d.HasChange("password") || (d.HasChange("password_wo_version") && d.Get("password_wo_version").(int) > 0) {
 		_, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -1119,7 +1432,17 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			Region:     region,
 			InstanceID: ID,
 			Name:       d.Get("user_name").(string),
-			Password:   types.ExpandStringPtr(d.Get("password")),
+		}
+
+		if password, ok := d.GetOk("password"); ok {
+			if d.HasChange("password") {
+				// Check password field is being set (not just removed)
+				req.Password = types.ExpandStringPtr(password)
+			}
+		} else if _, ok := d.GetOk("password_wo_version"); ok {
+			if d.HasChange("password_wo_version") {
+				req.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+			}
 		}
 
 		_, err = rdbAPI.UpdateUser(req, scw.WithContext(ctx))
@@ -1178,6 +1501,10 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					return diag.FromErr(err)
 				}
 			}
+
+			if _, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate)); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -1214,6 +1541,10 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
+			if _, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate)); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -1229,6 +1560,10 @@ func ResourceRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m an
 	// We first wait in case the instance is in a transient state
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 

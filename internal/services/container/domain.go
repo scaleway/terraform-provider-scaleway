@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -55,6 +55,12 @@ func domainSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "URL used to query the container",
+			Deprecated:  "URL won't be displayed on v1",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the container domain",
 		},
 		"region": regional.Schema(),
 	}
@@ -114,8 +120,8 @@ func ResourceContainerDomainRead(ctx context.Context, d *schema.ResourceData, m 
 
 	_ = d.Set("hostname", domain.Hostname)
 	_ = d.Set("container_id", domain.ContainerID)
-	_ = d.Set("url", domain.URL)
 	_ = d.Set("region", region)
+	_ = d.Set("srn", domain.Srn)
 
 	return nil
 }

@@ -9,15 +9,29 @@ The [`scaleway_account_project`](https://registry.terraform.io/providers/scalewa
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
+By default, destroying a project that still contains resources fails. Set `delete_with_resources` to `true` to delete the project along with all the resources it contains, including resources not managed by Terraform. Deleting a project is permanent and cannot be undone.
+
+
 ## Example Usage
 
 ### Create a Scaleway Project
 
 The following command allows you to create a project named `project`.
 
-```hcl
+```terraform
 resource "scaleway_account_project" "project" {
   name = "project"
+}
+```
+
+### Create a Scaleway Project and delete all its resources on deletion
+
+The following command allows you to create a project named `my_project`. Destroying this project will also delete all the resources it contains, including resources not managed by Terraform.
+
+```terraform
+resource "scaleway_account_project" "project" {
+  name                  = "my_project"
+  delete_with_resources = true
 }
 ```
 
@@ -26,12 +40,12 @@ resource "scaleway_account_project" "project" {
 If you want to use as default a project created in terraform you can use a temporary provider alias.
 This project can then be used to configure your default provider.
 
-```hcl
+```terraform
 provider "scaleway" {
   alias = "tmp"
 }
 
-resource scaleway_account_project "project" {
+resource "scaleway_account_project" "project" {
   provider = scaleway.tmp
   name     = "my_project"
 }
@@ -52,7 +66,8 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the Project.
 - `description` - (Optional) The description of the Project.
-- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_id) `organization_id`)The organization ID the Project is associated with. Any change made to the `organization_id` will recreate the resource.
+- `organization_id` - (Optional. Defaults to [provider](../index.md#arguments-reference) `organization_id`)The organization ID the Project is associated with. Any change made to the `organization_id` will recreate the resource.
+- `delete_with_resources` - (Optional) If true, deleting the project also deletes all the resources it contains, including resources not managed by Terraform. Defaults to `false`.
 
 ## Attributes Reference
 
@@ -63,6 +78,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The unique identifier of the project (UUID format).
 - `created_at` - The creation time of the Project.
 - `updated_at` - The last update time of the Project.
+- `srn` - The Scaleway Resource Name (SRN) of the project.
 
 ## Import
 

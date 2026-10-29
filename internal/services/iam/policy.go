@@ -3,12 +3,15 @@ package iam
 import (
 	"context"
 	"fmt"
+	"sync"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -20,12 +23,72 @@ func ResourcePolicy() *schema.Resource {
 		ReadContext:   resourceIamPolicyRead,
 		UpdateContext: resourceIamPolicyUpdate,
 		DeleteContext: resourceIamPolicyDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    policySchema,
+		CustomizeDiff: resourceIamPolicyCustomizeDiff,
 	}
+}
+
+func resourceIamPolicyCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	if !diff.HasChange("rule") {
+		return nil
+	}
+
+	organizationID := diff.Get("organization_id").(string)
+	api := NewAPI(m)
+
+	// The lazy fetcher will only be executed once and return the cached result. In
+	// case it returns an error we're returning anyway.
+	fetchScopeTypes := sync.OnceValues(func() (map[string]iam.PermissionSetScopeType, error) {
+		resp, err := api.ListPermissionSets(&iam.ListPermissionSetsRequest{
+			OrganizationID: organizationID,
+			PageSize:       new(uint32(100)),
+		}, scw.WithContext(ctx), scw.WithAllPages())
+		if err != nil {
+			return nil, fmt.Errorf("failed to list permission sets: %w", err)
+		}
+
+		sets := make(map[string]iam.PermissionSetScopeType, len(resp.PermissionSets))
+		for _, set := range resp.PermissionSets {
+			sets[set.Name] = set.ScopeType
+		}
+
+		return sets, nil
+	})
+
+	for i, rule := range expandPolicyRuleSpecs(diff.Get("rule")) {
+		if rule.PermissionSetNames == nil || len(*rule.PermissionSetNames) < 2 {
+			continue
+		}
+
+		scopeTypes, err := fetchScopeTypes()
+		if err != nil {
+			tflog.Warn(ctx, "skipping permission set scope type validation", map[string]any{
+				"error": err.Error(),
+			})
+
+			//nolint:nilerr // fetch failure is intentionally ignored and logged above
+			return nil
+		}
+
+		v := scopeTypes[(*rule.PermissionSetNames)[0]]
+		for _, name := range *rule.PermissionSetNames {
+			scopeType, ok := scopeTypes[name]
+			if !ok {
+				return fmt.Errorf("permission set %q not found in organization %s", name, organizationID)
+			}
+
+			if scopeType != v {
+				return fmt.Errorf("rule[%d].permission_set_names: permission sets must be of the same scope type", i)
+			}
+		}
+	}
+
+	return nil
 }
 
 func policySchema() map[string]*schema.Schema {
@@ -129,6 +192,11 @@ func policySchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the policy",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the policy",
+		},
 	}
 }
 
@@ -150,7 +218,10 @@ func resourceIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	d.SetId(pol.ID)
+	err = identity.SetGlobalIdentity(d, pol.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamPolicyRead(ctx, d, m)
 }
@@ -171,28 +242,6 @@ func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", pol.Name)
-	_ = d.Set("description", pol.Description)
-	_ = d.Set("created_at", types.FlattenTime(pol.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(pol.UpdatedAt))
-	_ = d.Set("organization_id", pol.OrganizationID)
-	_ = d.Set("editable", pol.Editable)
-	_ = d.Set("tags", types.FlattenSliceString(pol.Tags))
-
-	if pol.UserID != nil {
-		_ = d.Set("user_id", types.FlattenStringPtr(pol.UserID))
-	}
-
-	if pol.GroupID != nil {
-		_ = d.Set("group_id", types.FlattenStringPtr(pol.GroupID))
-	}
-
-	if pol.ApplicationID != nil {
-		_ = d.Set("application_id", types.FlattenStringPtr(pol.ApplicationID))
-	}
-
-	_ = d.Set("no_principal", types.FlattenBoolPtr(pol.NoPrincipal))
-
 	listRules, err := api.ListRules(&iam.ListRulesRequest{
 		PolicyID: pol.ID,
 	})
@@ -200,7 +249,12 @@ func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(fmt.Errorf("failed to list policy's rules: %w", err))
 	}
 
-	_ = d.Set("rule", flattenPolicyRules(listRules.Rules))
+	setPolicyState(d, pol, listRules.Rules)
+
+	err = identity.SetGlobalIdentity(d, pol.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -286,4 +340,30 @@ func resourceIamPolicyDelete(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	return nil
+}
+
+func setPolicyState(d *schema.ResourceData, pol *iam.Policy, rules []*iam.Rule) {
+	_ = d.Set("name", pol.Name)
+	_ = d.Set("description", pol.Description)
+	_ = d.Set("created_at", types.FlattenTime(pol.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(pol.UpdatedAt))
+	_ = d.Set("organization_id", pol.OrganizationID)
+	_ = d.Set("editable", pol.Editable)
+	_ = d.Set("tags", types.FlattenSliceString(pol.Tags))
+	_ = d.Set("srn", pol.Srn)
+
+	if pol.UserID != nil {
+		_ = d.Set("user_id", types.FlattenStringPtr(pol.UserID))
+	}
+
+	if pol.GroupID != nil {
+		_ = d.Set("group_id", types.FlattenStringPtr(pol.GroupID))
+	}
+
+	if pol.ApplicationID != nil {
+		_ = d.Set("application_id", types.FlattenStringPtr(pol.ApplicationID))
+	}
+
+	_ = d.Set("no_principal", types.FlattenBoolPtr(pol.NoPrincipal))
+	_ = d.Set("rule", flattenPolicyRules(rules))
 }

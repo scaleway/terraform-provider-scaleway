@@ -2,16 +2,22 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/pool_datasource.md
+var poolDataSourceDescription string
 
 func DataSourcePool() *schema.Resource {
 	// Generate datasource schema from resource
@@ -33,8 +39,8 @@ func DataSourcePool() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: DataSourceK8SPoolRead,
-
-		Schema: dsSchema,
+		Description: poolDataSourceDescription,
+		Schema:      dsSchema,
 	}
 }
 
@@ -43,6 +49,8 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	var uuid string
 
 	poolID, ok := d.GetOk("pool_id")
 	if !ok {
@@ -67,12 +75,39 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) d
 			return diag.FromErr(err)
 		}
 
-		poolID = foundPool.ID
+		uuid = foundPool.ID
+	} else {
+		uuid, err = locality.ExtractUUID(poolID.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	regionalizedID := datasource.NewRegionalID(poolID, region)
+	regionalizedID := datasource.NewRegionalID(uuid, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("pool_id", regionalizedID)
 
-	return ResourceK8SPoolRead(ctx, d, m)
+	pool, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
+		Region: region,
+		PoolID: uuid,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	nodes, err := getNodes(ctx, k8sAPI, pool)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	diags := setPoolUserData(ctx, d, k8sAPI, pool, true)
+	diags = append(diags, setPoolState(ctx, d, m, pool, k8sAPI, nodes)...)
+
+	return diags
 }

@@ -3,6 +3,7 @@ package cockpit_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 var DestroyWaitTimeout = 3 * time.Minute
@@ -40,6 +42,7 @@ func TestAccCockpitSource_Basic_metrics(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isSourcePresent(tt, "scaleway_cockpit_source.main"),
+					resource.TestMatchResourceAttr("scaleway_cockpit_source.main", "srn", regexp.MustCompile(`^srn://cockpit\..+/regions/.+/data-sources/.+$`)),
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "name", "my-source"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "type", "metrics"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "region", "fr-par"),
@@ -138,6 +141,17 @@ func TestAccCockpitSource_retention_days(t *testing.T) {
 	})
 }
 
+func TestCockpitSourceRetentionDaysBounds(t *testing.T) {
+	validate := cockpit.ResourceCockpitSource().SchemaMap()["retention_days"].ValidateFunc
+
+	for days, wantErr := range map[int]bool{0: true, 1: false, 1825: false, 1826: true} {
+		_, errs := validate(days, "retention_days")
+		if (len(errs) > 0) != wantErr {
+			t.Errorf("retention_days = %d: got %v, want error %t", days, errs, wantErr)
+		}
+	}
+}
+
 func TestAccCockpitSource_Update(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -218,9 +232,13 @@ func isSourcePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = api.GetDataSource(&cockpitSDK.RegionalAPIGetDataSourceRequest{
-			Region:       region,
-			DataSourceID: ID,
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+			_, err := api.GetDataSource(&cockpitSDK.RegionalAPIGetDataSourceRequest{
+				Region:       region,
+				DataSourceID: ID,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

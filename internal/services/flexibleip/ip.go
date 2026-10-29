@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -21,6 +22,7 @@ func ResourceIP() *schema.Resource {
 		ReadContext:   ResourceFlexibleIPRead,
 		UpdateContext: ResourceFlexibleIPUpdate,
 		DeleteContext: ResourceFlexibleIPDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -93,6 +95,11 @@ func ipSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the flexible IP",
+		},
 	}
 }
 
@@ -115,7 +122,10 @@ func ResourceFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, flexibleIP.ID))
+	err = identity.SetZonalIdentity(d, flexibleIP.Zone, flexibleIP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitFlexibleIP(ctx, fipAPI, zone, flexibleIP.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -152,6 +162,17 @@ func ResourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	diags := setFlexibleIPState(d, flexibleIP, zone)
+
+	err = identity.SetZonalIdentity(d, flexibleIP.Zone, flexibleIP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setFlexibleIPState(d *schema.ResourceData, flexibleIP *flexibleip.FlexibleIP, zone scw.Zone) diag.Diagnostics {
 	_ = d.Set("ip_address", flexibleIP.IPAddress.String())
 	_ = d.Set("zone", flexibleIP.Zone)
 	_ = d.Set("organization_id", flexibleIP.OrganizationID)
@@ -161,6 +182,7 @@ func ResourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("updated_at", types.FlattenTime(flexibleIP.UpdatedAt))
 	_ = d.Set("tags", flexibleIP.Tags)
 	_ = d.Set("status", flexibleIP.Status.String())
+	_ = d.Set("srn", flexibleIP.Srn)
 
 	if flexibleIP.ServerID != nil {
 		_ = d.Set("server_id", zonal.NewIDString(zone, *flexibleIP.ServerID))

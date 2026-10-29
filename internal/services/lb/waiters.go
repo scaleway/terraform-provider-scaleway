@@ -18,7 +18,7 @@ func waitForLB(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, lbID stri
 	loadBalancer, err := lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		LBID:          lbID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -34,7 +34,7 @@ func waitForInstances(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, lb
 	loadBalancer, err := lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 		Zone:          zone,
 		LBID:          lbID,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -50,7 +50,7 @@ func waitForPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zo
 	privateNetworks, err := lbAPI.WaitForLBPN(&lb.ZonedAPIWaitForLBPNRequest{
 		LBID:          lbID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -66,7 +66,7 @@ func waitForCertificate(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, 
 	certificate, err := lbAPI.WaitForLBCertificate(&lb.ZonedAPIWaitForLBCertificateRequest{
 		CertID:        id,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 

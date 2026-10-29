@@ -3,6 +3,7 @@ package baremetal
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -175,8 +176,11 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m any) dia
 
 		var matches []*baremetal.Offer
 
+		name := d.Get("name").(string)
+		nameToUpper := strings.ToUpper(name)
+
 		for _, offer := range res.Offers {
-			if offer.Name == d.Get("name") {
+			if offer.Name == nameToUpper {
 				if !offer.Enable && !d.Get("include_disabled").(bool) {
 					return diag.FromErr(fmt.Errorf("%s offer %s (%s) found in zone %s but is disabled. Add include_disabled=true in your terraform config to use it", offer.SubscriptionPeriod, offer.Name, offer.ID, zone))
 				}

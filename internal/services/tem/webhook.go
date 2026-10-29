@@ -9,6 +9,7 @@ import (
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -25,6 +26,7 @@ func ResourceWebhook() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    webhookSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -95,7 +97,9 @@ func ResourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, webhook.ID))
+	if err := identity.SetRegionalIdentity(d, region, webhook.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceWebhookRead(ctx, d, m)
 }
@@ -117,6 +121,10 @@ func ResourceWebhookRead(ctx context.Context, d *schema.ResourceData, m any) dia
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, id); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -144,7 +152,7 @@ func ResourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("name") {
-		req.Name = scw.StringPtr(d.Get("name").(string))
+		req.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("event_types") {
@@ -159,7 +167,7 @@ func ResourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("sns_arn") {
-		req.SnsArn = scw.StringPtr(d.Get("sns_arn").(string))
+		req.SnsArn = new(d.Get("sns_arn").(string))
 	}
 
 	_, err = api.UpdateWebhook(req, scw.WithContext(ctx))

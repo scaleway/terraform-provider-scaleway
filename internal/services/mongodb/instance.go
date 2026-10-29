@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,16 +20,22 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance.md
+var instanceDescription string
+
 func ResourceInstance() *schema.Resource {
 	return &schema.Resource{
+		Description:   instanceDescription,
 		CreateContext: ResourceInstanceCreate,
 		ReadContext:   ResourceInstanceRead,
 		UpdateContext: ResourceInstanceUpdate,
@@ -60,6 +68,8 @@ func ResourceInstance() *schema.Resource {
 				return nil
 			},
 		),
+		Identity:         identity.DefaultRegional(),
+		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
 	}
 }
 
@@ -75,7 +85,7 @@ func instanceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
-			Description: "MongoDB version of the instance",
+			Description: "MongoDB version of the instance (e.g. '7.0'). Changing this value may trigger a blue/green upgrade that updates the Terraform state with a new instance ID",
 			ConflictsWith: []string{
 				"snapshot_id",
 			},
@@ -104,9 +114,31 @@ func instanceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Sensitive:   true,
 			Optional:    true,
-			Description: "Password of the user",
+			Description: "Password of the user. Only one of `password` or `password_wo` should be specified.",
 			ConflictsWith: []string{
 				"snapshot_id",
+				"password_wo",
+			},
+		},
+		"password_wo": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Password of the user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:   true,
+			ConflictsWith: []string{
+				"snapshot_id",
+				"password",
+			},
+			RequiredWith: []string{
+				"password_wo_version",
+			},
+		},
+		"password_wo_version": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{
+				"password_wo",
 			},
 		},
 		// volume
@@ -257,8 +289,8 @@ func instanceSchema() map[string]*schema.Schema {
 		},
 		"settings": {
 			Type:        schema.TypeMap,
-			Description: "Map of settings to define for the instance.",
-			Optional:    true,
+			Computed:    true,
+			Description: "Map of engine settings applied to the instance (read-only).",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -290,7 +322,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	nodeNumber := scw.Uint32Ptr(uint32(d.Get("node_number").(int)))
+	nodeNumber := new(uint32(d.Get("node_number").(int)))
 
 	snapshotID, exist := d.GetOk("snapshot_id")
 
@@ -314,6 +346,14 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		version := d.Get("version").(string)
 		normalizeVersion := NormalizeMongoDBVersion(version)
 
+		var password string
+		if _, ok := d.GetOk("password_wo_version"); ok {
+			password = d.GetRawConfig().GetAttr("password_wo").AsString()
+		} else {
+			// If `password` is not set, it will be set as the default empty string
+			password = d.Get("password").(string)
+		}
+
 		createReq := &mongodb.CreateInstanceRequest{
 			Region:     region,
 			ProjectID:  d.Get("project_id").(string),
@@ -322,7 +362,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 			NodeType:   d.Get("node_type").(string),
 			NodeAmount: *nodeNumber,
 			UserName:   d.Get("user_name").(string),
-			Password:   d.Get("password").(string),
+			Password:   password,
 		}
 
 		volumeRequestDetails := &mongodb.Volume{
@@ -385,7 +425,9 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -400,28 +442,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 	return ResourceInstanceRead(ctx, d, m)
 }
 
-func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	getReq := &mongodb.GetInstanceRequest{
-		Region:     region,
-		InstanceID: ID,
-	}
-
-	instance, err := mongodbAPI.GetInstance(getReq, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, mongodbAPI *mongodb.API, region scw.Region, instance *mongodb.Instance) diag.Diagnostics {
 	_ = d.Set("name", instance.Name)
 	_ = d.Set("version", instance.Version)
 	_ = d.Set("node_number", int(instance.NodeAmount))
@@ -461,10 +482,9 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 				continue
 			}
 
-			resourceType := ipamAPI.ResourceTypeMgdbInstance
 			opts := &ipam.GetResourcePrivateIPsOptions{
 				ResourceID:       &instance.ID,
-				ResourceType:     &resourceType,
+				ResourceType:     new(ipamAPI.ResourceTypeMgdbInstance),
 				PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
 				ProjectID:        &instance.ProjectID,
 			}
@@ -502,11 +522,16 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 		_ = d.Set("private_ip", privateIPs)
 	}
 
-	_ = d.Set("settings", map[string]string{})
+	settings := make(map[string]string)
+	for _, setting := range instance.Settings {
+		settings[setting.Name] = setting.Value
+	}
+
+	_ = d.Set("settings", settings)
 
 	cert, err := mongodbAPI.GetInstanceCertificate(&mongodb.GetInstanceCertificateRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: instance.ID,
 	}, scw.WithContext(ctx))
 
 	if err == nil && cert != nil {
@@ -525,56 +550,208 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 	return diags
 }
 
-func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	////////////////////
-	// Upgrade instance
-	////////////////////
+	getReq := &mongodb.GetInstanceRequest{
+		Region:     region,
+		InstanceID: ID,
+	}
 
-	if d.HasChange("volume_size_in_gb") {
-		oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
-		oldSize := uint64(oldSizeInterface.(int))
-		newSize := uint64(newSizeInterface.(int))
+	instance, err := mongodbAPI.GetInstance(getReq, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
 
-		if newSize < oldSize {
-			return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
+			return nil
 		}
 
-		if newSize%5 != 0 {
-			return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
+		return diag.FromErr(err)
+	}
+
+	diags := setInstanceState(ctx, d, m, mongodbAPI, region, instance)
+	if err := identity.SetRegionalIdentity(d, instance.Region, instance.ID); err != nil {
+		diags = append(diags, diag.FromErr(err)...)
+	}
+
+	return diags
+}
+
+func handleVolumeSizeUpgrade(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) diag.Diagnostics {
+	oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
+	oldSize := uint64(oldSizeInterface.(int))
+	newSize := uint64(newSizeInterface.(int))
+
+	if newSize < oldSize {
+		return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
+	}
+
+	if newSize%5 != 0 {
+		return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
+	}
+
+	upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
+		InstanceID:      id,
+		Region:          region,
+		VolumeSizeBytes: new(scw.Size(newSize * uint64(scw.GB))),
+	}
+
+	_, err := mongodbAPI.UpgradeInstance(&upgradeInstanceRequests, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForInstance(ctx, mongodbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func handleVersionUpgrade(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) (string, diag.Diagnostics) {
+	newVersion := NormalizeMongoDBVersion(d.Get("version").(string))
+
+	upgradeInstanceRequest := mongodb.UpgradeInstanceRequest{
+		InstanceID: id,
+		Region:     region,
+		Version:    types.ExpandStringPtr(newVersion),
+	}
+
+	upgradedInstance, err := mongodbAPI.UpgradeInstance(&upgradeInstanceRequest, scw.WithContext(ctx))
+	if err != nil {
+		return id, diag.FromErr(err)
+	}
+
+	if upgradedInstance.ID != id {
+		tflog.Info(ctx, fmt.Sprintf("Version upgrade created new instance, updating ID from %s to %s", id, upgradedInstance.ID))
+		oldInstanceID := id
+
+		id = upgradedInstance.ID
+		if err := identity.SetRegionalIdentity(d, region, id); err != nil {
+			return id, diag.FromErr(err)
 		}
 
-		size := scw.Size(newSize * uint64(scw.GB))
-
-		upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
-			InstanceID:      ID,
-			Region:          region,
-			VolumeSizeBytes: &size,
+		_, err = waitForInstance(ctx, mongodbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !httperrors.Is404(err) {
+			return id, diag.FromErr(err)
 		}
 
-		_, err = mongodbAPI.UpgradeInstance(&upgradeInstanceRequests, scw.WithContext(ctx))
+		if err := deleteOldInstanceAfterUpgrade(ctx, mongodbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate)); err != nil {
+			tflog.Warn(ctx, fmt.Sprintf("Failed to clean up old instance %s: %v", oldInstanceID, err))
+
+			return id, diag.Diagnostics{
+				{
+					Severity: diag.Warning,
+					Summary:  "Failed to clean up old MongoDB instance after version upgrade",
+					Detail: fmt.Sprintf(
+						"Failed to delete old instance %s after blue/green version upgrade: %v. Please delete it manually to avoid unexpected costs.",
+						oldInstanceID, err,
+					),
+				},
+			}
+		}
+	} else {
+		_, err = waitForInstance(ctx, mongodbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
+			return id, diag.FromErr(err)
 		}
 	}
 
-	////////////////////
-	// Update instance
-	////////////////////
+	return id, nil
+}
 
+// deleteOldInstanceAfterUpgrade deletes the old instance after a blue/green upgrade.
+// The old instance may be in a transient state (e.g. error) right after the upgrade,
+// so this function retries the deletion until it succeeds or the timeout is reached.
+func deleteOldInstanceAfterUpgrade(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, oldInstanceID string, timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+	if timeout == 0 {
+		deadline = time.Now().Add(defaultMongodbInstanceTimeout)
+	}
+
+	retryInterval := defaultWaitMongodbInstanceRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	deleteRequested := false
+
+	for time.Now().Before(deadline) && !deleteRequested {
+		instance, err := mongodbAPI.GetInstance(&mongodb.GetInstanceRequest{
+			Region:     region,
+			InstanceID: oldInstanceID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if httperrors.Is404(err) {
+				tflog.Info(ctx, fmt.Sprintf("Old instance %s already deleted", oldInstanceID))
+
+				return nil
+			}
+
+			tflog.Warn(ctx, fmt.Sprintf("Failed to get old instance %s status: %v", oldInstanceID, err))
+		} else {
+			switch instance.Status {
+			case mongodb.InstanceStatusDeleting:
+				tflog.Info(ctx, fmt.Sprintf("Old instance %s is already deleting, waiting...", oldInstanceID))
+
+				deleteRequested = true
+			case mongodb.InstanceStatusReady, mongodb.InstanceStatusError, mongodb.InstanceStatusLocked:
+				_, err = mongodbAPI.DeleteInstance(&mongodb.DeleteInstanceRequest{
+					Region:     region,
+					InstanceID: oldInstanceID,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					if httperrors.Is404(err) {
+						return nil
+					}
+
+					tflog.Warn(ctx, fmt.Sprintf("Failed to delete old instance %s (status=%s): %v", oldInstanceID, instance.Status, err))
+				} else {
+					tflog.Info(ctx, fmt.Sprintf("Old instance %s deletion requested", oldInstanceID))
+
+					deleteRequested = true
+				}
+			default:
+				tflog.Info(ctx, fmt.Sprintf("Old instance %s is in status %s, waiting before deletion attempt", oldInstanceID, instance.Status))
+			}
+		}
+
+		if !deleteRequested {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(retryInterval):
+			}
+		}
+	}
+
+	if !deleteRequested {
+		_, err := mongodbAPI.DeleteInstance(&mongodb.DeleteInstanceRequest{
+			Region:     region,
+			InstanceID: oldInstanceID,
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			return fmt.Errorf("failed to delete old instance %s after timeout: %w", oldInstanceID, err)
+		}
+	}
+
+	_, err := waitForInstance(ctx, mongodbAPI, region, oldInstanceID, timeout)
+	if err != nil && !httperrors.Is404(err) {
+		return fmt.Errorf("error waiting for old instance %s deletion: %w", oldInstanceID, err)
+	}
+
+	return nil
+}
+
+func handleInstanceUpdate(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) diag.Diagnostics {
 	shouldUpdateInstance := false
 	req := &mongodb.UpdateInstanceRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: id,
 	}
 
 	if d.HasChange("name") {
@@ -594,10 +771,48 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	if shouldUpdateInstance {
-		_, err = mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
+		_, err := mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	return nil
+}
+
+func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	////////////////////
+	// Upgrade instance
+	////////////////////
+	if d.HasChange("volume_size_in_gb") {
+		if diag := handleVolumeSizeUpgrade(ctx, mongodbAPI, region, ID, d); diag != nil {
+			return diag
+		}
+	}
+
+	var diags diag.Diagnostics
+
+	if d.HasChange("version") {
+		var upgradeDiags diag.Diagnostics
+
+		ID, upgradeDiags = handleVersionUpgrade(ctx, mongodbAPI, region, ID, d)
+
+		diags = append(diags, upgradeDiags...)
+		if upgradeDiags.HasError() {
+			return diags
+		}
+	}
+
+	////////////////////
+	// Update instance
+	////////////////////
+	if diag := handleInstanceUpdate(ctx, mongodbAPI, region, ID, d); diag != nil {
+		return diag
 	}
 
 	////////////////////
@@ -611,8 +826,6 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 		InstanceID: ID,
 	}
 
-	var diags diag.Diagnostics
-
 	if d.HasChange("user_name") {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
@@ -623,10 +836,17 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 		})
 	}
 
-	if d.HasChange("password") {
-		password := d.Get("password").(string)
-		updateUserRequest.Password = &password
-		shouldUpdateUser = true
+	if password, ok := d.GetOk("password"); ok {
+		if d.HasChange("password") {
+			// Check password field is being set (not just removed)
+			updateUserRequest.Password = types.ExpandStringPtr(password.(string))
+			shouldUpdateUser = true
+		}
+	} else if _, ok := d.GetOk("password_wo_version"); ok {
+		if d.HasChange("password_wo_version") {
+			updateUserRequest.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+			shouldUpdateUser = true
+		}
 	}
 
 	if shouldUpdateUser {
@@ -760,17 +980,17 @@ func configureSnapshotScheduleOnCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if snapshotFrequency, ok := d.GetOk("snapshot_schedule_frequency_hours"); ok {
-		updateReq.SnapshotScheduleFrequencyHours = scw.Uint32Ptr(uint32(snapshotFrequency.(int)))
+		updateReq.SnapshotScheduleFrequencyHours = new(uint32(snapshotFrequency.(int)))
 		mustUpdate = true
 	}
 
 	if snapshotRetention, ok := d.GetOk("snapshot_schedule_retention_days"); ok {
-		updateReq.SnapshotScheduleRetentionDays = scw.Uint32Ptr(uint32(snapshotRetention.(int)))
+		updateReq.SnapshotScheduleRetentionDays = new(uint32(snapshotRetention.(int)))
 		mustUpdate = true
 	}
 
 	if snapshotEnabled, ok := d.GetOk("is_snapshot_schedule_enabled"); ok {
-		updateReq.IsSnapshotScheduleEnabled = scw.BoolPtr(snapshotEnabled.(bool))
+		updateReq.IsSnapshotScheduleEnabled = new(snapshotEnabled.(bool))
 		mustUpdate = true
 	}
 

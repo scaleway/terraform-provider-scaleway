@@ -1,6 +1,7 @@
 package rdb_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -9,11 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	rdbSDK "github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -64,6 +67,7 @@ func TestAccInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "logs_policy.0.total_disk_retention"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "maintenances.#", "0"),
 				),
 			},
 			{
@@ -95,6 +99,57 @@ func TestAccInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.endpoint_id"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.port"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_Clone(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "source" {
+						name           = "test-rdb-clone-source"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "my_initial_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "rdb-clone-source"]
+					}
+
+					resource "scaleway_rdb_instance" "clone" {
+						name           = "test-rdb-clone"
+						node_type      = "db-dev-m"
+						clone_from     = scaleway_rdb_instance.source.id
+						disable_backup = true
+						tags           = ["terraform-test", "rdb-clone"]
+
+						load_balancer {}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.source"),
+					isInstancePresent(tt, "scaleway_rdb_instance.clone"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "name", "test-rdb-clone"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "node_type", "db-dev-m"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "engine", latestEngineVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "tags.1", "rdb-clone"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.clone", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.clone", "load_balancer.0.endpoint_id"),
+					acctest.CheckResourceAttrUUID("scaleway_rdb_instance.clone", "id"),
 				),
 			},
 		},
@@ -969,6 +1024,67 @@ func TestAccInstance_ChangeNodeType(t *testing.T) {
 	})
 }
 
+// TestAccInstance_ChangeNodeTypeLssdDiskFull ensures that the node_type of a local-storage (lssd)
+// instance can be upgraded even when the instance is in the disk_full state. For lssd, the volume
+// size is tied to the node_type, so bumping the node_type is the only way to grow storage and must
+// not be blocked by the disk_full guard (which only makes sense for block storage). The cassette
+// reports a disk_full status during the update phase to exercise this path.
+func TestAccInstance_ChangeNodeTypeLssdDiskFull(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance" ]
+						volume_type = "lssd"
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "lssd"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-dev-m"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance" ]
+						volume_type = "lssd"
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-m"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "lssd"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccInstance_Endpoints(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -1042,6 +1158,10 @@ func TestAccInstance_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.test_endpoints", "private_network.0.pn_id", "scaleway_vpc_private_network.test_endpoints", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "load_balancer.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "load_balancer.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "load_balancer.0.port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),   // Deprecated attribute, might be deleted later
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_port"), // Deprecated attribute, might be deleted later
 				),
@@ -1069,6 +1189,75 @@ func TestAccInstance_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "0"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),   // Deprecated attribute, might be deleted later
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_port"), // Deprecated attribute, might be deleted later
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_EndpointOutputsAfterAdd(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "test_outputs" {
+						name = "test-rdb-outputs"
+					}
+
+					resource "scaleway_rdb_instance" "test_outputs" {
+						name = "test-rdb-outputs"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "test_outputs" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.test_outputs"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_outputs", "private_network.#", "0"),
+					// A default load balancer endpoint is always provisioned by the API.
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_outputs", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_outputs", "load_balancer.0.ip"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "test_outputs" {
+						name = "test-rdb-outputs"
+					}
+
+					resource "scaleway_rdb_instance" "test_outputs" {
+						name = "test-rdb-outputs"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "test_outputs" ]
+						private_network {
+							pn_id = scaleway_vpc_private_network.test_outputs.id
+							enable_ipam = true
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.test_outputs"),
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.test_outputs"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_outputs", "private_network.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.test_outputs", "private_network.0.pn_id", "scaleway_vpc_private_network.test_outputs", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_outputs", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_outputs", "private_network.0.port"),
 				),
 			},
 		},
@@ -1386,6 +1575,150 @@ func TestAccInstance_FromSnapshotWithPrivateNetwork(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "tags.1", "restored_instance"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "private_network.0.pn_id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "load_balancer.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "endpoint_ip", ""),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "endpoint_port", "0"),
+					rdbchecks.HasNoPublicEndpoint(tt, "scaleway_rdb_instance.from_snapshot"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_FromSnapshotWithLoadBalancer(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-instance"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "my_initial_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "scaleway_rdb_instance"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+
+					resource "scaleway_rdb_snapshot" "test" {
+						name        = "test-snapshot"
+						instance_id = scaleway_rdb_instance.main.id
+						depends_on  = [scaleway_rdb_instance.main]
+					}
+
+					resource "scaleway_rdb_instance" "from_snapshot" {
+						name           = "test-instance-from-snapshot-lb"
+						node_type      = "db-dev-s"
+						is_ha_cluster  = false
+						disable_backup = true
+						snapshot_id    = scaleway_rdb_snapshot.test.id
+						volume_type    = "sbs_5k"
+						tags           = ["terraform-test", "restored_instance"]
+
+						load_balancer {}
+
+						depends_on = [scaleway_rdb_snapshot.test]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "name", "test-instance-from-snapshot-lb"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.port"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_FromSnapshotWithPrivateNetworkAndLoadBalancer(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "vpc" {
+						name = "test-vpc"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						vpc_id = scaleway_vpc.vpc.id
+						ipv4_subnet {
+							subnet = "192.168.0.0/24"
+						}
+						depends_on = [scaleway_vpc.vpc]
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-instance"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "my_initial_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "scaleway_rdb_instance"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+
+						private_network {
+							pn_id       = scaleway_vpc_private_network.pn.id
+							enable_ipam = true
+						}
+
+						depends_on = [scaleway_vpc_private_network.pn]
+					}
+
+					resource "scaleway_rdb_snapshot" "test" {
+						name        = "test-snapshot"
+						instance_id = scaleway_rdb_instance.main.id
+						depends_on  = [scaleway_rdb_instance.main]
+					}
+
+					resource "scaleway_rdb_instance" "from_snapshot" {
+						name           = "test-instance-from-snapshot-pn-lb"
+						node_type      = "db-dev-s"
+						is_ha_cluster  = false
+						disable_backup = true
+						snapshot_id    = scaleway_rdb_snapshot.test.id
+						volume_type    = "sbs_5k"
+						tags           = ["terraform-test", "restored_instance"]
+
+						private_network {
+							pn_id       = scaleway_vpc_private_network.pn.id
+							enable_ipam = true
+						}
+
+						load_balancer {}
+
+						depends_on = [scaleway_rdb_snapshot.test]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "name", "test-instance-from-snapshot-pn-lb"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.port"),
 				),
 			},
 		},
@@ -1723,9 +2056,13 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
 						}
 
-						_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
-							Region:     region,
-							InstanceID: oldInstanceID,
+						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+							_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+								Region:     region,
+								InstanceID: oldInstanceID,
+							})
+
+							return err
 						})
 						if err == nil {
 							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
@@ -1743,6 +2080,304 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 	})
 }
 
+func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	oldVersion, newVersion := rdbchecks.GetEngineVersionsForUpgrade(tt, postgreSQLEngineName)
+	if oldVersion == newVersion {
+		t.Skip("Need at least 2 different PostgreSQL versions for upgrade testing")
+	}
+
+	var oldInstanceID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name              = "test-rdb-engine-upgrade-ha"
+						node_type         = "db-dev-s"
+						engine            = %q
+						is_ha_cluster     = true
+						disable_backup    = true
+						user_name         = "test_user"
+						password          = "thiZ_is_v&ry_s3cret"
+						tags              = ["terraform-test", "engine-upgrade-ha"]
+						volume_type       = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, oldVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", oldVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "true"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return errors.New("resource not found: scaleway_rdb_instance.main")
+						}
+
+						_, _, ID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+						if err != nil {
+							return err
+						}
+
+						oldInstanceID = ID
+
+						return nil
+					},
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name              = "test-rdb-engine-upgrade-ha"
+						node_type         = "db-dev-s"
+						engine            = %q
+						is_ha_cluster     = true
+						disable_backup    = true
+						user_name         = "test_user"
+						password          = "thiZ_is_v&ry_s3cret"
+						tags              = ["terraform-test", "engine-upgrade-ha"]
+						volume_type       = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, newVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", newVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "true"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return errors.New("resource not found: scaleway_rdb_instance.main")
+						}
+
+						rdbAPI, region, newInstanceID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+						if err != nil {
+							return err
+						}
+
+						if newInstanceID == oldInstanceID {
+							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
+						}
+
+						var instance *rdbSDK.Instance
+
+						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+							var err error
+
+							instance, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+								Region:     region,
+								InstanceID: newInstanceID,
+							})
+
+							return err
+						})
+						if err != nil {
+							return err
+						}
+
+						if !instance.IsHaCluster {
+							return fmt.Errorf("expected upgraded instance %s to keep HA enabled", newInstanceID)
+						}
+
+						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+							_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+								Region:     region,
+								InstanceID: oldInstanceID,
+							})
+
+							return err
+						})
+						if err == nil {
+							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
+						}
+
+						if !httperrors.Is404(err) {
+							return fmt.Errorf("expected 404 error for old instance %s, got: %w", oldInstanceID, err)
+						}
+
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_EngineUpgrade_WithACL(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	oldVersion, newVersion := rdbchecks.GetEngineVersionsForUpgrade(tt, postgreSQLEngineName)
+	if oldVersion == newVersion {
+		t.Skip("Need at least 2 different PostgreSQL versions for upgrade testing")
+	}
+
+	aclRule1 := "1.2.3.4/32"
+	aclRule2 := "9.0.0.0/16"
+
+	var oldInstanceID string
+
+	configForVersion := func(version string) string {
+		return fmt.Sprintf(`
+			resource "scaleway_rdb_instance" "main" {
+				name               = "test-rdb-engine-upgrade-acl"
+				node_type          = "db-dev-s"
+				engine             = %q
+				is_ha_cluster      = false
+				disable_backup     = true
+				user_name          = "test_user"
+				password           = "thiZ_is_v&ry_s3cret"
+				tags               = ["terraform-test", "engine-upgrade-acl"]
+				volume_type        = "sbs_5k"
+				volume_size_in_gb  = 10
+			}
+
+			resource "scaleway_rdb_acl" "main" {
+				instance_id = scaleway_rdb_instance.main.id
+				acl_rules {
+					ip          = %q
+					description = "rule1"
+				}
+				acl_rules {
+					ip          = %q
+					description = "rule2"
+				}
+			}
+		`, version, aclRule1, aclRule2)
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: configForVersion(oldVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", oldVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", aclRule1),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", aclRule2),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return errors.New("resource not found: scaleway_rdb_instance.main")
+						}
+
+						_, _, instanceID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+						if err != nil {
+							return err
+						}
+
+						oldInstanceID = instanceID
+
+						return nil
+					},
+				),
+			},
+			{
+				Config:             configForVersion(newVersion),
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", newVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", aclRule1),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", aclRule2),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.description", "rule1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.description", "rule2"),
+					checkInstanceACLRules(tt, "scaleway_rdb_instance.main", []string{aclRule1, aclRule2}),
+				),
+			},
+			{
+				Config: configForVersion(newVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", newVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", aclRule1),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", aclRule2),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.description", "rule1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.description", "rule2"),
+					checkInstanceACLRules(tt, "scaleway_rdb_instance.main", []string{aclRule1, aclRule2}),
+					func(s *terraform.State) error {
+						instanceRS, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return errors.New("resource not found: scaleway_rdb_instance.main")
+						}
+
+						aclRS, ok := s.RootModule().Resources["scaleway_rdb_acl.main"]
+						if !ok {
+							return errors.New("resource not found: scaleway_rdb_acl.main")
+						}
+
+						_, _, newInstanceID, err := rdb.NewAPIWithRegionAndID(tt.Meta, instanceRS.Primary.ID)
+						if err != nil {
+							return err
+						}
+
+						if newInstanceID == oldInstanceID {
+							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
+						}
+
+						if aclRS.Primary.ID != instanceRS.Primary.ID {
+							return fmt.Errorf("expected ACL resource to track upgraded instance ID %s after second apply, got %s", instanceRS.Primary.ID, aclRS.Primary.ID)
+						}
+
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
+func checkInstanceACLRules(tt *acctest.TestTools, instanceResource string, expectedIPs []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[instanceResource]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", instanceResource)
+		}
+
+		rdbAPI, region, instanceID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		var res *rdbSDK.ListInstanceACLRulesResponse
+
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+			var err error
+
+			res, err = rdbAPI.ListInstanceACLRules(&rdbSDK.ListInstanceACLRulesRequest{
+				Region:     region,
+				InstanceID: instanceID,
+			}, scw.WithAllPages())
+
+			return err
+		})
+		if err != nil {
+			return fmt.Errorf("listing ACL rules: %w", err)
+		}
+
+		actualIPs := make(map[string]bool)
+		for _, r := range res.Rules {
+			actualIPs[r.IP.String()] = true
+		}
+
+		for _, expected := range expectedIPs {
+			if !actualIPs[expected] {
+				return fmt.Errorf("expected ACL rule %q not found on instance, got: %v", expected, actualIPs)
+			}
+		}
+
+		return nil
+	}
+}
+
 func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -1755,9 +2390,13 @@ func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
-			InstanceID: ID,
-			Region:     region,
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+			_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+				InstanceID: ID,
+				Region:     region,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err
@@ -1765,4 +2404,113 @@ func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func TestAccInstance_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Create instance with password_wo
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password_wo = "thiZ_is_v&ry_s3cret_WO"
+						password_wo_version = 1
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-password-wo"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password_wo_version", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
+					// password_wo should not be set in state
+					resource.TestCheckNoResourceAttr("scaleway_rdb_instance.main", "password_wo"),
+				),
+			},
+			// Update instance password_wo
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password_wo = "thiZ_is_@n0th3r_s3cret_WO"
+						password_wo_version = 2
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password_wo_version", "2"),
+					// password_wo should not be set in state
+					resource.TestCheckNoResourceAttr("scaleway_rdb_instance.main", "password_wo"),
+				),
+			},
+			// Update instance from password_wo to password should not error
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_@n0th3r_s3cret_not_WO"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "password"),
+				),
+			},
+			// Update instance from password to password_wo should not error
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password_wo = "thiZ_is_@n0th3r_s3cret_WO_AGAIN"
+						password_wo_version = 1
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password_wo_version", "1"),
+					// password_wo should not be set in state
+					resource.TestCheckNoResourceAttr("scaleway_rdb_instance.main", "password_wo"),
+				),
+			},
+		},
+	})
 }

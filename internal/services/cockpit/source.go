@@ -9,8 +9,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -31,6 +33,7 @@ func ResourceCockpitSource() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: sourceSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -52,8 +55,8 @@ func sourceSchema() map[string]*schema.Schema {
 		"retention_days": {
 			Type:         schema.TypeInt,
 			Required:     true,
-			ValidateFunc: validation.IntBetween(1, 365),
-			Description:  "The number of days to retain data, must be between 1 and 365.",
+			ValidateFunc: validation.IntBetween(1, 1825),
+			Description:  "The number of days to retain data. Use scaleway_cockpit_config data source to read allowed min, max, and default values for each data source type.",
 		},
 		// computed
 		"url": {
@@ -86,6 +89,11 @@ func sourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The URL endpoint used for pushing data to the cockpit data source.",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the data source",
+		},
 		"project_id": account.ProjectIDSchema(),
 		"region":     regional.Schema(),
 	}
@@ -97,20 +105,22 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	retentionDays := uint32(d.Get("retention_days").(int))
-
-	res, err := api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
-		Region:        region,
-		ProjectID:     d.Get("project_id").(string),
-		Name:          d.Get("name").(string),
-		Type:          cockpit.DataSourceType(d.Get("type").(string)),
-		RetentionDays: &retentionDays,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
+		return api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
+			Region:        region,
+			ProjectID:     d.Get("project_id").(string),
+			Name:          d.Get("name").(string),
+			Type:          cockpit.DataSourceType(d.Get("type").(string)),
+			RetentionDays: new(uint32(d.Get("retention_days").(int))),
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCockpitSourceRead(ctx, d, meta)
 }
@@ -121,10 +131,12 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	res, err := api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
-		Region:       region,
-		DataSourceID: id,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
+		return api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
+			Region:       region,
+			DataSourceID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -132,6 +144,10 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -150,6 +166,7 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("push_url", pushURL)
+	_ = d.Set("srn", res.Srn)
 	_ = d.Set("retention_days", int(res.RetentionDays))
 
 	return nil
@@ -167,23 +184,23 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		updateRequest.Name = &name
+		updateRequest.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("retention_days") {
-		retentionDays := uint32(d.Get("retention_days").(int))
-		updateRequest.RetentionDays = &retentionDays
+		updateRequest.RetentionDays = new(uint32(d.Get("retention_days").(int)))
 	}
 
 	if d.HasChanges("retention_days", "name") {
-		_, err = api.UpdateDataSource(updateRequest, scw.WithContext(ctx))
+		_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
+			return api.UpdateDataSource(updateRequest, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return nil
+	return ResourceCockpitSourceRead(ctx, d, meta)
 }
 
 func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -192,10 +209,12 @@ func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteDataSource(&cockpit.RegionalAPIDeleteDataSourceRequest{
-		DataSourceID: id,
-		Region:       region,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return api.DeleteDataSource(&cockpit.RegionalAPIDeleteDataSourceRequest{
+			DataSourceID: id,
+			Region:       region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}

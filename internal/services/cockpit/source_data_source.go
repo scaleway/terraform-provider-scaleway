@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -50,10 +51,12 @@ func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	d.SetId(id)
 
-	res, err := api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
-		Region:       region,
-		DataSourceID: id,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
+		return api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
+			Region:       region,
+			DataSourceID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,7 +98,9 @@ func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, m any
 		req.Origin = cockpit.DataSourceOrigin(v.(string))
 	}
 
-	res, err := api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListDataSourcesResponse, error) {
+		return api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -132,5 +137,6 @@ func flattenDataSource(d *schema.ResourceData, ds *cockpit.DataSource) {
 	_ = d.Set("updated_at", types.FlattenTime(ds.UpdatedAt))
 	_ = d.Set("synchronized_with_grafana", ds.SynchronizedWithGrafana)
 	_ = d.Set("retention_days", int(ds.RetentionDays))
+	_ = d.Set("srn", ds.Srn)
 	_ = d.Set("region", ds.Region.String())
 }

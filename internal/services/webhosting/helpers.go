@@ -73,13 +73,13 @@ func waitForHosting(ctx context.Context, api *webhosting.HostingAPI, region scw.
 	return api.WaitForHosting(&webhosting.WaitForHostingRequest{
 		HostingID:     hostingID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
 
 func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]any {
-	result := []map[string]any{}
+	result := make([]map[string]any, 0, len(records))
 
 	for _, r := range records {
 		name := r.Name
@@ -110,7 +110,7 @@ func extractDNSRecordName(raw string) string {
 }
 
 func flattenNameServers(servers []*webhosting.Nameserver) []map[string]any {
-	result := []map[string]any{}
+	result := make([]map[string]any, 0, len(servers))
 	for _, s := range servers {
 		result = append(result, map[string]any{
 			"hostname":   s.Hostname,

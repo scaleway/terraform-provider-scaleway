@@ -1,0 +1,34 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Edge Services"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }} (Data Source)
+
+{{ .Description -}}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+One of `dns_stage_id` or filter arguments must be specified.
+
+- `dns_stage_id` - (Optional) The ID of the DNS stage. Conflicts with all filter arguments below.
+
+The following filter arguments are supported (cannot be used with `dns_stage_id`):
+
+- `pipeline_id` - (Required when `dns_stage_id` is not set) The ID of the pipeline.
+- `fqdn` - (Optional) FQDN to filter for (in the format subdomain.example.com).
+
+## Attributes Reference
+
+Exported attributes are the ones from `scaleway_edge_services_dns_stage` [resource](../resources/edge_services_dns_stage.md).

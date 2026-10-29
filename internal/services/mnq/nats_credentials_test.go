@@ -109,15 +109,14 @@ func isNatsCredentialsPresent(tt *acctest.TestTools, n string) resource.TestChec
 			return err
 		}
 
-		_, err = api.GetNatsCredentials(&mnqSDK.NatsAPIGetNatsCredentialsRequest{
-			NatsCredentialsID: id,
-			Region:            region,
+		_, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.NatsCredentials, error) {
+			return api.GetNatsCredentials(&mnqSDK.NatsAPIGetNatsCredentialsRequest{
+				NatsCredentialsID: id,
+				Region:            region,
+			})
 		})
-		if err != nil {
-			return err
-		}
 
-		return nil
+		return err
 	}
 }
 
