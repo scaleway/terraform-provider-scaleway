@@ -307,12 +307,13 @@ func (d *WebhostingDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
+	//nolint:modernize // cannot specify promoted field ID and enclosing embedded field webhostingResourceModel
 	state := webhostingDataSourceModel{
 		webhostingResourceModel: flattenWebhosting(ctx, d.meta, hostingResponse, &resp.Diagnostics),
 		WebhostingID:            types.StringValue(regionalID),
-
-		ID: types.StringValue(regionalID),
 	}
+
+	state.ID = types.StringValue(regionalID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
