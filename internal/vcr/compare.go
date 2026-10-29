@@ -294,6 +294,7 @@ func ExtractTestGeneratedNamePrefix(name string) string {
 	}
 
 	generated := host[dashIndex+1:]
+
 	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
 	if generatedToIntErr != nil {
 		// some are only {name}
