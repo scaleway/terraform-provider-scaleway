@@ -276,21 +276,32 @@ func CompareSlices(request, cassette []any) bool {
 // ExtractTestGeneratedNamePrefix extracts the prefix from a test generated name.
 // Test Generated name has format: "{prefix}-{generated_number}"
 // example: test-acc-scaleway-project-3723338038624371236
+// Also supports FQDNs: tf-tests-mbx-basic-123.scaleway-terraform.com
 func ExtractTestGeneratedNamePrefix(name string) string {
+	suffix := ""
+	host := name
+
+	if dot := strings.Index(name, "."); dot >= 0 {
+		host = name[:dot]
+		suffix = name[dot:]
+	}
+
 	// {prefix}-{generated}
 	//         ^
-	dashIndex := strings.LastIndex(name, "-")
+	dashIndex := strings.LastIndex(host, "-")
+	if dashIndex == -1 {
+		return name
+	}
 
-	generated := name[dashIndex+1:]
+	generated := host[dashIndex+1:]
 	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
-
-	if dashIndex == -1 || generatedToIntErr != nil {
+	if generatedToIntErr != nil {
 		// some are only {name}
 		return name
 	}
 
-	// {prefix}
-	return name[:dashIndex]
+	// {prefix}{suffix}
+	return host[:dashIndex] + suffix
 }
 
 // ExtractGeneratedNamePrefix extracts the prefix from a provider generated name.
