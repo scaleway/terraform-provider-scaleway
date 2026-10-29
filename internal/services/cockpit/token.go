@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/cockpit_token_resource.md
+var tokenResourceDescription string
+
 func ResourceToken() *schema.Resource {
 	return &schema.Resource{
+		Description:   tokenResourceDescription,
 		CreateContext: ResourceCockpitTokenCreate,
 		ReadContext:   ResourceCockpitTokenRead,
 		DeleteContext: ResourceCockpitTokenDelete,

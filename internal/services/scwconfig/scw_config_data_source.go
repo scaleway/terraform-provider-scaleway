@@ -2,14 +2,19 @@ package scwconfig
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+//go:embed descriptions/config_data_source.md
+var configDataSourceDescription string
+
 func DataSourceConfig() *schema.Resource {
 	return &schema.Resource{
+		Description: configDataSourceDescription,
 		ReadContext: dataSourceConfigRead,
 		SchemaFunc:  configSchema,
 	}

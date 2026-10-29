@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/instance_security_group_data_source.md
+var securityGroupDataSourceDescription string
 
 func DataSourceSecurityGroup() *schema.Resource {
 	// Generate datasource schema from resource
@@ -30,6 +34,7 @@ func DataSourceSecurityGroup() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: securityGroupDataSourceDescription,
 		ReadContext: DataSourceInstanceSecurityGroupRead,
 
 		Schema: dsSchema,

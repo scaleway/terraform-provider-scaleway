@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/vpc_public_gateway_ip_reverse_dns_resource.md
+var ipreverseDNSResourceDescription string
+
 func ResourceIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
+		Description:   ipreverseDNSResourceDescription,
 		CreateContext: ResourceVPCPublicGatewayIPReverseDNSCreate,
 		ReadContext:   ResourceVPCPublicGatewayIPReverseDNSRead,
 		UpdateContext: ResourceVPCPublicGatewayIPReverseDNSUpdate,

@@ -2,6 +2,7 @@ package tem
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/tem_webhook_resource.md
+var webhookResourceDescription string
+
 func ResourceWebhook() *schema.Resource {
 	return &schema.Resource{
+		Description:   webhookResourceDescription,
 		CreateContext: ResourceWebhookCreate,
 		ReadContext:   ResourceWebhookRead,
 		UpdateContext: ResourceWebhookUpdate,

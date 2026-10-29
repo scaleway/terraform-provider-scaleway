@@ -2,6 +2,7 @@ package autoscaling
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/autoscaling_instance_policy_data_source.md
+var instancePolicyDataSourceDescription string
 
 func DataSourceInstancePolicy() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceInstancePolicy().SchemaFunc())
@@ -27,6 +31,7 @@ func DataSourceInstancePolicy() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: instancePolicyDataSourceDescription,
 		ReadContext: DataSourceInstancePolicyRead,
 		Schema:      dsSchema,
 	}

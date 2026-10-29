@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/instance_snapshot_data_source.md
+var snapshotDataSourceDescription string
 
 func DataSourceSnapshot() *schema.Resource {
 	// Generate datasource schema from resource
@@ -30,6 +34,7 @@ func DataSourceSnapshot() *schema.Resource {
 	dsSchema["name"].ConflictsWith = []string{"snapshot_id"}
 
 	return &schema.Resource{
+		Description: snapshotDataSourceDescription,
 		ReadContext: DataSourceInstanceSnapshotRead,
 		Schema:      dsSchema,
 	}

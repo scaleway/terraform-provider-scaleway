@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,6 +18,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/lb_private_network_resource.md
+var privateNetworkResourceDescription string
+
 func lbPrivateNetworkIdentity() *schema.ResourceIdentity {
 	return identity.WrapSchemaMap(map[string]*schema.Schema{
 		"zone":               identity.DefaultZoneAttribute(),
@@ -27,6 +31,7 @@ func lbPrivateNetworkIdentity() *schema.ResourceIdentity {
 
 func ResourcePrivateNetwork() *schema.Resource {
 	return &schema.Resource{
+		Description:   privateNetworkResourceDescription,
 		CreateContext: resourceLbPrivateNetworkCreate,
 		ReadContext:   resourceLbPrivateNetworkRead,
 		DeleteContext: resourceLbPrivateNetworkDelete,

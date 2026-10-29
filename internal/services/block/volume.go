@@ -2,6 +2,7 @@ package block
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/block_volume_resource.md
+var volumeResourceDescription string
+
 func ResourceVolume() *schema.Resource {
 	return &schema.Resource{
+		Description:   volumeResourceDescription,
 		CreateContext: ResourceBlockVolumeCreate,
 		ReadContext:   ResourceBlockVolumeRead,
 		UpdateContext: ResourceBlockVolumeUpdate,

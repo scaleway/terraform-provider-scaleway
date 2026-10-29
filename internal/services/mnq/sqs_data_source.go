@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,6 +11,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 )
 
+//go:embed descriptions/mnq_sqs_data_source.md
+var sqsDataSourceDescription string
+
 func DataSourceSQS() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceSQS().SchemaFunc())
@@ -17,6 +21,7 @@ func DataSourceSQS() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 
 	return &schema.Resource{
+		Description: sqsDataSourceDescription,
 		ReadContext: DataSourceMNQSQSRead,
 		SchemaFunc: func() map[string]*schema.Schema {
 			return dsSchema

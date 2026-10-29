@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/rdb_snapshot_resource.md
+var snapshotResourceDescription string
+
 func ResourceSnapshot() *schema.Resource {
 	return &schema.Resource{
+		Description:   snapshotResourceDescription,
 		CreateContext: ResourceRdbSnapshotCreate,
 		ReadContext:   ResourceRdbSnapshotRead,
 		UpdateContext: ResourceRdbSnapshotUpdate,

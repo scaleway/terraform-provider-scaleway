@@ -3,6 +3,7 @@ package instance
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"fmt"
 	"io"
 
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance_user_data_resource.md
+var userDataResourceDescription string
+
 func ResourceUserData() *schema.Resource {
 	return &schema.Resource{
+		Description:   userDataResourceDescription,
 		CreateContext: ResourceInstanceUserDataCreate,
 		ReadContext:   ResourceInstanceUserDataRead,
 		UpdateContext: ResourceInstanceUserDataUpdate,

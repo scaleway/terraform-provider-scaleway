@@ -2,6 +2,7 @@ package baremetal
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json/v2"
 	"fmt"
 
@@ -27,8 +28,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/baremetal_server_resource.md
+var serverResourceDescription string
+
 func ResourceServer() *schema.Resource {
 	return &schema.Resource{
+		Description:   serverResourceDescription,
 		CreateContext: ResourceServerCreate,
 		ReadContext:   ResourceServerRead,
 		UpdateContext: ResourceServerUpdate,

@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -22,6 +23,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/instance_private_nic_resource.md
+var privateNICResourceDescription string
+
 func privateNICIdentity() *schema.ResourceIdentity {
 	return identity.WrapSchemaMap(map[string]*schema.Schema{
 		"zone":           identity.DefaultZoneAttribute(),
@@ -32,6 +36,7 @@ func privateNICIdentity() *schema.ResourceIdentity {
 
 func ResourcePrivateNIC() *schema.Resource {
 	return &schema.Resource{
+		Description:   privateNICResourceDescription,
 		CreateContext: ResourceInstancePrivateNICCreate,
 		ReadContext:   ResourceInstancePrivateNICRead,
 		UpdateContext: ResourceInstancePrivateNICUpdate,

@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
+
+//go:embed descriptions/function_data_source.md
+var functionDataSourceDescription string
 
 func DataSourceFunction() *schema.Resource {
 	// Generate datasource schema from resource
@@ -26,6 +30,7 @@ func DataSourceFunction() *schema.Resource {
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "namespace_id")
 
 	return &schema.Resource{
+		Description: functionDataSourceDescription,
 		ReadContext: DataSourceFunctionRead,
 		Schema:      dsSchema,
 	}

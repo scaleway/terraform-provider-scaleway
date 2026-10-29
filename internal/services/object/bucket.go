@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"log"
@@ -23,8 +24,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+//go:embed descriptions/object_bucket_resource.md
+var bucketResourceDescription string
+
 func ResourceBucket() *schema.Resource {
 	return &schema.Resource{
+		Description:   bucketResourceDescription,
 		CreateContext: resourceObjectBucketCreate,
 		ReadContext:   resourceObjectBucketRead,
 		UpdateContext: resourceObjectBucketUpdate,

@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/lb_route_data_source.md
+var routeDataSourceDescription string
 
 func DataSourceRoute() *schema.Resource {
 	// Generate datasource schema from resource
@@ -24,6 +28,7 @@ func DataSourceRoute() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: routeDataSourceDescription,
 		ReadContext: DataSourceLbRouteRead,
 		Schema:      dsSchema,
 	}

@@ -1,0 +1,1 @@
+The scaleway_baremetal_partition_schema data source allows you to retrieve a ready-to-use partitioning schema for a BareMetal server. This schema can be used for custom installations with optional swap and extra partitions.

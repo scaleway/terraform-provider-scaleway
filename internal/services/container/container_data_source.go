@@ -2,6 +2,7 @@ package container
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/container_data_source.md
+var containerDataSourceDescription string
 
 func DataSourceContainer() *schema.Resource {
 	// Generate datasource schema from resource
@@ -41,6 +45,7 @@ func DataSourceContainer() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: containerDataSourceDescription,
 		ReadContext: DataSourceContainerRead,
 		Schema:      dsSchema,
 	}

@@ -289,7 +289,6 @@ func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
 	}
 }
 
-
 func TestSDKProvider_DataSourceDescriptionNotEmpty(t *testing.T) {
 	p := provider.SDKProvider(nil)()
 	for name, d := range p.DataSourcesMap {
