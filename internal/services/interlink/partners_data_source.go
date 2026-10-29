@@ -69,6 +69,11 @@ func DataSourcePartners() *schema.Resource {
 							Computed:    true,
 							Description: "Last update date",
 						},
+						"srn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Scaleway Resource Name (SRN) of the partner",
+						},
 					},
 				},
 			},

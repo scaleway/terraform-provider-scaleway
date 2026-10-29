@@ -54,3 +54,4 @@ data "scaleway_interlink_pops" "dedicated" {
     - `available_link_bandwidths_mbps` - List of available bandwidth options in Mbps.
     - `display_name` - Human-readable display name.
     - `region` - Region of the PoP.
+    - `srn` - The Scaleway Resource Name (SRN) of the PoP.

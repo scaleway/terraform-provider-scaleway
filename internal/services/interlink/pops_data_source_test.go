@@ -1,6 +1,7 @@
 package interlink_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -22,6 +23,7 @@ func TestAccDataSourceInterlinkPops_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_interlink_pops.all", "pops.#"),
+					resource.TestMatchResourceAttr("data.scaleway_interlink_pops.all", "pops.0.srn", regexp.MustCompile(`^srn://interlink\..+/regions/.+/pops/.+$`)),
 				),
 			},
 		},
@@ -45,6 +47,7 @@ func TestAccDataSourceInterlinkPops_ByProviderName(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_interlink_pops.by_provider_name", "pops.#"),
 					resource.TestCheckResourceAttr("data.scaleway_interlink_pops.by_provider_name", "pops.0.hosting_provider_name", "OpCore"),
+					resource.TestMatchResourceAttr("data.scaleway_interlink_pops.by_provider_name", "pops.0.srn", regexp.MustCompile(`^srn://interlink\..+/regions/.+/pops/.+$`)),
 				),
 			},
 		},

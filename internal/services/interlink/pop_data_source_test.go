@@ -1,6 +1,7 @@
 package interlink_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -26,6 +27,7 @@ func TestAccDataSourceInterlinkPop_ByName(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "name", "TeleHouse TH2"),
 					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "hosting_provider_name", "TeleHouse"),
 					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "city", "Paris"),
+					resource.TestMatchResourceAttr("data.scaleway_interlink_pop.by_name", "srn", regexp.MustCompile(`^srn://interlink\..+/regions/.+/pops/.+$`)),
 				),
 			},
 		},
@@ -63,6 +65,8 @@ func TestAccDataSourceInterlinkPop_ByID(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_interlink_pop.by_id", "city",
 						"data.scaleway_interlink_pop.by_name", "city"),
+					resource.TestMatchResourceAttr("data.scaleway_interlink_pop.by_name", "srn", regexp.MustCompile(`^srn://interlink\..+/regions/.+/pops/.+$`)),
+					resource.TestMatchResourceAttr("data.scaleway_interlink_pop.by_id", "srn", regexp.MustCompile(`^srn://interlink\..+/regions/.+/pops/.+$`)),
 				),
 			},
 		},
