@@ -47,7 +47,7 @@ func DataSourceNamespaceRead(ctx context.Context, d *schema.ResourceData, m any)
 			Region:    region,
 			Name:      types.ExpandStringPtr(namespaceName),
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-		}, scw.WithContext(ctx))
+		}, scw.WithContext(ctx), scw.WithAllPages())
 		if err != nil {
 			return diag.FromErr(err)
 		}

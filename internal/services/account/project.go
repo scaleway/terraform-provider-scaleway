@@ -10,6 +10,7 @@ import (
 	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -29,6 +30,7 @@ func ResourceProject() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    projectSchema,
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
@@ -55,6 +57,11 @@ func projectSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the Project (Format ISO 8601)",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the project",
+		},
 		"organization_id": {
 			Type:             schema.TypeString,
 			Description:      "The organization_id you want to attach the resource to",
@@ -62,6 +69,12 @@ func projectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 			Computed:         true,
 			ValidateDiagFunc: verify.IsUUID(),
+		},
+		"delete_with_resources": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, deleting the project also deletes all the resources it contains. Defaults to false.",
 		},
 	}
 }
@@ -83,7 +96,9 @@ func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.ID)
+	if err := identity.SetGlobalIdentity(d, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceAccountProjectRead(ctx, d, m)
 }
@@ -104,13 +119,22 @@ func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
+	if err := identity.SetGlobalIdentity(d, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	setProjectState(d, res)
+
+	return nil
+}
+
+func setProjectState(d *schema.ResourceData, res *accountSDK.Project) {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("description", res.Description)
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("organization_id", res.OrganizationID)
-
-	return nil
+	_ = d.Set("srn", res.Srn)
 }
 
 func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -145,6 +169,9 @@ func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m
 func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
 
+	// Try a plain delete first. If the project still contains resources the
+	// API answers 412 (resource_still_in_use); when delete_with_resources is
+	// set we fall back to deleting it with its resources.
 	err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		err := accountAPI.DeleteProject(&accountSDK.ProjectAPIDeleteProjectRequest{
 			ProjectID: d.Id(),
@@ -159,7 +186,31 @@ func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m
 
 		return nil
 	})
-	if err != nil {
+
+	if isProjectStillInUseError(err) && d.Get("delete_with_resources").(bool) {
+		err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+			_, err := accountAPI.DeleteProjectWithResources(&accountSDK.ProjectAPIDeleteProjectWithResourcesRequest{
+				ProjectID:   d.Id(),
+				ProjectName: d.Get("name").(string),
+			}, scw.WithContext(ctx))
+			if err != nil && !httperrors.Is404(err) {
+				if isProjectNotUsableError(err) {
+					return retry.RetryableError(err)
+				}
+
+				return retry.NonRetryableError(err)
+			}
+
+			return nil
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if err := waitForProjectDeleted(ctx, accountAPI, d.Id(), d.Timeout(schema.TimeoutDelete)); err != nil {
+			return diag.FromErr(err)
+		}
+	} else if err != nil {
 		return diag.FromErr(err)
 	}
 

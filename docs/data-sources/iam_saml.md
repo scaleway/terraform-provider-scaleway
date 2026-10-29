@@ -36,6 +36,7 @@ data "scaleway_iam_saml" "main" {
 - `id` (String) The ID of the SAML configuration
 - `service_provider` (Object) The Service Provider information (see [below for nested schema](#nestedatt--service_provider))
 - `single_sign_on_url` (String) The single sign-on URL of the SAML Identity Provider
+- `srn` (String) The Scaleway Resource Name (SRN) of the SAML configuration
 - `status` (String) The status of the SAML configuration
 
 <a id="nestedatt--service_provider"></a>

@@ -91,13 +91,14 @@ ephemeral "scaleway_secret_version" "data_latest" {
 - `region` (String) The region of the secret version. If not set, the region is derived from the secret_id when possible or from the provider configuration.
 - `revision` (String) The revision of the secret version. Defaults to `latest`
 - `secret_id` (String) The ID of the secret associated with the version. Either secret_id or secret_name must be specified.
-- `secret_name` (String) The name of the secret.  Either secret_id or secret_name must be specified.
+- `secret_name` (String) The name of the secret. Either secret_id or secret_name must be specified.
 
 ### Read-Only
 
 - `created_at` (String) Date and time of secret version's creation (RFC 3339 format)
 - `data` (String, Sensitive) The payload of the secret version (base64 encoded)
 - `description` (String) Description of the secret version
+- `srn` (String) The Scaleway Resource Name (SRN) of the secret version
 - `status` (String) Status of the secret version
 - `updated_at` (String) Date and time of secret version's last update (RFC 3339 format)
 

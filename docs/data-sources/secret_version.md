@@ -22,7 +22,7 @@ The following commands allow you to:
 
 The output blocks display the sensitive data contained in your secret version.
 
-```hcl
+```terraform
 # Create a secret named fooii
 resource "scaleway_secret" "main" {
   name        = "fooii"
@@ -81,7 +81,7 @@ Note: This data source provides you with access to the secret payload, which is 
 Keep in mind that this is a sensitive attribute. For more information,
 see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
 
-~> **Important:**  This property is sensitive and will not be displayed in the Terraform plan, for security reasons.
+~> **Important:** This property is sensitive and will not be displayed in the Terraform plan, for security reasons.
 
 ## Attributes Reference
 
@@ -92,5 +92,6 @@ This section lists the attributes that are exported by the `scaleway_secret_vers
 - `status` - The status of the secret version.
 - `created_at` - The date and time of the secret version's creation in RFC 3339 format.
 - `updated_at` - The date and time of the secret version's last update in RFC 3339 format.
+- `srn` - The Scaleway Resource Name (SRN) of the secret version.
 
 Exported attributes are the ones from the `scaleway_secret_version` [resource](../resources/secret_version.md).

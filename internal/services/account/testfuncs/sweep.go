@@ -1,8 +1,6 @@
 package accounttestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -27,7 +25,9 @@ func testSweepAccountProject(_ string) error {
 
 		listProjects, err := accountAPI.ListProjects(req, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("failed to list projects: %w", err)
+			logging.L.Warningf("failed to list projects: %s", err)
+
+			return nil
 		}
 
 		for _, project := range listProjects.Projects {
@@ -40,7 +40,7 @@ func testSweepAccountProject(_ string) error {
 				ProjectID: project.ID,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: failed to delete project %s: %w", project.ID, err)
+				logging.L.Debugf("sweeper: failed to delete project %s: %s", project.ID, err)
 
 				continue
 			}

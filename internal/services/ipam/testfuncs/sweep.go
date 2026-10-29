@@ -1,8 +1,6 @@
 package ipamtestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	ipamSDK "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -25,7 +23,9 @@ func testSweepIPAMIP(_ string) error {
 
 		listIPs, err := ipamAPI.ListIPs(&ipamSDK.ListIPsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing ips in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing ips in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, v := range listIPs.IPs {
@@ -34,9 +34,7 @@ func testSweepIPAMIP(_ string) error {
 				Region: region,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error releasing IP in sweeper: %w", err)
+				logging.L.Warningf("error releasing IP in sweeper: %s", err)
 			}
 		}
 

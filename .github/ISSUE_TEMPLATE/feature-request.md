@@ -28,7 +28,7 @@ labels: enhancement
 
 <!--- Information about code formatting: https://help.github.com/articles/basic-writing-and-formatting-syntax/#quoting-code --->
 
-```hcl
+```terraform
 # Copy-paste your Terraform configurations here - for large Terraform configs,
 # please use a service like Dropbox and share a link to the ZIP file. For
 # security, you can also encrypt the files using our GPG public key.

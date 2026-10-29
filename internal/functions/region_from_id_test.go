@@ -125,22 +125,13 @@ func TestAccProviderFunction_Region_From_ID(t *testing.T) {
 			{
 				// Can get the region from a resource's id in one step
 				Config: `
-# terraform block required for provider function to be found
-terraform {
-  required_providers {
-    scaleway = {
-      source = "scaleway/scaleway"
-    }
-  }
-}
+				resource "scaleway_secret" "main" {
+					name = "terraform_test_region_from_id"
+				}
 
-resource "scaleway_secret" "main" {
-	name = "terraform_test_region_from_id"
-}
-
-output "region" {
-  value = provider::scaleway::region_from_id(scaleway_secret.main.id)
-}
+				output "region" {
+				value = provider::scaleway::region_from_id(scaleway_secret.main.id, null)
+				}
 `,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckOutput("region", "fr-par"),

@@ -43,3 +43,22 @@ func flattenEndpoints(endpoints []*searchdbapi.Endpoint) []map[string]any {
 
 	return result
 }
+
+func publicDashboardURLFromEndpoints(endpoints []*searchdbapi.Endpoint) string {
+	for _, ep := range endpoints {
+		if ep.Public == nil {
+			continue
+		}
+
+		for _, svc := range ep.Services {
+			// API historically used "dashboard"/"dashboards"; current SearchDB
+			// responses use "ui-dashboard".
+			switch svc.Name {
+			case "dashboard", "dashboards", "ui-dashboard":
+				return svc.URL
+			}
+		}
+	}
+
+	return ""
+}

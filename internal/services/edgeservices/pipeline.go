@@ -101,16 +101,23 @@ func ResourcePipelineRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
+	diags := setPipelineState(d, pipeline)
+
+	err = identity.SetGlobalIdentity(d, pipeline.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPipelineState(d *schema.ResourceData, pipeline *edgeservices.Pipeline) diag.Diagnostics {
 	_ = d.Set("name", pipeline.Name)
 	_ = d.Set("description", pipeline.Description)
 	_ = d.Set("created_at", types.FlattenTime(pipeline.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(pipeline.UpdatedAt))
 	_ = d.Set("status", pipeline.Status.String())
 	_ = d.Set("project_id", pipeline.ProjectID)
-
-	if err = identity.SetGlobalIdentity(d, pipeline.ID); err != nil {
-		return diag.FromErr(err)
-	}
 
 	return nil
 }

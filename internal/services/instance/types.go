@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -13,14 +14,18 @@ import (
 )
 
 func (ph *privateNICsHandler) flatPrivateNICs() error {
-	privateNICsMap := make(map[string]*instance.PrivateNIC)
+	privateNICsMap := make(map[string]*instanceV2.PrivateNetworkInterfaceSummary)
 
-	res, err := ph.instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{Zone: ph.zone, ServerID: ph.serverID})
+	privateNics, err := ph.instanceAPI.ListPrivateNetworkInterfaces(&instanceV2.ListPrivateNetworkInterfacesRequest{
+		Zone:      ph.zone,
+		ServerIDs: []string{ph.serverID},
+		ProjectID: ph.projectID,
+	})
 	if err != nil {
 		return err
 	}
 
-	for _, p := range res.PrivateNics {
+	for _, p := range privateNics.PrivateNetworkInterfaces {
 		privateNICsMap[p.PrivateNetworkID] = p
 	}
 
@@ -130,11 +135,15 @@ func flattenServerFileSystem(zone scw.Zone, fs []*instance.ServerFilesystem) []a
 	return filesystems
 }
 
-func flattenServerIPIDs(ips []*instance.ServerIP) []any {
+func flattenServerIPIDs(ips []*instance.ServerIP, zone scw.Zone) []any {
 	ipIDs := make([]any, len(ips))
 
 	for i, ip := range ips {
-		ipIDs[i] = ip.ID
+		if ip.Dynamic {
+			continue
+		}
+
+		ipIDs[i] = zonal.NewID(zone, ip.ID).String()
 	}
 
 	return ipIDs

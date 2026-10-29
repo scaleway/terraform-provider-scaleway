@@ -3,27 +3,25 @@ package cockpit
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
-	DefaultCockpitTimeout = 5 * time.Minute
-	pathMetricsURL        = "/api/v1/push"
-	pathLogsURL           = "/loki/api/v1/push"
-	pathTracesURL         = "/otlp/v1/traces"
+	DefaultCockpitTimeout       = 5 * time.Minute
+	defaultCockpitRetryInterval = 15 * time.Second
+	pathMetricsURL              = "/api/v1/push"
+	pathLogsURL                 = "/loki/api/v1/push"
+	pathTracesURL               = "/otlp/v1/traces"
 )
 
 // NewGlobalAPI returns a new global cockpit API.
@@ -55,6 +53,23 @@ func NewAPIWithRegionAndID(m any, id string) (*cockpit.RegionalAPI, scw.Region, 
 	return api, region, id, nil
 }
 
+func waitForExporter(
+	ctx context.Context,
+	api *cockpit.RegionalAPI,
+	region scw.Region,
+	exporterID string,
+	timeout time.Duration,
+) (*cockpit.Exporter, error) {
+	return transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
+		return api.WaitForExporter(&cockpit.WaitForExporterRequest{
+			Region:        region,
+			ExporterID:    exporterID,
+			Timeout:       new(timeout),
+			RetryInterval: new(defaultCockpitRetryInterval),
+		}, scw.WithContext(ctx))
+	})
+}
+
 // NewAPIWithRegionAndProjectID returns a new cockpit API with region and project ID extracted from composite ID.
 // The ID format is "region/projectID/1" (used by alert_manager resource).
 func NewAPIWithRegionAndProjectID(m any, id string) (*cockpit.RegionalAPI, scw.Region, string, error) {
@@ -66,41 +81,6 @@ func NewAPIWithRegionAndProjectID(m any, id string) (*cockpit.RegionalAPI, scw.R
 	}
 
 	return api, scw.Region(parts[0]), parts[1], nil
-}
-
-// NewAPIGrafanaUserID returns a new cockpit API with the Grafana user ID and the project ID.
-func NewAPIGrafanaUserID(m any, id string) (*cockpit.GlobalAPI, string, uint32, error) {
-	projectID, resourceIDString, err := parseCockpitID(id)
-	if err != nil {
-		return nil, "", 0, err
-	}
-
-	grafanaUserID, err := strconv.ParseUint(resourceIDString, 10, 32)
-	if err != nil {
-		return nil, "", 0, err
-	}
-
-	api, err := NewGlobalAPI(m)
-	if err != nil {
-		return nil, "", 0, err
-	}
-
-	return api, projectID, uint32(grafanaUserID), nil
-}
-
-// cockpitIDWithProjectID returns a cockpit ID with a project ID.
-func cockpitIDWithProjectID(projectID string, id string) string {
-	return projectID + "/" + id
-}
-
-// parseCockpitID returns the project ID and the cockpit ID from a combined ID.
-func parseCockpitID(id string) (projectID string, cockpitID string, err error) {
-	parts := strings.Split(id, "/")
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("invalid cockpit ID: %s", id)
-	}
-
-	return parts[0], parts[1], nil
 }
 
 func cockpitTokenUpgradeV1SchemaType() cty.Type {
@@ -126,17 +106,4 @@ func cockpitTokenV1UpgradeFunc(_ context.Context, rawState map[string]any, _ any
 	}
 
 	return rawState, nil
-}
-
-func getDefaultProjectID(ctx context.Context, m any) (string, error) {
-	accountAPI := account.NewProjectAPI(m)
-
-	res, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{
-		Name: types.ExpandStringPtr("default"),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return "", err
-	}
-
-	return res.Projects[0].ID, nil
 }

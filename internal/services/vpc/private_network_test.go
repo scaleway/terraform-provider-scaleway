@@ -2,6 +2,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -47,6 +48,7 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 						"enable_default_route_propagation",
 						"false",
 					),
+					resource.TestMatchResourceAttr("scaleway_vpc_private_network.pn01", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/private-networks/.+$`)),
 				),
 			},
 			{

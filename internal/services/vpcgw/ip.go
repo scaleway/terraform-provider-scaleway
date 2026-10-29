@@ -65,6 +65,11 @@ func ipSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the public gateway IP",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the IP",
+		},
 	}
 }
 
@@ -149,6 +154,7 @@ func setIPState(d *schema.ResourceData, ip *vpcgw.IP) diag.Diagnostics {
 	_ = d.Set("zone", ip.Zone)
 	_ = d.Set("tags", ip.Tags)
 	_ = d.Set("reverse", ip.Reverse)
+	_ = d.Set("srn", ip.Srn)
 
 	return nil
 }

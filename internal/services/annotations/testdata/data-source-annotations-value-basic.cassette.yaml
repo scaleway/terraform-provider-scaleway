@@ -1,0 +1,461 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 143
+        host: api.scaleway.com
+        body: '{"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test_key_value_ds","description":"Test annotation key for value data source"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/keys
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 208
+        body: '{"id":"01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b", "srn":"srn://annotations.scw.eu/keys/01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b", "name":"test_key_value_ds", "description":"Test annotation key for value data source"}'
+        headers:
+            Content-Length:
+                - "208"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:23 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 4dd5bc60-a5e7-464d-a58e-d8a47c8a9384
+        status: 200 OK
+        code: 200
+        duration: 202.125407ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/metadata
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 59
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
+        headers:
+            Content-Length:
+                - "59"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:23 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 069bcf17-40e4-455d-9f30-5f782c71a47d
+        status: 200 OK
+        code: 200
+        duration: 29.962473ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 126
+        host: api.scaleway.com
+        body: '{"key_id":"01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b","name":"test_value_ds","description":"Test annotation value for data source"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 247
+        body: '{"id":"01a13ac1-d254-7ed6-9bcd-b2dd411e286b","srn":"srn://annotations.scw.eu/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b","key_id":"01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b","name":"test_value_ds","description":"Test annotation value for data source"}'
+        headers:
+            Content-Length:
+                - "247"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:23 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 5d48db73-4a1a-4d9e-b672-321e962b4674
+        status: 200 OK
+        code: 200
+        duration: 132.14474ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 247
+        body: '{"id":"01a13ac1-d254-7ed6-9bcd-b2dd411e286b","srn":"srn://annotations.scw.eu/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b","key_id":"01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b","name":"test_value_ds","description":"Test annotation value for data source"}'
+        headers:
+            Content-Length:
+                - "247"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:23 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - a1817968-c3de-49d9-9ecc-4c29c6509528
+        status: 200 OK
+        code: 200
+        duration: 166.769099ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 251
+        body: '{"id":"01a13ac1-d254-7ed6-9bcd-b2dd411e286b", "srn":"srn://annotations.scw.eu/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b", "key_id":"01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b", "name":"test_value_ds", "description":"Test annotation value for data source"}'
+        headers:
+            Content-Length:
+                - "251"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:23 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - b97e2652-a8ad-49a7-8034-811cd74f9ea4
+        status: 200 OK
+        code: 200
+        duration: 154.276682ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/keys/01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 208
+        body: '{"id":"01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b", "srn":"srn://annotations.scw.eu/keys/01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b", "name":"test_key_value_ds", "description":"Test annotation key for value data source"}'
+        headers:
+            Content-Length:
+                - "208"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:24 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - d5b5daaa-dc00-4c95-b6e9-2c1e02ebd996
+        status: 200 OK
+        code: 200
+        duration: 62.999435ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 247
+        body: '{"id":"01a13ac1-d254-7ed6-9bcd-b2dd411e286b","srn":"srn://annotations.scw.eu/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b","key_id":"01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b","name":"test_value_ds","description":"Test annotation value for data source"}'
+        headers:
+            Content-Length:
+                - "247"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:24 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 1cbc98e8-d5a8-4dcb-8e64-1e088aeb95f9
+        status: 200 OK
+        code: 200
+        duration: 133.590048ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 247
+        body: '{"id":"01a13ac1-d254-7ed6-9bcd-b2dd411e286b","srn":"srn://annotations.scw.eu/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b","key_id":"01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b","name":"test_value_ds","description":"Test annotation value for data source"}'
+        headers:
+            Content-Length:
+                - "247"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:24 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - dc213653-53c4-4e2c-bed8-ad4eff717bc7
+        status: 200 OK
+        code: 200
+        duration: 58.358268ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:24 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 04449e78-9366-4991-a6bd-6f8c2da91609
+        status: 204 No Content
+        code: 204
+        duration: 126.61ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/keys/01a13ac1-d1ab-7a5d-96ed-e3299fc27e7b
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:24 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 0733ebcb-f1b5-4bc1-b0f7-1ea3d76c676e
+        status: 204 No Content
+        code: 204
+        duration: 125.577626ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 137
+        body: '{"message":"resource is not found","resource":"annotation_value","resource_id":"01a13ac1-d254-7ed6-9bcd-b2dd411e286b","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "137"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:24 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 72a5e358-3a61-4cf7-b916-8b416374d2c4
+        status: 404 Not Found
+        code: 404
+        duration: 54.028497ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261014084541-8822ae0bb150 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/01a13ac1-d254-7ed6-9bcd-b2dd411e286b
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 137
+        body: '{"message":"resource is not found","resource":"annotation_value","resource_id":"01a13ac1-d254-7ed6-9bcd-b2dd411e286b","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "137"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 14 Oct 2026 14:12:24 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - d57d08db-1601-4087-816f-922da92da227
+        status: 404 Not Found
+        code: 404
+        duration: 50.082649ms

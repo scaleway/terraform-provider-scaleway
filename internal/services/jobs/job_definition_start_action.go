@@ -77,7 +77,7 @@ func (a *StartJobDefinitionAction) Schema(ctx context.Context, req action.Schema
 				Required:    true,
 				Description: "ID of the job definition to start. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"region": regional.SchemaAttribute("Region of the job definition. If not set, the region is derived from the job_definition_id when possible or from the provider configuration."),
@@ -173,8 +173,7 @@ func (a *StartJobDefinitionAction) Invoke(ctx context.Context, req action.Invoke
 	}
 
 	if !data.Command.IsNull() && data.Command.ValueString() != "" {
-		command := data.Command.ValueString()
-		startReq.Command = &command //nolint: staticcheck
+		startReq.Command = new(data.Command.ValueString()) //nolint: staticcheck
 	}
 
 	if !data.StartupCommand.IsNull() {
@@ -231,8 +230,7 @@ func (a *StartJobDefinitionAction) Invoke(ctx context.Context, req action.Invoke
 	}
 
 	if !data.Replicas.IsNull() {
-		replicas := uint32(data.Replicas.ValueInt64())
-		startReq.Replicas = &replicas
+		startReq.Replicas = new(uint32(data.Replicas.ValueInt64()))
 	}
 
 	_, err = a.jobsAPI.StartJobDefinition(startReq, scw.WithContext(ctx))

@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_kafka_cluster"
 # Resource: scaleway_kafka_cluster
 
 Creates and manages Scaleway Kafka clusters.
-For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-services/kafka/).
+For more information refer to the [product documentation](https://www.scaleway.com/en/developers/api/clusters-for-kafka).
 
 ~> **Important:** The Kafka product is currently in Public Beta.
 
@@ -28,7 +28,7 @@ resource "scaleway_vpc_private_network" "pn" {
 
 resource "scaleway_kafka_cluster" "main" {
   name              = "my-kafka-cluster"
-  version           = "3.9.0"
+  version           = "4.1.1"
   node_amount       = 1
   node_type         = "KAFK-PLAY-NANO"
   volume_type       = "sbs_5k"
@@ -58,7 +58,7 @@ resource "scaleway_vpc_private_network" "pn" {
 
 resource "scaleway_kafka_cluster" "main" {
   name              = "my-kafka-cluster"
-  version           = "3.9.0"
+  version           = "4.1.1"
   node_amount       = 1
   node_type         = "KAFK-PLAY-NANO"
   volume_type       = "sbs_5k"
@@ -73,12 +73,43 @@ resource "scaleway_kafka_cluster" "main" {
 }
 ```
 
+### Multi-AZ
+
+```terraform
+resource "scaleway_vpc" "main" {
+  region = "fr-par"
+  name   = "my-vpc"
+}
+
+resource "scaleway_vpc_private_network" "pn" {
+  name   = "my-private-network"
+  region = "fr-par"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_kafka_cluster" "main" {
+  name              = "my-kafka-multi-az"
+  version           = "4.1.1"
+  node_amount       = 3
+  node_type         = "KAFK-PLAY-NANO"
+  volume_type       = "sbs_5k"
+  volume_size_in_gb = 10
+  multi_az          = true
+  user_name         = "admin"
+  password          = "thiZ_is_v&ry_s3cret"
+
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn.id
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
 - `name` - (Required) Name of the Kafka cluster.
-- `version` - (Required, Forces new resource) Kafka version to use (e.g., "3.9.0"). Changing this forces recreation of the cluster.
+- `version` - (Required, Forces new resource) Kafka version to use (e.g., "4.1.1"). Changing this forces recreation of the cluster.
 - `node_amount` - (Required, Forces new resource) Number of nodes in the cluster. Changing this forces recreation of the cluster.
 - `node_type` - (Required, Forces new resource) Node type to use for the cluster. Changing this forces recreation of the cluster.
 - `volume_type` - (Required, Forces new resource) Type of volume where data is stored (e.g., "sbs_5k", "sbs_15k"). Changing this forces recreation of the cluster.
@@ -86,8 +117,10 @@ The following arguments are supported:
 - `user_name` - (Optional, Forces new resource) Username for the Kafka user. If not specified, no user will be created. Changing this forces recreation of the cluster.
 - `password` - (Optional, Forces new resource, Sensitive) Password for the Kafka user. Required if `user_name` is specified. Changing this forces recreation of the cluster.
 - `tags` - (Optional) List of tags to apply to the cluster.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cluster is associated with.
+- `multi_az` - (Optional, Computed, Forces new resource) Deploy the cluster across multiple availability zones. Conflicts with `mono_az_zone`. When unset, defaults to mono-AZ on the [provider](../index.md#arguments-reference) default `zone`.
+- `mono_az_zone` - (Optional, Computed, Forces new resource) Zone for a mono-AZ cluster (e.g. `fr-par-1`). Conflicts with `multi_az`. When unset, defaults to the provider default zone.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the cluster is associated with.
 
 ### Private Network
 

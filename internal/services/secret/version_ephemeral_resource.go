@@ -74,6 +74,7 @@ type VersionEphemeralResourceModel struct {
 	CreatedAt   types.String `tfsdk:"created_at"`
 	UpdatedAt   types.String `tfsdk:"updated_at"`
 	Data        types.String `tfsdk:"data"`
+	SRN         types.String `tfsdk:"srn"`
 }
 
 //go:embed descriptions/version_ephemeral_resource.md
@@ -89,7 +90,7 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 				Computed:    true,
 				Description: "The ID of the secret associated with the version. Either secret_id or secret_name must be specified.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 					stringvalidator.ExactlyOneOf(
 						path.MatchRoot("secret_id"),
 						path.MatchRoot("secret_name"),
@@ -98,7 +99,7 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 			},
 			"secret_name": schema.StringAttribute{
 				Optional:    true,
-				Description: "The name of the secret.  Either secret_id or secret_name must be specified.",
+				Description: "The name of the secret. Either secret_id or secret_name must be specified.",
 				Validators: []validator.String{
 					stringvalidator.ExactlyOneOf(
 						path.MatchRoot("secret_id"),
@@ -108,9 +109,10 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 			},
 			"revision": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The revision of the secret version. Defaults to `latest`",
 			},
-			"region": regional.SchemaAttribute("The region of the secret version. If not set, the region is derived from the secret_id when possible or from the provider configuration."),
+			"region": regional.SchemaAttributeComputed("The region of the secret version. If not set, the region is derived from the secret_id when possible or from the provider configuration."),
 			"organization_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
@@ -147,6 +149,10 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 				Computed:    true,
 				Description: "The payload of the secret version (base64 encoded)",
 				Sensitive:   true,
+			},
+			"srn": schema.StringAttribute{
+				Computed:    true,
+				Description: "The Scaleway Resource Name (SRN) of the secret version",
 			},
 		},
 	}
@@ -200,6 +206,8 @@ func (r *VersionEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 		region = defaultRegion
 	}
 
+	data.Region = types.StringValue(region.String())
+
 	revision := "latest"
 	if !data.Revision.IsNull() && !data.Revision.IsUnknown() {
 		revision = data.Revision.ValueString()
@@ -214,15 +222,15 @@ func (r *VersionEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 		var organizationID *string
 
 		if !data.OrganizationID.IsNull() && !data.OrganizationID.IsUnknown() {
-			orgID := data.OrganizationID.ValueString()
-			organizationID = &orgID
+			organizationID = new(data.OrganizationID.ValueString())
 		}
 
 		var projectID *string
 
 		if !data.ProjectID.IsNull() && !data.ProjectID.IsUnknown() {
-			projID := data.ProjectID.ValueString()
-			projectID = &projID
+			projectID = new(data.ProjectID.ValueString())
+		} else if defaultProjectID, exists := r.meta.ScwClient().GetDefaultProjectID(); exists {
+			projectID = &defaultProjectID
 		}
 
 		secrets, err := r.secretAPI.ListSecrets(&secret.ListSecretsRequest{
@@ -313,6 +321,7 @@ func (r *VersionEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 
 	data.Data = types.StringValue(base64.StdEncoding.EncodeToString(accessResponse.Data))
 	data.Revision = types.StringValue(revision)
+	data.SRN = types.StringValue(getResponse.Srn)
 
 	resp.Result.Set(ctx, &data)
 }

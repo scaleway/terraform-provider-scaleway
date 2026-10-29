@@ -2,6 +2,7 @@ package iam_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -58,6 +59,7 @@ func TestAccPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "tags.0", "tf_tests"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "tags.1", "tests"),
+					resource.TestMatchResourceAttr("scaleway_iam_policy.main", "srn", regexp.MustCompile(`^srn://iam\..+/policies/.+$`)),
 				),
 			},
 			{
@@ -145,6 +147,11 @@ func TestAccPolicy_NoUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
 					resource.TestCheckResourceAttrSet("scaleway_iam_policy.main", "rule.0.organization_id"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_iam_policy.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -570,6 +577,35 @@ func TestAccPolicy_ChangeRulePrincipal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "AllProductsFullAccess"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccPolicy_MixedScopeTypes(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+	if !orgIDExists {
+		t.Skip("No default organization ID found, skipping test")
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_mixed_scope_types"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["AllProductsFullAccess", "OrganizationReadOnly"]
+					  }
+					}
+					`, orgID),
+				ExpectError: regexp.MustCompile(`permission sets must be of the same scope type`),
 			},
 		},
 	})

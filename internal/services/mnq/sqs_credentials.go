@@ -93,7 +93,7 @@ func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	credentials, err := api.CreateSqsCredentials(&mnq.SqsAPICreateSqsCredentialsRequest{
+	req := &mnq.SqsAPICreateSqsCredentialsRequest{
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "sqs-credentials"),
@@ -102,7 +102,11 @@ func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 			CanReceive: types.ExpandBoolPtr(d.Get("permissions.0.can_receive")),
 			CanManage:  types.ExpandBoolPtr(d.Get("permissions.0.can_manage")),
 		},
-	}, scw.WithContext(ctx))
+	}
+
+	credentials, err := RetryMNQNamespaceReadValue(ctx, func() (*mnq.SqsCredentials, error) {
+		return api.CreateSqsCredentials(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -127,6 +131,17 @@ func ResourceMNQSQSCredentialsRead(ctx context.Context, d *schema.ResourceData, 
 		Region:           region,
 		SqsCredentialsID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			credentials, err = api.GetSqsCredentials(&mnq.SqsAPIGetSqsCredentialsRequest{
+				Region:           region,
+				SqsCredentialsID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -187,7 +202,12 @@ func ResourceMNQSQSCredentialsUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	if _, err := api.UpdateSqsCredentials(req, scw.WithContext(ctx)); err != nil {
+	err = retryMNQNamespaceRead(ctx, func() error {
+		_, e := api.UpdateSqsCredentials(req, scw.WithContext(ctx))
+
+		return e
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

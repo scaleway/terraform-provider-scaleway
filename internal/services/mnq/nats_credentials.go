@@ -61,11 +61,15 @@ func ResourceMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	credentials, err := api.CreateNatsCredentials(&mnq.NatsAPICreateNatsCredentialsRequest{
+	req := &mnq.NatsAPICreateNatsCredentialsRequest{
 		Region:        region,
 		NatsAccountID: locality.ExpandID(d.Get("account_id").(string)),
 		Name:          types.ExpandOrGenerateString(d.Get("name").(string), "nats-credentials"),
-	}, scw.WithContext(ctx))
+	}
+
+	credentials, err := RetryMNQNamespaceReadValue(ctx, func() (*mnq.NatsCredentials, error) {
+		return api.CreateNatsCredentials(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -89,6 +93,17 @@ func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData,
 		Region:            region,
 		NatsCredentialsID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			credentials, err = api.GetNatsCredentials(&mnq.NatsAPIGetNatsCredentialsRequest{
+				Region:            region,
+				NatsCredentialsID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")

@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
@@ -43,6 +45,12 @@ func TestAccServer_IPs(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image", "ip_id"},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_ip" "ip1" {
 						type = "routed_ipv4"
@@ -68,6 +76,12 @@ func TestAccServer_IPs(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image", "ip_id"},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_ip" "ip1" {
 						type = "routed_ipv4"
@@ -89,6 +103,80 @@ func TestAccServer_IPs(t *testing.T) {
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip2", "id"),
+				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image", "ip_id"},
+			},
+		},
+	})
+}
+
+func TestAccServer_PublicIPsDependentUpdate(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip1" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						name   = "tf-acc-server-public-ips-dependent"
+						ip_ids = [scaleway_instance_ip.ip1.id]
+						image  = "ubuntu_jammy"
+						type   = "PRO2-XXS"
+						state  = "stopped"
+						tags   = ["terraform-test", "scaleway_instance_server", "public_ips_dependent"]
+					}
+
+					resource "terraform_data" "dependent" {
+						input = scaleway_instance_server.main.public_ips[0].address
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
+					resource.TestCheckResourceAttrPair("terraform_data.dependent", "output", "scaleway_instance_ip.ip1", "address"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip1" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_ip" "ip2" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						name   = "tf-acc-server-public-ips-dependent"
+						ip_ids = [scaleway_instance_ip.ip2.id]
+						image  = "ubuntu_jammy"
+						type   = "PRO2-XXS"
+						state  = "stopped"
+						tags   = ["terraform-test", "scaleway_instance_server", "public_ips_dependent"]
+					}
+
+					resource "terraform_data" "dependent" {
+						input = scaleway_instance_server.main.public_ips[0].address
+					}`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectUnknownValue("scaleway_instance_server.main", tfjsonpath.New("public_ips")),
+						plancheck.ExpectResourceAction("terraform_data.dependent", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip2", "id"),
+					resource.TestCheckResourceAttrPair("terraform_data.dependent", "output", "scaleway_instance_ip.ip2", "address"),
 				),
 			},
 		},
@@ -122,6 +210,12 @@ func TestAccServer_IPRemoved(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image", "ip_ids"},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_ip" "main" {}
 
@@ -137,6 +231,12 @@ func TestAccServer_IPRemoved(t *testing.T) {
 					serverHasNoIPAssigned(tt, "scaleway_instance_server.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "0"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image", "ip_ids"},
 			},
 		},
 	})
@@ -189,6 +289,12 @@ func TestAccServer_IPsRemoved(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "0"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image", "ip_id"},
+			},
 		},
 	})
 }
@@ -209,7 +315,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						ip_id = scaleway_instance_ip.first.id
-						tags  = [ "terraform-test", "scaleway_instance_server", "with_reserved_ip" ]
+						tags  = [ "terraform-test", "scaleway_instance_server", "with_reserved_ip", "step1" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -227,7 +333,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						ip_id = scaleway_instance_ip.second.id
-						tags  = [ "terraform-test", "scaleway_instance_server", "with_reserved_ip" ]
+						tags  = [ "terraform-test", "scaleway_instance_server", "with_reserved_ip", "step2" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -238,6 +344,12 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image", "ip_ids"},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_ip" "first" {}
 					resource "scaleway_instance_ip" "second" {}
@@ -245,7 +357,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 						name = "tf-acc-server-with-reserved-ip"
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
-						tags  = [ "terraform-test", "scaleway_instance_server", "with_reserved_ip" ]
+						tags  = [ "terraform-test", "scaleway_instance_server", "with_reserved_ip", "step4" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -264,7 +376,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						enable_dynamic_ip = true
-						tags  = [ "terraform-test", "scaleway_instance_server", "with_reserved_ip" ]
+						tags  = [ "terraform-test", "scaleway_instance_server", "with_reserved_ip", "step5" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -273,6 +385,12 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 					acctest.CheckResourceAttrIPv4("scaleway_instance_server.base", "public_ips.0.address"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image", "ip_ids"},
 			},
 		},
 	})
@@ -304,6 +422,12 @@ func TestAccServer_Ipv6(t *testing.T) {
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server01"),
 					acctest.CheckResourceAttrIPv6("scaleway_instance_server.server01", "public_ips.0.address"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.server01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image", "ip_id"},
 			},
 			{
 				Config: `

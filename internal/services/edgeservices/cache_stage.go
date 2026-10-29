@@ -151,6 +151,17 @@ func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	diags := setCacheStageState(d, cacheStage)
+
+	err = identity.SetGlobalIdentity(d, cacheStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setCacheStageState(d *schema.ResourceData, cacheStage *edgeservices.CacheStage) diag.Diagnostics {
 	_ = d.Set("pipeline_id", cacheStage.PipelineID)
 	_ = d.Set("created_at", types.FlattenTime(cacheStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(cacheStage.UpdatedAt))
@@ -159,10 +170,6 @@ func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("waf_stage_id", types.FlattenStringPtr(cacheStage.WafStageID))
 	_ = d.Set("fallback_ttl", cacheStage.FallbackTTL.Seconds)
 	_ = d.Set("include_cookies", cacheStage.IncludeCookies)
-
-	if err = identity.SetGlobalIdentity(d, cacheStage.ID); err != nil {
-		return diag.FromErr(err)
-	}
 
 	return nil
 }

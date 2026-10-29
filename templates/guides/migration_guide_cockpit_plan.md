@@ -2,14 +2,14 @@
 page_title: "Migrating from Scaleway Cockpit to the New Infrastructure"
 ---
 
-# How to Migrate from Deprecated Resource `scaleway_cockpit` to `scaleway_cockpit_source`
+# How to Migrate from the Removed `scaleway_cockpit` Resource to the Specialized Cockpit Resources
 
 ## Overview
 
-This guide provides a step-by-step process to remove the deprecated `scaleway_cockpit` resource from your Terraform configurations and transition to the new `scaleway_cockpit_source` resource. Note that this migration involves breaking down the functionalities of `scaleway_cockpit` into multiple specialized resources to manage endpoints effectively.
+The `scaleway_cockpit` resource has been **removed** from the Scaleway Terraform provider. It was deprecated on the announced date (January 1st, 2025) and has now been purged. This guide provides a step-by-step process to migrate your Terraform configurations from the removed `scaleway_cockpit` resource and transition to the new specialized resources (`scaleway_cockpit_source`, `scaleway_cockpit_alert_manager`, and the `scaleway_cockpit_grafana` data source).
 
 > **Note:**
-> Scaleway Cockpit plans are scheduled for deprecation on **January 1st, 2025**. While the retention period for your logs and metrics will remain unchanged, you will be able to edit the retention period for metrics, logs, and traces for free during the Beta period.
+> The `scaleway_cockpit` resource, as well as its companion `scaleway_cockpit` data source, have been removed. Configurations still using them must be updated before applying the new provider version.
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ This guide provides a step-by-step process to remove the deprecated `scaleway_co
 
 Ensure your Scaleway provider is updated to at least version `2.49.0`.
 
-```hcl
+```terraform
 terraform {
   required_providers {
     scaleway = {
@@ -42,13 +42,13 @@ terraform init
 
 ### Transitioning from `scaleway_cockpit`
 
-The `scaleway_cockpit` resource is deprecated. Its functionalities, including endpoint management, are now divided across multiple specialized resources. Below are the steps to migrate:
+The `scaleway_cockpit` resource has been removed. Its functionalities, including endpoint management, are now divided across multiple specialized resources. Below are the steps to migrate:
 
-#### Deprecated Resource: `scaleway_cockpit`
+#### Removed Resource: `scaleway_cockpit`
 
-The following resource will no longer be supported after January 1st, 2025:
+The following resource is no longer supported and must be replaced in your configurations:
 
-```hcl
+```terraform
 resource "scaleway_cockpit" "main" {
   project_id = "11111111-1111-1111-1111-111111111111"
   plan       = "premium"
@@ -63,7 +63,7 @@ To handle specific functionalities previously managed by `scaleway_cockpit`, you
 
 In the deprecated `scaleway_cockpit` resource, the `plan` argument determined the retention period for logs, metrics, and traces. Now, retention periods are set individually for each data source using the `retention_days` argument in `scaleway_cockpit_source` resources.
 
-```hcl
+```terraform
 resource "scaleway_account_project" "project" {
   name = "test project data source"
 }
@@ -94,7 +94,7 @@ resource "scaleway_cockpit_source" "traces" {
 
 To retrieve the deprecated `alertmanager_url`, you must now explicitly create an Alert Manager using the `scaleway_cockpit_alert_manager` resource:
 
-```hcl
+```terraform
 resource "scaleway_cockpit_alert_manager" "alert_manager" {
   project_id            = scaleway_account_project.project.id
   enable_managed_alerts = true
@@ -111,11 +111,9 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 
 **Grafana Access:**
 
-~> **Note:** The `scaleway_cockpit_grafana_user` resource is deprecated and will be removed on January 1st, 2026. Grafana authentication is now managed through Scaleway IAM.
+Grafana authentication is managed through Scaleway IAM. To retrieve the Grafana URL, use the `scaleway_cockpit_grafana` data source:
 
-To retrieve the Grafana URL, use the `scaleway_cockpit_grafana` data source. Authentication is handled via your Scaleway IAM credentials:
-
-```hcl
+```terraform
 data "scaleway_cockpit_grafana" "main" {
   project_id = scaleway_account_project.project.id
 }
@@ -130,7 +128,7 @@ data "scaleway_cockpit_grafana" "main" {
 
 #### Before: Using `scaleway_cockpit` to Retrieve Endpoints
 
-```hcl
+```terraform
 resource "scaleway_cockpit" "main" {
   project_id = "11111111-1111-1111-1111-111111111111"
   plan       = "premium"
@@ -145,7 +143,7 @@ output "endpoints" {
 
 To retrieve all endpoints (metrics, logs, traces, alert manager, and Grafana):
 
-```hcl
+```terraform
 resource "scaleway_cockpit_source" "metrics" {
   project_id     = scaleway_account_project.project.id
   name           = "metrics-source"
@@ -200,11 +198,9 @@ terraform import scaleway_cockpit_source.main fr-par/11111111-1111-1111-1111-111
 
 ### Grafana Data Source
 
-~> **Note:** The `scaleway_cockpit_grafana_user` resource is deprecated. Grafana authentication is now handled via Scaleway IAM, and no import is needed for the data source.
-
 The `scaleway_cockpit_grafana` data source automatically retrieves Grafana information. No import is required:
 
-```hcl
+```terraform
 data "scaleway_cockpit_grafana" "main" {
   project_id = scaleway_account_project.project.id
 }
@@ -212,4 +208,4 @@ data "scaleway_cockpit_grafana" "main" {
 
 ## Conclusion
 
-By following this guide, you can successfully transition from the deprecated `scaleway_cockpit` resource to the new set of specialized resources. This ensures compatibility with the latest Terraform provider and Scaleway's updated infrastructure.
+By following this guide, you can successfully transition from the removed `scaleway_cockpit` resource to the new set of specialized resources. This ensures compatibility with the latest Terraform provider and Scaleway's updated infrastructure.

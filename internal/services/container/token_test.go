@@ -21,7 +21,7 @@ func TestAccToken_Basic(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /tokens" request.
-		expiresAt = "2025-11-01T17:30:59+01:00"
+		expiresAt = "2026-05-06T16:42:11+02:00"
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -36,6 +36,8 @@ func TestAccToken_Basic(t *testing.T) {
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 					}
 
 					resource scaleway_container_token namespace {
@@ -46,7 +48,7 @@ func TestAccToken_Basic(t *testing.T) {
 					resource scaleway_container_token container {
 						container_id = scaleway_container.main.id
 					}
-				`, expiresAt),
+				`, defaultTestImage, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
 					isTokenPresent(tt, "scaleway_container_token.namespace"),
 					isTokenPresent(tt, "scaleway_container_token.container"),
@@ -67,12 +69,12 @@ func isTokenPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := container.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := container.NewAPIBetaWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = api.GetToken(&containerSDK.GetTokenRequest{
+		_, err = api.GetToken(&containerSDK.GetTokenRequest{ //nolint:staticcheck // legacy token resource uses deprecated API
 			TokenID: id,
 			Region:  region,
 		})
@@ -91,12 +93,12 @@ func isTokenDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			api, region, id, err := container.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := container.NewAPIBetaWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			_, err = api.DeleteToken(&containerSDK.DeleteTokenRequest{
+			_, err = api.DeleteToken(&containerSDK.DeleteTokenRequest{ //nolint:staticcheck // legacy token resource uses deprecated API
 				TokenID: id,
 				Region:  region,
 			})

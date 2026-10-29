@@ -378,7 +378,11 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	_ = d.Set("region", region)
-	_ = d.Set("bucket", regional.NewIDString(region, bucket))
+	// Use the raw bucket name (without region prefix) so cross-resource
+	// references in Framework resources don't trigger "inconsistent final
+	// plan" errors. The DiffSuppressFunc on the bucket field already handles
+	// semantic equality between prefixed and unprefixed values.
+	_ = d.Set("bucket", bucket)
 	_ = d.Set("key", key)
 
 	for k, v := range obj.Metadata {

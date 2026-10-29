@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
@@ -39,7 +38,6 @@ func ResourceNetwork() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    networkSchema,
-		CustomizeDiff: cdf.LocalityCheck("gateway_id", "private_network_id"),
 	}
 }
 
@@ -167,6 +165,11 @@ func networkSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The status of the Public Gateway's connection to the Private Network",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the gateway network",
+		},
 		"zone": zonal.Schema(),
 	}
 }
@@ -283,6 +286,7 @@ func setGatewayNetworkState(d *schema.ResourceData, gn *vpcgw.GatewayNetwork) di
 			"ipam_ip_id":         gn.IpamIPID,
 		},
 	})
+	_ = d.Set("srn", gn.Srn)
 
 	return nil
 }

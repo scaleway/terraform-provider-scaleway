@@ -2,7 +2,7 @@ package acctest
 
 import (
 	"encoding/base64"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"encoding/xml"
 	"net/http"
 	"os"
@@ -14,11 +14,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
-	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/vcr"
+	"github.com/hashicorp/terraform-plugin-testing/echoprovider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/vcr"
 	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
@@ -32,17 +32,35 @@ type TestTools struct {
 	Cleanup           func()
 }
 
+func jsonValid(b []byte) bool {
+	return jsontext.Value(b).IsValid(
+		jsontext.AllowDuplicateNames(true),
+	)
+}
+
 var foldersUsingVCRv4 = []string{
-	"audittrail",
 	"account",
+	"annotations",
+	"audittrail",
 	"container",
+	"datalab",
 	"iam",
 	"instance",
 	"jobs",
 	"k8s",
 	"keymanager",
+	"mailbox",
 	"marketplace",
+	"partner",
 	"secret",
+}
+
+func init() {
+	// Cassettes store redacted secrets, and request bodies may carry values
+	// derived from anonymized responses (e.g. a secret version whose data is
+	// an IAM API key secret key); ignore these fields when matching VCRv4
+	// requests.
+	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password", "data")
 }
 
 func FolderUsesVCRv4(fullFolderPath string) bool {
@@ -60,7 +78,7 @@ func s3Encoder(i *cassette.Interaction) error {
 
 	if i.Request.Body != "" && i.Request.Headers.Get("Content-Type") == "application/octet-stream" {
 		requestBody := []byte(i.Request.Body)
-		if !json.Valid(requestBody) {
+		if !jsonValid(requestBody) {
 			err := xml.Unmarshal(requestBody, new(any))
 			if err != nil {
 				i.Request.Body = base64.StdEncoding.EncodeToString(requestBody)
@@ -70,7 +88,7 @@ func s3Encoder(i *cassette.Interaction) error {
 
 	if i.Response.Body != "" && i.Response.Headers.Get("Content-Type") == "binary/octet-stream" {
 		responseBody := []byte(i.Response.Body)
-		if !json.Valid(responseBody) {
+		if !jsonValid(responseBody) {
 			err := xml.Unmarshal(responseBody, new(any))
 			if err != nil {
 				i.Response.Body = base64.StdEncoding.EncodeToString(responseBody)
@@ -96,14 +114,12 @@ func NewRecordedClient(t *testing.T, pkgFolder string, update bool) (client *htt
 
 	retryOptions := transport.RetryableTransportOptions{}
 	if !update {
-		retryOptions.RetryWaitMax = scw.TimeDurationPtr(0)
+		retryOptions.RetryWaitMax = new(time.Duration(0))
 	}
 
-	return &http.Client{
-			Transport: transport.NewRetryableTransportWithOptions(r, retryOptions),
-		}, func() {
-			require.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
-		}, nil
+	return &http.Client{Transport: transport.NewRetryableTransportWithOptions(r, retryOptions)}, func() {
+		require.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
+	}, nil
 }
 
 func NewTestTools(t *testing.T) *TestTools {
@@ -140,8 +156,7 @@ func NewTestTools(t *testing.T) *TestTools {
 
 	if !*UpdateCassettes {
 		// If no recording is happening, the delay to retry interactions should be 0
-		tmp := 0 * time.Second
-		transport.DefaultWaitRetryInterval = &tmp
+		transport.DefaultWaitRetryInterval = new(0 * time.Second)
 	} else if os.Getenv(env.RetryDelay) != "" {
 		// Overriding the delay interval is helpful to reduce the amount of requests performed while waiting for a resource to be available
 		tmp, err := time.ParseDuration(os.Getenv(env.RetryDelay))
@@ -170,6 +185,7 @@ func NewTestTools(t *testing.T) *TestTools {
 
 				return muxServer.ProviderServer(), nil
 			},
+			"echo": echoprovider.NewProviderServer(),
 		},
 		Cleanup: cleanup,
 	}
@@ -177,21 +193,29 @@ func NewTestTools(t *testing.T) *TestTools {
 
 // Test Generated name has format: "{prefix}-{generated_number}
 // example: test-acc-scaleway-project-3723338038624371236
+// Also supports FQDNs: tf-tests-mbx-basic-123.scaleway-terraform.com
 func extractTestGeneratedNamePrefix(name string) string {
-	// {prefix}-{generated}
-	//         ^
-	dashIndex := strings.LastIndex(name, "-")
+	suffix := ""
+	host := name
 
-	generated := name[dashIndex+1:]
-	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
+	if dot := strings.Index(name, "."); dot >= 0 {
+		host = name[:dot]
+		suffix = name[dot:]
+	}
 
-	if dashIndex == -1 || generatedToIntErr != nil {
-		// some are only {name}
+	dashIndex := strings.LastIndex(host, "-")
+	if dashIndex == -1 {
 		return name
 	}
 
-	// {prefix}
-	return name[:dashIndex]
+	generated := host[dashIndex+1:]
+
+	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
+	if generatedToIntErr != nil {
+		return name
+	}
+
+	return host[:dashIndex] + suffix
 }
 
 // Generated names have format: "tf-{prefix}-{generated1}-{generated2}"
@@ -224,4 +248,16 @@ func IsTestResource(identifier string) bool {
 		strings.HasPrefix(identifier, "tf") &&
 		(identifier[2] == '_' || identifier[2] == '-') &&
 		identifier[3:7] == "test"
+}
+
+// SkipUnlessDefaultProjectID skips when SCW_DEFAULT_PROJECT_ID is unset, which
+// happens when opening a PR from a fork.
+// Framework Create resolves project_id via ExtractFrameworkProjectID and hard-fails
+// without a client default.
+func SkipUnlessDefaultProjectID(t *testing.T, tt *TestTools) {
+	t.Helper()
+
+	if _, ok := tt.Meta.ScwClient().GetDefaultProjectID(); !ok {
+		t.Skip("No default project ID found, skipping test")
+	}
 }

@@ -2,7 +2,9 @@ package provider
 
 import (
 	"context"
+	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -12,32 +14,55 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datalab"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mailbox"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/messageq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/partner"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 )
 
 var (
-	_ provider.Provider            = &ScalewayProvider{}
-	_ provider.ProviderWithActions = (*ScalewayProvider)(nil)
+	_ provider.Provider                  = (*ScalewayProvider)(nil)
+	_ provider.ProviderWithActions       = (*ScalewayProvider)(nil)
+	_ provider.ProviderWithListResources = (*ScalewayProvider)(nil)
 )
 
 type ScalewayProvider struct {
 	providerMeta *meta.Meta
+}
+
+type EndpointModel struct {
+	S3 types.String `tfsdk:"s3"`
 }
 
 func NewFrameworkProvider(m *meta.Meta) func() provider.Provider {
@@ -59,6 +84,8 @@ type ScalewayProviderModel struct {
 	APIURL         types.String `tfsdk:"api_url"`
 	Region         types.String `tfsdk:"region"`
 	Zone           types.String `tfsdk:"zone"`
+	Endpoints      types.Set    `tfsdk:"endpoints"`
+	S3UsePathStyle types.Bool   `tfsdk:"s3_use_path_style"`
 }
 
 func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
@@ -93,14 +120,37 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Description: "The region you want to attach the resource to",
 			},
 			"zone": schema.StringAttribute{
-				Description: "The zone you want to attach the resource to",
 				Optional:    true,
+				Description: "The zone you want to attach the resource to",
+			},
+			"s3_use_path_style": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Whether to enable the request to use path-style addressing.",
+			},
+		},
+		Blocks: map[string]schema.Block{
+			"endpoints": schema.SetNestedBlock{
+				Description: "Configuration block for customizing service endpoints.",
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"s3": schema.StringAttribute{
+							Optional:    true,
+							Description: "Use this to override the default service endpoint URL.",
+							Validators: []validator.String{
+								stringvalidator.RegexMatches(
+									regexp.MustCompile(`^https?://`),
+									"must start with 'https://' or 'http://'",
+								),
+							},
+						},
+					},
+				},
 			},
 		},
 	}
 }
 
-func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProviderConfig {
+func modelToFrameworkConfig(ctx context.Context, model *ScalewayProviderModel) *meta.FrameworkProviderConfig {
 	config := &meta.FrameworkProviderConfig{}
 
 	if !model.AccessKey.IsNull() && !model.AccessKey.IsUnknown() {
@@ -135,11 +185,31 @@ func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProvide
 		config.APIURL = model.APIURL.ValueString()
 	}
 
+	if !model.Endpoints.IsNull() && !model.Endpoints.IsUnknown() {
+		config.Endpoints = make(map[string]string)
+
+		var endpoints []EndpointModel
+
+		diags := model.Endpoints.ElementsAs(ctx, &endpoints, false)
+		if !diags.HasError() {
+			for _, endpoint := range endpoints {
+				if !endpoint.S3.IsNull() && !endpoint.S3.IsUnknown() {
+					config.Endpoints["s3"] = endpoint.S3.ValueString()
+				}
+			}
+		}
+	}
+
+	if !model.S3UsePathStyle.IsNull() && !model.S3UsePathStyle.IsUnknown() {
+		s3UsePathStyle := model.S3UsePathStyle.ValueBool()
+		config.S3UsePathStyle = &s3UsePathStyle
+	}
+
 	return config
 }
 
 func (p *ScalewayProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ScalewayProviderModel
+	var data *ScalewayProviderModel
 
 	// Read configuration data into model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -156,9 +226,14 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 		m = p.providerMeta
 	} else {
-		frameworkConfig := modelToFrameworkConfig(&data)
+		frameworkConfig := &meta.FrameworkProviderConfig{}
+		if data != nil {
+			frameworkConfig = modelToFrameworkConfig(ctx, data)
+		}
 
-		m, err := meta.NewMetaFromFrameworkConfig(ctx, frameworkConfig, req.TerraformVersion)
+		var err error
+
+		m, err = meta.NewMetaFromFrameworkConfig(ctx, frameworkConfig, req.TerraformVersion)
 		if err != nil {
 			resp.Diagnostics.AddError("error creating meta", err.Error())
 
@@ -175,10 +250,10 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 			return
 		}
 
-		if ok && err == nil {
+		if ok {
 			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
-				"Multiple variable sources detected",
-				"Please make sure the right credentials are used: "+message,
+				"Multiple variable sources detected, please make sure the right credentials are used",
+				message,
 			))
 		}
 	}
@@ -187,29 +262,76 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 	resp.DataSourceData = m
 	resp.ActionData = m
 	resp.EphemeralResourceData = m
+	resp.ListResourceData = m
 }
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		annotations.NewAnnotationsBindingResource,
+		annotations.NewAnnotationsKeyResource,
+		annotations.NewAnnotationsValueResource,
+		autoscaling.NewAutoScalingGroupResource,
+		billing.NewBudgetAlertNotificationResource,
+		billing.NewBudgetAlertResource,
+		billing.NewBudgetResource,
+		block.NewSnapshotResource,
+		datalab.NewDatalabResource,
+		file.NewFileSystemResource,
+		iam.NewSamlCertificateResource,
 		iam.NewSamlResource,
+		iam.NewScimResource,
+		iam.NewScimTokenResource,
+		instance.NewTemplateResource,
+		keymanager.NewKeyMaterialResource,
+		mailbox.NewAliasResource,
+		mailbox.NewDomainResource,
+		mailbox.NewMailboxResource,
+		messageq.NewDeploymentResource,
+		messageq.NewUserResource,
+		partner.NewPartnerOrganizationResource,
 	}
 }
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
 	return []func() ephemeral.EphemeralResource{
+		cockpit.NewTokenEphemeralResource,
+		iam.NewApiKeyEphemeralResource,
 		keymanager.NewDecryptEphemeralResource,
 		keymanager.NewEncryptEphemeralResource,
 		keymanager.NewGenerateDataKeyEphemeralResource,
 		keymanager.NewSignEphemeralResource,
-		iam.NewApiKeyEphemeralResource,
-		secret.NewVersionEphemeralResource,
 		scwconfig.NewScwConfigEphemeralResource,
+		secret.NewVersionEphemeralResource,
 	}
 }
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		annotations.NewAnnotationsKeyDataSource,
+		annotations.NewAnnotationsValueDataSource,
+		annotations.NewAnnotationsBindingDataSource,
+		billing.NewBudgetDataSource,
+		billing.NewBudgetAlertDataSource,
+		billing.NewBudgetAlertNotificationDataSource,
+		block.NewSnapshotDataSource,
+		block.NewSnapshotsDataSource,
+		cockpit.NewGrafanaProductDashboardDataSource,
+		cockpit.NewGrafanaProductDashboardsDataSource,
+		datalab.NewDatalabDataSource,
+		datalab.NewDatalabsDataSource,
 		iam.NewSamlDataSource,
+		iam.NewSamlCertificateDataSource,
+		iam.NewScimDataSource,
+		iam.NewScimTokenDataSource,
+		kafka.NewVersionDataSource,
+		mailbox.NewMailboxDataSource,
+		messageq.NewCertificateAuthorityDataSource,
+		messageq.NewDeploymentDataSource,
+		messageq.NewNodeTypeDataSource,
+		messageq.NewVersionDataSource,
+		rdb.NewInstanceLogDataSource,
+		rdb.NewInstanceLogsDataSource,
+		rdb.NewInstanceLogsDetailsDataSource,
 	}
 }
 
@@ -218,6 +340,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		applesilicon.NewRebootServerAction,
 		baremetal.NewBaremetalServerAction,
 		block.NewExportSnapshot,
+		cockpit.NewGrafanaSyncDataSourcesAction,
 		cockpit.NewTriggerTestAlertAction,
 		iam.NewSamlConfigurationAction,
 		instance.NewCreateSnapshot,
@@ -226,9 +349,14 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		jobs.NewStartJobDefinitionAction,
 		keymanager.NewRotateKeyAction,
 		mongodb.NewInstanceSnapshotAction,
+		partner.NewPartnerOrganizationLockAction,
+		partner.NewPartnerOrganizationUnlockAction,
+		partner.NewPartnerOrganizationRequestAdminRoleAction,
 		rdb.NewDatabaseBackupExportAction,
 		rdb.NewDatabaseBackupRestoreAction,
 		rdb.NewInstanceCertificateRenewAction,
+		rdb.NewInstanceApplyMaintenanceAction,
+		rdb.NewInstanceRestartAction,
 		rdb.NewInstanceLogPrepareAction,
 		rdb.NewInstanceLogsPurgeAction,
 		rdb.NewInstanceSnapshotAction,
@@ -241,7 +369,42 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 }
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
-	return []func() list.ListResource{}
+	return []func() list.ListResource{
+		account.NewProjectListResource,
+		block.NewSnapshotListResource,
+		block.NewVolumeListResource,
+		domain.NewRecordListResource,
+		domain.NewZoneListResource,
+		file.NewFileSystemListResource,
+		iam.NewAPIKeyListResource,
+		iam.NewApplicationListResource,
+		iam.NewGroupListResource,
+		iam.NewPolicyListResource,
+		iam.NewSSHKeyListResource,
+		iam.NewUserListResource,
+		ipam.NewIPListResource,
+		keymanager.NewKeyListResource,
+		lb.NewBackendListResource,
+		lb.NewFrontendListResource,
+		lb.NewLbListResource,
+		mongodb.NewInstanceListResource,
+		object.NewBucketListResource,
+		opensearch.NewDeploymentListResource,
+		partner.NewPartnerOrganizationListResource,
+		rdb.NewDatabaseBackupListResource,
+		rdb.NewDatabaseListResource,
+		rdb.NewInstanceListResource,
+		rdb.NewSnapshotListResource,
+		redis.NewClusterListResource,
+		secret.NewSecretListResource,
+		secret.NewVersionListResource,
+		vpc.NewConnectorListResource,
+		vpc.NewPrivateNetworkListResource,
+		vpc.NewRouteListResource,
+		vpc.NewVPCListResource,
+		vpcgw.NewIPListResource,
+		vpcgw.NewPublicGatewayListResource,
+	}
 }
 
 func (p *ScalewayProvider) Functions(_ context.Context) []func() function.Function {

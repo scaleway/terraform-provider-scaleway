@@ -1,9 +1,11 @@
 package identity
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -34,6 +36,86 @@ func DefaultRegional() *schema.ResourceIdentity {
 		},
 		"region": DefaultRegionAttribute(),
 	})
+}
+
+// CompositeRegionalIdentity creates an identity schema for regional resources
+// with a composite ID (e.g., region/instanceID/databaseName). Unlike
+// DefaultRegional which has a single "id" field, this creates separate fields
+// for each part of the composite ID, plus a "region" field.
+// The partKeys specify the non-region identity fields (e.g., "instance_id",
+// "database_name"). All fields are RequiredForImport.
+//
+// Version is 1 with an IdentityUpgrader from v0 DefaultRegional ({id, region}),
+// where id held the slash-joined parts. States already written with the
+// composite attributes at identity schema version 0 (provider 2.83.0) are
+// passed through unchanged.
+func CompositeRegionalIdentity(partKeys ...string) *schema.ResourceIdentity {
+	m := map[string]*schema.Schema{
+		"region": DefaultRegionAttribute(),
+	}
+	for _, key := range partKeys {
+		m[key] = &schema.Schema{
+			Type:              schema.TypeString,
+			RequiredForImport: true,
+		}
+	}
+
+	return &schema.ResourceIdentity{
+		Version: 1,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return m
+		},
+		IdentityUpgraders: []schema.IdentityUpgrader{
+			{
+				Version: 0,
+				Type: tftypes.Object{
+					AttributeTypes: map[string]tftypes.Type{
+						"id":     tftypes.String,
+						"region": tftypes.String,
+					},
+				},
+				Upgrade: UpgradeDefaultRegionalToComposite(partKeys...),
+			},
+		},
+	}
+}
+
+// UpgradeDefaultRegionalToComposite upgrades a DefaultRegional identity whose
+// "id" field stored slash-joined composite parts into CompositeRegionalIdentity
+// fields. If "id" is absent, the identity is assumed already composite and
+// returned as-is (provider 2.83.0 wrote the new shape at schema version 0).
+func UpgradeDefaultRegionalToComposite(partKeys ...string) schema.ResourceIdentityUpgradeFunc {
+	return func(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
+		if rawState == nil {
+			return map[string]any{}, nil
+		}
+
+		rawID, hasID := rawState["id"]
+		if !hasID {
+			return rawState, nil
+		}
+
+		id, ok := rawID.(string)
+		if !ok {
+			return nil, fmt.Errorf("identity id must be a string, got %T", rawID)
+		}
+
+		region, _ := rawState["region"].(string)
+
+		parsed := ParseMultiPartID(id, partKeys...)
+		if len(parsed) != len(partKeys) {
+			return nil, fmt.Errorf("identity id %q does not have %d parts for keys %v", id, len(partKeys), partKeys)
+		}
+
+		result := map[string]any{
+			"region": region,
+		}
+		for _, key := range partKeys {
+			result[key] = parsed[key]
+		}
+
+		return result, nil
+	}
 }
 
 // DefaultGlobal should be used as the default identity schema for global/flat resources.
@@ -107,6 +189,7 @@ func SetRegionalIdentity(d *schema.ResourceData, region scw.Region, id string) e
 // SetRegionalCompositeIdentity sets identity attributes for regional resources with a composite ID.
 // The composite ID is built from idParts joined by "/" (e.g., instanceID/databaseName or instanceID/databaseName/userName).
 // Use this for resources whose identity schema is DefaultRegional but whose id is multi-part.
+// For resources using CompositeRegionalIdentity, use SetMultiPartIdentity directly instead.
 func SetRegionalCompositeIdentity(d *schema.ResourceData, region scw.Region, idParts ...string) error {
 	compositeID := strings.Join(idParts, "/")
 

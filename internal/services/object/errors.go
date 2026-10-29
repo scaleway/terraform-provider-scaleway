@@ -59,7 +59,9 @@ const (
 	// ErrCodeValidationError validation error
 	ErrCodeValidationError = "ValidationError"
 	// ErrCodeValidationException validation exception
-	ErrCodeValidationException = "ValidationException"
+	ErrCodeValidationException                       = "ValidationException"
+	ErrCodeServerSideEncryptionConfigurationNotFound = "ServerSideEncryptionConfigurationNotFoundError"
+	ErrCodeOperationAborted                          = "OperationAborted"
 )
 
 // TimedOut returns true if the error represents a "wait timed out" condition.
@@ -77,8 +79,7 @@ func TimedOut(err error) bool {
 //   - err is of type scw.Error
 //   - Error.Error() equals one of the passed codes
 func ErrCodeEquals(err error, codes ...string) bool {
-	var scwErr scw.SdkError
-	if errors.As(err, &scwErr) {
+	if scwErr, ok := errors.AsType[scw.SdkError](err); ok {
 		if slices.Contains(codes, scwErr.Error()) {
 			return true
 		}

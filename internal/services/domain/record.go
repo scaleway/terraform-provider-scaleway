@@ -13,8 +13,10 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -49,6 +51,22 @@ func ResourceRecord() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    recordSchema,
+		Identity:      identity.WrapSchemaMap(recordIdentitySchema()),
+	}
+}
+
+func recordIdentitySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"dns_zone": {
+			Type:              schema.TypeString,
+			Description:       "The DNS zone of the record",
+			RequiredForImport: true,
+		},
+		"id": {
+			Type:              schema.TypeString,
+			Description:       "The ID of the record (UUID format)",
+			RequiredForImport: true,
+		},
 	}
 }
 
@@ -289,16 +307,18 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		Comment:           nil,
 	}
 
-	_, err := domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
-		DNSZone: dnsZone,
-		Changes: []*domain.RecordChange{
-			{
-				Add: &domain.RecordChangeAdd{
-					Records: []*domain.Record{record},
+	_, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.UpdateDNSZoneRecordsResponse, error) {
+		return domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
+			DNSZone: dnsZone,
+			Changes: []*domain.RecordChange{
+				{
+					Add: &domain.RecordChangeAdd{
+						Records: []*domain.Record{record},
+					},
 				},
 			},
-		},
-		ReturnAllRecords: new(false),
+			ReturnAllRecords: new(false),
+		}, scw.WithContext(ctx))
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -314,11 +334,13 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		record.Name,
 		record.Type))
 
-	dnsZoneData, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-		DNSZone: dnsZone,
-		Name:    recordName,
-		Type:    recordType,
-	}, scw.WithAllPages(), scw.WithContext(ctx))
+	dnsZoneData, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZoneRecordsResponse, error) {
+		return domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+			DNSZone: dnsZone,
+			Name:    recordName,
+			Type:    recordType,
+		}, scw.WithAllPages(), scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -328,10 +350,14 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	recordID := fmt.Sprintf("%s/%s", dnsZone, currentRecord.ID)
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"dns_zone": dnsZone,
+		"id":       currentRecord.ID,
+	}, "dns_zone", "id"); err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.SetId(recordID)
-	tflog.Debug(ctx, fmt.Sprintf("record ID[%s]", recordID))
+	tflog.Debug(ctx, fmt.Sprintf("record ID[%s/%s]", dnsZone, currentRecord.ID))
 
 	return resourceDomainRecordRead(ctx, d, m)
 }
@@ -355,12 +381,13 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 		}
 
 		dnsZone = tab[0]
-		recordID := tab[1]
 
-		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-			DNSZone: dnsZone,
-			ID:      &recordID,
-		}, scw.WithAllPages(), scw.WithContext(ctx))
+		res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZoneRecordsResponse, error) {
+			return domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+				DNSZone: dnsZone,
+				ID:      new(tab[1]),
+			}, scw.WithAllPages(), scw.WithContext(ctx))
+		})
 		if err != nil {
 			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
@@ -387,15 +414,16 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 			return diag.FromErr(errors.New("record type unknow"))
 		}
 
-		idRecord := locality.ExpandID(d.Id())
 		recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 
-		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-			DNSZone: dnsZone,
-			Name:    recordName,
-			Type:    recordType,
-			ID:      &idRecord,
-		}, scw.WithAllPages(), scw.WithContext(ctx))
+		res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZoneRecordsResponse, error) {
+			return domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+				DNSZone: dnsZone,
+				Name:    recordName,
+				Type:    recordType,
+				ID:      new(locality.ExpandID(d.Id())),
+			}, scw.WithAllPages(), scw.WithContext(ctx))
+		})
 		if err != nil {
 			if httperrors.Is404(err) || httperrors.Is403(err) {
 				d.SetId("")
@@ -417,7 +445,9 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 		return nil
 	}
 
-	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
+	dnsZones, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListDNSZonesResponse, error) {
+		return domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
@@ -431,8 +461,14 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 	// get the default first record
 	projectID = dnsZones.DNSZones[0].ProjectID
 
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"dns_zone": dnsZone,
+		"id":       record.ID,
+	}, "dns_zone", "id"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
-	d.SetId(record.ID)
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())
@@ -493,7 +529,9 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 		},
 	}
 
-	_, err := domainAPI.UpdateDNSZoneRecords(req)
+	_, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.UpdateDNSZoneRecordsResponse, error) {
+		return domainAPI.UpdateDNSZoneRecords(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -509,18 +547,18 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
-	recordID := locality.ExpandID(d.Id())
-
-	_, err := domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
-		DNSZone: d.Get("dns_zone").(string),
-		Changes: []*domain.RecordChange{
-			{
-				Delete: &domain.RecordChangeDelete{
-					ID: &recordID,
+	_, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.UpdateDNSZoneRecordsResponse, error) {
+		return domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
+			DNSZone: d.Get("dns_zone").(string),
+			Changes: []*domain.RecordChange{
+				{
+					Delete: &domain.RecordChangeDelete{
+						ID: new(locality.ExpandID(d.Id())),
+					},
 				},
 			},
-		},
-		ReturnAllRecords: new(false),
+			ReturnAllRecords: new(false),
+		}, scw.WithContext(ctx))
 	})
 	if err != nil {
 		return diag.FromErr(err)

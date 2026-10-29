@@ -3,6 +3,7 @@ package acctest
 import (
 	"context"
 	"maps"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
@@ -59,8 +60,8 @@ func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, *iam.Policy, FakeSideProjectTerminateFunc, error) {
 	terminateFunctions := []FakeSideProjectTerminateFunc{}
 	terminate := func() error {
-		for i := len(terminateFunctions) - 1; i >= 0; i-- {
-			err := terminateFunctions[i]()
+		for _, v := range slices.Backward(terminateFunctions) {
+			err := v()
 			if err != nil {
 				return err
 			}
@@ -161,11 +162,11 @@ type FakeSideProjectTerminateFunc func() error
 // CreateFakeSideProject creates a temporary project with a temporary IAM application and policy.
 //
 // The returned function is a cleanup function that should be called when to delete the project.
-func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+func CreateFakeSideProject(tt *TestTools, permissions ...string) (*account.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
 	terminateFunctions := []FakeSideProjectTerminateFunc{}
 	terminate := func() error {
-		for i := len(terminateFunctions) - 1; i >= 0; i-- {
-			err := terminateFunctions[i]()
+		for _, v := range slices.Backward(terminateFunctions) {
+			err := v()
 			if err != nil {
 				return err
 			}
@@ -222,7 +223,7 @@ func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSi
 		Rules: []*iam.RuleSpecs{
 			{
 				ProjectIDs:         &[]string{project.ID},
-				PermissionSetNames: &[]string{"ObjectStorageReadOnly", "ObjectStorageObjectsRead", "ObjectStorageBucketsRead"},
+				PermissionSetNames: &permissions,
 			},
 		},
 	})

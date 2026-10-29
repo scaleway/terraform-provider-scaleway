@@ -1,10 +1,13 @@
 package instance_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
+	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccDataSourcePrivateNIC_Basic(t *testing.T) {
@@ -13,8 +16,10 @@ func TestAccDataSourcePrivateNIC_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			isPrivateNICDestroyed(tt),
+			vpcchecks.CheckVPCDestroy(tt),
+			instancechecks.IsServerDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -63,6 +68,7 @@ func TestAccDataSourcePrivateNIC_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("data.scaleway_instance_private_nic.find_by_nic_id", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/private-network-interfaces/.+$`)),
 					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic"),
 
 					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic", "id", "data.scaleway_instance_private_nic.find_by_nic_id", "id"),

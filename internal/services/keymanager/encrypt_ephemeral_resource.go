@@ -3,6 +3,7 @@ package keymanager
 import (
 	"context"
 	_ "embed"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -83,7 +84,7 @@ func (r *EncryptEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 				Required:    true,
 				Description: "ID of the key to use for encryption. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"plaintext": schema.StringAttribute{
@@ -187,7 +188,7 @@ func (r *EncryptEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 		return
 	}
 
-	data.Ciphertext = types.StringValue(string(encryptResp.Ciphertext))
+	data.Ciphertext = types.StringValue(base64.StdEncoding.EncodeToString(encryptResp.Ciphertext))
 
 	resp.Result.Set(ctx, &data)
 }

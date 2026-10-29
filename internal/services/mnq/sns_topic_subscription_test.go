@@ -132,8 +132,7 @@ func isSNSTopicSubscriptionDestroyed(ctx context.Context, tt *acctest.TestTools)
 				SubscriptionArn: new(arn.String()),
 			})
 			if err != nil {
-				var apiErr *smithy.GenericAPIError
-				if errors.As(err, &apiErr) {
+				if apiErr, ok := errors.AsType[*smithy.GenericAPIError](err); ok {
 					if apiErr.Code == "AccessDeniedException" {
 						return nil
 					}

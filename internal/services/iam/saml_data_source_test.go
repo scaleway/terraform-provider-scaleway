@@ -18,7 +18,7 @@ func TestAccDataSourceSaml_Basic(t *testing.T) {
 		t.Skip("No default organization ID found, skipping test")
 	}
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             checkSamlDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -41,6 +41,7 @@ func TestAccDataSourceSaml_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_saml.main", "service_provider.assertion_consumer_service_url", "scaleway_iam_saml.main", "service_provider.assertion_consumer_service_url"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_saml.main", "entity_id", "scaleway_iam_saml.main", "entity_id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_saml.main", "single_sign_on_url", "scaleway_iam_saml.main", "single_sign_on_url"),
+					resource.TestMatchResourceAttr("data.scaleway_iam_saml.main", "srn", regexp.MustCompile(`^srn://iam\..+/saml/.+$`)),
 				),
 			},
 		},
@@ -56,7 +57,7 @@ func TestAccDataSourceSaml_WithDefaultOrganizationID(t *testing.T) {
 		t.Skip("No default organization ID found, skipping test")
 	}
 	{
-		resource.ParallelTest(t, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: tt.ProviderFactories,
 			CheckDestroy:             checkSamlDestroyed(tt),
 			Steps: []resource.TestStep{
@@ -77,6 +78,7 @@ func TestAccDataSourceSaml_WithDefaultOrganizationID(t *testing.T) {
 						resource.TestCheckResourceAttrPair("data.scaleway_iam_saml.main", "service_provider.assertion_consumer_service_url", "scaleway_iam_saml.main", "service_provider.assertion_consumer_service_url"),
 						resource.TestCheckResourceAttrPair("data.scaleway_iam_saml.main", "entity_id", "scaleway_iam_saml.main", "entity_id"),
 						resource.TestCheckResourceAttrPair("data.scaleway_iam_saml.main", "single_sign_on_url", "scaleway_iam_saml.main", "single_sign_on_url"),
+						resource.TestMatchResourceAttr("data.scaleway_iam_saml.main", "srn", regexp.MustCompile(`^srn://iam\..+/saml/.+$`)),
 					),
 				},
 			},
@@ -93,7 +95,7 @@ func TestAccDataSourceSaml_InvalidDeactivated(t *testing.T) {
 		t.Skip("No default organization ID found, skipping test")
 	}
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{

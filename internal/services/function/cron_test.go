@@ -2,6 +2,7 @@ package function_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -29,7 +30,7 @@ func TestAccFunctionCron_Basic(t *testing.T) {
 					resource scaleway_function main {
 						name = "tf-tests-cron-basic"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node20"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -45,6 +46,7 @@ func TestAccFunctionCron_Basic(t *testing.T) {
 					testAccCheckFunctionCronExists(tt, "scaleway_function_cron.main"),
 					resource.TestCheckResourceAttr("scaleway_function_cron.main", "schedule", "0 0 * * *"),
 					resource.TestCheckResourceAttr("scaleway_function_cron.main", "name", "tf-tests-cron-basic"),
+					resource.TestMatchResourceAttr("scaleway_function_cron.main", "srn", regexp.MustCompile(`^srn://functions\..+/regions/.+/crons/.+$`)),
 				),
 			},
 		},
@@ -68,7 +70,7 @@ func TestAccFunctionCron_NameUpdate(t *testing.T) {
 					resource scaleway_function main {
 						name = "tf-tests-function-cron-name-update"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node20"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -95,7 +97,7 @@ func TestAccFunctionCron_NameUpdate(t *testing.T) {
 					resource scaleway_function main {
 						name = "tf-tests-function-cron-name-update"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node20"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -133,7 +135,7 @@ func TestAccFunctionCron_WithArgs(t *testing.T) {
 					resource scaleway_function main {
 						name = "tf-tests-cron-with-args"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node20"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}

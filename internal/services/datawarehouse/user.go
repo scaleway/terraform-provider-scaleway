@@ -56,6 +56,11 @@ func userSchema() map[string]*schema.Schema {
 			Default:     false,
 			Description: "Whether the user has administrator privileges.",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the user",
+		},
 	}
 }
 
@@ -130,6 +135,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	_ = d.Set("deployment_id", deploymentID)
 	_ = d.Set("name", found.Name)
 	_ = d.Set("is_admin", found.IsAdmin)
+	_ = d.Set("srn", found.Srn)
 
 	return nil
 }
@@ -141,7 +147,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// Build the update request only for changed fields
+
 	req := &datawarehouseapi.UpdateUserRequest{
 		Region:       region,
 		DeploymentID: deploymentID,

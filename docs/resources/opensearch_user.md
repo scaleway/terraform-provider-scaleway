@@ -1,0 +1,60 @@
+---
+subcategory: "OpenSearch"
+page_title: "Scaleway: scaleway_opensearch_user"
+---
+
+# Resource: scaleway_opensearch_user
+
+Creates and manages OpenSearch users on a Scaleway OpenSearch deployment.
+For more information refer to the [product documentation](https://www.scaleway.com/en/docs/opensearch/) and the [API documentation](https://www.scaleway.com/en/developers/api/cloud-essentials-for-opensearch/).
+
+## Example Usage
+
+### Basic
+
+```terraform
+resource "scaleway_opensearch_deployment" "main" {
+  name       = "my-opensearch-cluster"
+  version    = "2.0"
+  node_count = 1
+  node_type  = "SEARCHDB-SHARED-2C-8G"
+  user_name  = "admin"
+  password   = "ThisIsASecurePassword123!"
+
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+
+resource "scaleway_opensearch_user" "app" {
+  deployment_id = scaleway_opensearch_deployment.main.id
+  name          = "app_user"
+  password      = "ThisIsASecurePassword123!"
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `deployment_id` - (Required, Forces new resource) The ID of the OpenSearch deployment the user belongs to.
+- `name` - (Required, Forces new resource) Name of the OpenSearch user.
+- `password` - (Optional, Sensitive) Password for the OpenSearch user. Only one of `password` and `password_wo` should be specified.
+- `password_wo` - (Optional, Write-only) Password for the OpenSearch user in [write-only](../guides/using-write-only-arguments.md) mode. Only one of `password` and `password_wo` should be specified. `password_wo` is not stored in the Terraform state. To update it, also update `password_wo_version`.
+- `password_wo_version` - (Optional) Version of the write-only password. Required when `password_wo` is set; bump this value to rotate the password.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the user should be created.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the user, in the format `{region}/{deployment_id}/{name}`.
+
+## Import
+
+OpenSearch users can be imported using `{region}/{deployment_id}/{name}`, e.g.
+
+```bash
+terraform import scaleway_opensearch_user.app fr-par/11111111-1111-1111-1111-111111111111/app_user
+```

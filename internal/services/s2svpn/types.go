@@ -94,20 +94,51 @@ func expandConnectionCiphers(raw any) []*s2s_vpn.ConnectionCipher {
 			Encryption: s2s_vpn.ConnectionEncryption(m["encryption"].(string)),
 		}
 
-		if v, ok := m["integrity"]; ok {
-			val := s2s_vpn.ConnectionIntegrity(v.(string))
-			c.Integrity = &val
+		if v, ok := m["integrity"].(string); ok && v != "" {
+			c.Integrity = new(s2s_vpn.ConnectionIntegrity(v))
 		}
 
-		if v, ok := m["dh_group"]; ok {
-			val := s2s_vpn.ConnectionDhGroup(v.(string))
-			c.DhGroup = &val
+		if v, ok := m["dh_group"].(string); ok && v != "" {
+			c.DhGroup = new(s2s_vpn.ConnectionDhGroup(v))
 		}
 
 		res = append(res, c)
 	}
 
 	return res
+}
+
+func expandConnectionSecret(rawID, rawRevision any) *s2s_vpn.CreateConnectionRequestSecret {
+	secretID, ok := rawID.(string)
+	if !ok || secretID == "" {
+		return nil
+	}
+
+	secret := &s2s_vpn.CreateConnectionRequestSecret{
+		ID: locality.ExpandID(secretID),
+	}
+
+	if revision, ok := rawRevision.(int); ok && revision > 0 {
+		secret.Revision = types.ExpandUint32Ptr(revision)
+	}
+
+	return secret
+}
+
+func expandConnectionSecretUpdate(rawID, rawRevision any) (*string, *uint32) {
+	var secretID *string
+
+	if id, ok := rawID.(string); ok && id != "" {
+		expandedID := locality.ExpandID(id)
+		secretID = &expandedID
+	}
+
+	var revision *uint32
+	if rev, ok := rawRevision.(int); ok && rev > 0 {
+		revision = types.ExpandUint32Ptr(rev)
+	}
+
+	return secretID, revision
 }
 
 func flattenVPNGatewayPublicConfig(region scw.Region, config *s2s_vpn.VpnGatewayPublicConfig) any {

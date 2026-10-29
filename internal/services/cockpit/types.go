@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 var scopeMapping = map[string]cockpit.TokenScope{
@@ -19,59 +18,6 @@ var scopeMapping = map[string]cockpit.TokenScope{
 	"write_traces":        cockpit.TokenScopeWriteOnlyTraces,
 }
 
-func createGrafanaURL(projectID string, region scw.Region) string {
-	return fmt.Sprintf("https://%s.dashboard.obs.%s.scw.cloud", projectID, region)
-}
-
-func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL string, alertManagerURL string) []map[string]any {
-	endpointMap := map[string]string{}
-
-	for _, dataSource := range dataSources {
-		switch dataSource.Type {
-		case "metrics":
-			endpointMap["metrics_url"] = dataSource.URL
-		case "logs":
-			endpointMap["logs_url"] = dataSource.URL
-		case "traces":
-			endpointMap["traces_url"] = dataSource.URL
-		}
-	}
-
-	endpoints := []map[string]any{
-		{
-			"metrics_url":      endpointMap["metrics_url"],
-			"logs_url":         endpointMap["logs_url"],
-			"alertmanager_url": alertManagerURL,
-			"grafana_url":      grafanaURL,
-			"traces_url":       endpointMap["traces_url"],
-		},
-	}
-
-	return endpoints
-}
-
-func createCockpitPushURLList(endpoints []map[string]any) []map[string]any {
-	var result []map[string]any
-
-	for _, endpoint := range endpoints {
-		newEndpoint := make(map[string]any)
-
-		if metricsURL, ok := endpoint["metrics_url"].(string); ok && metricsURL != "" {
-			newEndpoint["push_metrics_url"] = metricsURL + pathMetricsURL
-		}
-
-		if logsURL, ok := endpoint["logs_url"].(string); ok && logsURL != "" {
-			newEndpoint["push_logs_url"] = logsURL + pathLogsURL
-		}
-
-		if len(newEndpoint) > 0 {
-			result = append(result, newEndpoint)
-		}
-	}
-
-	return result
-}
-
 func createCockpitPushURL(sourceType cockpit.DataSourceType, url string) (string, error) {
 	switch sourceType {
 	case cockpit.DataSourceTypeMetrics:
@@ -82,6 +28,15 @@ func createCockpitPushURL(sourceType cockpit.DataSourceType, url string) (string
 		return url + pathTracesURL, nil
 	default:
 		return "", fmt.Errorf("invalid data source type: %v", sourceType)
+	}
+}
+
+// defaultCockpitTokenScopes returns the scopes used when the scopes block is omitted
+// (write_metrics and write_logs), matching the managed scaleway_cockpit_token defaults.
+func defaultCockpitTokenScopes() []cockpit.TokenScope {
+	return []cockpit.TokenScope{
+		cockpit.TokenScopeWriteOnlyMetrics,
+		cockpit.TokenScopeWriteOnlyLogs,
 	}
 }
 
@@ -98,8 +53,16 @@ func expandCockpitTokenScopes(raw any) []cockpit.TokenScope {
 		return expandedScopes
 	}
 
+	return expandCockpitTokenScopesFromFlags(scopesMap)
+}
+
+// expandCockpitTokenScopesFromFlags expands a name→enabled map using scopeMapping.
+// Shared by the managed resource (SDKv2) and the ephemeral resource (Framework).
+func expandCockpitTokenScopesFromFlags(flags map[string]any) []cockpit.TokenScope {
+	var expandedScopes []cockpit.TokenScope
+
 	for key, tokenScope := range scopeMapping {
-		if value, ok := scopesMap[key].(bool); ok && value {
+		if value, ok := flags[key].(bool); ok && value {
 			expandedScopes = append(expandedScopes, tokenScope)
 		}
 	}

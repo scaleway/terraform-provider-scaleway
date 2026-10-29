@@ -6,8 +6,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 )
 
 func TestAccDecryptEphemeralResource_Basic(t *testing.T) {
@@ -19,11 +21,14 @@ func TestAccDecryptEphemeralResource_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	plainTextData := "this is some secret data"
+	dataPath := tfjsonpath.New("data")
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: fmt.Sprintf(`
 				resource "scaleway_key_manager_key" "main" {
 				  name        = "tf-test-decrypt-key"
@@ -43,27 +48,18 @@ func TestAccDecryptEphemeralResource_Basic(t *testing.T) {
 				  key_id     = scaleway_key_manager_key.main.id
 				  ciphertext = ephemeral.scaleway_key_manager_encrypt.test_encrypt.ciphertext
 				  region     = "fr-par"
+				  depends_on = [ephemeral.scaleway_key_manager_encrypt.test_encrypt]
 				}
 
-				resource "scaleway_secret" "main" {
-					name        = "test-decrypt-secret"
+				provider "echo" {
+				  data = ephemeral.scaleway_key_manager_decrypt.test_decrypt
 				}
 
-				resource "scaleway_secret_version" "v1" {
-					description = "test decrypted"
-					secret_id   = scaleway_secret.main.id
-					data_wo     = ephemeral.scaleway_key_manager_decrypt.test_decrypt.plaintext
-				}
-
-				data "scaleway_secret_version" "v1" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "1"
-				  depends_on = [scaleway_secret_version.v1]
-				}
+				resource "echo" "test_decrypt" {}
 				`, plainTextData),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.v1", "data", secret.Base64Encoded([]byte(plainTextData))),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_decrypt", dataPath.AtMapKey("plaintext"), knownvalue.StringExact(plainTextData)),
+				},
 			},
 		},
 	})
@@ -79,11 +75,14 @@ func TestAccDecryptEphemeralResource_WithAssociatedData(t *testing.T) {
 
 	plainTextData := "this is some secret data"
 	associatedData := "some associated data"
+	dataPath := tfjsonpath.New("data")
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: fmt.Sprintf(`
 				resource "scaleway_key_manager_key" "test_key" {
 				  name        = "tf-test-decrypt-key-ad"
@@ -111,40 +110,16 @@ func TestAccDecryptEphemeralResource_WithAssociatedData(t *testing.T) {
 				  }
 				}
 
-				resource "scaleway_secret" "main" {
-					name        = "test-decrypt-secret-ad"
+				provider "echo" {
+				  data = ephemeral.scaleway_key_manager_decrypt.test_decrypt
 				}
 
-				resource "scaleway_secret_version" "data" {
-					description = "test decrypted data"
-					secret_id   = scaleway_secret.main.id
-					data_wo     = ephemeral.scaleway_key_manager_decrypt.test_decrypt.plaintext
-				}
-
-				resource "scaleway_secret_version" "associated_data" {
-					description 	= "test decrypted associated data"
-					secret_id   	= scaleway_secret.main.id
-					data_wo     	= ephemeral.scaleway_key_manager_decrypt.test_decrypt.associated_data.value
-					data_wo_version = 2
-					depends_on		= [scaleway_secret_version.data]
-				}
-
-				data "scaleway_secret_version" "data" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "1"
-				  depends_on = [scaleway_secret_version.data]
-				}
-
-				data "scaleway_secret_version" "associated_data" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "2"
-				  depends_on = [scaleway_secret_version.associated_data]
-				}
+				resource "echo" "test_decrypt" {}
 				`, plainTextData, associatedData),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.data", "data", secret.Base64Encoded([]byte(plainTextData))),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.associated_data", "data", secret.Base64Encoded([]byte(associatedData))),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_decrypt", dataPath.AtMapKey("plaintext"), knownvalue.StringExact(plainTextData)),
+					statecheck.ExpectKnownValue("echo.test_decrypt", dataPath.AtMapKey("associated_data").AtMapKey("value"), knownvalue.StringExact(associatedData)),
+				},
 			},
 		},
 	})
@@ -163,8 +138,10 @@ func TestAccDecryptEphemeralResource_InvalidAssociatedData(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: fmt.Sprintf(`
 				resource "scaleway_key_manager_key" "test_key" {
 				  name        = "tf-test-decrypt-key-invalid"
@@ -188,7 +165,7 @@ func TestAccDecryptEphemeralResource_InvalidAssociatedData(t *testing.T) {
 				  ciphertext = ephemeral.scaleway_key_manager_encrypt.test_encrypt.ciphertext
 				  region     = "fr-par"
 				  associated_data = {
-				  	value = "qwerty"
+					value = "qwerty"
 				  }
 				}
 				`, plainTextData, associatedData),

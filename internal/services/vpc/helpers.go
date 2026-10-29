@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,8 +15,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
-
-const defaultVPCPrivateNetworkRetryInterval = 30 * time.Second
 
 // vpcAPIWithRegion returns a new VPC API and the region for a Create request
 func vpcAPIWithRegion(d *schema.ResourceData, m any) (*vpc.API, scw.Region, error) {
@@ -139,4 +136,27 @@ func diffSuppressFuncRouteResourceID(_, oldValue, newValue string, _ *schema.Res
 	}
 
 	return oldResourceID == newResourceID
+}
+
+func customDiffCheckFeatureNotDisabled(diff *schema.ResourceDiff, key string, errMsg string) error {
+	if diff.Id() == "" {
+		rawConfig := diff.GetRawConfig()
+		if rawConfig.IsNull() || !rawConfig.IsKnown() {
+			return nil
+		}
+
+		value := rawConfig.GetAttr(key)
+		if value.IsNull() || !value.IsKnown() || value.True() {
+			return nil
+		}
+
+		return errors.New(errMsg)
+	}
+
+	before, after := diff.GetChange(key)
+	if before != nil && before.(bool) && after != nil && !after.(bool) {
+		return errors.New(errMsg)
+	}
+
+	return nil
 }

@@ -309,7 +309,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("public") {
-		req.Public = types.ExpandBoolPtr(types.GetBool(d, "public"))
+		req.Public = types.ExpandBoolPtr(d.Get("public"))
 	}
 
 	req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))

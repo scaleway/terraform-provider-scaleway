@@ -69,6 +69,17 @@ func ResourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		Region:    region,
 		ProjectID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sqs, err = api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+				Region:    region,
+				ProjectID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -92,6 +103,17 @@ func readSQSIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		Region:    region,
 		ProjectID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sqs, err = api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+				Region:    region,
+				ProjectID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,6 +139,17 @@ func ResourceMNQSQSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		Region:    region,
 		ProjectID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sqs, err = api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+				Region:    region,
+				ProjectID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -127,10 +160,14 @@ func ResourceMNQSQSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return nil
 	}
 
-	_, err = api.DeactivateSqs(&mnq.SqsAPIDeactivateSqsRequest{
-		Region:    region,
-		ProjectID: id,
-	}, scw.WithContext(ctx))
+	err = retryMNQNamespaceRead(ctx, func() error {
+		_, e := api.DeactivateSqs(&mnq.SqsAPIDeactivateSqsRequest{
+			Region:    region,
+			ProjectID: id,
+		}, scw.WithContext(ctx))
+
+		return e
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

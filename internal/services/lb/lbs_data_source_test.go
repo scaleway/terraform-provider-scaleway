@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	lbtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb/testfuncs"
 )
 
 func TestAccDataSourceLbs_Basic(t *testing.T) {
@@ -13,7 +14,7 @@ func TestAccDataSourceLbs_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isLbDestroyed(tt),
+		CheckDestroy:             lbtestfuncs.IsLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// Create one IP first because its POST request cannot be matched correctly

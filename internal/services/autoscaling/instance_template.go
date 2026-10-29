@@ -212,8 +212,7 @@ func ResourceInstanceTemplateCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if ci, ok := d.GetOk("cloud_init"); ok {
-		rawCI := []byte(ci.(string))
-		req.CloudInit = &rawCI
+		req.CloudInit = new([]byte(ci.(string)))
 	}
 
 	volumesList := expandVolumes(d.Get("volumes").([]any))
@@ -354,8 +353,7 @@ func ResourceInstanceTemplateUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if d.HasChange("cloud_init") {
-		rawCI := []byte(d.Get("cloud_init").(string))
-		updateRequest.CloudInit = &rawCI
+		updateRequest.CloudInit = new([]byte(d.Get("cloud_init").(string)))
 		hasChanged = true
 	}
 

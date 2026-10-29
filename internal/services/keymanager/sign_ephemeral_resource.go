@@ -78,7 +78,7 @@ func (r *SignEphemeralResource) Schema(ctx context.Context, req ephemeral.Schema
 				Required:    true,
 				Description: "ID of the key to use for signing. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"digest": schema.StringAttribute{
@@ -152,7 +152,7 @@ func (r *SignEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRequ
 	signReq := &key_manager.SignRequest{
 		Region: region,
 		KeyID:  keyID,
-		Digest: digestBytes,
+		Digest: &digestBytes,
 	}
 
 	signResp, err := r.keyManagerAPI.Sign(signReq)

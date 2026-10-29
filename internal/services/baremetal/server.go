@@ -2,7 +2,7 @@ package baremetal
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -235,9 +235,10 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
-						Type:        schema.TypeString,
-						Description: "IDs of the options",
-						Required:    true,
+						Type:             schema.TypeString,
+						Description:      "IDs of the options",
+						Required:         true,
+						DiffSuppressFunc: dsf.Locality,
 					},
 					"expires_at": {
 						Type:             schema.TypeString,
@@ -408,8 +409,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if cloudInit, ok := d.GetOk("cloud_init"); ok {
-		cloudInitStr := []byte(cloudInit.(string))
-		req.UserData = &cloudInitStr
+		req.UserData = new([]byte(cloudInit.(string)))
 	}
 
 	if file, ok := d.GetOk("partitioning"); ok || !d.Get("install_config_afterward").(bool) {
@@ -446,7 +446,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		if file != "" {
 			todecode, _ := file.(string)
 
-			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
+			err = json.Unmarshal([]byte(todecode), &partitioningSchema, json.RejectUnknownMembers(true))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -618,9 +618,8 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	diags := diag.Diagnostics{}
 
 	for _, privateNetworkID := range privateNetworkIDs {
-		resourceType := ipamAPI.ResourceTypeBaremetalPrivateNic
 		opts := &ipam.GetResourcePrivateIPsOptions{
-			ResourceType:     &resourceType,
+			ResourceType:     new(ipamAPI.ResourceTypeBaremetalPrivateNic),
 			PrivateNetworkID: &privateNetworkID,
 			ProjectID:        &server.ProjectID,
 		}
@@ -765,8 +764,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	if d.HasChange("cloud_init") {
 		cloudInit, _ := d.Get("cloud_init").(string)
-		cloudInitStr := []byte(cloudInit)
-		req.UserData = &cloudInitStr
+		req.UserData = new([]byte(cloudInit))
 		hasChanged = true
 	}
 
@@ -822,6 +820,21 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		ServicePassword: types.ExpandStringPtr(servicePassword),
 	}
 
+	if file, ok := d.GetOk("partitioning"); ok {
+		partitioningSchema := baremetal.Schema{}
+
+		if file != "" {
+			todecode, _ := file.(string)
+
+			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			installReq.PartitioningSchema = &partitioningSchema
+		}
+	}
+
 	if d.HasChange("os") {
 		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 			return diags
@@ -840,7 +853,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	var diags diag.Diagnostics
 
-	if d.HasChanges("ssh_key_ids", "user", "password", "password_wo_version", "service_password", "service_password_wo_version", "reinstall_on_config_changes") {
+	if d.HasChanges("ssh_key_ids", "user", "password", "password_wo_version", "service_password", "service_password_wo_version", "partition", "reinstall_on_config_changes") {
 		if !d.Get("reinstall_on_config_changes").(bool) && !d.HasChange("os") {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,

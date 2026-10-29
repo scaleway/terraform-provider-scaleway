@@ -162,6 +162,22 @@ func clusterSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"multi_az": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			ConflictsWith: []string{"mono_az_zone"},
+			Description:   "Deploy the cluster across multiple availability zones. Defaults to mono-AZ on the provider default zone when unset.",
+		},
+		"mono_az_zone": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			ConflictsWith: []string{"multi_az"},
+			Description:   "Zone for a mono-AZ cluster (e.g. fr-par-1). Defaults to the provider default zone when unset.",
+		},
 		// Computed
 		"status": {
 			Type:        schema.TypeString,
@@ -205,13 +221,16 @@ func resourceClusterCreate(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	if v, ok := d.GetOk("user_name"); ok {
-		userName := v.(string)
-		req.UserName = &userName
+		req.UserName = new(v.(string))
 	}
 
 	if v, ok := d.GetOk("password"); ok {
-		password := v.(string)
-		req.Password = &password
+		req.Password = new(v.(string))
+	}
+
+	req.MultiAz, req.MonoAz, err = expandClusterAvailability(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	// Configure endpoints
@@ -325,6 +344,16 @@ func setClusterState(d *schema.ResourceData, cluster *kafkaapi.Cluster) diag.Dia
 		_ = d.Set("volume_size_in_gb", int(cluster.Volume.SizeBytes/scw.GB))
 	}
 
+	switch {
+	case cluster.MultiAz != nil:
+		_ = d.Set("multi_az", true)
+		_ = d.Set("mono_az_zone", "")
+	case cluster.MonoAz != nil && cluster.MonoAz.Zone != nil:
+		_ = d.Set("mono_az_zone", cluster.MonoAz.Zone.String())
+	default:
+		return diag.Errorf("kafka cluster %s has neither multi_az nor mono_az.zone", cluster.ID)
+	}
+
 	publicBlock, hasPublic := flattenPublicNetwork(cluster.Endpoints, cluster.Region)
 	if hasPublic {
 		_ = d.Set("public_network", publicBlock.([]map[string]any))
@@ -346,8 +375,6 @@ func resourceClusterUpdate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	var diags diag.Diagnostics
-
 	_, err = waitForKafkaCluster(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -361,14 +388,12 @@ func resourceClusterUpdate(ctx context.Context, d *schema.ResourceData, meta any
 	hasChanged := false
 
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		req.Name = &name
+		req.Name = new(d.Get("name").(string))
 		hasChanged = true
 	}
 
 	if d.HasChange("tags") {
-		tags := types.ExpandStrings(d.Get("tags"))
-		req.Tags = &tags
+		req.Tags = new(types.ExpandStrings(d.Get("tags")))
 		hasChanged = true
 	}
 
@@ -384,9 +409,7 @@ func resourceClusterUpdate(ctx context.Context, d *schema.ResourceData, meta any
 		}
 	}
 
-	readDiags := resourceClusterRead(ctx, d, meta)
-
-	return append(diags, readDiags...)
+	return resourceClusterRead(ctx, d, meta)
 }
 
 func resourceClusterDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

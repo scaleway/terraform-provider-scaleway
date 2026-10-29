@@ -1,8 +1,6 @@
 package instancetestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -52,7 +50,9 @@ func testSweepVolume(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing volumes in sweeper: %w", err)
+			logging.L.Warningf("error listing volumes in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, volume := range listVolumesResponse.Volumes {
@@ -62,7 +62,7 @@ func testSweepVolume(_ string) error {
 					VolumeID: volume.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting volume in sweeper: %w", err)
+					logging.L.Warningf("error deleting volume in sweeper: %s", err)
 				}
 			}
 		}
@@ -81,7 +81,9 @@ func testSweepSnapshot(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing instance snapshots in sweeper: %w", err)
+			logging.L.Warningf("error listing instance snapshots in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, snapshot := range listSnapshotsResponse.Snapshots {
@@ -90,7 +92,7 @@ func testSweepSnapshot(_ string) error {
 				SnapshotID: snapshot.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting instance snapshot in sweeper: %w", err)
+				logging.L.Warningf("error deleting instance snapshot in sweeper: %s", err)
 			}
 		}
 
@@ -119,7 +121,7 @@ func testSweepServer(_ string) error {
 					ServerID: srv.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting server in sweeper: %w", err)
+					logging.L.Warningf("error deleting server in sweeper: %s", err)
 				}
 			case instanceSDK.ServerStateRunning:
 				_, err := instanceAPI.ServerAction(&instanceSDK.ServerActionRequest{
@@ -128,7 +130,7 @@ func testSweepServer(_ string) error {
 					Action:   instanceSDK.ServerActionTerminate,
 				})
 				if err != nil {
-					return fmt.Errorf("error terminating server in sweeper: %w", err)
+					logging.L.Warningf("error terminating server in sweeper: %s", err)
 				}
 			}
 		}
@@ -163,7 +165,7 @@ func testSweepSecurityGroup(_ string) error {
 				SecurityGroupID: securityGroup.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting security groups in sweeper: %w", err)
+				logging.L.Warningf("error deleting security groups in sweeper: %s", err)
 			}
 		}
 
@@ -192,7 +194,7 @@ func testSweepPlacementGroup(_ string) error {
 				PlacementGroupID: pg.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting placement group in sweeper: %w", err)
+				logging.L.Warningf("error deleting placement group in sweeper: %s", err)
 			}
 		}
 
@@ -217,7 +219,7 @@ func testSweepIP(_ string) error {
 				Zone: zone,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting ip in sweeper: %w", err)
+				logging.L.Warningf("error deleting ip in sweeper: %s", err)
 			}
 		}
 
@@ -236,7 +238,9 @@ func testSweepImage(_ string) error {
 			Public: new(false),
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing instance images in sweeper: %w", err)
+			logging.L.Warningf("error listing instance images in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, image := range listImagesResponse.Images {
@@ -245,7 +249,7 @@ func testSweepImage(_ string) error {
 				ImageID: image.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting instance image in sweeper: %w", err)
+				logging.L.Warningf("error deleting instance image in sweeper: %s", err)
 			}
 		}
 

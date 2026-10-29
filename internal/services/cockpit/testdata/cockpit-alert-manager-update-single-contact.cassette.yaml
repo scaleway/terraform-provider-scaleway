@@ -6,6 +6,57 @@ interactions:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
+        content_length: 138
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"name":"tf_tests_cockpit_alert_manager_project_update_contact","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":""}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 295
+        uncompressed: false
+        body: '{"created_at":"2026-04-28T08:29:05.619689Z","description":"","id":"be057864-014a-49bc-ae9a-31f396106f75","name":"tf_tests_cockpit_alert_manager_project_update_contact","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","qualification":null,"updated_at":"2026-04-28T08:29:05.619689Z"}'
+        headers:
+            Content-Length:
+                - "295"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 40ba34a4-a963-4a4b-8a8a-fff3dd2f20be
+        status: 200 OK
+        code: 200
+        duration: 1.497048153s
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
         content_length: 0
         transfer_encoding: []
         trailer: {}
@@ -16,8 +67,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/account/v3/projects?name=default&order_by=created_at_asc&organization_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -25,20 +76,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 326
+        content_length: 340
         uncompressed: false
-        body: '{"projects":[{"created_at":"2019-09-30T07:52:49.358300Z","description":"","id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"default","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","qualification":{"architecture_type":"unknown_architecture_type"},"updated_at":"2020-05-03T19:41:17.997124Z"}],"total_count":1}'
+        body: '{"created_at":"2026-04-28T08:29:05.619689Z","description":"","id":"be057864-014a-49bc-ae9a-31f396106f75","name":"tf_tests_cockpit_alert_manager_project_update_contact","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","qualification":{"architecture_type":"unknown_architecture_type"},"updated_at":"2026-04-28T08:29:05.619689Z"}'
         headers:
             Content-Length:
-                - "326"
+                - "340"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:35 GMT
+                - Tue, 28 Apr 2026 08:29:06 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -46,11 +97,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 146462a3-651f-4fb6-ac01-f2ad535ce6e8
+                - 9b437203-85f5-4149-8217-9f0726451fac
         status: 200 OK
         code: 200
-        duration: 1.160665041s
-    - id: 1
+        duration: 343.654719ms
+    - id: 2
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -61,13 +112,13 @@ interactions:
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}'
+        body: '{"project_id":"be057864-014a-49bc-ae9a-31f396106f75"}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/enable
         method: POST
       response:
@@ -78,7 +129,7 @@ interactions:
         trailer: {}
         content_length: 187
         uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://0ebc16d2-aef2-4926-8333-c88fbd99ac96.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
+        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://bde2178f-b7c0-4e1b-aeac-cfb03b2e4c94.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
         headers:
             Content-Length:
                 - "187"
@@ -87,9 +138,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:36 GMT
+                - Tue, 28 Apr 2026 08:29:06 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -97,11 +148,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 0712b585-985d-44a6-985f-3a04ab741fd7
+                - 4fd6b2bf-94f7-4dba-8bdb-8c92a6d59e26
         status: 200 OK
         code: 200
-        duration: 296.713333ms
-    - id: 2
+        duration: 441.417879ms
+    - id: 3
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -112,13 +163,13 @@ interactions:
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","email":{"to":"notupdated@example.com"}}'
+        body: '{"project_id":"be057864-014a-49bc-ae9a-31f396106f75","email":{"to":"notupdated@example.com"}}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points
         method: POST
       response:
@@ -138,9 +189,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:38 GMT
+                - Tue, 28 Apr 2026 08:29:07 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -148,11 +199,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 91209b3c-1ed2-4ef3-b39e-2caa0544f60d
+                - 56f00fd9-8248-49f8-a78f-1f46913ff00c
         status: 200 OK
         code: 200
-        duration: 2.150672208s
-    - id: 3
+        duration: 473.354071ms
+    - id: 4
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -163,13 +214,13 @@ interactions:
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","email":{"to":"initial1@example.com"}}'
+        body: '{"project_id":"be057864-014a-49bc-ae9a-31f396106f75","email":{"to":"initial1@example.com"}}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points
         method: POST
       response:
@@ -189,9 +240,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:38 GMT
+                - Tue, 28 Apr 2026 08:29:07 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -199,59 +250,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - de3de764-d99d-4fd3-9b0d-c7084978cbdc
+                - d9140cf9-4c40-4a28-a49f-ab4b6b358254
         status: 200 OK
         code: 200
-        duration: 365.219667ms
-    - id: 4
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=105bdce1-64c0-48ab-899d-868455867ecf
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 187
-        uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://0ebc16d2-aef2-4926-8333-c88fbd99ac96.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "187"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Mon, 24 Nov 2025 05:33:38 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 01a59513-0ca3-43c0-8940-2783ce75a95d
-        status: 200 OK
-        code: 200
-        duration: 84.160709ms
+        duration: 286.797731ms
     - id: 5
       request:
         proto: HTTP/1.1
@@ -267,8 +269,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alerts?is_preconfigured=true&page=1&project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -276,20 +278,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 23339
+        content_length: 187
         uncompressed: false
-        body: '{"alerts":[{"annotations":{"dashboard_path":"/d/scw-redis-overview/redis-overview?var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"Redis™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a memory usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","family":"Managed Databases","product":"Redis","rule_id":"3c5b3a41-69de-43ed-9217-e3002d687c53","summary":"High memory usage on Redis™ {{ $labels.instance }} node"},"data_source_id":"","duration":"10m","name":"HighMemoryUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","preconfigured_rule_id":"3c5b3a41-69de-43ed-9217-e3002d687c53","product_family":"Managed Databases","product_name":"Redis"},"region":"fr-par","rule":"1 - ((sum by (instance, resource_name, resource_id, project_id, region) (rkv_cluster_node_memory_MemAvailable_bytes)) / sum by (instance, resource_name, resource_id, project_id, region) (rkv_cluster_node_memory_MemTotal_bytes)) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","family":"Managed Databases","product":"MySQL","rule_id":"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7","summary":"Too many connections on RDB MySQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"MySQLTooManyConnections","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","preconfigured_rule_id":"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"rdb_instance_mysql_mysql_global_status_threads_connected / rdb_instance_mysql_mysql_global_variables_max_connections \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Load Balancer","product":"LB","rule_id":"769bd543-6030-4540-bd2d-5e2d0604e767","summary":"High CPU usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"769bd543-6030-4540-bd2d-5e2d0604e767","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_cpu_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High connection usage","family":"Load Balancer","product":"LB","rule_id":"fcf06e62-22ee-4e86-9b16-3cc9708e1b07","summary":"High connection usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighConnectionLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High connection usage","preconfigured_rule_id":"fcf06e62-22ee-4e86-9b16-3cc9708e1b07","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_connection_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"{{ $value }} nodes are not ready since 10m.","display_description":"\u003e 0 for 10 minutes","display_name":"Nodes not ready","family":"Containers","product":"Kubernetes","rule_id":"dc9b67ae-baa6-4a37-907d-2a6c31304561","summary":"Nodes not ready on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"NodesNotReady","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 0 for 10 minutes","display_name":"Nodes not ready","preconfigured_rule_id":"dc9b67ae-baa6-4a37-907d-2a6c31304561","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_nodes) - sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_nodes_ready) \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a bandwidth usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High bandwidth usage","family":"Load Balancer","product":"LB","rule_id":"835bd0fc-57ea-43cf-ba2f-2b637e85eedb","summary":"High bandwidth usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighBandwidthLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High bandwidth usage","preconfigured_rule_id":"835bd0fc-57ea-43cf-ba2f-2b637e85eedb","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_bandwidth_in_usage \u003e 0.8 or load_balancer_lb_bandwidth_out_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-cockpit-overview/cockpit-overview?var-region={{ $labels.region }}","description":"Cockpit Data Source {{ $labels.resource_name }} - {{ $labels.resource_id }} had a 100% ingestion increase in the last hour","display_description":"100% increase in ingestion volumes in the past hour","display_name":"Ingestion increase","family":"Observability","product":"Cockpit","rule_id":"669f781a-adab-4e3c-984e-fb149f8b67a3","summary":"Ingestion increase on Cockpit"},"data_source_id":"","duration":"0s","name":"CockpitIngestionIncrease","preconfigured":true,"preconfigured_data":{"display_description":"100% increase in ingestion volumes in the past hour","display_name":"Ingestion increase","preconfigured_rule_id":"669f781a-adab-4e3c-984e-fb149f8b67a3","product_family":"Observability","product_name":"Cockpit"},"region":"fr-par","rule":"increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h] offset 1h) / increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h]) \u003c 0.5","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"The managed api-server of the {{ $labels.resource_name }} Kubernetes cluster is using more than 90% of its available CPU since 10m. Scaleway recommends upgrading your Kubernetes cluster to have dedicated resources for your api-server. Refer to our dedicated Kubernetes Control Plane offer for more details (https://www.scaleway.com/en/kubernetes-dedicated-control-plane/) (not available in all regions).","display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server CPU usage","family":"Containers","product":"Kubernetes","rule_id":"d3974dcd-0f02-47cf-a266-67223e579390","summary":"High api-server CPU usage on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"APIServerHighCPUUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server CPU usage","preconfigured_rule_id":"d3974dcd-0f02-47cf-a266-67223e579390","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"max by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_cpu_usage{component=\"api-server\"}) / sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_cpu_limit{component=\"api-server\"}) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a disk usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","family":"Managed Databases","product":"PostgreSQL","rule_id":"c8991f90-facb-436c-b4ab-6aa13822a451","summary":"High disk usage on RDB PostgreSQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"PostgreSQLHighStorageUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","preconfigured_rule_id":"c8991f90-facb-436c-b4ab-6aa13822a451","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"1 - rdb_instance_postgresql_node_filesystem_avail_bytes / rdb_instance_postgresql_node_filesystem_size_bytes \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"The managed api-server of the {{ $labels.resource_name }} Kubernetes cluster is using more than 90% of its available memory since 10m. Scaleway recommends upgrading your Kubernetes cluster to have more memory for your api-server. Refer to our dedicated Kubernetes Control Plane offer for more details (https://www.scaleway.com/en/kubernetes-dedicated-control-plane/) (not available in all regions).","display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server memory usage","family":"Containers","product":"Kubernetes","rule_id":"09396fbe-bddc-47a3-8072-c4246bef03c1","summary":"High api-server memory usage on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"APIServerHighMemoryUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server memory usage","preconfigured_rule_id":"09396fbe-bddc-47a3-8072-c4246bef03c1","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"max by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_memory_usage_bytes{component=\"api-server\"}) / sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_memory_limit_bytes{component=\"api-server\"}) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"PostgreSQL","rule_id":"615245e6-3882-4d99-8798-d17ca1c95645","summary":"High CPU usage on RDB PostgreSQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"PostgreSQLHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"615245e6-3882-4d99-8798-d17ca1c95645","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"1 - avg by (instance, resource_name, resource_id, project_id, region) (irate(rdb_instance_postgresql_node_cpu_seconds_total{mode=\"idle\"}[5m])) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-cockpit-overview/cockpit-overview?var-region={{ $labels.region }}","description":"Cockpit Data Source {{ $labels.resource_name }} - {{ $labels.resource_id }} had a 50% ingestion decrease in the last hour","display_description":"50% decrease in ingestion volumes in the past hour","display_name":"Ingestion decrease","family":"Observability","product":"Cockpit","rule_id":"8dba8eed-25eb-4860-ab33-7cb5ca662036","summary":"Ingestion decrease on Cockpit"},"data_source_id":"","duration":"0s","name":"CockpitIngestionDecrease","preconfigured":true,"preconfigured_data":{"display_description":"50% decrease in ingestion volumes in the past hour","display_name":"Ingestion decrease","preconfigured_rule_id":"8dba8eed-25eb-4860-ab33-7cb5ca662036","product_family":"Observability","product_name":"Cockpit"},"region":"fr-par","rule":"increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h] offset 1h) / increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h]) \u003e 2","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","family":"Managed Databases","product":"PostgreSQL","rule_id":"6c6843af-1815-46df-9e52-6feafcf31fd7","summary":"Too many connections on RDB PostgreSQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"PostgresqlTooManyConnections","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","preconfigured_rule_id":"6c6843af-1815-46df-9e52-6feafcf31fd7","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"(sum by (instance, resource_name, resource_id, project_id, region) (rdb_instance_postgresql_pg_stat_database_numbackends)) / on (instance, resource_name, resource_id) group_left () rdb_instance_postgresql_pg_settings_max_connections \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-serverless-sql-database-overview/serverless-sql-database-overview?var-region={{ $labels.region }}\u0026var-database={{ $labels.resource_name }}","description":"Serverless SQL Database {{ $labels.resource_name }} with id {{ $labels.resource_id }} has a CPU usage superior to 90% since 10 minutes and cannot scale-up above its maximum vCPU configuration. To avoid performance degradation in your application, we recommend you increase maximum vCPU in your database configuration or investigate your SQL queries generating this high workload on your database.\nAccess your database configuration: https://console.scaleway.com/serverless-db/databases/fr-par/{{ $labels.resource_id }}/overview","display_description":"\u003e 90 % for 10 minutes","display_name":"High CPU usage","family":"Serverless","product":"SQL Databases","rule_id":"e930945c-8b42-48fe-94db-12abc81d27f4","summary":"High CPU usage on Serverless SQL Database {{ $labels.resource_name }}."},"data_source_id":"","duration":"10m","name":"ServerlessSQLDatabaseHighCPUUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"e930945c-8b42-48fe-94db-12abc81d27f4","product_family":"Serverless","product_name":"SQL Databases"},"region":"fr-par","rule":"(rate(serverless_db_postgresql_cpu_usage_seconds{mode!=\"idle\"}[2m]) / (serverless_db_postgresql_cpu_provisioned / 100000)) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-redis-overview/redis-overview?var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"Redis™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"Redis","rule_id":"f5e3c109-91b3-4586-b580-9f86529c1df8","summary":"High CPU usage on Redis™ {{ $labels.instance }} node"},"data_source_id":"","duration":"10m","name":"HighCpuUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"f5e3c109-91b3-4586-b580-9f86529c1df8","product_family":"Managed Databases","product_name":"Redis"},"region":"fr-par","rule":"1 - (avg by (instance, resource_name, resource_id, project_id, region) (irate(rkv_cluster_node_cpu_seconds_total{mode=\"idle\"}[5m]))) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has {{ $value }} server(s) down on backend {{ $labels.backend_name }}","display_description":"1 or several Backend server(s) is/are down","display_name":"Backend server down","family":"Load Balancer","product":"LB","rule_id":"feb64cef-c855-4230-a74e-813515fdb357","summary":"{{ $value }} backend server(s) down on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"5m","name":"LBBackendServerDown","preconfigured":true,"preconfigured_data":{"display_description":"1 or several Backend server(s) is/are down","display_name":"Backend server down","preconfigured_rule_id":"feb64cef-c855-4230-a74e-813515fdb357","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_backend_agg_server_check_status{state=\"DOWN\", backend_name!=\"\"} \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Backend {{ $labels.backend_name }} is down on Load Balancer {{ $labels.resource_name }}","display_description":"All servers for a given Backend are down","display_name":"Backend down","family":"Load Balancer","product":"LB","rule_id":"d1b1b4a0-7215-494b-9d81-796e52c7ed0e","summary":"Backend is down on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"5m","name":"LBBackendDown","preconfigured":true,"preconfigured_data":{"display_description":"All servers for a given Backend are down","display_name":"Backend down","preconfigured_rule_id":"d1b1b4a0-7215-494b-9d81-796e52c7ed0e","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_backend_status{state=\"DOWN\", backend_name!=\"\"} \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"MySQL","rule_id":"76f01e05-79d1-4509-93f2-67eb84586070","summary":"High CPU usage on RDB MySQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"MySQLHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"76f01e05-79d1-4509-93f2-67eb84586070","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"1 - avg by (instance, resource_name, resource_id, project_id, region) (irate(rdb_instance_mysql_node_cpu_seconds_total{mode=\"idle\"}[5m])) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a memory usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","family":"Load Balancer","product":"LB","rule_id":"89d456d0-8614-40a2-b0a6-682ea25e98b6","summary":"High memory usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighMemoryLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","preconfigured_rule_id":"89d456d0-8614-40a2-b0a6-682ea25e98b6","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_memory_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a disk usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","family":"Managed Databases","product":"MySQL","rule_id":"f8834c3d-4d3d-49a2-9164-0236d4c93590","summary":"High disk usage on RDB MySQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"MySQLHighStorageUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","preconfigured_rule_id":"f8834c3d-4d3d-49a2-9164-0236d4c93590","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"1 - rdb_instance_mysql_node_filesystem_avail_bytes / rdb_instance_mysql_node_filesystem_size_bytes \u003e 0.8","rule_status":"disabled","state":"unknown_state"}],"total_count":20}'
+        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://bde2178f-b7c0-4e1b-aeac-cfb03b2e4c94.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
         headers:
             Content-Length:
-                - "23339"
+                - "187"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:39 GMT
+                - Tue, 28 Apr 2026 08:29:07 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -297,10 +299,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - e480970c-d3c6-409f-844e-2dbbccc98de1
+                - dd52a344-68f9-44c6-b850-8c3951c53cd6
         status: 200 OK
         code: 200
-        duration: 390.176792ms
+        duration: 249.111812ms
     - id: 6
       request:
         proto: HTTP/1.1
@@ -316,8 +318,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alerts?is_preconfigured=true&page=1&project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -325,20 +327,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 303
+        content_length: 30
         uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par","send_resolved_notifications":true},{"email":{"to":"initial1@example.com"},"region":"fr-par","send_resolved_notifications":true}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
+        body: '{"alerts":[],"total_count":0}'
         headers:
             Content-Length:
-                - "303"
+                - "30"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:39 GMT
+                - Tue, 28 Apr 2026 08:29:07 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -346,10 +348,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - c57af522-bf32-4626-8c23-a40e93829883
+                - 6daf31ee-5583-4b41-8f7e-e36accc5dc16
         status: 200 OK
         code: 200
-        duration: 273.793125ms
+        duration: 107.894395ms
     - id: 7
       request:
         proto: HTTP/1.1
@@ -365,8 +367,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -385,9 +387,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:39 GMT
+                - Tue, 28 Apr 2026 08:29:08 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -395,10 +397,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - ad191853-d68d-4d5d-b3ef-063212257841
+                - 2e38da90-0de3-450e-a016-39dbcfebb8f9
         status: 200 OK
         code: 200
-        duration: 170.808583ms
+        duration: 235.209825ms
     - id: 8
       request:
         proto: HTTP/1.1
@@ -414,8 +416,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -423,20 +425,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 187
+        content_length: 303
         uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://0ebc16d2-aef2-4926-8333-c88fbd99ac96.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
+        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par","send_resolved_notifications":true},{"email":{"to":"initial1@example.com"},"region":"fr-par","send_resolved_notifications":true}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
         headers:
             Content-Length:
-                - "187"
+                - "303"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:40 GMT
+                - Tue, 28 Apr 2026 08:29:08 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -444,10 +446,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - ebd28a85-09e6-4559-9773-e7e0cf8794e3
+                - 51966fb5-1fdb-4187-bcf1-e6c2acdc8adf
         status: 200 OK
         code: 200
-        duration: 110.42725ms
+        duration: 165.62267ms
     - id: 9
       request:
         proto: HTTP/1.1
@@ -463,8 +465,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alerts?is_preconfigured=true&page=1&project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -472,20 +474,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 23339
+        content_length: 340
         uncompressed: false
-        body: '{"alerts":[{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High connection usage","family":"Load Balancer","product":"LB","rule_id":"fcf06e62-22ee-4e86-9b16-3cc9708e1b07","summary":"High connection usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighConnectionLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High connection usage","preconfigured_rule_id":"fcf06e62-22ee-4e86-9b16-3cc9708e1b07","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_connection_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"The managed api-server of the {{ $labels.resource_name }} Kubernetes cluster is using more than 90% of its available memory since 10m. Scaleway recommends upgrading your Kubernetes cluster to have more memory for your api-server. Refer to our dedicated Kubernetes Control Plane offer for more details (https://www.scaleway.com/en/kubernetes-dedicated-control-plane/) (not available in all regions).","display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server memory usage","family":"Containers","product":"Kubernetes","rule_id":"09396fbe-bddc-47a3-8072-c4246bef03c1","summary":"High api-server memory usage on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"APIServerHighMemoryUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server memory usage","preconfigured_rule_id":"09396fbe-bddc-47a3-8072-c4246bef03c1","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"max by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_memory_usage_bytes{component=\"api-server\"}) / sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_memory_limit_bytes{component=\"api-server\"}) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-cockpit-overview/cockpit-overview?var-region={{ $labels.region }}","description":"Cockpit Data Source {{ $labels.resource_name }} - {{ $labels.resource_id }} had a 50% ingestion decrease in the last hour","display_description":"50% decrease in ingestion volumes in the past hour","display_name":"Ingestion decrease","family":"Observability","product":"Cockpit","rule_id":"8dba8eed-25eb-4860-ab33-7cb5ca662036","summary":"Ingestion decrease on Cockpit"},"data_source_id":"","duration":"0s","name":"CockpitIngestionDecrease","preconfigured":true,"preconfigured_data":{"display_description":"50% decrease in ingestion volumes in the past hour","display_name":"Ingestion decrease","preconfigured_rule_id":"8dba8eed-25eb-4860-ab33-7cb5ca662036","product_family":"Observability","product_name":"Cockpit"},"region":"fr-par","rule":"increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h] offset 1h) / increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h]) \u003e 2","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-cockpit-overview/cockpit-overview?var-region={{ $labels.region }}","description":"Cockpit Data Source {{ $labels.resource_name }} - {{ $labels.resource_id }} had a 100% ingestion increase in the last hour","display_description":"100% increase in ingestion volumes in the past hour","display_name":"Ingestion increase","family":"Observability","product":"Cockpit","rule_id":"669f781a-adab-4e3c-984e-fb149f8b67a3","summary":"Ingestion increase on Cockpit"},"data_source_id":"","duration":"0s","name":"CockpitIngestionIncrease","preconfigured":true,"preconfigured_data":{"display_description":"100% increase in ingestion volumes in the past hour","display_name":"Ingestion increase","preconfigured_rule_id":"669f781a-adab-4e3c-984e-fb149f8b67a3","product_family":"Observability","product_name":"Cockpit"},"region":"fr-par","rule":"increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h] offset 1h) / increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h]) \u003c 0.5","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"The managed api-server of the {{ $labels.resource_name }} Kubernetes cluster is using more than 90% of its available CPU since 10m. Scaleway recommends upgrading your Kubernetes cluster to have dedicated resources for your api-server. Refer to our dedicated Kubernetes Control Plane offer for more details (https://www.scaleway.com/en/kubernetes-dedicated-control-plane/) (not available in all regions).","display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server CPU usage","family":"Containers","product":"Kubernetes","rule_id":"d3974dcd-0f02-47cf-a266-67223e579390","summary":"High api-server CPU usage on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"APIServerHighCPUUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server CPU usage","preconfigured_rule_id":"d3974dcd-0f02-47cf-a266-67223e579390","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"max by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_cpu_usage{component=\"api-server\"}) / sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_cpu_limit{component=\"api-server\"}) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a disk usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","family":"Managed Databases","product":"PostgreSQL","rule_id":"c8991f90-facb-436c-b4ab-6aa13822a451","summary":"High disk usage on RDB PostgreSQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"PostgreSQLHighStorageUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","preconfigured_rule_id":"c8991f90-facb-436c-b4ab-6aa13822a451","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"1 - rdb_instance_postgresql_node_filesystem_avail_bytes / rdb_instance_postgresql_node_filesystem_size_bytes \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","family":"Managed Databases","product":"PostgreSQL","rule_id":"6c6843af-1815-46df-9e52-6feafcf31fd7","summary":"Too many connections on RDB PostgreSQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"PostgresqlTooManyConnections","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","preconfigured_rule_id":"6c6843af-1815-46df-9e52-6feafcf31fd7","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"(sum by (instance, resource_name, resource_id, project_id, region) (rdb_instance_postgresql_pg_stat_database_numbackends)) / on (instance, resource_name, resource_id) group_left () rdb_instance_postgresql_pg_settings_max_connections \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"PostgreSQL","rule_id":"615245e6-3882-4d99-8798-d17ca1c95645","summary":"High CPU usage on RDB PostgreSQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"PostgreSQLHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"615245e6-3882-4d99-8798-d17ca1c95645","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"1 - avg by (instance, resource_name, resource_id, project_id, region) (irate(rdb_instance_postgresql_node_cpu_seconds_total{mode=\"idle\"}[5m])) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Backend {{ $labels.backend_name }} is down on Load Balancer {{ $labels.resource_name }}","display_description":"All servers for a given Backend are down","display_name":"Backend down","family":"Load Balancer","product":"LB","rule_id":"d1b1b4a0-7215-494b-9d81-796e52c7ed0e","summary":"Backend is down on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"5m","name":"LBBackendDown","preconfigured":true,"preconfigured_data":{"display_description":"All servers for a given Backend are down","display_name":"Backend down","preconfigured_rule_id":"d1b1b4a0-7215-494b-9d81-796e52c7ed0e","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_backend_status{state=\"DOWN\", backend_name!=\"\"} \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-serverless-sql-database-overview/serverless-sql-database-overview?var-region={{ $labels.region }}\u0026var-database={{ $labels.resource_name }}","description":"Serverless SQL Database {{ $labels.resource_name }} with id {{ $labels.resource_id }} has a CPU usage superior to 90% since 10 minutes and cannot scale-up above its maximum vCPU configuration. To avoid performance degradation in your application, we recommend you increase maximum vCPU in your database configuration or investigate your SQL queries generating this high workload on your database.\nAccess your database configuration: https://console.scaleway.com/serverless-db/databases/fr-par/{{ $labels.resource_id }}/overview","display_description":"\u003e 90 % for 10 minutes","display_name":"High CPU usage","family":"Serverless","product":"SQL Databases","rule_id":"e930945c-8b42-48fe-94db-12abc81d27f4","summary":"High CPU usage on Serverless SQL Database {{ $labels.resource_name }}."},"data_source_id":"","duration":"10m","name":"ServerlessSQLDatabaseHighCPUUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"e930945c-8b42-48fe-94db-12abc81d27f4","product_family":"Serverless","product_name":"SQL Databases"},"region":"fr-par","rule":"(rate(serverless_db_postgresql_cpu_usage_seconds{mode!=\"idle\"}[2m]) / (serverless_db_postgresql_cpu_provisioned / 100000)) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a disk usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","family":"Managed Databases","product":"MySQL","rule_id":"f8834c3d-4d3d-49a2-9164-0236d4c93590","summary":"High disk usage on RDB MySQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"MySQLHighStorageUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","preconfigured_rule_id":"f8834c3d-4d3d-49a2-9164-0236d4c93590","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"1 - rdb_instance_mysql_node_filesystem_avail_bytes / rdb_instance_mysql_node_filesystem_size_bytes \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"MySQL","rule_id":"76f01e05-79d1-4509-93f2-67eb84586070","summary":"High CPU usage on RDB MySQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"MySQLHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"76f01e05-79d1-4509-93f2-67eb84586070","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"1 - avg by (instance, resource_name, resource_id, project_id, region) (irate(rdb_instance_mysql_node_cpu_seconds_total{mode=\"idle\"}[5m])) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a memory usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","family":"Load Balancer","product":"LB","rule_id":"89d456d0-8614-40a2-b0a6-682ea25e98b6","summary":"High memory usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighMemoryLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","preconfigured_rule_id":"89d456d0-8614-40a2-b0a6-682ea25e98b6","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_memory_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"{{ $value }} nodes are not ready since 10m.","display_description":"\u003e 0 for 10 minutes","display_name":"Nodes not ready","family":"Containers","product":"Kubernetes","rule_id":"dc9b67ae-baa6-4a37-907d-2a6c31304561","summary":"Nodes not ready on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"NodesNotReady","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 0 for 10 minutes","display_name":"Nodes not ready","preconfigured_rule_id":"dc9b67ae-baa6-4a37-907d-2a6c31304561","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_nodes) - sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_nodes_ready) \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","family":"Managed Databases","product":"MySQL","rule_id":"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7","summary":"Too many connections on RDB MySQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"MySQLTooManyConnections","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","preconfigured_rule_id":"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"rdb_instance_mysql_mysql_global_status_threads_connected / rdb_instance_mysql_mysql_global_variables_max_connections \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a bandwidth usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High bandwidth usage","family":"Load Balancer","product":"LB","rule_id":"835bd0fc-57ea-43cf-ba2f-2b637e85eedb","summary":"High bandwidth usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighBandwidthLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High bandwidth usage","preconfigured_rule_id":"835bd0fc-57ea-43cf-ba2f-2b637e85eedb","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_bandwidth_in_usage \u003e 0.8 or load_balancer_lb_bandwidth_out_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has {{ $value }} server(s) down on backend {{ $labels.backend_name }}","display_description":"1 or several Backend server(s) is/are down","display_name":"Backend server down","family":"Load Balancer","product":"LB","rule_id":"feb64cef-c855-4230-a74e-813515fdb357","summary":"{{ $value }} backend server(s) down on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"5m","name":"LBBackendServerDown","preconfigured":true,"preconfigured_data":{"display_description":"1 or several Backend server(s) is/are down","display_name":"Backend server down","preconfigured_rule_id":"feb64cef-c855-4230-a74e-813515fdb357","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_backend_agg_server_check_status{state=\"DOWN\", backend_name!=\"\"} \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-redis-overview/redis-overview?var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"Redis™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a memory usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","family":"Managed Databases","product":"Redis","rule_id":"3c5b3a41-69de-43ed-9217-e3002d687c53","summary":"High memory usage on Redis™ {{ $labels.instance }} node"},"data_source_id":"","duration":"10m","name":"HighMemoryUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","preconfigured_rule_id":"3c5b3a41-69de-43ed-9217-e3002d687c53","product_family":"Managed Databases","product_name":"Redis"},"region":"fr-par","rule":"1 - ((sum by (instance, resource_name, resource_id, project_id, region) (rkv_cluster_node_memory_MemAvailable_bytes)) / sum by (instance, resource_name, resource_id, project_id, region) (rkv_cluster_node_memory_MemTotal_bytes)) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-redis-overview/redis-overview?var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"Redis™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"Redis","rule_id":"f5e3c109-91b3-4586-b580-9f86529c1df8","summary":"High CPU usage on Redis™ {{ $labels.instance }} node"},"data_source_id":"","duration":"10m","name":"HighCpuUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"f5e3c109-91b3-4586-b580-9f86529c1df8","product_family":"Managed Databases","product_name":"Redis"},"region":"fr-par","rule":"1 - (avg by (instance, resource_name, resource_id, project_id, region) (irate(rkv_cluster_node_cpu_seconds_total{mode=\"idle\"}[5m]))) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Load Balancer","product":"LB","rule_id":"769bd543-6030-4540-bd2d-5e2d0604e767","summary":"High CPU usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"769bd543-6030-4540-bd2d-5e2d0604e767","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_cpu_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"}],"total_count":20}'
+        body: '{"created_at":"2026-04-28T08:29:05.619689Z","description":"","id":"be057864-014a-49bc-ae9a-31f396106f75","name":"tf_tests_cockpit_alert_manager_project_update_contact","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","qualification":{"architecture_type":"unknown_architecture_type"},"updated_at":"2026-04-28T08:29:05.619689Z"}'
         headers:
             Content-Length:
-                - "23339"
+                - "340"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:40 GMT
+                - Tue, 28 Apr 2026 08:29:08 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -493,10 +495,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - f2e4f120-5345-4257-a33e-7fbcc10b1a4f
+                - 84b01c95-33a7-4ab1-9f71-27dc03e8b957
         status: 200 OK
         code: 200
-        duration: 98.824667ms
+        duration: 428.903263ms
     - id: 10
       request:
         proto: HTTP/1.1
@@ -512,8 +514,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -521,20 +523,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 303
+        content_length: 187
         uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par","send_resolved_notifications":true},{"email":{"to":"initial1@example.com"},"region":"fr-par","send_resolved_notifications":true}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
+        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://bde2178f-b7c0-4e1b-aeac-cfb03b2e4c94.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
         headers:
             Content-Length:
-                - "303"
+                - "187"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:40 GMT
+                - Tue, 28 Apr 2026 08:29:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -542,10 +544,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 9bd30272-e99f-4e1b-a3db-4299906e8482
+                - 394cdf6b-f62e-4111-8803-5088a2193e4e
         status: 200 OK
         code: 200
-        duration: 132.532375ms
+        duration: 121.572247ms
     - id: 11
       request:
         proto: HTTP/1.1
@@ -561,8 +563,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alerts?is_preconfigured=true&page=1&project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -570,20 +572,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 187
+        content_length: 30
         uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://0ebc16d2-aef2-4926-8333-c88fbd99ac96.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
+        body: '{"alerts":[],"total_count":0}'
         headers:
             Content-Length:
-                - "187"
+                - "30"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:41 GMT
+                - Tue, 28 Apr 2026 08:29:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -591,10 +593,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 02a70add-ca2a-42e9-9c46-9b572f47beb5
+                - 7d5374ff-f4d1-437f-84ff-b8104096d421
         status: 200 OK
         code: 200
-        duration: 38.826542ms
+        duration: 108.532695ms
     - id: 12
       request:
         proto: HTTP/1.1
@@ -610,57 +612,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alerts?is_preconfigured=true&page=1&project_id=105bdce1-64c0-48ab-899d-868455867ecf
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 23339
-        uncompressed: false
-        body: '{"alerts":[{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"{{ $value }} nodes are not ready since 10m.","display_description":"\u003e 0 for 10 minutes","display_name":"Nodes not ready","family":"Containers","product":"Kubernetes","rule_id":"dc9b67ae-baa6-4a37-907d-2a6c31304561","summary":"Nodes not ready on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"NodesNotReady","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 0 for 10 minutes","display_name":"Nodes not ready","preconfigured_rule_id":"dc9b67ae-baa6-4a37-907d-2a6c31304561","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_nodes) - sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_nodes_ready) \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a bandwidth usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High bandwidth usage","family":"Load Balancer","product":"LB","rule_id":"835bd0fc-57ea-43cf-ba2f-2b637e85eedb","summary":"High bandwidth usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighBandwidthLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High bandwidth usage","preconfigured_rule_id":"835bd0fc-57ea-43cf-ba2f-2b637e85eedb","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_bandwidth_in_usage \u003e 0.8 or load_balancer_lb_bandwidth_out_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has {{ $value }} server(s) down on backend {{ $labels.backend_name }}","display_description":"1 or several Backend server(s) is/are down","display_name":"Backend server down","family":"Load Balancer","product":"LB","rule_id":"feb64cef-c855-4230-a74e-813515fdb357","summary":"{{ $value }} backend server(s) down on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"5m","name":"LBBackendServerDown","preconfigured":true,"preconfigured_data":{"display_description":"1 or several Backend server(s) is/are down","display_name":"Backend server down","preconfigured_rule_id":"feb64cef-c855-4230-a74e-813515fdb357","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_backend_agg_server_check_status{state=\"DOWN\", backend_name!=\"\"} \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a disk usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","family":"Managed Databases","product":"PostgreSQL","rule_id":"c8991f90-facb-436c-b4ab-6aa13822a451","summary":"High disk usage on RDB PostgreSQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"PostgreSQLHighStorageUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","preconfigured_rule_id":"c8991f90-facb-436c-b4ab-6aa13822a451","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"1 - rdb_instance_postgresql_node_filesystem_avail_bytes / rdb_instance_postgresql_node_filesystem_size_bytes \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a disk usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","family":"Managed Databases","product":"MySQL","rule_id":"f8834c3d-4d3d-49a2-9164-0236d4c93590","summary":"High disk usage on RDB MySQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"MySQLHighStorageUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","preconfigured_rule_id":"f8834c3d-4d3d-49a2-9164-0236d4c93590","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"1 - rdb_instance_mysql_node_filesystem_avail_bytes / rdb_instance_mysql_node_filesystem_size_bytes \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"PostgreSQL","rule_id":"615245e6-3882-4d99-8798-d17ca1c95645","summary":"High CPU usage on RDB PostgreSQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"PostgreSQLHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"615245e6-3882-4d99-8798-d17ca1c95645","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"1 - avg by (instance, resource_name, resource_id, project_id, region) (irate(rdb_instance_postgresql_node_cpu_seconds_total{mode=\"idle\"}[5m])) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-cockpit-overview/cockpit-overview?var-region={{ $labels.region }}","description":"Cockpit Data Source {{ $labels.resource_name }} - {{ $labels.resource_id }} had a 50% ingestion decrease in the last hour","display_description":"50% decrease in ingestion volumes in the past hour","display_name":"Ingestion decrease","family":"Observability","product":"Cockpit","rule_id":"8dba8eed-25eb-4860-ab33-7cb5ca662036","summary":"Ingestion decrease on Cockpit"},"data_source_id":"","duration":"0s","name":"CockpitIngestionDecrease","preconfigured":true,"preconfigured_data":{"display_description":"50% decrease in ingestion volumes in the past hour","display_name":"Ingestion decrease","preconfigured_rule_id":"8dba8eed-25eb-4860-ab33-7cb5ca662036","product_family":"Observability","product_name":"Cockpit"},"region":"fr-par","rule":"increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h] offset 1h) / increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h]) \u003e 2","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-serverless-sql-database-overview/serverless-sql-database-overview?var-region={{ $labels.region }}\u0026var-database={{ $labels.resource_name }}","description":"Serverless SQL Database {{ $labels.resource_name }} with id {{ $labels.resource_id }} has a CPU usage superior to 90% since 10 minutes and cannot scale-up above its maximum vCPU configuration. To avoid performance degradation in your application, we recommend you increase maximum vCPU in your database configuration or investigate your SQL queries generating this high workload on your database.\nAccess your database configuration: https://console.scaleway.com/serverless-db/databases/fr-par/{{ $labels.resource_id }}/overview","display_description":"\u003e 90 % for 10 minutes","display_name":"High CPU usage","family":"Serverless","product":"SQL Databases","rule_id":"e930945c-8b42-48fe-94db-12abc81d27f4","summary":"High CPU usage on Serverless SQL Database {{ $labels.resource_name }}."},"data_source_id":"","duration":"10m","name":"ServerlessSQLDatabaseHighCPUUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"e930945c-8b42-48fe-94db-12abc81d27f4","product_family":"Serverless","product_name":"SQL Databases"},"region":"fr-par","rule":"(rate(serverless_db_postgresql_cpu_usage_seconds{mode!=\"idle\"}[2m]) / (serverless_db_postgresql_cpu_provisioned / 100000)) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"MySQL","rule_id":"76f01e05-79d1-4509-93f2-67eb84586070","summary":"High CPU usage on RDB MySQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"MySQLHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"76f01e05-79d1-4509-93f2-67eb84586070","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"1 - avg by (instance, resource_name, resource_id, project_id, region) (irate(rdb_instance_mysql_node_cpu_seconds_total{mode=\"idle\"}[5m])) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","family":"Managed Databases","product":"MySQL","rule_id":"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7","summary":"Too many connections on RDB MySQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"MySQLTooManyConnections","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","preconfigured_rule_id":"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"rdb_instance_mysql_mysql_global_status_threads_connected / rdb_instance_mysql_mysql_global_variables_max_connections \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Load Balancer","product":"LB","rule_id":"769bd543-6030-4540-bd2d-5e2d0604e767","summary":"High CPU usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"769bd543-6030-4540-bd2d-5e2d0604e767","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_cpu_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High connection usage","family":"Load Balancer","product":"LB","rule_id":"fcf06e62-22ee-4e86-9b16-3cc9708e1b07","summary":"High connection usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighConnectionLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High connection usage","preconfigured_rule_id":"fcf06e62-22ee-4e86-9b16-3cc9708e1b07","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_connection_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"The managed api-server of the {{ $labels.resource_name }} Kubernetes cluster is using more than 90% of its available memory since 10m. Scaleway recommends upgrading your Kubernetes cluster to have more memory for your api-server. Refer to our dedicated Kubernetes Control Plane offer for more details (https://www.scaleway.com/en/kubernetes-dedicated-control-plane/) (not available in all regions).","display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server memory usage","family":"Containers","product":"Kubernetes","rule_id":"09396fbe-bddc-47a3-8072-c4246bef03c1","summary":"High api-server memory usage on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"APIServerHighMemoryUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server memory usage","preconfigured_rule_id":"09396fbe-bddc-47a3-8072-c4246bef03c1","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"max by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_memory_usage_bytes{component=\"api-server\"}) / sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_memory_limit_bytes{component=\"api-server\"}) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Backend {{ $labels.backend_name }} is down on Load Balancer {{ $labels.resource_name }}","display_description":"All servers for a given Backend are down","display_name":"Backend down","family":"Load Balancer","product":"LB","rule_id":"d1b1b4a0-7215-494b-9d81-796e52c7ed0e","summary":"Backend is down on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"5m","name":"LBBackendDown","preconfigured":true,"preconfigured_data":{"display_description":"All servers for a given Backend are down","display_name":"Backend down","preconfigured_rule_id":"d1b1b4a0-7215-494b-9d81-796e52c7ed0e","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_backend_status{state=\"DOWN\", backend_name!=\"\"} \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"The managed api-server of the {{ $labels.resource_name }} Kubernetes cluster is using more than 90% of its available CPU since 10m. Scaleway recommends upgrading your Kubernetes cluster to have dedicated resources for your api-server. Refer to our dedicated Kubernetes Control Plane offer for more details (https://www.scaleway.com/en/kubernetes-dedicated-control-plane/) (not available in all regions).","display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server CPU usage","family":"Containers","product":"Kubernetes","rule_id":"d3974dcd-0f02-47cf-a266-67223e579390","summary":"High api-server CPU usage on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"APIServerHighCPUUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server CPU usage","preconfigured_rule_id":"d3974dcd-0f02-47cf-a266-67223e579390","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"max by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_cpu_usage{component=\"api-server\"}) / sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_cpu_limit{component=\"api-server\"}) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","family":"Managed Databases","product":"PostgreSQL","rule_id":"6c6843af-1815-46df-9e52-6feafcf31fd7","summary":"Too many connections on RDB PostgreSQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"PostgresqlTooManyConnections","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","preconfigured_rule_id":"6c6843af-1815-46df-9e52-6feafcf31fd7","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"(sum by (instance, resource_name, resource_id, project_id, region) (rdb_instance_postgresql_pg_stat_database_numbackends)) / on (instance, resource_name, resource_id) group_left () rdb_instance_postgresql_pg_settings_max_connections \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a memory usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","family":"Load Balancer","product":"LB","rule_id":"89d456d0-8614-40a2-b0a6-682ea25e98b6","summary":"High memory usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighMemoryLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","preconfigured_rule_id":"89d456d0-8614-40a2-b0a6-682ea25e98b6","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_memory_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-cockpit-overview/cockpit-overview?var-region={{ $labels.region }}","description":"Cockpit Data Source {{ $labels.resource_name }} - {{ $labels.resource_id }} had a 100% ingestion increase in the last hour","display_description":"100% increase in ingestion volumes in the past hour","display_name":"Ingestion increase","family":"Observability","product":"Cockpit","rule_id":"669f781a-adab-4e3c-984e-fb149f8b67a3","summary":"Ingestion increase on Cockpit"},"data_source_id":"","duration":"0s","name":"CockpitIngestionIncrease","preconfigured":true,"preconfigured_data":{"display_description":"100% increase in ingestion volumes in the past hour","display_name":"Ingestion increase","preconfigured_rule_id":"669f781a-adab-4e3c-984e-fb149f8b67a3","product_family":"Observability","product_name":"Cockpit"},"region":"fr-par","rule":"increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h] offset 1h) / increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h]) \u003c 0.5","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-redis-overview/redis-overview?var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"Redis™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a memory usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","family":"Managed Databases","product":"Redis","rule_id":"3c5b3a41-69de-43ed-9217-e3002d687c53","summary":"High memory usage on Redis™ {{ $labels.instance }} node"},"data_source_id":"","duration":"10m","name":"HighMemoryUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","preconfigured_rule_id":"3c5b3a41-69de-43ed-9217-e3002d687c53","product_family":"Managed Databases","product_name":"Redis"},"region":"fr-par","rule":"1 - ((sum by (instance, resource_name, resource_id, project_id, region) (rkv_cluster_node_memory_MemAvailable_bytes)) / sum by (instance, resource_name, resource_id, project_id, region) (rkv_cluster_node_memory_MemTotal_bytes)) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-redis-overview/redis-overview?var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"Redis™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"Redis","rule_id":"f5e3c109-91b3-4586-b580-9f86529c1df8","summary":"High CPU usage on Redis™ {{ $labels.instance }} node"},"data_source_id":"","duration":"10m","name":"HighCpuUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"f5e3c109-91b3-4586-b580-9f86529c1df8","product_family":"Managed Databases","product_name":"Redis"},"region":"fr-par","rule":"1 - (avg by (instance, resource_name, resource_id, project_id, region) (irate(rkv_cluster_node_cpu_seconds_total{mode=\"idle\"}[5m]))) \u003e 0.8","rule_status":"disabled","state":"unknown_state"}],"total_count":20}'
-        headers:
-            Content-Length:
-                - "23339"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Mon, 24 Nov 2025 05:33:41 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - f72e664d-b834-4318-98ff-874e9404aa6d
-        status: 200 OK
-        code: 200
-        duration: 133.928917ms
-    - id: 13
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -679,9 +632,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:41 GMT
+                - Tue, 28 Apr 2026 08:29:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -689,11 +642,207 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 59757cbe-6105-4bf5-a1f0-74080de3d552
+                - 93c458b8-4657-41ca-9afd-9933212f3387
         status: 200 OK
         code: 200
-        duration: 77.838667ms
+        duration: 136.941984ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/be057864-014a-49bc-ae9a-31f396106f75
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 340
+        uncompressed: false
+        body: '{"created_at":"2026-04-28T08:29:05.619689Z","description":"","id":"be057864-014a-49bc-ae9a-31f396106f75","name":"tf_tests_cockpit_alert_manager_project_update_contact","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","qualification":{"architecture_type":"unknown_architecture_type"},"updated_at":"2026-04-28T08:29:05.619689Z"}'
+        headers:
+            Content-Length:
+                - "340"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 18776226-84c0-4671-b577-3eab2536d7a6
+        status: 200 OK
+        code: 200
+        duration: 211.856545ms
     - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=be057864-014a-49bc-ae9a-31f396106f75
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 187
+        uncompressed: false
+        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://bde2178f-b7c0-4e1b-aeac-cfb03b2e4c94.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "187"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - b71aa2e4-e60d-47d9-a3dc-6ad5433d4a91
+        status: 200 OK
+        code: 200
+        duration: 117.288714ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alerts?is_preconfigured=true&page=1&project_id=be057864-014a-49bc-ae9a-31f396106f75
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 30
+        uncompressed: false
+        body: '{"alerts":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - fb7f56bf-4883-4e63-a735-c64f7527006b
+        status: 200 OK
+        code: 200
+        duration: 81.768486ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=be057864-014a-49bc-ae9a-31f396106f75
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 303
+        uncompressed: false
+        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par","send_resolved_notifications":true},{"email":{"to":"initial1@example.com"},"region":"fr-par","send_resolved_notifications":true}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
+        headers:
+            Content-Length:
+                - "303"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 865cec54-e126-4aef-9039-ec66982b7713
+        status: 200 OK
+        code: 200
+        duration: 142.705415ms
+    - id: 17
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -704,13 +853,13 @@ interactions:
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","email":{"to":"initial1@example.com"}}'
+        body: '{"project_id":"be057864-014a-49bc-ae9a-31f396106f75","email":{"to":"initial1@example.com"}}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points/delete
         method: POST
       response:
@@ -728,9 +877,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:42 GMT
+                - Tue, 28 Apr 2026 08:29:10 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -738,11 +887,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - e4246dc7-c83d-415c-87ae-10cf8f84bae8
+                - 45b83ea6-4169-4043-bd87-4630ad28ba7e
         status: 204 No Content
         code: 204
-        duration: 610.8475ms
-    - id: 15
+        duration: 474.122045ms
+    - id: 18
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -753,13 +902,13 @@ interactions:
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","email":{"to":"updated1@example.com"}}'
+        body: '{"project_id":"be057864-014a-49bc-ae9a-31f396106f75","email":{"to":"updated1@example.com"}}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points
         method: POST
       response:
@@ -779,9 +928,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:43 GMT
+                - Tue, 28 Apr 2026 08:29:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -789,157 +938,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 6550c226-12a8-4599-be2e-653029b43ac8
+                - 45960a52-3cf5-4e49-bf82-d85dabb89071
         status: 200 OK
         code: 200
-        duration: 564.331708ms
-    - id: 16
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=105bdce1-64c0-48ab-899d-868455867ecf
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 187
-        uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://0ebc16d2-aef2-4926-8333-c88fbd99ac96.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "187"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Mon, 24 Nov 2025 05:33:43 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - d6d82277-ece3-4e1f-9bde-92da4cb643d7
-        status: 200 OK
-        code: 200
-        duration: 99.700125ms
-    - id: 17
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alerts?is_preconfigured=true&page=1&project_id=105bdce1-64c0-48ab-899d-868455867ecf
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 23339
-        uncompressed: false
-        body: '{"alerts":[{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High connection usage","family":"Load Balancer","product":"LB","rule_id":"fcf06e62-22ee-4e86-9b16-3cc9708e1b07","summary":"High connection usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighConnectionLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High connection usage","preconfigured_rule_id":"fcf06e62-22ee-4e86-9b16-3cc9708e1b07","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_connection_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"PostgreSQL","rule_id":"615245e6-3882-4d99-8798-d17ca1c95645","summary":"High CPU usage on RDB PostgreSQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"PostgreSQLHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"615245e6-3882-4d99-8798-d17ca1c95645","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"1 - avg by (instance, resource_name, resource_id, project_id, region) (irate(rdb_instance_postgresql_node_cpu_seconds_total{mode=\"idle\"}[5m])) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-cockpit-overview/cockpit-overview?var-region={{ $labels.region }}","description":"Cockpit Data Source {{ $labels.resource_name }} - {{ $labels.resource_id }} had a 50% ingestion decrease in the last hour","display_description":"50% decrease in ingestion volumes in the past hour","display_name":"Ingestion decrease","family":"Observability","product":"Cockpit","rule_id":"8dba8eed-25eb-4860-ab33-7cb5ca662036","summary":"Ingestion decrease on Cockpit"},"data_source_id":"","duration":"0s","name":"CockpitIngestionDecrease","preconfigured":true,"preconfigured_data":{"display_description":"50% decrease in ingestion volumes in the past hour","display_name":"Ingestion decrease","preconfigured_rule_id":"8dba8eed-25eb-4860-ab33-7cb5ca662036","product_family":"Observability","product_name":"Cockpit"},"region":"fr-par","rule":"increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h] offset 1h) / increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h]) \u003e 2","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"The managed api-server of the {{ $labels.resource_name }} Kubernetes cluster is using more than 90% of its available CPU since 10m. Scaleway recommends upgrading your Kubernetes cluster to have dedicated resources for your api-server. Refer to our dedicated Kubernetes Control Plane offer for more details (https://www.scaleway.com/en/kubernetes-dedicated-control-plane/) (not available in all regions).","display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server CPU usage","family":"Containers","product":"Kubernetes","rule_id":"d3974dcd-0f02-47cf-a266-67223e579390","summary":"High api-server CPU usage on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"APIServerHighCPUUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server CPU usage","preconfigured_rule_id":"d3974dcd-0f02-47cf-a266-67223e579390","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"max by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_cpu_usage{component=\"api-server\"}) / sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_cpu_limit{component=\"api-server\"}) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a disk usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","family":"Managed Databases","product":"PostgreSQL","rule_id":"c8991f90-facb-436c-b4ab-6aa13822a451","summary":"High disk usage on RDB PostgreSQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"PostgreSQLHighStorageUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","preconfigured_rule_id":"c8991f90-facb-436c-b4ab-6aa13822a451","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"1 - rdb_instance_postgresql_node_filesystem_avail_bytes / rdb_instance_postgresql_node_filesystem_size_bytes \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a disk usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","family":"Managed Databases","product":"MySQL","rule_id":"f8834c3d-4d3d-49a2-9164-0236d4c93590","summary":"High disk usage on RDB MySQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"MySQLHighStorageUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","preconfigured_rule_id":"f8834c3d-4d3d-49a2-9164-0236d4c93590","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"1 - rdb_instance_mysql_node_filesystem_avail_bytes / rdb_instance_mysql_node_filesystem_size_bytes \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-redis-overview/redis-overview?var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"Redis™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a memory usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","family":"Managed Databases","product":"Redis","rule_id":"3c5b3a41-69de-43ed-9217-e3002d687c53","summary":"High memory usage on Redis™ {{ $labels.instance }} node"},"data_source_id":"","duration":"10m","name":"HighMemoryUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","preconfigured_rule_id":"3c5b3a41-69de-43ed-9217-e3002d687c53","product_family":"Managed Databases","product_name":"Redis"},"region":"fr-par","rule":"1 - ((sum by (instance, resource_name, resource_id, project_id, region) (rkv_cluster_node_memory_MemAvailable_bytes)) / sum by (instance, resource_name, resource_id, project_id, region) (rkv_cluster_node_memory_MemTotal_bytes)) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","family":"Managed Databases","product":"MySQL","rule_id":"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7","summary":"Too many connections on RDB MySQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"MySQLTooManyConnections","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","preconfigured_rule_id":"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"rdb_instance_mysql_mysql_global_status_threads_connected / rdb_instance_mysql_mysql_global_variables_max_connections \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a memory usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","family":"Load Balancer","product":"LB","rule_id":"89d456d0-8614-40a2-b0a6-682ea25e98b6","summary":"High memory usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighMemoryLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","preconfigured_rule_id":"89d456d0-8614-40a2-b0a6-682ea25e98b6","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_memory_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"MySQL","rule_id":"76f01e05-79d1-4509-93f2-67eb84586070","summary":"High CPU usage on RDB MySQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"MySQLHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"76f01e05-79d1-4509-93f2-67eb84586070","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"1 - avg by (instance, resource_name, resource_id, project_id, region) (irate(rdb_instance_mysql_node_cpu_seconds_total{mode=\"idle\"}[5m])) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Load Balancer","product":"LB","rule_id":"769bd543-6030-4540-bd2d-5e2d0604e767","summary":"High CPU usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"769bd543-6030-4540-bd2d-5e2d0604e767","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_cpu_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"The managed api-server of the {{ $labels.resource_name }} Kubernetes cluster is using more than 90% of its available memory since 10m. Scaleway recommends upgrading your Kubernetes cluster to have more memory for your api-server. Refer to our dedicated Kubernetes Control Plane offer for more details (https://www.scaleway.com/en/kubernetes-dedicated-control-plane/) (not available in all regions).","display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server memory usage","family":"Containers","product":"Kubernetes","rule_id":"09396fbe-bddc-47a3-8072-c4246bef03c1","summary":"High api-server memory usage on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"APIServerHighMemoryUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server memory usage","preconfigured_rule_id":"09396fbe-bddc-47a3-8072-c4246bef03c1","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"max by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_memory_usage_bytes{component=\"api-server\"}) / sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_memory_limit_bytes{component=\"api-server\"}) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"{{ $value }} nodes are not ready since 10m.","display_description":"\u003e 0 for 10 minutes","display_name":"Nodes not ready","family":"Containers","product":"Kubernetes","rule_id":"dc9b67ae-baa6-4a37-907d-2a6c31304561","summary":"Nodes not ready on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"NodesNotReady","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 0 for 10 minutes","display_name":"Nodes not ready","preconfigured_rule_id":"dc9b67ae-baa6-4a37-907d-2a6c31304561","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_nodes) - sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_nodes_ready) \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a bandwidth usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High bandwidth usage","family":"Load Balancer","product":"LB","rule_id":"835bd0fc-57ea-43cf-ba2f-2b637e85eedb","summary":"High bandwidth usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighBandwidthLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High bandwidth usage","preconfigured_rule_id":"835bd0fc-57ea-43cf-ba2f-2b637e85eedb","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_bandwidth_in_usage \u003e 0.8 or load_balancer_lb_bandwidth_out_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-serverless-sql-database-overview/serverless-sql-database-overview?var-region={{ $labels.region }}\u0026var-database={{ $labels.resource_name }}","description":"Serverless SQL Database {{ $labels.resource_name }} with id {{ $labels.resource_id }} has a CPU usage superior to 90% since 10 minutes and cannot scale-up above its maximum vCPU configuration. To avoid performance degradation in your application, we recommend you increase maximum vCPU in your database configuration or investigate your SQL queries generating this high workload on your database.\nAccess your database configuration: https://console.scaleway.com/serverless-db/databases/fr-par/{{ $labels.resource_id }}/overview","display_description":"\u003e 90 % for 10 minutes","display_name":"High CPU usage","family":"Serverless","product":"SQL Databases","rule_id":"e930945c-8b42-48fe-94db-12abc81d27f4","summary":"High CPU usage on Serverless SQL Database {{ $labels.resource_name }}."},"data_source_id":"","duration":"10m","name":"ServerlessSQLDatabaseHighCPUUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"e930945c-8b42-48fe-94db-12abc81d27f4","product_family":"Serverless","product_name":"SQL Databases"},"region":"fr-par","rule":"(rate(serverless_db_postgresql_cpu_usage_seconds{mode!=\"idle\"}[2m]) / (serverless_db_postgresql_cpu_provisioned / 100000)) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-redis-overview/redis-overview?var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"Redis™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"Redis","rule_id":"f5e3c109-91b3-4586-b580-9f86529c1df8","summary":"High CPU usage on Redis™ {{ $labels.instance }} node"},"data_source_id":"","duration":"10m","name":"HighCpuUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"f5e3c109-91b3-4586-b580-9f86529c1df8","product_family":"Managed Databases","product_name":"Redis"},"region":"fr-par","rule":"1 - (avg by (instance, resource_name, resource_id, project_id, region) (irate(rkv_cluster_node_cpu_seconds_total{mode=\"idle\"}[5m]))) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has {{ $value }} server(s) down on backend {{ $labels.backend_name }}","display_description":"1 or several Backend server(s) is/are down","display_name":"Backend server down","family":"Load Balancer","product":"LB","rule_id":"feb64cef-c855-4230-a74e-813515fdb357","summary":"{{ $value }} backend server(s) down on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"5m","name":"LBBackendServerDown","preconfigured":true,"preconfigured_data":{"display_description":"1 or several Backend server(s) is/are down","display_name":"Backend server down","preconfigured_rule_id":"feb64cef-c855-4230-a74e-813515fdb357","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_backend_agg_server_check_status{state=\"DOWN\", backend_name!=\"\"} \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Backend {{ $labels.backend_name }} is down on Load Balancer {{ $labels.resource_name }}","display_description":"All servers for a given Backend are down","display_name":"Backend down","family":"Load Balancer","product":"LB","rule_id":"d1b1b4a0-7215-494b-9d81-796e52c7ed0e","summary":"Backend is down on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"5m","name":"LBBackendDown","preconfigured":true,"preconfigured_data":{"display_description":"All servers for a given Backend are down","display_name":"Backend down","preconfigured_rule_id":"d1b1b4a0-7215-494b-9d81-796e52c7ed0e","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_backend_status{state=\"DOWN\", backend_name!=\"\"} \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-cockpit-overview/cockpit-overview?var-region={{ $labels.region }}","description":"Cockpit Data Source {{ $labels.resource_name }} - {{ $labels.resource_id }} had a 100% ingestion increase in the last hour","display_description":"100% increase in ingestion volumes in the past hour","display_name":"Ingestion increase","family":"Observability","product":"Cockpit","rule_id":"669f781a-adab-4e3c-984e-fb149f8b67a3","summary":"Ingestion increase on Cockpit"},"data_source_id":"","duration":"0s","name":"CockpitIngestionIncrease","preconfigured":true,"preconfigured_data":{"display_description":"100% increase in ingestion volumes in the past hour","display_name":"Ingestion increase","preconfigured_rule_id":"669f781a-adab-4e3c-984e-fb149f8b67a3","product_family":"Observability","product_name":"Cockpit"},"region":"fr-par","rule":"increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h] offset 1h) / increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h]) \u003c 0.5","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","family":"Managed Databases","product":"PostgreSQL","rule_id":"6c6843af-1815-46df-9e52-6feafcf31fd7","summary":"Too many connections on RDB PostgreSQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"PostgresqlTooManyConnections","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","preconfigured_rule_id":"6c6843af-1815-46df-9e52-6feafcf31fd7","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"(sum by (instance, resource_name, resource_id, project_id, region) (rdb_instance_postgresql_pg_stat_database_numbackends)) / on (instance, resource_name, resource_id) group_left () rdb_instance_postgresql_pg_settings_max_connections \u003e 0.8","rule_status":"disabled","state":"unknown_state"}],"total_count":20}'
-        headers:
-            Content-Length:
-                - "23339"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Mon, 24 Nov 2025 05:33:43 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 64b0be45-3e2c-4396-aa0f-e7583dcbaac2
-        status: 200 OK
-        code: 200
-        duration: 78.452458ms
-    - id: 18
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=105bdce1-64c0-48ab-899d-868455867ecf
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 303
-        uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par","send_resolved_notifications":true},{"email":{"to":"updated1@example.com"},"region":"fr-par","send_resolved_notifications":true}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
-        headers:
-            Content-Length:
-                - "303"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Mon, 24 Nov 2025 05:33:43 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - b1b76857-9454-41de-9092-53b3af6564eb
-        status: 200 OK
-        code: 200
-        duration: 295.05375ms
+        duration: 353.685306ms
     - id: 19
       request:
         proto: HTTP/1.1
@@ -955,8 +957,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -964,20 +966,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 303
+        content_length: 187
         uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par","send_resolved_notifications":true},{"email":{"to":"updated1@example.com"},"region":"fr-par","send_resolved_notifications":true}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
+        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://bde2178f-b7c0-4e1b-aeac-cfb03b2e4c94.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
         headers:
             Content-Length:
-                - "303"
+                - "187"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:44 GMT
+                - Tue, 28 Apr 2026 08:29:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -985,10 +987,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 83243c25-b8ea-4a04-b1b2-2565000770bd
+                - ae257775-e635-4f0b-8511-6cc44ba3095a
         status: 200 OK
         code: 200
-        duration: 111.792959ms
+        duration: 108.713176ms
     - id: 20
       request:
         proto: HTTP/1.1
@@ -1004,8 +1006,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alerts?is_preconfigured=true&page=1&project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -1013,20 +1015,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 187
+        content_length: 30
         uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://0ebc16d2-aef2-4926-8333-c88fbd99ac96.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
+        body: '{"alerts":[],"total_count":0}'
         headers:
             Content-Length:
-                - "187"
+                - "30"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:44 GMT
+                - Tue, 28 Apr 2026 08:29:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1034,10 +1036,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 8f25546a-9cf1-4b2a-94e7-557b20ac4900
+                - de04fa42-4aa6-4bc0-9b8d-ef51c8fecc95
         status: 200 OK
         code: 200
-        duration: 103.193833ms
+        duration: 87.755608ms
     - id: 21
       request:
         proto: HTTP/1.1
@@ -1053,8 +1055,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alerts?is_preconfigured=true&page=1&project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -1062,20 +1064,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 23339
+        content_length: 303
         uncompressed: false
-        body: '{"alerts":[{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Load Balancer","product":"LB","rule_id":"769bd543-6030-4540-bd2d-5e2d0604e767","summary":"High CPU usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"769bd543-6030-4540-bd2d-5e2d0604e767","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_cpu_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"{{ $value }} nodes are not ready since 10m.","display_description":"\u003e 0 for 10 minutes","display_name":"Nodes not ready","family":"Containers","product":"Kubernetes","rule_id":"dc9b67ae-baa6-4a37-907d-2a6c31304561","summary":"Nodes not ready on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"NodesNotReady","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 0 for 10 minutes","display_name":"Nodes not ready","preconfigured_rule_id":"dc9b67ae-baa6-4a37-907d-2a6c31304561","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_nodes) - sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_nodes_ready) \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Backend {{ $labels.backend_name }} is down on Load Balancer {{ $labels.resource_name }}","display_description":"All servers for a given Backend are down","display_name":"Backend down","family":"Load Balancer","product":"LB","rule_id":"d1b1b4a0-7215-494b-9d81-796e52c7ed0e","summary":"Backend is down on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"5m","name":"LBBackendDown","preconfigured":true,"preconfigured_data":{"display_description":"All servers for a given Backend are down","display_name":"Backend down","preconfigured_rule_id":"d1b1b4a0-7215-494b-9d81-796e52c7ed0e","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_backend_status{state=\"DOWN\", backend_name!=\"\"} \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-serverless-sql-database-overview/serverless-sql-database-overview?var-region={{ $labels.region }}\u0026var-database={{ $labels.resource_name }}","description":"Serverless SQL Database {{ $labels.resource_name }} with id {{ $labels.resource_id }} has a CPU usage superior to 90% since 10 minutes and cannot scale-up above its maximum vCPU configuration. To avoid performance degradation in your application, we recommend you increase maximum vCPU in your database configuration or investigate your SQL queries generating this high workload on your database.\nAccess your database configuration: https://console.scaleway.com/serverless-db/databases/fr-par/{{ $labels.resource_id }}/overview","display_description":"\u003e 90 % for 10 minutes","display_name":"High CPU usage","family":"Serverless","product":"SQL Databases","rule_id":"e930945c-8b42-48fe-94db-12abc81d27f4","summary":"High CPU usage on Serverless SQL Database {{ $labels.resource_name }}."},"data_source_id":"","duration":"10m","name":"ServerlessSQLDatabaseHighCPUUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"e930945c-8b42-48fe-94db-12abc81d27f4","product_family":"Serverless","product_name":"SQL Databases"},"region":"fr-par","rule":"(rate(serverless_db_postgresql_cpu_usage_seconds{mode!=\"idle\"}[2m]) / (serverless_db_postgresql_cpu_provisioned / 100000)) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"The managed api-server of the {{ $labels.resource_name }} Kubernetes cluster is using more than 90% of its available memory since 10m. Scaleway recommends upgrading your Kubernetes cluster to have more memory for your api-server. Refer to our dedicated Kubernetes Control Plane offer for more details (https://www.scaleway.com/en/kubernetes-dedicated-control-plane/) (not available in all regions).","display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server memory usage","family":"Containers","product":"Kubernetes","rule_id":"09396fbe-bddc-47a3-8072-c4246bef03c1","summary":"High api-server memory usage on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"APIServerHighMemoryUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server memory usage","preconfigured_rule_id":"09396fbe-bddc-47a3-8072-c4246bef03c1","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"max by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_memory_usage_bytes{component=\"api-server\"}) / sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_memory_limit_bytes{component=\"api-server\"}) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"PostgreSQL","rule_id":"615245e6-3882-4d99-8798-d17ca1c95645","summary":"High CPU usage on RDB PostgreSQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"PostgreSQLHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"615245e6-3882-4d99-8798-d17ca1c95645","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"1 - avg by (instance, resource_name, resource_id, project_id, region) (irate(rdb_instance_postgresql_node_cpu_seconds_total{mode=\"idle\"}[5m])) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-cockpit-overview/cockpit-overview?var-region={{ $labels.region }}","description":"Cockpit Data Source {{ $labels.resource_name }} - {{ $labels.resource_id }} had a 50% ingestion decrease in the last hour","display_description":"50% decrease in ingestion volumes in the past hour","display_name":"Ingestion decrease","family":"Observability","product":"Cockpit","rule_id":"8dba8eed-25eb-4860-ab33-7cb5ca662036","summary":"Ingestion decrease on Cockpit"},"data_source_id":"","duration":"0s","name":"CockpitIngestionDecrease","preconfigured":true,"preconfigured_data":{"display_description":"50% decrease in ingestion volumes in the past hour","display_name":"Ingestion decrease","preconfigured_rule_id":"8dba8eed-25eb-4860-ab33-7cb5ca662036","product_family":"Observability","product_name":"Cockpit"},"region":"fr-par","rule":"increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h] offset 1h) / increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h]) \u003e 2","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a disk usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","family":"Managed Databases","product":"PostgreSQL","rule_id":"c8991f90-facb-436c-b4ab-6aa13822a451","summary":"High disk usage on RDB PostgreSQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"PostgreSQLHighStorageUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","preconfigured_rule_id":"c8991f90-facb-436c-b4ab-6aa13822a451","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"1 - rdb_instance_postgresql_node_filesystem_avail_bytes / rdb_instance_postgresql_node_filesystem_size_bytes \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-postgresql-overview/rdb-postgresql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"PostgreSQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","family":"Managed Databases","product":"PostgreSQL","rule_id":"6c6843af-1815-46df-9e52-6feafcf31fd7","summary":"Too many connections on RDB PostgreSQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"PostgresqlTooManyConnections","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","preconfigured_rule_id":"6c6843af-1815-46df-9e52-6feafcf31fd7","product_family":"Managed Databases","product_name":"PostgreSQL"},"region":"fr-par","rule":"(sum by (instance, resource_name, resource_id, project_id, region) (rdb_instance_postgresql_pg_stat_database_numbackends)) / on (instance, resource_name, resource_id) group_left () rdb_instance_postgresql_pg_settings_max_connections \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"MySQL","rule_id":"76f01e05-79d1-4509-93f2-67eb84586070","summary":"High CPU usage on RDB MySQL™ {{ $labels.resource_name }} cluster."},"data_source_id":"","duration":"10m","name":"MySQLHighCPULoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"76f01e05-79d1-4509-93f2-67eb84586070","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"1 - avg by (instance, resource_name, resource_id, project_id, region) (irate(rdb_instance_mysql_node_cpu_seconds_total{mode=\"idle\"}[5m])) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","family":"Managed Databases","product":"MySQL","rule_id":"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7","summary":"Too many connections on RDB MySQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"MySQLTooManyConnections","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"Too many connections","preconfigured_rule_id":"eb8a941e-698d-47d6-b62d-4b6c13f7b4b7","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"rdb_instance_mysql_mysql_global_status_threads_connected / rdb_instance_mysql_mysql_global_variables_max_connections \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a memory usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","family":"Load Balancer","product":"LB","rule_id":"89d456d0-8614-40a2-b0a6-682ea25e98b6","summary":"High memory usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighMemoryLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","preconfigured_rule_id":"89d456d0-8614-40a2-b0a6-682ea25e98b6","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_memory_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"https://{{ $labels.project_id }}.dashboard.cockpit.scaleway.com/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a connection usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High connection usage","family":"Load Balancer","product":"LB","rule_id":"fcf06e62-22ee-4e86-9b16-3cc9708e1b07","summary":"High connection usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighConnectionLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High connection usage","preconfigured_rule_id":"fcf06e62-22ee-4e86-9b16-3cc9708e1b07","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_connection_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has a bandwidth usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High bandwidth usage","family":"Load Balancer","product":"LB","rule_id":"835bd0fc-57ea-43cf-ba2f-2b637e85eedb","summary":"High bandwidth usage on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"10m","name":"LBHighBandwidthLoad","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High bandwidth usage","preconfigured_rule_id":"835bd0fc-57ea-43cf-ba2f-2b637e85eedb","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_bandwidth_in_usage \u003e 0.8 or load_balancer_lb_bandwidth_out_usage \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-kubernetes-cluster-overview/kubernetes-cluster-overview?\u0026var-region={{ $labels.region }}\u0026var-cluster_name={{ $labels.resource_name }}","description":"The managed api-server of the {{ $labels.resource_name }} Kubernetes cluster is using more than 90% of its available CPU since 10m. Scaleway recommends upgrading your Kubernetes cluster to have dedicated resources for your api-server. Refer to our dedicated Kubernetes Control Plane offer for more details (https://www.scaleway.com/en/kubernetes-dedicated-control-plane/) (not available in all regions).","display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server CPU usage","family":"Containers","product":"Kubernetes","rule_id":"d3974dcd-0f02-47cf-a266-67223e579390","summary":"High api-server CPU usage on the {{ $labels.resource_name }} Kubernetes cluster"},"data_source_id":"","duration":"10m","name":"APIServerHighCPUUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 90 % for 10 minutes","display_name":"High api-server CPU usage","preconfigured_rule_id":"d3974dcd-0f02-47cf-a266-67223e579390","product_family":"Containers","product_name":"Kubernetes"},"region":"fr-par","rule":"max by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_cpu_usage{component=\"api-server\"}) / sum by (resource_name, project_id, region) (kubernetes_cluster_k8s_shoot_controlplane_cpu_limit{component=\"api-server\"}) \u003e 0.9","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-rdb-mysql-overview/rdb-mysql-overview?\u0026var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"MySQL™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a disk usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","family":"Managed Databases","product":"MySQL","rule_id":"f8834c3d-4d3d-49a2-9164-0236d4c93590","summary":"High disk usage on RDB MySQL™ {{ $labels.resource_name }} cluster"},"data_source_id":"","duration":"10m","name":"MySQLHighStorageUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High storage usage","preconfigured_rule_id":"f8834c3d-4d3d-49a2-9164-0236d4c93590","product_family":"Managed Databases","product_name":"MySQL"},"region":"fr-par","rule":"1 - rdb_instance_mysql_node_filesystem_avail_bytes / rdb_instance_mysql_node_filesystem_size_bytes \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-redis-overview/redis-overview?var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"Redis™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a memory usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","family":"Managed Databases","product":"Redis","rule_id":"3c5b3a41-69de-43ed-9217-e3002d687c53","summary":"High memory usage on Redis™ {{ $labels.instance }} node"},"data_source_id":"","duration":"10m","name":"HighMemoryUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High memory usage","preconfigured_rule_id":"3c5b3a41-69de-43ed-9217-e3002d687c53","product_family":"Managed Databases","product_name":"Redis"},"region":"fr-par","rule":"1 - ((sum by (instance, resource_name, resource_id, project_id, region) (rkv_cluster_node_memory_MemAvailable_bytes)) / sum by (instance, resource_name, resource_id, project_id, region) (rkv_cluster_node_memory_MemTotal_bytes)) \u003e 0.8","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-lb-overview/lb-overview?var-region={{ $labels.region }}\u0026var-lb_name={{ $labels.resource_name }}","description":"Load Balancer {{ $labels.resource_name }} has {{ $value }} server(s) down on backend {{ $labels.backend_name }}","display_description":"1 or several Backend server(s) is/are down","display_name":"Backend server down","family":"Load Balancer","product":"LB","rule_id":"feb64cef-c855-4230-a74e-813515fdb357","summary":"{{ $value }} backend server(s) down on Load Balancer {{ $labels.resource_name }}"},"data_source_id":"","duration":"5m","name":"LBBackendServerDown","preconfigured":true,"preconfigured_data":{"display_description":"1 or several Backend server(s) is/are down","display_name":"Backend server down","preconfigured_rule_id":"feb64cef-c855-4230-a74e-813515fdb357","product_family":"Load Balancer","product_name":"LB"},"region":"fr-par","rule":"load_balancer_lb_backend_agg_server_check_status{state=\"DOWN\", backend_name!=\"\"} \u003e 0","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-cockpit-overview/cockpit-overview?var-region={{ $labels.region }}","description":"Cockpit Data Source {{ $labels.resource_name }} - {{ $labels.resource_id }} had a 100% ingestion increase in the last hour","display_description":"100% increase in ingestion volumes in the past hour","display_name":"Ingestion increase","family":"Observability","product":"Cockpit","rule_id":"669f781a-adab-4e3c-984e-fb149f8b67a3","summary":"Ingestion increase on Cockpit"},"data_source_id":"","duration":"0s","name":"CockpitIngestionIncrease","preconfigured":true,"preconfigured_data":{"display_description":"100% increase in ingestion volumes in the past hour","display_name":"Ingestion increase","preconfigured_rule_id":"669f781a-adab-4e3c-984e-fb149f8b67a3","product_family":"Observability","product_name":"Cockpit"},"region":"fr-par","rule":"increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h] offset 1h) / increase(observability_cockpit_cortex_distributor_received_samples_total{origin=\"custom\"}[1h]) \u003c 0.5","rule_status":"disabled","state":"unknown_state"},{"annotations":{"dashboard_path":"/d/scw-redis-overview/redis-overview?var-region={{ $labels.region }}\u0026var-resource_name={{ $labels.resource_name }}","description":"Redis™ {{ $labels.instance }} node on instance {{ $labels.resource_name }} - {{ $labels.resource_id }} has a CPU usage superior to 80% since 10m","display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","family":"Managed Databases","product":"Redis","rule_id":"f5e3c109-91b3-4586-b580-9f86529c1df8","summary":"High CPU usage on Redis™ {{ $labels.instance }} node"},"data_source_id":"","duration":"10m","name":"HighCpuUsage","preconfigured":true,"preconfigured_data":{"display_description":"\u003e 80 % for 10 minutes","display_name":"High CPU usage","preconfigured_rule_id":"f5e3c109-91b3-4586-b580-9f86529c1df8","product_family":"Managed Databases","product_name":"Redis"},"region":"fr-par","rule":"1 - (avg by (instance, resource_name, resource_id, project_id, region) (irate(rkv_cluster_node_cpu_seconds_total{mode=\"idle\"}[5m]))) \u003e 0.8","rule_status":"disabled","state":"unknown_state"}],"total_count":20}'
+        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par","send_resolved_notifications":true},{"email":{"to":"updated1@example.com"},"region":"fr-par","send_resolved_notifications":true}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
         headers:
             Content-Length:
-                - "23339"
+                - "303"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:44 GMT
+                - Tue, 28 Apr 2026 08:29:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1083,10 +1085,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 48900d9f-6878-4b54-999e-9578bb06518d
+                - 0847c4f3-8c5e-421d-a9b5-e88cac6b9070
         status: 200 OK
         code: 200
-        duration: 82.386833ms
+        duration: 148.65915ms
     - id: 22
       request:
         proto: HTTP/1.1
@@ -1102,8 +1104,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -1122,9 +1124,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:44 GMT
+                - Tue, 28 Apr 2026 08:29:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1132,10 +1134,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 7a405d61-91a0-4b44-b906-94b3525d26c4
+                - 14556e2d-f9ca-4d5a-b6e0-2172bf576d2a
         status: 200 OK
         code: 200
-        duration: 114.227667ms
+        duration: 108.764831ms
     - id: 23
       request:
         proto: HTTP/1.1
@@ -1151,8 +1153,155 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/be057864-014a-49bc-ae9a-31f396106f75
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 340
+        uncompressed: false
+        body: '{"created_at":"2026-04-28T08:29:05.619689Z","description":"","id":"be057864-014a-49bc-ae9a-31f396106f75","name":"tf_tests_cockpit_alert_manager_project_update_contact","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","qualification":{"architecture_type":"unknown_architecture_type"},"updated_at":"2026-04-28T08:29:05.619689Z"}'
+        headers:
+            Content-Length:
+                - "340"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - b2951316-1afc-452a-bbe1-8638f1804ee5
+        status: 200 OK
+        code: 200
+        duration: 339.543671ms
+    - id: 24
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=be057864-014a-49bc-ae9a-31f396106f75
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 187
+        uncompressed: false
+        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://bde2178f-b7c0-4e1b-aeac-cfb03b2e4c94.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "187"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 4192f3cc-4fff-44a4-9832-d20a4ffa0ed7
+        status: 200 OK
+        code: 200
+        duration: 96.615848ms
+    - id: 25
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alerts?is_preconfigured=true&page=1&project_id=be057864-014a-49bc-ae9a-31f396106f75
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 30
+        uncompressed: false
+        body: '{"alerts":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - d569e491-02d7-41e9-90d3-31fee3b12c45
+        status: 200 OK
+        code: 200
+        duration: 120.481015ms
+    - id: 26
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -1171,9 +1320,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:45 GMT
+                - Tue, 28 Apr 2026 08:29:12 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1181,11 +1330,60 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - e302f109-c7c6-48df-a306-9a137f138363
+                - 3199401f-8366-412b-ad42-0b20a5070f7e
         status: 200 OK
         code: 200
-        duration: 59.739875ms
-    - id: 24
+        duration: 97.544717ms
+    - id: 27
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=be057864-014a-49bc-ae9a-31f396106f75
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 303
+        uncompressed: false
+        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par","send_resolved_notifications":true},{"email":{"to":"updated1@example.com"},"region":"fr-par","send_resolved_notifications":true}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
+        headers:
+            Content-Length:
+                - "303"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:13 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 1d32731f-432f-4419-9288-c2fcc80ecd2e
+        status: 200 OK
+        code: 200
+        duration: 179.62676ms
+    - id: 28
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1196,13 +1394,13 @@ interactions:
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","email":{"to":"notupdated@example.com"}}'
+        body: '{"project_id":"be057864-014a-49bc-ae9a-31f396106f75","email":{"to":"notupdated@example.com"}}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points/delete
         method: POST
       response:
@@ -1220,9 +1418,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:45 GMT
+                - Tue, 28 Apr 2026 08:29:13 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1230,11 +1428,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - da762ed6-3376-4f61-a14a-55c2b727447f
+                - f6d8670c-fc35-402f-a888-5aea15a25e36
         status: 204 No Content
         code: 204
-        duration: 412.074625ms
-    - id: 25
+        duration: 528.823616ms
+    - id: 29
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1245,13 +1443,13 @@ interactions:
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","email":{"to":"updated1@example.com"}}'
+        body: '{"project_id":"be057864-014a-49bc-ae9a-31f396106f75","email":{"to":"updated1@example.com"}}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points/delete
         method: POST
       response:
@@ -1269,9 +1467,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:46 GMT
+                - Tue, 28 Apr 2026 08:29:13 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1279,11 +1477,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - ed749436-9792-45cd-b9a4-0c24af076ff4
+                - 962b6781-901a-448d-9626-dc55143333af
         status: 204 No Content
         code: 204
-        duration: 551.525167ms
-    - id: 26
+        duration: 335.173863ms
+    - id: 30
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1294,13 +1492,13 @@ interactions:
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}'
+        body: '{"project_id":"be057864-014a-49bc-ae9a-31f396106f75"}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/disable
         method: POST
       response:
@@ -1320,9 +1518,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:46 GMT
+                - Tue, 28 Apr 2026 08:29:14 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1330,11 +1528,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - bc1598c1-213d-47b0-8675-2704c8d69ffd
+                - a39a43c0-aaab-4db7-9efd-8c3c509d1193
         status: 200 OK
         code: 200
-        duration: 336.02475ms
-    - id: 27
+        duration: 196.522665ms
+    - id: 31
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1349,8 +1547,55 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/be057864-014a-49bc-ae9a-31f396106f75
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:15 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 8c9a893b-1277-4969-af2e-391f45494499
+        status: 204 No Content
+        code: 204
+        duration: 1.328222499s
+    - id: 32
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=be057864-014a-49bc-ae9a-31f396106f75
         method: GET
       response:
         proto: HTTP/2.0
@@ -1369,9 +1614,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Mon, 24 Nov 2025 05:33:47 GMT
+                - Tue, 28 Apr 2026 08:29:15 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1379,7 +1624,56 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 77443003-a4bb-45a0-8528-beaf9fa4d4a3
+                - 221e357c-f223-49fb-ad24-9446d7929fcf
         status: 200 OK
         code: 200
-        duration: 39.530458ms
+        duration: 143.443239ms
+    - id: 33
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/be057864-014a-49bc-ae9a-31f396106f75
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 131
+        uncompressed: false
+        body: '{"message":"resource is not found","resource":"project_id","resource_id":"be057864-014a-49bc-ae9a-31f396106f75","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "131"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 28 Apr 2026 08:29:15 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 21f5b5aa-b112-4266-89c7-87f66fd48765
+        status: 404 Not Found
+        code: 404
+        duration: 64.755888ms

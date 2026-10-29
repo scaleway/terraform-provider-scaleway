@@ -11,8 +11,11 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -27,7 +30,15 @@ func ResourceCockpitAlertManager() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: alertManagerSchema,
+		Identity:   alertManagerIdentity(),
 	}
+}
+
+func alertManagerIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region":     identity.DefaultRegionAttribute(),
+		"project_id": identity.DefaultProjectIDAttribute(),
+	})
 }
 
 func alertManagerSchema() map[string]*schema.Schema {
@@ -68,23 +79,23 @@ func alertManagerSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Alert manager URL",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the alert manager",
+		},
 	}
 }
 
-func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
+func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, region, err := cockpitAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
-	if projectID == "" {
-		projectID, err = getDefaultProjectID(ctx, meta)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_ = d.Set("project_id", projectID)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	contactPoints, _ := d.Get("contact_points").([]any)
@@ -92,19 +103,26 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		contactPoints = []any{}
 	}
 
-	_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
-		Region:    region,
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if shouldEnableLegacyManagedAlerts(d) {
-		_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
+	_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.AlertManager, error) {
+		return api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
 			Region:    region,
 			ProjectID: projectID,
 		}, scw.WithContext(ctx))
+	})
+	if err != nil {
+		// If alert manager is already enabled, ignore the 409 error
+		if !httperrors.Is409(err) {
+			return diag.FromErr(err)
+		}
+	}
+
+	if shouldEnableLegacyManagedAlerts(d) {
+		_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.AlertManager, error) {
+			return api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
+				Region:    region,
+				ProjectID: projectID,
+			}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -114,22 +132,26 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	if v, ok := d.GetOk("preconfigured_alert_ids"); ok {
 		alertIDs := types.ExpandStrings(v.(*schema.Set).List())
 		if len(alertIDs) > 0 {
-			_, err = api.EnableAlertRules(&cockpit.RegionalAPIEnableAlertRulesRequest{
-				Region:    region,
-				ProjectID: projectID,
-				RuleIDs:   alertIDs,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.EnableAlertRulesResponse, error) {
+				return api.EnableAlertRules(&cockpit.RegionalAPIEnableAlertRulesRequest{
+					Region:    region,
+					ProjectID: projectID,
+					RuleIDs:   alertIDs,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 			// Wait for alerts to be enabled
-			_, err = api.WaitForPreconfiguredAlerts(&cockpit.WaitForPreconfiguredAlertsRequest{
-				Region:             region,
-				ProjectID:          projectID,
-				PreconfiguredRules: alertIDs,
-				TargetStatus:       cockpit.AlertStatusEnabled,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) ([]*cockpit.Alert, error) {
+				return api.WaitForPreconfiguredAlerts(&cockpit.WaitForPreconfiguredAlertsRequest{
+					Region:             region,
+					ProjectID:          projectID,
+					PreconfiguredRules: alertIDs,
+					TargetStatus:       cockpit.AlertStatusEnabled,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -152,20 +174,24 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 				To: email,
 			}
 
-			_, err = api.CreateContactPoint(&cockpit.RegionalAPICreateContactPointRequest{
-				ProjectID: projectID,
-				Email:     emailCP,
-				Region:    region,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ContactPoint, error) {
+				return api.CreateContactPoint(&cockpit.RegionalAPICreateContactPointRequest{
+					ProjectID: projectID,
+					Email:     emailCP,
+					Region:    region,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	}
 
-	d.SetId(ResourceCockpitAlertManagerID(region, projectID))
+	if err := setCockpitAlertManagerIdentity(d, region, projectID); err != nil {
+		return diag.FromErr(err)
+	}
 
-	return ResourceCockpitAlertManagerRead(ctx, d, meta)
+	return ResourceCockpitAlertManagerRead(ctx, d, m)
 }
 
 func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -174,10 +200,12 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-		Region:    region,
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
+	alertManager, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.AlertManager, error) {
+		return api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+			Region:    region,
+			ProjectID: projectID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -194,14 +222,21 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("region", string(alertManager.Region))
 	_ = d.Set("alert_manager_url", alertManager.AlertManagerURL)
 	_ = d.Set("project_id", projectID)
+	_ = d.Set("srn", alertManager.Srn)
+
+	if err := setCockpitAlertManagerIdentity(d, alertManager.Region, projectID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	var userRequestedIDs []string
 
-	alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
-		Region:          region,
-		ProjectID:       projectID,
-		IsPreconfigured: new(true),
-	}, scw.WithContext(ctx), scw.WithAllPages())
+	alerts, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListAlertsResponse, error) {
+		return api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
+			Region:          region,
+			ProjectID:       projectID,
+			IsPreconfigured: new(true),
+		}, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -233,10 +268,12 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 
 	_ = d.Set("preconfigured_alert_ids", userRequestedIDs)
 
-	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
-		Region:    region,
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
+	contactPoints, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListContactPointsResponse, error) {
+		return api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
+			Region:    region,
+			ProjectID: projectID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -271,22 +308,26 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 		// IDs to disable: in old but not in new
 		toDisable := types.ExpandStrings(oldSet.Difference(newSet).List())
 		if len(toDisable) > 0 {
-			_, err = api.DisableAlertRules(&cockpit.RegionalAPIDisableAlertRulesRequest{
-				Region:    region,
-				ProjectID: projectID,
-				RuleIDs:   toDisable,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DisableAlertRulesResponse, error) {
+				return api.DisableAlertRules(&cockpit.RegionalAPIDisableAlertRulesRequest{
+					Region:    region,
+					ProjectID: projectID,
+					RuleIDs:   toDisable,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 			// Wait for alerts to be disabled
-			_, err = api.WaitForPreconfiguredAlerts(&cockpit.WaitForPreconfiguredAlertsRequest{
-				Region:             region,
-				ProjectID:          projectID,
-				PreconfiguredRules: toDisable,
-				TargetStatus:       cockpit.AlertStatusDisabled,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) ([]*cockpit.Alert, error) {
+				return api.WaitForPreconfiguredAlerts(&cockpit.WaitForPreconfiguredAlertsRequest{
+					Region:             region,
+					ProjectID:          projectID,
+					PreconfiguredRules: toDisable,
+					TargetStatus:       cockpit.AlertStatusDisabled,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -295,22 +336,26 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 		// IDs to enable: in new but not in old
 		toEnable := types.ExpandStrings(newSet.Difference(oldSet).List())
 		if len(toEnable) > 0 {
-			_, err = api.EnableAlertRules(&cockpit.RegionalAPIEnableAlertRulesRequest{
-				Region:    region,
-				ProjectID: projectID,
-				RuleIDs:   toEnable,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.EnableAlertRulesResponse, error) {
+				return api.EnableAlertRules(&cockpit.RegionalAPIEnableAlertRulesRequest{
+					Region:    region,
+					ProjectID: projectID,
+					RuleIDs:   toEnable,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 			// Wait for alerts to be enabled
-			_, err = api.WaitForPreconfiguredAlerts(&cockpit.WaitForPreconfiguredAlertsRequest{
-				Region:             region,
-				ProjectID:          projectID,
-				PreconfiguredRules: toEnable,
-				TargetStatus:       cockpit.AlertStatusEnabled,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) ([]*cockpit.Alert, error) {
+				return api.WaitForPreconfiguredAlerts(&cockpit.WaitForPreconfiguredAlertsRequest{
+					Region:             region,
+					ProjectID:          projectID,
+					PreconfiguredRules: toEnable,
+					TargetStatus:       cockpit.AlertStatusEnabled,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -324,15 +369,19 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 
 		switch {
 		case !newBool && oldBool:
-			_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
-				Region:    region,
-				ProjectID: projectID,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.AlertManager, error) {
+				return api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
+					Region:    region,
+					ProjectID: projectID,
+				}, scw.WithContext(ctx))
+			})
 		case newBool && shouldEnableLegacyManagedAlerts(d):
-			_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
-				Region:    region,
-				ProjectID: projectID,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.AlertManager, error) {
+				return api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
+					Region:    region,
+					ProjectID: projectID,
+				}, scw.WithContext(ctx))
+			})
 		}
 
 		if err != nil {
@@ -363,11 +412,13 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 
 		for email := range oldContactMap {
 			if _, found := newContactMap[email]; !found {
-				err := api.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
-					Region:    region,
-					ProjectID: projectID,
-					Email:     &cockpit.ContactPointEmail{To: email},
-				}, scw.WithContext(ctx))
+				err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+					return api.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
+						Region:    region,
+						ProjectID: projectID,
+						Email:     &cockpit.ContactPointEmail{To: email},
+					}, scw.WithContext(ctx))
+				})
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -378,11 +429,13 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 			if _, found := oldContactMap[email]; !found {
 				contactPointEmail := &cockpit.ContactPointEmail{To: email}
 
-				_, err = api.CreateContactPoint(&cockpit.RegionalAPICreateContactPointRequest{
-					Region:    region,
-					ProjectID: projectID,
-					Email:     contactPointEmail,
-				}, scw.WithContext(ctx))
+				_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ContactPoint, error) {
+					return api.CreateContactPoint(&cockpit.RegionalAPICreateContactPointRequest{
+						Region:    region,
+						ProjectID: projectID,
+						Email:     contactPointEmail,
+					}, scw.WithContext(ctx))
+				})
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -403,11 +456,13 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 	if v, ok := d.GetOk("preconfigured_alert_ids"); ok {
 		alertIDs := types.ExpandStrings(v.(*schema.Set).List())
 		if len(alertIDs) > 0 {
-			_, err = api.DisableAlertRules(&cockpit.RegionalAPIDisableAlertRulesRequest{
-				Region:    region,
-				ProjectID: projectID,
-				RuleIDs:   alertIDs,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DisableAlertRulesResponse, error) {
+				return api.DisableAlertRules(&cockpit.RegionalAPIDisableAlertRulesRequest{
+					Region:    region,
+					ProjectID: projectID,
+					RuleIDs:   alertIDs,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -415,40 +470,48 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.Get("enable_managed_alerts").(bool) {
-		_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
-			Region:    region,
-			ProjectID: projectID,
-		}, scw.WithContext(ctx))
+		_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.AlertManager, error) {
+			return api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
+				Region:    region,
+				ProjectID: projectID,
+			}, scw.WithContext(ctx))
+		})
 		if err != nil && !httperrors.Is403(err) && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 	}
 
-	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
-		Region:    region,
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
+	contactPoints, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListContactPointsResponse, error) {
+		return api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
+			Region:    region,
+			ProjectID: projectID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	for _, cp := range contactPoints.ContactPoints {
 		if cp.Email != nil {
-			err = api.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
-				Region:    region,
-				ProjectID: projectID,
-				Email:     &cockpit.ContactPointEmail{To: cp.Email.To},
-			}, scw.WithContext(ctx))
+			err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+				return api.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
+					Region:    region,
+					ProjectID: projectID,
+					Email:     &cockpit.ContactPointEmail{To: cp.Email.To},
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	}
 
-	_, err = api.DisableAlertManager(&cockpit.RegionalAPIDisableAlertManagerRequest{
-		Region:    region,
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
+	_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.AlertManager, error) {
+		return api.DisableAlertManager(&cockpit.RegionalAPIDisableAlertManagerRequest{
+			Region:    region,
+			ProjectID: projectID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -462,6 +525,25 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 // The resource identifier format is "Region/ProjectID/1"
 func ResourceCockpitAlertManagerID(region scw.Region, projectID string) (resourceID string) {
 	return fmt.Sprintf("%s/%s/1", region, projectID)
+}
+
+func setCockpitAlertManagerIdentity(d *schema.ResourceData, region scw.Region, projectID string) error {
+	resourceIdentity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	if err := resourceIdentity.Set("region", region.String()); err != nil {
+		return err
+	}
+
+	if err := resourceIdentity.Set("project_id", projectID); err != nil {
+		return err
+	}
+
+	d.SetId(ResourceCockpitAlertManagerID(region, projectID))
+
+	return nil
 }
 
 func shouldEnableLegacyManagedAlerts(d *schema.ResourceData) bool {

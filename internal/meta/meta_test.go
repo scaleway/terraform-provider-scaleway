@@ -40,10 +40,10 @@ func TestHasMultipleVariableSources(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, ok)
 
-	expectedMessage := `Variable		AvailableSources					Using
-SCW_ACCESS_KEY		Active Profile in config.yaml, Environment variable	Environment variable
-SCW_SECRET_KEY		Active Profile in config.yaml, Environment variable	Environment variable
-SCW_DEFAULT_PROJECT_ID	Active Profile in config.yaml, Environment variable	Environment variable
+	expectedMessage := `Variable                   Available sources                                       Currently using
+SCW_ACCESS_KEY             Active Profile in config.yaml, Environment variable     Environment variable
+SCW_SECRET_KEY             Active Profile in config.yaml, Environment variable     Environment variable
+SCW_DEFAULT_PROJECT_ID     Active Profile in config.yaml, Environment variable     Environment variable
 `
 	assert.Equal(t, expectedMessage, message)
 }

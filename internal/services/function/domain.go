@@ -55,6 +55,11 @@ func domainSchema() map[string]*schema.Schema {
 			Description: "URL to use to trigger the function",
 			Computed:    true,
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the function domain",
+		},
 		"region": regional.Schema(),
 	}
 }
@@ -115,6 +120,7 @@ func ResourceFunctionDomainRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("hostname", domain.Hostname)
 	_ = d.Set("function_id", regional.NewIDString(region, domain.FunctionID))
 	_ = d.Set("url", domain.URL)
+	_ = d.Set("srn", domain.Srn)
 	_ = d.Set("region", region)
 
 	return nil

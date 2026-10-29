@@ -148,6 +148,17 @@ func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
+	diags := setTLSStageState(d, tlsStage)
+
+	err = identity.SetGlobalIdentity(d, tlsStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setTLSStageState(d *schema.ResourceData, tlsStage *edgeservices.TLSStage) diag.Diagnostics {
 	_ = d.Set("backend_stage_id", types.FlattenStringPtr(tlsStage.BackendStageID))
 	_ = d.Set("cache_stage_id", types.FlattenStringPtr(tlsStage.CacheStageID))
 	_ = d.Set("route_stage_id", types.FlattenStringPtr(tlsStage.RouteStageID))
@@ -158,10 +169,6 @@ func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("certificate_expires_at", types.FlattenTime(tlsStage.CertificateExpiresAt))
 	_ = d.Set("created_at", types.FlattenTime(tlsStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(tlsStage.UpdatedAt))
-
-	if err = identity.SetGlobalIdentity(d, tlsStage.ID); err != nil {
-		return diag.FromErr(err)
-	}
 
 	return nil
 }

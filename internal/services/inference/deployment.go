@@ -355,10 +355,9 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m any) 
 				continue
 			}
 
-			resourceType := ipamAPI.ResourceTypeLlmDeployment
 			opts := &ipam.GetResourcePrivateIPsOptions{
 				ResourceID:       &deployment.ID,
-				ResourceType:     &resourceType,
+				ResourceType:     new(ipamAPI.ResourceTypeLlmDeployment),
 				PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
 				ProjectID:        &deployment.ProjectID,
 			}
