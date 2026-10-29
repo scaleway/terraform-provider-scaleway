@@ -300,6 +300,85 @@ func TestAccVolume_UpdateWithoutName(t *testing.T) {
 	})
 }
 
+// TestAccVolume_SwapSnapshotID verifies that changing snapshot_id to a
+// different snapshot forces replacement of the volume. This exercises the
+// LocalityPlanModifier's "different UUID → RequiresReplace" path.
+func TestAccVolume_SwapSnapshotID(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	var volumeID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume base1 {
+						name = "test-block-volume-swap-snap-base1"
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot snap1 {
+						name = "test-block-volume-swap-snap1"
+						volume_id = scaleway_block_volume.base1.id
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-swap-snap"
+						iops = 5000
+						snapshot_id = scaleway_block_snapshot.snap1.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "snapshot_id", "scaleway_block_snapshot.snap1", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_block_volume.main", &volumeID),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_block_volume base1 {
+						name = "test-block-volume-swap-snap-base1"
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot snap1 {
+						name = "test-block-volume-swap-snap1"
+						volume_id = scaleway_block_volume.base1.id
+					}
+
+					resource scaleway_block_volume base2 {
+						name = "test-block-volume-swap-snap-base2"
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot snap2 {
+						name = "test-block-volume-swap-snap2"
+						volume_id = scaleway_block_volume.base2.id
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-swap-snap"
+						iops = 5000
+						snapshot_id = scaleway_block_snapshot.snap2.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "snapshot_id", "scaleway_block_snapshot.snap2", "id"),
+					// The volume should be replaced (new id) when snapshot_id changes.
+					acctest.CheckResourceIDChanged("scaleway_block_volume.main", &volumeID),
+				),
+			},
+		},
+	})
+}
+
 // TestAccVolume_RemoveSnapshotID verifies that removing snapshot_id from
 // config causes the volume to be replaced (recreated), not an inconsistent
 // result error. This is a regression test for the bug where the
