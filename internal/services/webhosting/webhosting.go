@@ -94,6 +94,18 @@ type webhostingNameServersModel struct {
 
 type webhostingResourceIdentityModel = identityfw.RegionalIdentity
 
+// resolveHostingRegionID resolves the region and hosting ID from the identity
+// when available, falling back to parsing the state ID.
+func resolveHostingRegionID(identity webhostingResourceIdentityModel, fallbackID string) (scw.Region, string, error) {
+	if !identity.ID.IsNull() && !identity.ID.IsUnknown() {
+		region, id := identityfw.ResolveRegionalIdentity(identity)
+
+		return region, id, nil
+	}
+
+	return regional.ParseID(fallbackID)
+}
+
 func (r *WebhostingResource) Metadata(
 	_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse,
 ) {
@@ -421,7 +433,7 @@ func (r *WebhostingResource) Create(
 		return
 	}
 
-	state := r.flattenWebhosting(ctx, hostingResponse, &resp.Diagnostics)
+	state := flattenWebhosting(ctx, r.meta, hostingResponse, &resp.Diagnostics)
 	state.OptionIDs = data.OptionIDs
 	state.Email = data.Email
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -449,21 +461,11 @@ func (r *WebhostingResource) Read(
 		return
 	}
 
-	var (
-		id     string
-		region scw.Region
-		err    error
-	)
+	region, id, err := resolveHostingRegionID(identity, state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse webhosting ID during READ", err.Error())
 
-	if identityAvailable {
-		region, id = identityfw.ResolveRegionalIdentity(identity)
-	} else {
-		region, id, err = regional.ParseID(state.ID.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to parse webhosting ID during READ", err.Error())
-
-			return
-		}
+		return
 	}
 
 	hostingResponse, err := waitForHosting(ctx, r.api, region, id, defaultHostingTimeout)
@@ -479,7 +481,7 @@ func (r *WebhostingResource) Read(
 		return
 	}
 
-	newState := r.flattenWebhosting(ctx, hostingResponse, &resp.Diagnostics)
+	newState := flattenWebhosting(ctx, r.meta, hostingResponse, &resp.Diagnostics)
 	newState.OptionIDs = state.OptionIDs
 	newState.Email = state.Email
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
@@ -503,23 +505,11 @@ func (r *WebhostingResource) Update(
 		return
 	}
 
-	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+	region, id, err := resolveHostingRegionID(identity, state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse webhosting ID during UPDATE", err.Error())
 
-	var (
-		id     string
-		region scw.Region
-		err    error
-	)
-
-	if identityAvailable {
-		region, id = identityfw.ResolveRegionalIdentity(identity)
-	} else {
-		region, id, err = regional.ParseID(state.ID.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to parse webhosting ID during UPDATE", err.Error())
-
-			return
-		}
+		return
 	}
 
 	res, err := waitForHosting(ctx, r.api, region, id, defaultHostingTimeout)
@@ -584,7 +574,7 @@ func (r *WebhostingResource) Update(
 		return
 	}
 
-	newState := r.flattenWebhosting(ctx, hostingResponse, &resp.Diagnostics)
+	newState := flattenWebhosting(ctx, r.meta, hostingResponse, &resp.Diagnostics)
 	newState.OptionIDs = plan.OptionIDs
 	newState.Email = plan.Email
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
@@ -606,23 +596,11 @@ func (r *WebhostingResource) Delete(
 		return
 	}
 
-	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+	region, id, err := resolveHostingRegionID(identity, state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse webhosting ID during DELETE", err.Error())
 
-	var (
-		id     string
-		region scw.Region
-		err    error
-	)
-
-	if identityAvailable {
-		region, id = identityfw.ResolveRegionalIdentity(identity)
-	} else {
-		region, id, err = regional.ParseID(state.ID.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to parse webhosting ID during DELETE", err.Error())
-
-			return
-		}
+		return
 	}
 
 	_, err = waitForHosting(ctx, r.api, region, id, defaultHostingTimeout)
@@ -644,12 +622,11 @@ func (r *WebhostingResource) Delete(
 }
 
 // flattenWebhosting builds the framework state model from an API Hosting response.
-// option_ids and email are intentionally not populated here: the API does not
-// return the selected option IDs, and email is preserved from the plan/prior
-// state to avoid perpetual diffs when the API normalizes it. Callers preserve
-// both from the plan/prior state.
-func (r *WebhostingResource) flattenWebhosting(
-	ctx context.Context, h *webhosting.Hosting, diags *diag.Diagnostics,
+// option_ids and email are intentionally not preserved from prior state here:
+// callers (resource CRUD) override option_ids and email from plan/prior state
+// after calling this function. The data source reads email directly from the API.
+func flattenWebhosting(
+	ctx context.Context, m *meta.Meta, h *webhosting.Hosting, diags *diag.Diagnostics,
 ) webhostingResourceModel {
 	state := webhostingResourceModel{
 		ID:             types.StringValue(regional.NewIDString(h.Region, h.ID)),
@@ -660,6 +637,7 @@ func (r *WebhostingResource) flattenWebhosting(
 		Status:         types.StringValue(h.Status.String()),
 		OfferName:      types.StringValue(h.Offer.Name),
 		Options:        flattenHostingOptionsList(ctx, h.Offer.Options, diags),
+		OptionIDs:      types.ListNull(types.StringType),
 	}
 
 	if h.Domain != nil { //nolint:staticcheck
@@ -668,6 +646,7 @@ func (r *WebhostingResource) flattenWebhosting(
 
 	if h.User != nil {
 		state.Username = types.StringValue(h.User.Username)
+		state.Email = types.StringValue(h.User.ContactEmail)
 	}
 
 	if h.Platform != nil {
@@ -698,7 +677,7 @@ func (r *WebhostingResource) flattenWebhosting(
 
 	// DNS records and nameservers come from the DNS API, not the hosting response.
 	if h.Domain != nil { //nolint:staticcheck
-		dnsAPI := webhosting.NewDnsAPI(r.meta.ScwClient())
+		dnsAPI := webhosting.NewDnsAPI(m.ScwClient())
 
 		dnsResp, err := dnsAPI.GetDomainDNSRecords(&webhosting.DNSAPIGetDomainDNSRecordsRequest{
 			Region: h.Region,
@@ -895,14 +874,10 @@ func (preserveInternalTag) PlanModifyList(
 		return
 	}
 
-	if !sliceContainsString(oldTags, "internal") || sliceContainsString(newTags, "internal") {
+	if !slices.Contains(oldTags, "internal") || slices.Contains(newTags, "internal") {
 		return
 	}
 
 	// "internal" was present and is being dropped: restore the prior tags.
 	resp.PlanValue = req.StateValue
-}
-
-func sliceContainsString(slice []string, target string) bool {
-	return slices.Contains(slice, target)
 }

@@ -321,7 +321,7 @@ func (d *OfferDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		Name:                 types.StringValue(filteredOffer.Name),
 		Region:               types.StringValue(region.String()),
 		BillingOperationPath: types.StringValue(filteredOffer.BillingOperationPath),
-		Price:                types.StringValue(flattenOfferPriceString(filteredOffer.Price)),
+		Price:                types.StringValue(flattenOfferPrice(filteredOffer.Price)),
 		Product:              types.ListNull(types.ObjectType{AttrTypes: offerProductAttrTypes()}),
 		Offer:                flattenOfferDataSource(ctx, filteredOffer, &resp.Diagnostics),
 	}
@@ -342,7 +342,7 @@ func flattenOfferDataSource(ctx context.Context, offer *webhosting.Offer, diags 
 		ControlPanelName:     types.StringValue(offer.ControlPanelName),
 		EndOfLife:            types.BoolValue(offer.EndOfLife),
 		QuotaWarning:         types.StringValue(string(offer.QuotaWarning)),
-		Price:                types.StringValue(flattenOfferPriceString(offer.Price)),
+		Price:                types.StringValue(flattenOfferPrice(offer.Price)),
 		Options:              flattenOfferOptionsDataSource(ctx, offer.Options, diags),
 	}
 
@@ -367,7 +367,7 @@ func flattenOfferOptionsDataSource(ctx context.Context, options []*webhosting.Of
 			CurrentValue:         types.Int64Value(int64(option.CurrentValue)),
 			MaxValue:             types.Int64Value(int64(option.MaxValue)),
 			QuotaWarning:         types.StringValue(string(option.QuotaWarning)),
-			Price:                types.StringValue(flattenOfferPriceString(option.Price)),
+			Price:                types.StringValue(flattenOfferPrice(option.Price)),
 		})
 	}
 
@@ -375,11 +375,6 @@ func flattenOfferOptionsDataSource(ctx context.Context, options []*webhosting.Of
 	diags.Append(d...)
 
 	return list
-}
-
-// flattenOfferPriceString wraps flattenOfferPrice (which returns any) and casts to string.
-func flattenOfferPriceString(price *scw.Money) string {
-	return flattenOfferPrice(price).(string)
 }
 
 func offerOfferAttrTypes() map[string]attr.Type {

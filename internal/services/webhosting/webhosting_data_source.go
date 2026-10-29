@@ -3,12 +3,10 @@ package webhosting
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	fwschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -35,28 +33,8 @@ type WebhostingDataSource struct {
 }
 
 type webhostingDataSourceModel struct {
-	CpanelURLs       types.List   `tfsdk:"cpanel_urls"`
-	Options          types.List   `tfsdk:"options"`
-	NameServers      types.List   `tfsdk:"name_servers"`
-	Records          types.List   `tfsdk:"records"`
-	Tags             types.List   `tfsdk:"tags"`
-	OptionIDs        types.List   `tfsdk:"option_ids"`
-	Username         types.String `tfsdk:"username"`
-	ID               types.String `tfsdk:"id"`
-	UpdatedAt        types.String `tfsdk:"updated_at"`
-	OfferName        types.String `tfsdk:"offer_name"`
-	Domain           types.String `tfsdk:"domain"`
-	OrganizationID   types.String `tfsdk:"organization_id"`
-	Status           types.String `tfsdk:"status"`
-	CreatedAt        types.String `tfsdk:"created_at"`
-	DnsStatus        types.String `tfsdk:"dns_status"`
-	WebhostingID     types.String `tfsdk:"webhosting_id"`
-	PlatformHostname types.String `tfsdk:"platform_hostname"`
-	Email            types.String `tfsdk:"email"`
-	OfferID          types.String `tfsdk:"offer_id"`
-	Region           types.String `tfsdk:"region"`
-	ProjectID        types.String `tfsdk:"project_id"`
-	PlatformNumber   types.Int64  `tfsdk:"platform_number"`
+	WebhostingID types.String `tfsdk:"webhosting_id"`
+	webhostingResourceModel
 }
 
 func (d *WebhostingDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -329,82 +307,12 @@ func (d *WebhostingDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	state := flattenWebhostingDataSource(ctx, d.meta, hostingResponse, &resp.Diagnostics)
-	state.ID = types.StringValue(regionalID)
-	state.WebhostingID = types.StringValue(regionalID)
+	state := webhostingDataSourceModel{
+		webhostingResourceModel: flattenWebhosting(ctx, d.meta, hostingResponse, &resp.Diagnostics),
+		WebhostingID:            types.StringValue(regionalID),
+
+		ID: types.StringValue(regionalID),
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-}
-
-// flattenWebhostingDataSource mirrors the resource's flattenWebhosting, exposed as a
-// free function so the data source can reuse it without a *WebhostingResource.
-func flattenWebhostingDataSource(
-	ctx context.Context, m *meta.Meta, h *webhosting.Hosting, diags *diag.Diagnostics,
-) webhostingDataSourceModel {
-	state := webhostingDataSourceModel{
-		ID:             types.StringValue(regional.NewIDString(h.Region, h.ID)),
-		OfferID:        types.StringValue(regional.NewIDString(h.Region, h.Offer.ID)),
-		Region:         types.StringValue(h.Region.String()),
-		ProjectID:      types.StringValue(h.ProjectID),
-		OrganizationID: types.StringNull(),
-		Status:         types.StringValue(h.Status.String()),
-		OfferName:      types.StringValue(h.Offer.Name),
-		Options:        flattenHostingOptionsList(ctx, h.Offer.Options, diags),
-	}
-
-	if h.Domain != nil { //nolint:staticcheck
-		state.Domain = types.StringValue(*h.Domain) //nolint:staticcheck
-	}
-
-	if h.User != nil {
-		state.Username = types.StringValue(h.User.Username)
-		state.Email = types.StringValue(h.User.ContactEmail)
-	}
-
-	if h.Platform != nil {
-		state.PlatformHostname = types.StringValue(h.Platform.Hostname)
-		state.PlatformNumber = types.Int64Value(int64(h.Platform.Number))
-
-		if h.Platform.ControlPanel != nil && h.Platform.ControlPanel.URLs != nil {
-			state.CpanelURLs = flattenCpanelURLsList(ctx, h.Platform.ControlPanel.URLs, diags)
-		}
-	}
-
-	if h.DNSStatus != nil { //nolint:staticcheck
-		state.DnsStatus = types.StringValue(h.DNSStatus.String()) //nolint:staticcheck
-	}
-
-	if h.CreatedAt != nil {
-		state.CreatedAt = types.StringValue(h.CreatedAt.Format(time.RFC3339))
-	}
-
-	if h.UpdatedAt != nil {
-		state.UpdatedAt = types.StringValue(h.UpdatedAt.Format(time.RFC3339))
-	}
-
-	tagsList, d := types.ListValueFrom(ctx, types.StringType, h.Tags)
-	diags.Append(d...)
-
-	state.Tags = tagsList
-
-	// option_ids is not returned by the API; leave null on the data source.
-	state.OptionIDs = types.ListNull(types.StringType)
-
-	// DNS records and nameservers come from the DNS API, not the hosting response.
-	if h.Domain != nil { //nolint:staticcheck
-		dnsAPI := webhosting.NewDnsAPI(m.ScwClient())
-
-		dnsResp, err := dnsAPI.GetDomainDNSRecords(&webhosting.DNSAPIGetDomainDNSRecordsRequest{
-			Region: h.Region,
-			Domain: *h.Domain, //nolint:staticcheck // deprecated in SDK, kept until domain_info fully propagated
-		}, scw.WithContext(ctx))
-		if err != nil {
-			diags.AddError("Failed to get webhosting DNS records", err.Error())
-		} else {
-			state.Records = flattenDNSRecordsList(ctx, dnsResp.Records, diags)
-			state.NameServers = flattenNameServersList(ctx, dnsResp.NameServers, diags)
-		}
-	}
-
-	return state
 }
