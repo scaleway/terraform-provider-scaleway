@@ -100,6 +100,11 @@ func customS3BodyMatcher(r *http.Request, i cassette.Request) bool {
 		panic(fmt.Errorf("cassette body matcher: failed to parse body as url values: %w", err)) // lintignore: R009
 	}
 
+	// Remove keys that should be ignored during comparison
+	for _, key := range BodyMatcherIgnore {
+		requestValues.Del(key)
+	}
+
 	return CompareFormBodies(requestValues, i.Form)
 }
 
