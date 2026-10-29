@@ -22,8 +22,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	vcr "github.com/scaleway/terraform-provider-scaleway/v2/internal/vcr"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/dnaeon/go-vcr.v3/cassette"
-	"gopkg.in/dnaeon/go-vcr.v3/recorder"
+	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
+	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
 
 // UpdateCassettes will update all cassettes of a given test
@@ -337,33 +337,26 @@ func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.C
 	}
 
 	// Setup recorder and scw client
-	r, err := recorder.NewWithOptions(&recorder.Options{
-		CassetteName:       getTestFilePath(t, pkgFolder, ".cassette"),
-		Mode:               recorderMode,
-		SkipRequestLatency: true,
-	})
+	r, err := recorder.New(cassetteFilePath,
+		recorder.WithMode(recorderMode),
+		recorder.WithSkipRequestLatency(true),
+		recorder.WithMatcher(CassetteMatcher),
+		recorder.WithHook(func(i *cassette.Interaction) error {
+			i.Request.Headers = i.Request.Headers.Clone()
+			delete(i.Request.Headers, "x-auth-token")
+			delete(i.Request.Headers, "X-Auth-Token")
+			delete(i.Request.Headers, "Authorization")
+
+			return nil
+		}, recorder.BeforeSaveHook),
+		recorder.WithHook(cassetteSensitiveFieldsAnonymizer, recorder.BeforeSaveHook),
+	)
 	if err != nil {
 		return nil, nil, err
 	}
 	defer func(r *recorder.Recorder) {
 		_ = r.Stop()
 	}(r)
-
-	// Add custom matcher for requests and cassettes
-	r.SetMatcher(CassetteMatcher)
-
-	// Add a filter which removes Authorization headers from all requests:
-	r.AddHook(func(i *cassette.Interaction) error {
-		i.Request.Headers = i.Request.Headers.Clone()
-		delete(i.Request.Headers, "x-auth-token")
-		delete(i.Request.Headers, "X-Auth-Token")
-		delete(i.Request.Headers, "Authorization")
-
-		return nil
-	}, recorder.BeforeSaveHook)
-
-	// Add a filter that will replace sensitive values with fixed values
-	r.AddHook(cassetteSensitiveFieldsAnonymizer, recorder.BeforeSaveHook)
 
 	retryOptions := transport.RetryableTransportOptions{}
 	if !*UpdateCassettes {
