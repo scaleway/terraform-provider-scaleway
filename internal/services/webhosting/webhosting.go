@@ -423,6 +423,7 @@ func (r *WebhostingResource) Create(
 
 	state := r.flattenWebhosting(ctx, hostingResponse, &resp.Diagnostics)
 	state.OptionIDs = data.OptionIDs
+	state.Email = data.Email
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(hostingResponse.Region, hostingResponse.ID))...)
 }
@@ -460,6 +461,8 @@ func (r *WebhostingResource) Read(
 		region, id, err = regional.ParseID(state.ID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to parse webhosting ID during READ", err.Error())
+
+			return
 		}
 	}
 
@@ -478,6 +481,7 @@ func (r *WebhostingResource) Read(
 
 	newState := r.flattenWebhosting(ctx, hostingResponse, &resp.Diagnostics)
 	newState.OptionIDs = state.OptionIDs
+	newState.Email = state.Email
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(hostingResponse.Region, hostingResponse.ID))...)
 }
@@ -513,6 +517,8 @@ func (r *WebhostingResource) Update(
 		region, id, err = regional.ParseID(state.ID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to parse webhosting ID during UPDATE", err.Error())
+
+			return
 		}
 	}
 
@@ -580,6 +586,7 @@ func (r *WebhostingResource) Update(
 
 	newState := r.flattenWebhosting(ctx, hostingResponse, &resp.Diagnostics)
 	newState.OptionIDs = plan.OptionIDs
+	newState.Email = plan.Email
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(hostingResponse.Region, hostingResponse.ID))...)
 }
@@ -613,6 +620,8 @@ func (r *WebhostingResource) Delete(
 		region, id, err = regional.ParseID(state.ID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to parse webhosting ID during DELETE", err.Error())
+
+			return
 		}
 	}
 
@@ -635,8 +644,10 @@ func (r *WebhostingResource) Delete(
 }
 
 // flattenWebhosting builds the framework state model from an API Hosting response.
-// option_ids is intentionally not populated here: the API does not return the
-// selected option IDs, so callers preserve it from the plan/prior state.
+// option_ids and email are intentionally not populated here: the API does not
+// return the selected option IDs, and email is preserved from the plan/prior
+// state to avoid perpetual diffs when the API normalizes it. Callers preserve
+// both from the plan/prior state.
 func (r *WebhostingResource) flattenWebhosting(
 	ctx context.Context, h *webhosting.Hosting, diags *diag.Diagnostics,
 ) webhostingResourceModel {
@@ -657,7 +668,6 @@ func (r *WebhostingResource) flattenWebhosting(
 
 	if h.User != nil {
 		state.Username = types.StringValue(h.User.Username)
-		state.Email = types.StringValue(h.User.ContactEmail)
 	}
 
 	if h.Platform != nil {

@@ -282,14 +282,14 @@ func (d *WebhostingDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 		listReq := &webhosting.HostingAPIListHostingsRequest{
 			Region: region,
-			Domain: new(hostingDomain),
+			Domain: &hostingDomain,
 		}
 		if v := config.ProjectID.ValueString(); v != "" {
-			listReq.ProjectID = new(v)
+			listReq.ProjectID = &v
 		}
 
 		if v := config.OrganizationID.ValueString(); v != "" {
-			listReq.OrganizationID = new(v)
+			listReq.OrganizationID = &v
 		}
 
 		listResp, err := d.api.ListHostings(listReq, scw.WithContext(ctx))
