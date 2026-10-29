@@ -58,6 +58,7 @@ var mailboxDataSourceDescription string
 func (d *MailboxDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: mailboxDataSourceDescription,
+		Description:         mailboxDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

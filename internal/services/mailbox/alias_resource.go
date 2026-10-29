@@ -61,6 +61,7 @@ var aliasResourceDescription string
 func (r *AliasResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: aliasResourceDescription,
+		Description:         aliasResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

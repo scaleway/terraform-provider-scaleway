@@ -62,6 +62,7 @@ func (r *FileSystemResource) Metadata(_ context.Context, req resource.MetadataRe
 func (r *FileSystemResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Scaleway File FileSystem.",
+		Description:         "Manages a Scaleway File FileSystem.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

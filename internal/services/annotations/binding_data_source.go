@@ -47,6 +47,7 @@ var annotationsBindingDataSourceDescription string
 func (d *AnnotationsBindingDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: annotationsBindingDataSourceDescription,
+		Description:         annotationsBindingDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"binding_id": schema.StringAttribute{
 				Required:            true,
