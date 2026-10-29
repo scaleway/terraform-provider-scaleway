@@ -67,6 +67,7 @@ var partnerOrganizationResourceDescription string
 func (r *PartnerOrganizationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: partnerOrganizationResourceDescription,
+		Description:         partnerOrganizationResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

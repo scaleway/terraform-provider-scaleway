@@ -61,6 +61,7 @@ func (d *DatalabsDataSource) Metadata(_ context.Context, req datasource.Metadata
 func (d *DatalabsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Lists Scaleway Datalab instances.",
+		Description:         "Lists Scaleway Datalab instances.",
 		Attributes: map[string]schema.Attribute{
 			"project_id": schema.StringAttribute{
 				Optional:            true,

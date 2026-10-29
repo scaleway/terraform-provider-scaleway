@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	_ "embed"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -21,8 +22,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/vpc_private_network_resource.md
+var privateNetworkResourceDescription string
+
 func ResourcePrivateNetwork() *schema.Resource {
 	return &schema.Resource{
+		Description:   privateNetworkResourceDescription,
 		CreateContext: ResourceVPCPrivateNetworkCreate,
 		ReadContext:   ResourceVPCPrivateNetworkRead,
 		UpdateContext: ResourceVPCPrivateNetworkUpdate,

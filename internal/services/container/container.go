@@ -2,6 +2,7 @@ package container
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -21,8 +22,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/container_resource.md
+var containerResourceDescription string
+
 func ResourceContainer() *schema.Resource {
 	return &schema.Resource{
+		Description:   containerResourceDescription,
 		CreateContext: ResourceContainerCreate,
 		ReadContext:   ResourceContainerRead,
 		UpdateContext: ResourceContainerUpdate,

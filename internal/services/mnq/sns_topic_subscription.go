@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/sns"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/mnq_sns_topic_subscription_resource.md
+var snstopicSubscriptionResourceDescription string
+
 func ResourceSNSTopicSubscription() *schema.Resource {
 	return &schema.Resource{
+		Description:   snstopicSubscriptionResourceDescription,
 		CreateContext: ResourceMNQSNSTopicSubscriptionCreate,
 		ReadContext:   ResourceMNQSNSTopicSubscriptionRead,
 		DeleteContext: ResourceMNQSNSTopicSubscriptionDelete,

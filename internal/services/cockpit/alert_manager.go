@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/cockpit_alert_manager_resource.md
+var cockpitAlertManagerResourceDescription string
+
 func ResourceCockpitAlertManager() *schema.Resource {
 	return &schema.Resource{
+		Description:   cockpitAlertManagerResourceDescription,
 		CreateContext: ResourceCockpitAlertManagerCreate,
 		ReadContext:   ResourceCockpitAlertManagerRead,
 		UpdateContext: ResourceCockpitAlertManagerUpdate,

@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/function_cron_resource.md
+var cronResourceDescription string
+
 func ResourceCron() *schema.Resource {
 	return &schema.Resource{
+		Description:   cronResourceDescription,
 		CreateContext: ResourceFunctionCronCreate,
 		ReadContext:   ResourceFunctionCronRead,
 		UpdateContext: ResourceFunctionCronUpdate,

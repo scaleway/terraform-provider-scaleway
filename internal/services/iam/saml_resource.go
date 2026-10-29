@@ -96,6 +96,7 @@ var samlResourceDescription string
 func (r *SamlResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: samlResourceDescription,
+		Description:         samlResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"organization_id": schema.StringAttribute{
 				MarkdownDescription: "The organization ID. If not provided, the default organization configured in the provider is used.",

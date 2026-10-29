@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
+//go:embed descriptions/domain_registration_resource.md
+var registrationResourceDescription string
+
 func ResourceRegistration() *schema.Resource {
 	return &schema.Resource{
+		Description:   registrationResourceDescription,
 		CreateContext: resourceRegistrationCreate,
 		ReadContext:   resourceRegistrationsRead,
 		UpdateContext: resourceRegistrationUpdate,

@@ -64,6 +64,7 @@ func (d *NodeTypeDataSource) Metadata(_ context.Context, req datasource.Metadata
 func (d *NodeTypeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: nodeTypeDataSourceDescription,
+		Description:         nodeTypeDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Required:            true,

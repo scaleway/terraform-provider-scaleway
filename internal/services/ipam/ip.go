@@ -2,6 +2,7 @@ package ipam
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"net"
 
@@ -21,8 +22,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/ipam_ip_resource.md
+var ipResourceDescription string
+
 func ResourceIP() *schema.Resource {
 	return &schema.Resource{
+		Description:   ipResourceDescription,
 		CreateContext: ResourceIPAMIPCreate,
 		ReadContext:   ResourceIPAMIPRead,
 		UpdateContext: ResourceIPAMIPUpdate,

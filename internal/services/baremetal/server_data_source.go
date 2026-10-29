@@ -2,6 +2,7 @@ package baremetal
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/baremetal_server_data_source.md
+var serverDataSourceDescription string
 
 func DataSourceServer() *schema.Resource {
 	// Generate datasource schema from resource
@@ -29,6 +33,7 @@ func DataSourceServer() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: serverDataSourceDescription,
 		ReadContext: DataSourceServerRead,
 		Schema:      dsSchema,
 	}

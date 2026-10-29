@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"slices"
 	"strings"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/iam_group_membership_resource.md
+var groupMembershipResourceDescription string
+
 func ResourceGroupMembership() *schema.Resource {
 	return &schema.Resource{
+		Description:   groupMembershipResourceDescription,
 		CreateContext: resourceIamGroupMembershipCreate,
 		ReadContext:   resourceIamGroupMembershipRead,
 		DeleteContext: resourceIamGroupMembershipDelete,

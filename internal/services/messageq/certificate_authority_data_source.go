@@ -48,6 +48,7 @@ func (d *CertificateAuthorityDataSource) Metadata(_ context.Context, req datasou
 func (d *CertificateAuthorityDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: certificateAuthorityDataSourceDescription,
+		Description:         certificateAuthorityDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"deployment_id": schema.StringAttribute{
 				Required:            true,

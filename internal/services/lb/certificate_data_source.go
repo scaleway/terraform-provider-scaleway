@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/lb_certificate_data_source.md
+var certificateDataSourceDescription string
 
 func DataSourceCertificate() *schema.Resource {
 	// Generate datasource schema from resource
@@ -30,6 +34,7 @@ func DataSourceCertificate() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: certificateDataSourceDescription,
 		ReadContext: DataSourceLbCertificateRead,
 		Schema:      dsSchema,
 	}

@@ -2,6 +2,7 @@ package iot
 
 import (
 	"context"
+	_ "embed"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -18,6 +19,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/iot_device_resource.md
+var deviceResourceDescription string
+
 const (
 	iotPolicySuffix = ".policy"
 	iotTopicsSuffix = ".topics"
@@ -25,6 +29,7 @@ const (
 
 func ResourceDevice() *schema.Resource {
 	return &schema.Resource{
+		Description:   deviceResourceDescription,
 		CreateContext: ResourceIotDeviceCreate,
 		ReadContext:   ResourceIotDeviceRead,
 		UpdateContext: ResourceIotDeviceUpdate,

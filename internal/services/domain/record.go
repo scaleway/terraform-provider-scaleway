@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -20,6 +21,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/domain_record_resource.md
+var recordResourceDescription string
+
 var changeKeys = []string{
 	"geo_ip",
 	"name",
@@ -35,6 +39,7 @@ var changeKeys = []string{
 
 func ResourceRecord() *schema.Resource {
 	return &schema.Resource{
+		Description:   recordResourceDescription,
 		CreateContext: resourceRecordCreate,
 		ReadContext:   resourceDomainRecordRead,
 		UpdateContext: resourceDomainRecordUpdate,

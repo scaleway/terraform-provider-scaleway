@@ -113,6 +113,7 @@ func (r *DatalabResource) Metadata(_ context.Context, req resource.MetadataReque
 func (r *DatalabResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Scaleway Datalab instance.",
+		Description:         "Manages a Scaleway Datalab instance.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

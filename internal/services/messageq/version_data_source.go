@@ -48,6 +48,7 @@ func (d *versionDataSource) Metadata(_ context.Context, req datasource.MetadataR
 func (d *versionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: versionDataSourceDescription,
+		Description:         versionDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Required:            true,

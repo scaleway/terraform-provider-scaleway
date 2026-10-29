@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+//go:embed descriptions/object_bucket_website_configuration_resource.md
+var bucketWebsiteConfigurationResourceDescription string
+
 func ResourceBucketWebsiteConfiguration() *schema.Resource {
 	return &schema.Resource{
+		Description:   bucketWebsiteConfigurationResourceDescription,
 		CreateContext: resourceBucketWebsiteConfigurationCreate,
 		ReadContext:   resourceBucketWebsiteConfigurationRead,
 		UpdateContext: resourceBucketWebsiteConfigurationUpdate,

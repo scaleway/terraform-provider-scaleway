@@ -2,6 +2,7 @@ package tem
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/tem_offer_subscription_data_source.md
+var offerSubscriptionDataSourceDescription string
+
 func DataSourceOfferSubscription() *schema.Resource {
 	return &schema.Resource{
+		Description: offerSubscriptionDataSourceDescription,
 		ReadContext: DataSourceOfferSubscriptionRead,
 		SchemaFunc:  offerSubscriptionSchema,
 	}

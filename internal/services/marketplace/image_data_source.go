@@ -2,6 +2,7 @@ package marketplace
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,8 +13,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/marketplace_image_data_source.md
+var imageDataSourceDescription string
+
 func DataSourceImage() *schema.Resource {
 	return &schema.Resource{
+		Description: imageDataSourceDescription,
 		ReadContext: DataSourceMarketplaceImageRead,
 		SchemaFunc:  imageSchema,
 	}

@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 	"math"
 	"sort"
 
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/lb_frontend_resource.md
+var frontendResourceDescription string
+
 func ResourceFrontend() *schema.Resource {
 	return &schema.Resource{
+		Description:   frontendResourceDescription,
 		CreateContext: resourceLbFrontendCreate,
 		ReadContext:   resourceLbFrontendRead,
 		UpdateContext: resourceLbFrontendUpdate,

@@ -8,8 +8,10 @@ import (
 	"testing"
 
 	actionFramework "github.com/hashicorp/terraform-plugin-framework/action"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	ephemeralFramework "github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	providerFramework "github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 	"github.com/stretchr/testify/assert"
 )
@@ -76,6 +78,70 @@ func TestProviderEphemeralDescriptionsAreNotEmpty(t *testing.T) {
 			assert.NotEmpty(t, markdownDescription, "Please fill up MarkdownDescription field in %s schema, %s:%d", ephemeralType, file, line)
 		} else {
 			t.Errorf("No Schema function found for the ephemeral resource %s", ephemeralType)
+		}
+	}
+}
+
+func extractResourceDescriptions(ctx context.Context, r resource.Resource) (string, string) {
+	resp := &resource.SchemaResponse{}
+	r.Schema(ctx, resource.SchemaRequest{}, resp)
+
+	return resp.Schema.Description, resp.Schema.MarkdownDescription
+}
+
+func extractResourceSchemaMethod(r resource.Resource) (reflect.Type, reflect.Method, bool) {
+	resourceType := reflect.TypeOf(r)
+	method, found := resourceType.MethodByName("Schema")
+
+	return resourceType, method, found
+}
+
+func TestProviderResourceDescriptionsAreNotEmpty(t *testing.T) {
+	p := provider.NewFrameworkProvider(nil)()
+	for _, r := range p.Resources(t.Context()) {
+		description, markdownDescription := extractResourceDescriptions(t.Context(), r())
+		resourceType, method, found := extractResourceSchemaMethod(r())
+
+		if found {
+			funcPtr := method.Func.Pointer()
+			fn := runtime.FuncForPC(funcPtr)
+			file, line := fn.FileLine(funcPtr)
+			assert.NotEmpty(t, description, "Please fill up Description field in %s schema, %s:%d", resourceType, file, line)
+			assert.NotEmpty(t, markdownDescription, "Please fill up MarkdownDescription field in %s schema, %s:%d", resourceType, file, line)
+		} else {
+			t.Errorf("No Schema function found for the resource %s", resourceType)
+		}
+	}
+}
+
+func extractDataSourceDescriptions(ctx context.Context, d datasource.DataSource) (string, string) {
+	resp := &datasource.SchemaResponse{}
+	d.Schema(ctx, datasource.SchemaRequest{}, resp)
+
+	return resp.Schema.Description, resp.Schema.MarkdownDescription
+}
+
+func extractDataSourceSchemaMethod(d datasource.DataSource) (reflect.Type, reflect.Method, bool) {
+	dataSourceType := reflect.TypeOf(d)
+	method, found := dataSourceType.MethodByName("Schema")
+
+	return dataSourceType, method, found
+}
+
+func TestProviderDataSourceDescriptionsAreNotEmpty(t *testing.T) {
+	p := provider.NewFrameworkProvider(nil)()
+	for _, d := range p.DataSources(t.Context()) {
+		description, markdownDescription := extractDataSourceDescriptions(t.Context(), d())
+		dataSourceType, method, found := extractDataSourceSchemaMethod(d())
+
+		if found {
+			funcPtr := method.Func.Pointer()
+			fn := runtime.FuncForPC(funcPtr)
+			file, line := fn.FileLine(funcPtr)
+			assert.NotEmpty(t, description, "Please fill up Description field in %s schema, %s:%d", dataSourceType, file, line)
+			assert.NotEmpty(t, markdownDescription, "Please fill up MarkdownDescription field in %s schema, %s:%d", dataSourceType, file, line)
+		} else {
+			t.Errorf("No Schema function found for the data source %s", dataSourceType)
 		}
 	}
 }

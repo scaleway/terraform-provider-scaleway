@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"log"
 
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+//go:embed descriptions/object_bucket_server_side_encryption_configuration_resource.md
+var bucketServerSideEncryptionConfigurationResourceDescription string
+
 func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
 	return &schema.Resource{
+		Description:          bucketServerSideEncryptionConfigurationResourceDescription,
 		CreateWithoutTimeout: resourceBucketServerSideEncryptionConfigurationCreate,
 		ReadWithoutTimeout:   resourceBucketServerSideEncryptionConfigurationRead,
 		UpdateWithoutTimeout: resourceBucketServerSideEncryptionConfigurationUpdate,
