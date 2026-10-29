@@ -1,150 +1,150 @@
+---
+version: 2
 interactions:
     - id: 0
       request:
-        body: '{"customer_id":"customer-123","email":"tf_test@example.com","organization_name":"tf_test_partner_org","owner_firstname":"John","owner_lastname":"Doe","partner_id":"7fbc0d5f-9d3e-48e4-8fef-6a4533c9ab2e"}'
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
         content_length: 222
+        host: api.scaleway.com
+        body: '{"owner_firstname":"John","owner_lastname":"Doe","customer_id":"customer-123","partner_id":"7fbc0d5f-9d3e-48e4-8fef-6a4533c9ab2e","email":"tf_test@example.com","organization_name":"tf_test_partner_org"}'
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: POST
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/partner/v1/organizations
+        method: POST
       response:
-        body: '{"comment":"","created_at":"2026-09-15T13:56:39.184027Z","customer_id":"customer-123","email":"tf_test@example.com","id":"7d283e95-641f-4232-93ea-41ff49cd0d18","lock_reason_message":"validate_email","locked_at":"2026-09-15T13:56:39.326798Z","locked_by":"scaleway","name":"tf_test_partner_org","owner_firstname":"John","owner_lastname":"Doe","phone_number":null,"picture_link":null,"status":"locked"}'
-        code: 200
-        content_length: 432
-        duration: 1.133421496s
-        headers:
-            Content-Length:
-                - "432"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 15 Sep 2026 13:56:40 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "48"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - bfcf33a2-51df-4999-9c14-64195325cd77
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
+        content_length: 442
+        body: '{"lock_reason_message":"validate_email","created_at":"2026-10-29T11:50:37.896347Z","comment":"","owner_lastname":"Doe","phone_number":null,"srn":"","name":"tf_test_partner_org","status":"locked","picture_link":null,"owner_firstname":"John","customer_id":"customer-123","locked_by":"scaleway","locked_at":"2026-10-29T11:50:38.024979Z","id":"1a3c0188-1cbf-4f50-9be7-dff92f6ec12a","email":"tf_test@example.com"}'
+        headers:
+            Content-Length:
+                - "442"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 29 Oct 2026 11:50:38 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 439b16c2-8cae-4dfc-8c2f-5208cb4b4f7c
         status: 200 OK
+        code: 200
+        duration: 1.303056694s
     - id: 1
       request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/partner/v1/organizations/7d283e95-641f-4232-93ea-41ff49cd0d18
-      response:
-        body: '{"comment":"","created_at":"2026-09-15T13:56:39.184027Z","customer_id":"customer-123","email":"tf_test@example.com","id":"7d283e95-641f-4232-93ea-41ff49cd0d18","lock_reason_message":"validate_email","locked_at":"2026-09-15T13:56:39.326798Z","locked_by":"scaleway","name":"tf_test_partner_org","owner_firstname":"John","owner_lastname":"Doe","phone_number":null,"picture_link":null,"status":"locked"}'
-        code: 200
-        content_length: 432
-        duration: 68.356443ms
+        content_length: 0
+        host: api.scaleway.com
         headers:
-            Content-Length:
-                - "432"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 15 Sep 2026 13:56:40 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "48"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 73168b3e-0dfd-4169-a636-3bada8c18eed
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/metadata
+        method: GET
+      response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
+        content_length: 59
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
+        headers:
+            Content-Length:
+                - "59"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 29 Oct 2026 11:50:39 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 711196bd-602a-41c1-8eb8-9922b22457c4
         status: 200 OK
+        code: 200
+        duration: 27.772947ms
     - id: 2
       request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/partner/v1/organizations/7d283e95-641f-4232-93ea-41ff49cd0d18
-      response:
-        body: '{"comment":"","created_at":"2026-09-15T13:56:39.184027Z","customer_id":"customer-123","email":"tf_test@example.com","id":"7d283e95-641f-4232-93ea-41ff49cd0d18","lock_reason_message":"validate_email","locked_at":"2026-09-15T13:56:39.326798Z","locked_by":"scaleway","name":"tf_test_partner_org","owner_firstname":"John","owner_lastname":"Doe","phone_number":null,"picture_link":null,"status":"locked"}'
-        code: 200
-        content_length: 432
-        duration: 63.03581ms
+        content_length: 0
+        host: api.scaleway.com
         headers:
-            Content-Length:
-                - "432"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 15 Sep 2026 13:56:41 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "45"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 1e79eca3-65f5-4d51-af3d-73d7af8a0cc8
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/partner/v1/organizations/1a3c0188-1cbf-4f50-9be7-dff92f6ec12a
+        method: GET
+      response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        status: 200 OK
-    - id: 3
-      request:
-        body: '{}'
-        content_length: 2
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: POST
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/partner/v1/organizations/7d283e95-641f-4232-93ea-41ff49cd0d18/lock
-      response:
-        body: '{"comment":"","created_at":"2026-09-15T13:56:39.184027Z","customer_id":"customer-123","email":"tf_test@example.com","id":"7d283e95-641f-4232-93ea-41ff49cd0d18","lock_reason_message":"locked_by_reseller","locked_at":"2026-09-15T13:56:41.428098Z","locked_by":"partner","name":"tf_test_partner_org","owner_firstname":"John","owner_lastname":"Doe","phone_number":null,"picture_link":null,"status":"locked"}'
-        code: 200
-        content_length: 435
-        duration: 89.999291ms
+        content_length: 442
+        body: '{"locked_at":"2026-10-29T11:50:38.024979Z","phone_number":null,"created_at":"2026-10-29T11:50:37.896347Z","status":"locked","lock_reason_message":"validate_email","picture_link":null,"id":"1a3c0188-1cbf-4f50-9be7-dff92f6ec12a","email":"tf_test@example.com","owner_firstname":"John","owner_lastname":"Doe","customer_id":"customer-123","locked_by":"scaleway","srn":"","name":"tf_test_partner_org","comment":""}'
         headers:
             Content-Length:
-                - "435"
+                - "442"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 15 Sep 2026 13:56:41 GMT
+                - Thu, 29 Oct 2026 11:50:39 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
+                - Scaleway API Gateway (fr-par-2;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - f4b07c9e-a0d5-491e-a201-e6f8048e13e8
+        status: 200 OK
+        code: 200
+        duration: 107.649041ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/partner/v1/organizations/1a3c0188-1cbf-4f50-9be7-dff92f6ec12a
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 442
+        body: '{"name":"tf_test_partner_org","owner_firstname":"John","locked_at":"2026-10-29T11:50:38.024979Z","lock_reason_message":"validate_email","created_at":"2026-10-29T11:50:37.896347Z","picture_link":null,"srn":"","id":"1a3c0188-1cbf-4f50-9be7-dff92f6ec12a","email":"tf_test@example.com","phone_number":null,"customer_id":"customer-123","comment":"","status":"locked","owner_lastname":"Doe","locked_by":"scaleway"}'
+        headers:
+            Content-Length:
+                - "442"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 29 Oct 2026 11:50:39 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
@@ -152,9 +152,48 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 733acb9a-3ef7-4053-b248-a5a77fb89a64
+                - 957d9818-1687-4d16-bb22-4a50139d4647
+        status: 200 OK
+        code: 200
+        duration: 116.766447ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 2
+        host: api.scaleway.com
+        body: '{}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/partner/v1/organizations/1a3c0188-1cbf-4f50-9be7-dff92f6ec12a/lock
+        method: POST
+      response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
+        content_length: 445
+        body: '{"name":"tf_test_partner_org","comment":"","owner_lastname":"Doe","phone_number":null,"customer_id":"customer-123","picture_link":null,"id":"1a3c0188-1cbf-4f50-9be7-dff92f6ec12a","email":"tf_test@example.com","lock_reason_message":"locked_by_reseller","locked_by":"partner","srn":"","status":"locked","owner_firstname":"John","created_at":"2026-10-29T11:50:37.896347Z","locked_at":"2026-10-29T11:50:40.114844Z"}'
+        headers:
+            Content-Length:
+                - "445"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 29 Oct 2026 11:50:40 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - fbbc69a7-2246-403b-b7df-60f94cdbf7df
         status: 200 OK
-version: 2
+        code: 200
+        duration: 132.581002ms
