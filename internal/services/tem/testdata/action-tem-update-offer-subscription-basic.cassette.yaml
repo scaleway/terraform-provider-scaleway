@@ -6,41 +6,39 @@ interactions:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 72
+        content_length: 0
         transfer_encoding: []
         trailer: {}
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"essential"}'
+        body: ""
         form: {}
         headers:
-            Content-Type:
-                - application/json
             User-Agent:
                 - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/offer-subscriptions
-        method: PATCH
+        url: https://api.scaleway.com/transactional-email/v1alpha1/regions/fr-par/offer-subscriptions?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+        method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 390
+        content_length: 433
         uncompressed: false
-        body: '{"cancellation_available_at":"2026-10-29T09:59:20.540829Z","max_dedicated_ips":0,"max_custom_blocklists_per_domain":0,"subscribed_at":"2026-10-29T09:59:20.791455Z","sla":0,"max_domains":5,"included_monthly_emails":300,"max_webhooks_per_domain":1,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","offer_name":"essential"}'
+        body: '{"total_count":1,"offer_subscriptions":[{"sla":0,"included_monthly_emails":300,"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","offer_name":"essential","subscribed_at":"2026-10-29T09:59:20.791455Z","cancellation_available_at":"2026-10-29T09:59:20.540829Z","max_domains":5,"max_dedicated_ips":0,"max_webhooks_per_domain":1,"max_custom_blocklists_per_domain":0,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
         headers:
             Content-Length:
-                - "390"
+                - "433"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Thu, 29 Oct 2026 09:59:29 GMT
+                - Thu, 29 Oct 2026 13:24:31 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -50,14 +48,14 @@ interactions:
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "48"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 57b3f219-cba6-4482-aa2c-0603bcdc012b
+                - bfe8aacd-f07d-46d6-8bb4-42f9f3329ad6
         status: 200 OK
         code: 200
-        duration: 639.557833ms
+        duration: 794.536917ms
     - id: 1
       request:
         proto: HTTP/1.1
@@ -84,7 +82,7 @@ interactions:
         trailer: {}
         content_length: 433
         uncompressed: false
-        body: '{"total_count":1,"offer_subscriptions":[{"included_monthly_emails":300,"max_webhooks_per_domain":1,"max_custom_blocklists_per_domain":0,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","subscribed_at":"2026-10-29T09:59:20.791455Z","cancellation_available_at":"2026-10-29T09:59:20.540829Z","max_domains":5,"offer_name":"essential","sla":0,"max_dedicated_ips":0}]}'
+        body: '{"total_count":1,"offer_subscriptions":[{"max_domains":5,"included_monthly_emails":300,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","cancellation_available_at":"2026-10-29T09:59:20.540829Z","sla":0,"max_dedicated_ips":0,"max_webhooks_per_domain":1,"max_custom_blocklists_per_domain":0,"offer_name":"essential","subscribed_at":"2026-10-29T09:59:20.791455Z"}]}'
         headers:
             Content-Length:
                 - "433"
@@ -93,9 +91,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Thu, 29 Oct 2026 09:59:29 GMT
+                - Thu, 29 Oct 2026 13:24:32 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -105,14 +103,14 @@ interactions:
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "47"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 873faa1e-e688-411e-a25e-7259561b4b73
+                - 53eeb3c8-bdb5-4e2e-999c-c10aafb4f4bf
         status: 200 OK
         code: 200
-        duration: 262.864208ms
+        duration: 131.571625ms
     - id: 2
       request:
         proto: HTTP/1.1
@@ -139,7 +137,7 @@ interactions:
         trailer: {}
         content_length: 433
         uncompressed: false
-        body: '{"total_count":1,"offer_subscriptions":[{"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","offer_name":"essential","subscribed_at":"2026-10-29T09:59:20.791455Z","cancellation_available_at":"2026-10-29T09:59:20.540829Z","max_domains":5,"max_dedicated_ips":0,"included_monthly_emails":300,"sla":0,"max_webhooks_per_domain":1,"max_custom_blocklists_per_domain":0}]}'
+        body: '{"total_count":1,"offer_subscriptions":[{"offer_name":"essential","subscribed_at":"2026-10-29T09:59:20.791455Z","sla":0,"max_domains":5,"cancellation_available_at":"2026-10-29T09:59:20.540829Z","max_dedicated_ips":0,"included_monthly_emails":300,"max_webhooks_per_domain":1,"max_custom_blocklists_per_domain":0,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
         headers:
             Content-Length:
                 - "433"
@@ -148,9 +146,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Thu, 29 Oct 2026 09:59:29 GMT
+                - Thu, 29 Oct 2026 13:24:33 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -160,14 +158,14 @@ interactions:
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "48"
+                - "49"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - b88814da-070e-45c4-9caa-e8cc14d2b741
+                - b1b1682d-6384-4104-bac8-b4bc4180fff8
         status: 200 OK
         code: 200
-        duration: 250.0905ms
+        duration: 516.519417ms
     - id: 3
       request:
         proto: HTTP/1.1
@@ -194,7 +192,7 @@ interactions:
         trailer: {}
         content_length: 433
         uncompressed: false
-        body: '{"total_count":1,"offer_subscriptions":[{"sla":0,"max_domains":5,"max_dedicated_ips":0,"max_webhooks_per_domain":1,"max_custom_blocklists_per_domain":0,"offer_name":"essential","subscribed_at":"2026-10-29T09:59:20.791455Z","cancellation_available_at":"2026-10-29T09:59:20.540829Z","included_monthly_emails":300,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+        body: '{"total_count":1,"offer_subscriptions":[{"subscribed_at":"2026-10-29T09:59:20.791455Z","cancellation_available_at":"2026-10-29T09:59:20.540829Z","max_domains":5,"max_dedicated_ips":0,"max_webhooks_per_domain":1,"max_custom_blocklists_per_domain":0,"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","offer_name":"essential","sla":0,"included_monthly_emails":300}]}'
         headers:
             Content-Length:
                 - "433"
@@ -203,9 +201,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Thu, 29 Oct 2026 09:59:30 GMT
+                - Thu, 29 Oct 2026 13:24:33 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -215,11 +213,11 @@ interactions:
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "47"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 85ebe0b1-ad4c-45c1-8989-58c7a72b4cf4
+                - 9993a419-77ff-49a2-9ed4-843c1843fd6c
         status: 200 OK
         code: 200
-        duration: 192.222458ms
+        duration: 191.018042ms

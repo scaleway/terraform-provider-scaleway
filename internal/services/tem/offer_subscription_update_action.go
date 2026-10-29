@@ -129,6 +129,23 @@ func (a *OfferSubscriptionUpdateAction) Invoke(ctx context.Context, req action.I
 
 	offerName := tem.OfferName(data.OfferName.ValueString())
 
+	current, err := a.temAPI.ListOfferSubscriptions(&tem.ListOfferSubscriptionsRequest{
+		Region:    region,
+		ProjectID: &projectID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error listing TEM offer subscriptions",
+			fmt.Sprintf("Failed to list offer subscriptions for project %s: %s", projectID, err),
+		)
+
+		return
+	}
+
+	if len(current.OfferSubscriptions) > 0 && current.OfferSubscriptions[0].OfferName == offerName {
+		return
+	}
+
 	_, err = a.temAPI.UpdateOfferSubscription(&tem.UpdateOfferSubscriptionRequest{
 		Region:    region,
 		ProjectID: projectID,
