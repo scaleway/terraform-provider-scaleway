@@ -81,5 +81,6 @@ Each `sources` block contains:
 - `updated_at` - The date and time of the last update of the cockpit datasource.
 - `retention_days` - The number of days to retain data.
 - `push_url` - The URL endpoint used for pushing data to the cockpit data source.
+- `srn` - The Scaleway Resource Name (SRN) of the data source.
 - `region` - The region of the data source.
 - `project_id` - The project ID of the data source.

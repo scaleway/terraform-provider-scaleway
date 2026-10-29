@@ -89,6 +89,11 @@ func sourceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The URL endpoint used for pushing data to the cockpit data source.",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the data source",
+		},
 		"project_id": account.ProjectIDSchema(),
 		"region":     regional.Schema(),
 	}
@@ -161,6 +166,7 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("push_url", pushURL)
+	_ = d.Set("srn", res.Srn)
 	_ = d.Set("retention_days", int(res.RetentionDays))
 
 	return nil

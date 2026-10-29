@@ -34,6 +34,11 @@ func grafanaSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The URL to access the Grafana dashboard",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the Grafana instance",
+		},
 	}
 }
 
@@ -64,6 +69,7 @@ func dataSourceCockpitGrafanaRead(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(projectID)
 	_ = d.Set("project_id", projectID)
 	_ = d.Set("grafana_url", grafana.GrafanaURL)
+	_ = d.Set("srn", grafana.Srn)
 
 	return nil
 }
