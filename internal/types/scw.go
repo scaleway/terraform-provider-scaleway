@@ -15,7 +15,5 @@ func ExpandSize(data any) *scw.Size {
 		return nil
 	}
 
-	size := scw.Size(data.(int))
-
-	return &size
+	return new(scw.Size(data.(int)))
 }

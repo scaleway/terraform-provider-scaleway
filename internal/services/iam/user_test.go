@@ -1,6 +1,7 @@
 package iam_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -40,6 +41,7 @@ func TestAccUser_Member(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "tags.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "type", "member"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "mfa", "false"),
+					resource.TestMatchResourceAttr("scaleway_iam_user.member_user", "srn", regexp.MustCompile(`^srn://iam\..+/users/.+$`)),
 				),
 			},
 			// Add tag and update email, username, last name, phone number and locale.
@@ -68,6 +70,40 @@ func TestAccUser_Member(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "tags.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "tags.0", "tf_tests"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "type", "member"),
+				),
+			},
+			{
+				ResourceName:            "scaleway_iam_user.member_user",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password"},
+			},
+		},
+	})
+}
+
+func TestAccUser_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             iamchecks.CheckUserDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_iam_user" "password_wo_user" {
+						email = "testiamuserpasswordwo@scaleway.com"
+						username = "testiamuserpasswordwo"
+						password_wo = "FirstWOPassword123"
+						password_wo_version = 1
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIamUserExists(tt, "scaleway_iam_user.password_wo_user"),
+					acctest.CheckResourceAttrUUID("scaleway_iam_user.password_wo_user", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.password_wo_user", "email", "testiamuserpasswordwo@scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.password_wo_user", "username", "testiamuserpasswordwo"),
 				),
 			},
 		},

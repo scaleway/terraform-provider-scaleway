@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,7 +10,9 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -20,71 +23,89 @@ func ResourceAPIKey() *schema.Resource {
 		ReadContext:   resourceIamAPIKeyRead,
 		UpdateContext: resourceIamAPIKeyUpdate,
 		DeleteContext: resourceIamAPIKeyDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the iam api key",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the iam api key",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the iam api key",
-			},
-			"expires_at": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "The date and time of the expiration of the iam api key. Cannot be changed afterwards",
-				ValidateDiagFunc: verify.IsDate(),
-				DiffSuppressFunc: dsf.TimeRFC3339,
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The access key of the iam api key",
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The secret Key of the iam api key",
-				Sensitive:   true,
-			},
-			"application_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "ID of the application attached to the api key",
-				ConflictsWith:    []string{"user_id"},
-				ValidateDiagFunc: verify.IsUUID(),
-			},
-			"user_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "ID of the user attached to the api key",
-				ConflictsWith:    []string{"application_id"},
-				ValidateDiagFunc: verify.IsUUID(),
-			},
-			"editable": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the iam api key is editable",
-			},
-			"creation_ip": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IPv4 Address of the device which created the API key",
-			},
-			"default_project_id": account.ProjectIDSchema(),
+		SchemaFunc:    apiKeySchema,
+	}
+}
+
+func apiKeySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the iam api key",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the iam api key",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the iam api key",
+		},
+		"expires_at": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "The date and time of the expiration of the iam api key. Cannot be changed afterwards",
+			ValidateDiagFunc: verify.IsDate(),
+			DiffSuppressFunc: dsf.TimeRFC3339,
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The access key of the iam api key",
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The secret Key of the iam api key",
+			Sensitive:   true,
+		},
+		"secret_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of a [Secret Manager](https://www.scaleway.com/en/secret-manager/) secret. If set, the secret_key of the API key is stored as a new version of this secret and is not stored in the Terraform state. The secret itself is not managed by this resource. Can be a UUID or a regional ID (region/UUID), in which case the region of the secret is derived from it.",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"application_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of the application attached to the api key",
+			ConflictsWith:    []string{"user_id"},
+			ValidateDiagFunc: verify.IsUUID(),
+		},
+		"user_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "ID of the user attached to the api key",
+			ConflictsWith:    []string{"application_id"},
+			ValidateDiagFunc: verify.IsUUID(),
+		},
+		"editable": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Whether or not the iam api key is editable",
+		},
+		"creation_ip": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IPv4 Address of the device which created the API key",
+		},
+		"default_project_id": account.ProjectIDSchema(),
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the API key",
 		},
 	}
 }
@@ -103,9 +124,22 @@ func resourceIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("secret_key", res.SecretKey)
+	err = identity.SetGlobalIdentity(d, res.AccessKey)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.SetId(res.AccessKey)
+	if secretID, ok := d.GetOk("secret_id"); ok {
+		if res.SecretKey == nil {
+			return diag.FromErr(fmt.Errorf("the IAM API key %s was created without a secret key, cannot store it in the secret %s", res.AccessKey, secretID))
+		}
+
+		if _, err := secret.CreateSecretVersion(ctx, m, secretID.(string), *res.SecretKey, res.Description); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		_ = d.Set("secret_key", res.SecretKey)
+	}
 
 	return resourceIamAPIKeyRead(ctx, d, m)
 }
@@ -126,23 +160,12 @@ func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("description", res.Description)
-	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("expires_at", types.FlattenTime(res.ExpiresAt))
-	_ = d.Set("access_key", res.AccessKey)
+	setAPIKeyState(d, res)
 
-	if res.ApplicationID != nil {
-		_ = d.Set("application_id", res.ApplicationID)
+	err = identity.SetGlobalIdentity(d, res.AccessKey)
+	if err != nil {
+		return diag.FromErr(err)
 	}
-
-	if res.UserID != nil {
-		_ = d.Set("user_id", res.UserID)
-	}
-
-	_ = d.Set("editable", res.Editable)
-	_ = d.Set("creation_ip", res.CreationIP)
-	_ = d.Set("default_project_id", res.DefaultProjectID)
 
 	return nil
 }
@@ -187,4 +210,26 @@ func resourceIamAPIKeyDelete(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	return nil
+}
+
+// setAPIKeyState sets the state for an API key resource
+func setAPIKeyState(d *schema.ResourceData, apiKey *iam.APIKey) {
+	_ = d.Set("description", apiKey.Description)
+	_ = d.Set("created_at", types.FlattenTime(apiKey.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(apiKey.UpdatedAt))
+	_ = d.Set("expires_at", types.FlattenTime(apiKey.ExpiresAt))
+	_ = d.Set("access_key", apiKey.AccessKey)
+
+	if apiKey.ApplicationID != nil {
+		_ = d.Set("application_id", apiKey.ApplicationID)
+	}
+
+	if apiKey.UserID != nil {
+		_ = d.Set("user_id", apiKey.UserID)
+	}
+
+	_ = d.Set("editable", apiKey.Editable)
+	_ = d.Set("creation_ip", apiKey.CreationIP)
+	_ = d.Set("default_project_id", apiKey.DefaultProjectID)
+	_ = d.Set("srn", apiKey.Srn)
 }

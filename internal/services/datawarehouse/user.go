@@ -24,33 +24,42 @@ func ResourceUser() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"region": regional.Schema(),
-			"deployment_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "ID of the Datawarehouse deployment to which this user belongs.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Name of the ClickHouse user.",
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "Password for the ClickHouse user.",
-			},
-			"is_admin": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Whether the user has administrator privileges.",
-			},
+		SchemaFunc: userSchema,
+	}
+}
+
+func userSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"region": regional.Schema(),
+		"deployment_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "ID of the Datawarehouse deployment to which this user belongs.",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Name of the ClickHouse user.",
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "Password for the ClickHouse user.",
+		},
+		"is_admin": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Whether the user has administrator privileges.",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the user",
 		},
 	}
 }
@@ -126,6 +135,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	_ = d.Set("deployment_id", deploymentID)
 	_ = d.Set("name", found.Name)
 	_ = d.Set("is_admin", found.IsAdmin)
+	_ = d.Set("srn", found.Srn)
 
 	return nil
 }
@@ -137,7 +147,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// Build the update request only for changed fields
+
 	req := &datawarehouseapi.UpdateUserRequest{
 		Region:       region,
 		DeploymentID: deploymentID,
@@ -146,12 +156,12 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 	changed := false
 
 	if d.HasChange("password") {
-		req.Password = scw.StringPtr(d.Get("password").(string))
+		req.Password = new(d.Get("password").(string))
 		changed = true
 	}
 
 	if d.HasChange("is_admin") {
-		req.IsAdmin = scw.BoolPtr(d.Get("is_admin").(bool))
+		req.IsAdmin = new(d.Get("is_admin").(bool))
 		changed = true
 	}
 

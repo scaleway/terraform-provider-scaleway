@@ -1,11 +1,14 @@
 package edgeservices
 
 import (
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -33,6 +36,66 @@ func flattenS3BackendConfig(s3backend *edge_services.ScalewayS3BackendConfig) []
 	}
 }
 
+func expandContainerBackendConfig(raw any, defaultRegion scw.Region) *edge_services.ScalewayServerlessContainerBackendConfig {
+	if raw == nil || len(raw.([]any)) != 1 {
+		return nil
+	}
+
+	rawMap := raw.([]any)[0].(map[string]any)
+
+	region := defaultRegion
+	if v, ok := rawMap["region"].(string); ok && v != "" {
+		region = scw.Region(v)
+	}
+
+	containerID := rawMap["container_id"].(string)
+	if id := regional.ExpandID(containerID); id.Region != "" {
+		region = id.Region
+	}
+
+	return &edge_services.ScalewayServerlessContainerBackendConfig{
+		Region:      region,
+		ContainerID: locality.ExpandID(containerID),
+	}
+}
+
+func flattenContainerBackendConfig(cfg *edge_services.ScalewayServerlessContainerBackendConfig) []map[string]any {
+	return []map[string]any{{
+		"container_id": regional.NewIDString(cfg.Region, cfg.ContainerID),
+		"region":       cfg.Region.String(),
+	}}
+}
+
+func expandFunctionBackendConfig(raw any, defaultRegion scw.Region) *edge_services.ScalewayServerlessFunctionBackendConfig {
+	if raw == nil || len(raw.([]any)) != 1 {
+		return nil
+	}
+
+	rawMap := raw.([]any)[0].(map[string]any)
+
+	region := defaultRegion
+	if v, ok := rawMap["region"].(string); ok && v != "" {
+		region = scw.Region(v)
+	}
+
+	functionID := rawMap["function_id"].(string)
+	if id := regional.ExpandID(functionID); id.Region != "" {
+		region = id.Region
+	}
+
+	return &edge_services.ScalewayServerlessFunctionBackendConfig{
+		Region:     region,
+		FunctionID: locality.ExpandID(functionID),
+	}
+}
+
+func flattenFunctionBackendConfig(cfg *edge_services.ScalewayServerlessFunctionBackendConfig) []map[string]any {
+	return []map[string]any{{
+		"function_id": regional.NewIDString(cfg.Region, cfg.FunctionID),
+		"region":      cfg.Region.String(),
+	}}
+}
+
 func expandPurge(raw any) []*edge_services.PurgeRequest {
 	if raw == nil {
 		return nil
@@ -54,8 +117,8 @@ func expandPurge(raw any) []*edge_services.PurgeRequest {
 }
 
 func expandTLSSecrets(raw any, region scw.Region) []*edge_services.TLSSecret {
-	secrets := []*edge_services.TLSSecret(nil)
 	rawSecrets := raw.([]any)
+	secrets := make([]*edge_services.TLSSecret, 0, len(rawSecrets))
 
 	for _, rawSecret := range rawSecrets {
 		mapSecret := rawSecret.(map[string]any)
@@ -78,7 +141,7 @@ func flattenTLSSecrets(secrets []*edge_services.TLSSecret) any {
 
 	for _, secret := range secrets {
 		secretMap := map[string]any{
-			"secret_id": secret.SecretID,
+			"secret_id": regional.NewIDString(secret.Region, secret.SecretID),
 			"region":    secret.Region.String(),
 		}
 		secretsI = append(secretsI, secretMap)
@@ -87,7 +150,7 @@ func flattenTLSSecrets(secrets []*edge_services.TLSSecret) any {
 	return secretsI
 }
 
-func expandLBBackendConfig(zone scw.Zone, raw any) *edge_services.ScalewayLBBackendConfig {
+func expandLBBackendConfig(d *schema.ResourceData, zone scw.Zone, raw any) *edge_services.ScalewayLBBackendConfig {
 	lbConfigs := []*edge_services.ScalewayLB(nil)
 	rawLbConfigs := raw.([]any)
 
@@ -102,16 +165,21 @@ func expandLBBackendConfig(zone scw.Zone, raw any) *edge_services.ScalewayLBBack
 		innerMap := lbConfigList[0].(map[string]any)
 
 		configZone := zone
-		if zoneStr, ok := innerMap["zone"]; ok && zoneStr != "" {
-			configZone = scw.Zone(zoneStr.(string))
+		if rawZone, ok := meta.GetRawConfigForKey(d, "lb_backend_config.0.lb_config.0.zone", cty.String); ok && rawZone != nil && rawZone != "" {
+			configZone = scw.Zone(rawZone.(string))
+		} else if lbID, ok := innerMap["id"].(string); ok && lbID != "" {
+			if zonalID := zonal.ExpandID(lbID); zonalID.Zone != "" {
+				configZone = zonalID.Zone
+			}
 		}
 
 		lbConfig := &edge_services.ScalewayLB{
-			ID:         locality.ExpandID(innerMap["id"]),
-			Zone:       configZone,
-			FrontendID: locality.ExpandID(innerMap["frontend_id"]),
-			IsSsl:      types.ExpandBoolPtr(innerMap["is_ssl"]),
-			DomainName: types.ExpandStringPtr(innerMap["domain_name"]),
+			ID:           locality.ExpandID(innerMap["id"]),
+			Zone:         configZone,
+			FrontendID:   locality.ExpandID(innerMap["frontend_id"]),
+			IsSsl:        types.ExpandBoolPtr(innerMap["is_ssl"]),
+			DomainName:   types.ExpandStringPtr(innerMap["domain_name"]),
+			HasWebsocket: types.ExpandBoolPtr(innerMap["has_websocket"]),
 		}
 		lbConfigs = append(lbConfigs, lbConfig)
 	}
@@ -129,12 +197,18 @@ func flattenLBBackendConfig(zone scw.Zone, lbConfigs *edge_services.ScalewayLBBa
 	inner := make([]any, len(lbConfigs.LBs))
 
 	for i, lbConfig := range lbConfigs.LBs {
+		configZone := lbConfig.Zone
+		if configZone == "" {
+			configZone = zone
+		}
+
 		inner[i] = map[string]any{
-			"id":          zonal.NewIDString(zone, lbConfig.ID),
-			"frontend_id": zonal.NewIDString(zone, lbConfig.FrontendID),
-			"is_ssl":      types.FlattenBoolPtr(lbConfig.IsSsl),
-			"domain_name": types.FlattenStringPtr(lbConfig.DomainName),
-			"zone":        lbConfig.Zone.String(),
+			"id":            zonal.NewIDString(configZone, lbConfig.ID),
+			"frontend_id":   zonal.NewIDString(configZone, lbConfig.FrontendID),
+			"is_ssl":        types.FlattenBoolPtr(lbConfig.IsSsl),
+			"domain_name":   types.FlattenStringPtr(lbConfig.DomainName),
+			"zone":          configZone.String(),
+			"has_websocket": types.FlattenBoolPtr(lbConfig.HasWebsocket),
 		}
 	}
 
@@ -163,6 +237,7 @@ func expandRouteRules(raw any) []*edge_services.SetRouteRulesRequestRouteRule {
 		ruleMap := rawRule.(map[string]any)
 		rule := &edge_services.SetRouteRulesRequestRouteRule{
 			BackendStageID: types.ExpandStringPtr(ruleMap["backend_stage_id"].(string)),
+			WafStageID:     types.ExpandStringPtr(ruleMap["waf_stage_id"].(string)),
 		}
 
 		if rawHTTPMatch, ok := ruleMap["rule_http_match"]; ok && rawHTTPMatch != nil {
@@ -199,6 +274,10 @@ func expandRuleHTTPMatch(raw any) *edge_services.RuleHTTPMatch {
 		result.PathFilter = expandRuleHTTPMatchPathFilter(rawPF)
 	}
 
+	if rawHF, exists := ruleMap["host_filter"]; exists && rawHF != nil {
+		result.HostFilter = expandRuleHTTPMatchHostFilter(rawHF)
+	}
+
 	return result
 }
 
@@ -226,6 +305,7 @@ func flattenRouteRules(rules []*edge_services.RouteRule) []any {
 	for _, rule := range rules {
 		m := map[string]any{
 			"backend_stage_id": types.FlattenStringPtr(rule.BackendStageID),
+			"waf_stage_id":     types.FlattenStringPtr(rule.WafStageID),
 			"rule_http_match":  flattenRuleHTTPMatch(rule.RuleHTTPMatch),
 		}
 		result = append(result, m)
@@ -253,6 +333,7 @@ func flattenRuleHTTPMatch(match *edge_services.RuleHTTPMatch) []any {
 	}
 
 	m["path_filter"] = flattenRuleHTTPMatchPathFilter(match.PathFilter)
+	m["host_filter"] = flattenRuleHTTPMatchHostFilter(match.HostFilter)
 
 	return []any{m}
 }
@@ -265,6 +346,96 @@ func flattenRuleHTTPMatchPathFilter(pathFilter *edge_services.RuleHTTPMatchPathF
 	m := map[string]any{
 		"path_filter_type": pathFilter.PathFilterType.String(),
 		"value":            pathFilter.Value,
+	}
+
+	return []any{m}
+}
+
+func expandRuleHTTPMatchHostFilter(raw any) *edge_services.RuleHTTPMatchHostFilter {
+	list, ok := raw.([]any)
+	if !ok || len(list) < 1 {
+		return nil
+	}
+
+	mapHF := list[0].(map[string]any)
+
+	return &edge_services.RuleHTTPMatchHostFilter{
+		HostFilterType: edge_services.RuleHTTPMatchHostFilterHostFilterType(mapHF["host_filter_type"].(string)),
+		Value:          mapHF["value"].(string),
+	}
+}
+
+func expandWafExclusionRuleList(raw any) []*edge_services.WafExclusionRule {
+	if raw == nil {
+		return []*edge_services.WafExclusionRule{}
+	}
+
+	rawRules, ok := raw.([]any)
+	if !ok {
+		return []*edge_services.WafExclusionRule{}
+	}
+
+	rules := make([]*edge_services.WafExclusionRule, 0, len(rawRules))
+
+	for _, rawRule := range rawRules {
+		ruleMap, ok := rawRule.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		rules = append(rules, &edge_services.WafExclusionRule{
+			RuleID: uint32(ruleMap["rule_id"].(int)),
+		})
+	}
+
+	return rules
+}
+
+func expandWafExclusionRules(raw any) *edge_services.WafExclusionRules {
+	rules := expandWafExclusionRuleList(raw)
+	if len(rules) == 0 {
+		return nil
+	}
+
+	return &edge_services.WafExclusionRules{Rules: rules}
+}
+
+func expandUpdatedWafExclusionRules(raw any) *edge_services.WafExclusionRules {
+	return &edge_services.WafExclusionRules{Rules: expandWafExclusionRuleList(raw)}
+}
+
+func flattenWafExclusionRules(rules []*edge_services.WafExclusionRule) []any {
+	if len(rules) == 0 {
+		return nil
+	}
+
+	result := make([]any, 0, len(rules))
+
+	for _, rule := range rules {
+		if rule == nil {
+			continue
+		}
+
+		result = append(result, map[string]any{
+			"rule_id": int(rule.RuleID),
+		})
+	}
+
+	if len(result) == 0 {
+		return nil
+	}
+
+	return result
+}
+
+func flattenRuleHTTPMatchHostFilter(hostFilter *edge_services.RuleHTTPMatchHostFilter) []any {
+	if hostFilter == nil {
+		return nil
+	}
+
+	m := map[string]any{
+		"host_filter_type": hostFilter.HostFilterType.String(),
+		"value":            hostFilter.Value,
 	}
 
 	return []any{m}

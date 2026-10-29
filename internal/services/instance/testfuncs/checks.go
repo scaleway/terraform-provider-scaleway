@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -37,6 +38,27 @@ func CheckIPExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
 			IP:   ID,
 			Zone: zone,
 		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func IsServerPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		instanceAPI, zone, ID, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		_, err = instanceAPI.GetServer(&instanceSDK.GetServerRequest{ServerID: ID, Zone: zone})
 		if err != nil {
 			return err
 		}
@@ -246,5 +268,94 @@ func IsVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			return nil
 		})
+	}
+}
+
+func IsSnapshotPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		instanceAPI, zone, ID, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		_, err = instanceAPI.GetSnapshot(&instanceSDK.GetSnapshotRequest{
+			Zone:       zone,
+			SnapshotID: ID,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func IsSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_instance_snapshot" {
+				continue
+			}
+
+			instanceAPI, zone, ID, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = instanceAPI.GetSnapshot(&instanceSDK.GetSnapshotRequest{
+				SnapshotID: ID,
+				Zone:       zone,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("snapshot (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !httperrors.Is404(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func IsTemplateDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_instance_template" {
+				continue
+			}
+
+			api := instanceV2.NewAPI(tt.Meta.ScwClient())
+
+			zone, id, err := zonal.ParseID(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.GetTemplate(&instanceV2.GetTemplateRequest{
+				Zone:       zone,
+				TemplateID: id,
+			})
+			if err != nil {
+				if httperrors.Is404(err) {
+					continue
+				}
+
+				return err
+			}
+
+			return fmt.Errorf("template (%s) still exists", rs.Primary.ID)
+		}
+
+		return nil
 	}
 }

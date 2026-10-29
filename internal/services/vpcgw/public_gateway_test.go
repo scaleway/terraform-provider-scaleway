@@ -34,6 +34,7 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "name", publicGatewayName),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "type", "VPC-GW-S"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "status", vpcgwSDK.GatewayStatusRunning.String()),
+					resource.TestMatchResourceAttr("scaleway_vpc_public_gateway.main", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/gateways/.+$`)),
 				),
 			},
 			{
@@ -84,6 +85,11 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "status", vpcgwSDK.GatewayStatusRunning.String()),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "zone", "nl-ams-1"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_vpc_public_gateway.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -254,7 +260,7 @@ func testAccCheckVPCPublicGatewayExists(tt *acctest.TestTools, n string) resourc
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
+		api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}

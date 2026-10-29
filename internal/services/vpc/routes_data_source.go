@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -16,111 +17,115 @@ import (
 func DataSourceRoutes() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceRoutesRead,
-		Schema: map[string]*schema.Schema{
-			"vpc_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Only routes within this VPC will be returned",
-			},
-			"nexthop_resource_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Only routes with a matching next hop resource ID will be returned",
-			},
-			"nexthop_private_network_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Only routes with a matching next hop private network ID will be returned",
-			},
-			"nexthop_resource_type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "Only Routes with a matching next hop resource type will be returned",
-				ValidateDiagFunc: verify.ValidateEnum[vpc.RouteWithNexthopResourceType](),
-			},
-			"is_ipv6": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Only routes with an IPv6 destination will be returned",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "Routes with these exact tags are listed.",
-			},
-			"routes": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of routes",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The associated route ID",
-						},
-						"vpc_id": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The VPC ID associated with the route",
-						},
-						"tags": {
-							Computed: true,
-							Type:     schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Description: "The tags associated with the route",
-						},
-						"created_at": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Date and time of route's creation (RFC 3339 format)",
-						},
-						"description": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The description of the route",
-						},
-						"destination": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The destination IP or IP range of the route",
-						},
-						"nexthop_resource_id": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The resource ID of the route's next hop",
-						},
-						"nexthop_private_network_id": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The private network ID of the route's next hop",
-						},
-						"nexthop_ip": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The IP of the route's next hop",
-						},
-						"nexthop_name": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The name of the route's next hop",
-						},
-						"nexthop_resource_type": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The resource type of the route's next hop",
-						},
-						"region": regional.Schema(),
-					},
-				},
-			},
-			"region": regional.Schema(),
+		SchemaFunc:  routesSchema,
+	}
+}
+
+func routesSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"vpc_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Only routes within this VPC will be returned",
 		},
+		"nexthop_resource_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Only routes with a matching next hop resource ID will be returned",
+		},
+		"nexthop_private_network_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Only routes with a matching next hop private network ID will be returned",
+		},
+		"nexthop_resource_type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Only Routes with a matching next hop resource type will be returned",
+			ValidateDiagFunc: verify.ValidateEnum[vpc.RouteWithNexthopResourceType](),
+		},
+		"is_ipv6": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Only routes with an IPv6 destination will be returned",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "Routes with these exact tags are listed.",
+		},
+		"routes": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of routes",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The associated route ID",
+					},
+					"vpc_id": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The VPC ID associated with the route",
+					},
+					"tags": {
+						Computed: true,
+						Type:     schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Description: "The tags associated with the route",
+					},
+					"created_at": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Date and time of route's creation (RFC 3339 format)",
+					},
+					"description": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The description of the route",
+					},
+					"destination": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The destination IP or IP range of the route",
+					},
+					"nexthop_resource_id": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The resource ID of the route's next hop",
+					},
+					"nexthop_private_network_id": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The private network ID of the route's next hop",
+					},
+					"nexthop_ip": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The IP of the route's next hop",
+					},
+					"nexthop_name": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The name of the route's next hop",
+					},
+					"nexthop_resource_type": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The resource type of the route's next hop",
+					},
+					"region": regional.Schema(),
+				},
+			},
+		},
+		"region": regional.Schema(),
 	}
 }
 
@@ -144,7 +149,9 @@ func DataSourceRoutesRead(ctx context.Context, d *schema.ResourceData, m any) di
 		req.IsIPv6 = types.ExpandBoolPtr(isipv6)
 	}
 
-	res, err := routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListRoutesWithNexthopResponse, error) {
+		return routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

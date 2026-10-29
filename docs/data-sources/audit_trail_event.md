@@ -5,59 +5,74 @@ page_title: "Scaleway: scaleway_audit_trail_event"
 
 # scaleway_audit_trail_event
 
-Use this data source to get a list of existing Audit Trail events.
-For more information refer to the [Audit Trail API documentation](https://www.scaleway.com/en/developers/api/audit-trail/).
+The [`scaleway_audit_trail_event`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/audit_trail_event) data source is used to retrieve information about existing Audit Trail events.
+
+Refer to the Audit Trail [documentation](https://www.scaleway.com/en/docs/audit-trail/) and [API documentation](https://www.scaleway.com/en/developers/api/audit-trail/) for more information.
+
+
 
 ## Example Usage
 
-```hcl
-# Retrieve all audit trail events on the default organization
-data "scaleway_audit_trail_event" "find_all" {
-}
-
-# Retrieve audit trail events on a specific organization
-data "scaleway_audit_trail_event" "find_by_org" {
-  organization_id = "11111111-1111-1111-1111-111111111111"
-}
-
-# Retrieve audit trail events on a specific project
-data "scaleway_audit_trail_event" "find_by_project" {
-  project_id = "11111111-1111-1111-1111-111111111111"
-}
-
-# Retrieve audit trail events for a specific type of resource
-data "scaleway_audit_trail_event" "find_by_resource_type" {
-  resource_type = "instance_server"
-}
-
+```terraform
 # Retrieve audit trail for a specific resource
 data "scaleway_audit_trail_event" "find_by_resource_id" {
   resource_id = "11111111-1111-1111-1111-111111111111"
 }
+```
 
+```terraform
+# Retrieve all audit trail events on the default organization
+data "scaleway_audit_trail_event" "find_all" {}
+```
+
+```terraform
 # Retrieve audit trail for a specific Scaleway product
 data "scaleway_audit_trail_event" "find_by_product_name" {
   product_name = "secret-manager"
 }
+```
 
+```terraform
 # Retrieve audit trail events with various filtering
 data "scaleway_audit_trail_event" "find_with_filters" {
-  region = "fr-par"
-  service_name = "instance"
-  method_name = "CreateServer"
-  principal_id = "11111111-1111-1111-1111-111111111111"
-  source_ip = "192.0.2.1"
-  status = 200
-  recorded_after = "2025-10-01T00:00:00Z"
+  region          = "fr-par"
+  service_name    = "instance"
+  method_name     = "CreateServer"
+  principal_id    = "11111111-1111-1111-1111-111111111111"
+  source_ip       = "192.0.2.1"
+  status          = 200
+  recorded_after  = "2025-10-01T00:00:00Z"
   recorded_before = "2025-12-31T23:59:59Z"
-  order_by = "recorded_at_desc"
+  order_by        = "recorded_at_desc"
 }
 ```
 
+```terraform
+# Retrieve audit trail events on a specific organization
+data "scaleway_audit_trail_event" "find_by_org" {
+  organization_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
+```terraform
+# Retrieve audit trail events on a specific project
+data "scaleway_audit_trail_event" "find_by_project" {
+  project_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
+```terraform
+# Retrieve audit trail events for a specific type of resource
+data "scaleway_audit_trail_event" "find_by_resource_type" {
+  resource_type = "instance_server"
+}
+```
+
+
 ## Argument Reference
 
-- `region` - (Optional) The [region](../guides/regions_and_zones.md#regions) you want to target. Defaults to the region specified in the [provider configuration](../index.md#region).
-- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_id) `organization_id`) ID of the Organization containing the Audit Trail events.
+- `region` - (Optional) The [region](../guides/regions_and_zones.md#regions) you want to target. Defaults to the region specified in the [provider configuration](../index.md#arguments-reference).
+- `organization_id` - (Optional. Defaults to [provider](../index.md#arguments-reference) `organization_id`) ID of the Organization containing the Audit Trail events.
 - `project_id` - (Optional) ID of the Project containing the Audit Trail events.
 - `resource_type` - (Optional) Type of the scaleway resources associated with the listed events. Possible values are: `secm_secret`, `secm_secret_version`, `kube_cluster`, `kube_pool`, `kube_node`, `kube_acl`, `keym_key`, `iam_user`, `iam_application`, `iam_group`, `iam_policy`, `iam_api_key`, `iam_ssh_key`, `iam_rule`, `iam_saml`, `iam_saml_certificate`, `secret_manager_secret`, `secret_manager_version`, `key_manager_key`, `account_user`, `account_organization`, `account_project`, `instance_server`, `instance_placement_group`, `instance_security_group`, `instance_volume`, `instance_snapshot`, `instance_image`, `apple_silicon_server`, `baremetal_server`, `baremetal_setting`, `ipam_ip`, `sbs_volume`, `sbs_snapshot`, `load_balancer_lb`, `load_balancer_ip`, `load_balancer_frontend`, `load_balancer_backend`, `load_balancer_route`, `load_balancer_acl`, `load_balancer_certificate`, `sfs_filesystem`, or `vpc_private_network`.
 - `resource_id` - (Optional) ID of the Scaleway resource associated with the listed events.

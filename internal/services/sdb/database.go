@@ -30,33 +30,54 @@ func ResourceDatabase() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Required:    true,
-				Description: "The database name",
-			},
-			"max_cpu": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     15,
-				Description: "The maximum number of CPU units for your Serverless SQL Database",
-			},
-			"min_cpu": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     0,
-				Description: "The minimum number of CPU units for your Serverless SQL Database",
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "endpoint of the database",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    databaseSchema,
+	}
+}
+
+func databaseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			ForceNew:    true,
+			Required:    true,
+			Description: "The database name",
 		},
+		"max_cpu": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     15,
+			Description: "The maximum number of CPU units for your Serverless SQL Database",
+		},
+		"min_cpu": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     0,
+			Description: "The minimum number of CPU units for your Serverless SQL Database",
+		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "endpoint of the database",
+		},
+		"version": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Description: "The major version of the PostgreSQL engine (e.g. `16`). If not specified, the default version is used.",
+		},
+		"version_end_of_life_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The end of life date of the database version (RFC3339).",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the database.",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -73,6 +94,7 @@ func ResourceDatabaseCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		CPUMin:       uint32(d.Get("min_cpu").(int)),
 		CPUMax:       uint32(d.Get("max_cpu").(int)),
 		FromBackupID: nil,
+		Version:      d.Get("version").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -111,6 +133,13 @@ func ResourceDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("endpoint", database.Endpoint)
 	_ = d.Set("region", database.Region)
 	_ = d.Set("project_id", database.ProjectID)
+
+	if database.Version != nil {
+		_ = d.Set("version", database.Version.Name)
+		_ = d.Set("version_end_of_life_at", types.FlattenTime(database.Version.EndOfLifeAt))
+	}
+
+	_ = d.Set("srn", database.Srn)
 
 	return nil
 }

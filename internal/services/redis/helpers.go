@@ -14,7 +14,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
@@ -55,7 +54,7 @@ func waitForCluster(ctx context.Context, api *redis.API, zone scw.Zone, id strin
 
 	return api.WaitForCluster(&redis.WaitForClusterRequest{
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		ClusterID:     id,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
@@ -81,5 +80,5 @@ func privateNetworkSetHash(v any) int {
 		}
 	}
 
-	return types.StringHashcode(buf.String())
+	return schema.HashString(buf.String())
 }

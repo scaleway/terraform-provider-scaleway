@@ -6,7 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/hashicorp/aws-sdk-go-base/v2/tfawserr"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,7 +17,7 @@ import (
 
 func DataSourceBucketPolicy() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceBucketPolicy().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceBucketPolicy().SchemaFunc())
 
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "bucket")
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
@@ -65,7 +65,7 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	policyString := "{}"
-	if err == nil && policy.Policy != nil {
+	if policy.Policy != nil {
 		policyString = aws.ToString(policy.Policy)
 	}
 

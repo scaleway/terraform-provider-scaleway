@@ -82,6 +82,11 @@ func TestAccSecurityGroupRules_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_instance_security_group_rules.sgrs01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				// We test that we can remove some rules
 				Config: `
 						resource scaleway_instance_security_group sg01 {
@@ -115,6 +120,11 @@ func TestAccSecurityGroupRules_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_instance_security_group_rules.sgrs01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				// We test that we can remove all rules
 				Config: `
 						resource scaleway_instance_security_group sg01 {
@@ -130,6 +140,11 @@ func TestAccSecurityGroupRules_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.#", "0"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_security_group_rules.sgrs01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -202,11 +217,17 @@ func TestAccSecurityGroupRules_IPRanges(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.1.ip_range", "2002::1234:abcd:ffff:c0a8:101/128"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_security_group_rules.sgrs01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"outbound_rule.0.ip"},
+			},
 		},
 	})
 }
 
-func TestAccSecurityGroupRules_Basic2(t *testing.T) {
+func TestAccSecurityGroupRules_ReapplyConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -267,6 +288,11 @@ func TestAccSecurityGroupRules_Basic2(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.1.port", "443"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.1.ip_range", "0.0.0.0/0"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_security_group_rules.sgrs01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

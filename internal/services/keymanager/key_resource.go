@@ -2,7 +2,9 @@ package keymanager
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,108 +13,146 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/key_resource.md
+var keyResourceDescription string
+
 func ResourceKeyManagerKey() *schema.Resource {
 	return &schema.Resource{
+		Description:   keyResourceDescription,
 		CreateContext: resourceKeyManagerKeyCreate,
 		ReadContext:   resourceKeyManagerKeyRead,
 		UpdateContext: resourceKeyManagerKeyUpdate,
 		DeleteContext: resourceKeyManagerKeyDelete,
+		Identity:      identity.DefaultRegional(),
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		CustomizeDiff: customdiff.All(
 			validateUsageAlgorithmCombination(),
 		),
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Name of the key.",
-			},
-			"project_id": account.ProjectIDSchema(),
-			"region":     regional.Schema(),
-			"usage": {
-				Type:     schema.TypeString,
-				Required: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"symmetric_encryption", "asymmetric_encryption", "asymmetric_signing",
-				}, false),
-				Description: "Key usage type. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
-			},
-			"algorithm": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Algorithm to use for the key. The valid algorithms depend on the usage type.",
-				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
-					var allKnownAlgos []string
+		SchemaFunc: keySchema,
+	}
+}
 
-					symAlgos := key_manager.KeyAlgorithmSymmetricEncryption("").Values()
-					for _, algo := range symAlgos {
-						allKnownAlgos = append(allKnownAlgos, string(algo))
-					}
+func keySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Name of the key.",
+		},
+		"project_id": account.ProjectIDSchema(),
+		"region":     regional.Schema(),
+		"usage": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.ValidateEnum[key_manager.ListKeysRequestUsage](),
+			Description:      fmt.Sprintf("Key usage type. Possible values: %s.", strings.Join(verify.KnownValues[key_manager.ListKeysRequestUsage](), ", ")),
+		},
+		"algorithm": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Algorithm to use for the key. The valid algorithms depend on the usage type. See the [Key Manager cryptographic details](https://www.scaleway.com/en/docs/key-manager/reference-content/cryptographic-details-key-manager/#encryption-algorithm) for the algorithms available for each usage.",
+			ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
+				symAlgos := key_manager.KeyAlgorithmSymmetricEncryption("").Values()
+				asymEncAlgos := key_manager.KeyAlgorithmAsymmetricEncryption("").Values()
+				asymSignAlgos := key_manager.KeyAlgorithmAsymmetricSigning("").Values()
+				keyEncAlgos := key_manager.KeyAlgorithmKeyEncapsulation("").Values()
 
-					asymEncAlgos := key_manager.KeyAlgorithmAsymmetricEncryption("").Values()
-					for _, algo := range asymEncAlgos {
-						allKnownAlgos = append(allKnownAlgos, string(algo))
-					}
+				allKnownAlgos := make([]string, 0, len(symAlgos)+len(asymEncAlgos)+len(asymSignAlgos)+len(keyEncAlgos))
 
-					asymSignAlgos := key_manager.KeyAlgorithmAsymmetricSigning("").Values()
-					for _, algo := range asymSignAlgos {
-						allKnownAlgos = append(allKnownAlgos, string(algo))
-					}
+				for _, algo := range symAlgos {
+					allKnownAlgos = append(allKnownAlgos, string(algo))
+				}
 
-					return verify.ValidateStringInSliceWithWarning(allKnownAlgos, "algorithm")(i, p)
-				},
+				for _, algo := range asymEncAlgos {
+					allKnownAlgos = append(allKnownAlgos, string(algo))
+				}
+
+				for _, algo := range asymSignAlgos {
+					allKnownAlgos = append(allKnownAlgos, string(algo))
+				}
+
+				for _, algo := range keyEncAlgos {
+					allKnownAlgos = append(allKnownAlgos, string(algo))
+				}
+
+				return verify.ValidateStringInSliceWithWarning(allKnownAlgos, "algorithm")(i, p)
 			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the key.",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "List of the key's tags.",
-			},
-			"rotation_policy": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "Key rotation policy.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"rotation_period":  {Type: schema.TypeString, Required: true, DiffSuppressFunc: dsf.Duration, Description: "Time interval between two key rotations. The minimum duration is 24 hours and the maximum duration is 1 year (876000 hours)."},
-						"next_rotation_at": {Type: schema.TypeString, Optional: true, Description: "Timestamp indicating the next scheduled rotation."},
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Description of the key.",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+			Description: "List of the key's tags.",
+		},
+		"rotation_policy": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Key rotation policy.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"rotation_period": {Type: schema.TypeString, Required: true, DiffSuppressFunc: dsf.Duration, Description: "Time interval between two key rotations. The minimum duration is 24 hours and the maximum duration is 1 year (876000 hours)."},
+					"next_rotation_at": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Computed:         true,
+						ValidateDiagFunc: verify.IsDate(),
+						Description:      "Timestamp indicating the next scheduled rotation. Computed from rotation_period if not set.",
 					},
 				},
 			},
-			"unprotected": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, the key is not protected against deletion.",
-			},
-			"origin": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"scaleway_kms", "external",
-				}, false),
-				Description: "Origin of the key material. Possible values: scaleway_kms (Key Manager generates the key material), external (key material comes from an external source).",
-			},
-			// Computed fields
-			"id":             {Type: schema.TypeString, Computed: true, Description: "ID of the key."},
-			"state":          {Type: schema.TypeString, Computed: true, Description: "State of the key. See the Key.State enum for possible values."},
-			"created_at":     {Type: schema.TypeString, Computed: true, Description: "Key creation date."},
-			"updated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last modification date."},
-			"rotation_count": {Type: schema.TypeInt, Computed: true, Description: "The rotation count tracks the number of times the key has been rotated."},
-			"protected":      {Type: schema.TypeBool, Computed: true, Description: "Returns true if key protection is applied to the key."},
-			"locked":         {Type: schema.TypeBool, Computed: true, Description: "Returns true if the key is locked."},
-			"rotated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last rotation date."},
+		},
+		"unprotected": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, the key is not protected against deletion.",
+		},
+		"origin": {
+			Type:     schema.TypeString,
+			Optional: true,
+			ValidateFunc: validation.StringInSlice([]string{
+				"scaleway_kms", "external",
+			}, false),
+			Description: "Origin of the key material. Possible values: scaleway_kms (Key Manager generates the key material), external (key material comes from an external source).",
+		},
+		"protection_level": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.ValidateEnum[key_manager.KeyProtectionLevel](),
+			Description:      "Protection level of the key. Possible values: software (cryptographic operations are performed in software), hsm (cryptographic operations are performed within a dedicated Hardware Security Module). Defaults to software.",
+		},
+		// Computed fields
+		"id":             {Type: schema.TypeString, Computed: true, Description: "ID of the key."},
+		"state":          {Type: schema.TypeString, Computed: true, Description: "State of the key. See the Key.State enum for possible values."},
+		"created_at":     {Type: schema.TypeString, Computed: true, Description: "Key creation date."},
+		"updated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last modification date."},
+		"rotation_count": {Type: schema.TypeInt, Computed: true, Description: "The rotation count tracks the number of times the key has been rotated."},
+		"protected":      {Type: schema.TypeBool, Computed: true, Description: "Returns true if key protection is applied to the key."},
+		"locked":         {Type: schema.TypeBool, Computed: true, Description: "Returns true if the key is locked."},
+		"rotated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last rotation date."},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the key",
 		},
 	}
 }
@@ -148,6 +188,10 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		createReq.Origin = key_manager.KeyOrigin(v.(string))
 	}
 
+	if v, ok := d.GetOk("protection_level"); ok {
+		createReq.ProtectionLevel = key_manager.KeyProtectionLevel(v.(string))
+	}
+
 	usage := d.Get("usage").(string)
 	algorithm := d.Get("algorithm").(string)
 
@@ -158,12 +202,23 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	createReq.Usage = keyUsage
 
-	key, err := api.CreateKey(createReq)
+	var key *key_manager.Key
+
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		var err error
+
+		key, err = api.CreateKey(createReq)
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(key.Region, key.ID))
+	err = identity.SetRegionalIdentity(d, key.Region, key.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceKeyManagerKeyRead(ctx, d, m)
 }
@@ -174,33 +229,25 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	key, err := client.GetKey(&key_manager.GetKeyRequest{
-		Region: region,
-		KeyID:  keyID,
+	// Retry on 403 while IAM permissions propagate, and on 404 to handle eventual consistency issues
+	key, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*key_manager.Key, error) {
+		return transport.RetryOnStatusValue(ctx, transport.NotFound, func(_ context.Context) (*key_manager.Key, error) {
+			return client.GetKey(&key_manager.GetKeyRequest{
+				Region: region,
+				KeyID:  keyID,
+			})
+		})
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", key.Name)
-	_ = d.Set("project_id", key.ProjectID)
-	_ = d.Set("region", key.Region.String())
+	setKeyState(d, key)
 
-	usageType := UsageToString(key.Usage)
-	algorithm := AlgorithmFromKeyUsage(key.Usage)
-
-	_ = d.Set("usage", usageType)
-	_ = d.Set("algorithm", algorithm)
-
-	_ = d.Set("description", key.Description)
-	_ = d.Set("tags", key.Tags)
-	_ = d.Set("rotation_count", int(key.RotationCount))
-	_ = d.Set("created_at", types.FlattenTime(key.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(key.UpdatedAt))
-	_ = d.Set("protected", key.Protected)
-	_ = d.Set("locked", key.Locked)
-	_ = d.Set("rotated_at", types.FlattenTime(key.RotatedAt))
-	_ = d.Set("rotation_policy", FlattenKeyRotationPolicy(key.RotationPolicy))
+	err = identity.SetRegionalIdentity(d, key.Region, key.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -217,18 +264,15 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		updateReq.Name = &name
+		updateReq.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("description") {
-		desc := d.Get("description").(string)
-		updateReq.Description = &desc
+		updateReq.Description = new(d.Get("description").(string))
 	}
 
 	if d.HasChange("tags") {
-		tags := types.ExpandStrings(d.Get("tags"))
-		updateReq.Tags = &tags
+		updateReq.Tags = new(types.ExpandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("rotation_policy") {
@@ -238,11 +282,25 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 				return diag.Errorf("invalid rotation_period: %v", err)
 			}
 
+			// next_rotation_at is Optional+Computed: when it is absent from the
+			// configuration, d.Get returns the value carried over from state.
+			// Sending it back would pin the previous schedule, so only forward
+			// it when the user explicitly set it.
+			if rp != nil {
+				if _, set := meta.GetRawConfigForKey(d, "rotation_policy.0.next_rotation_at", cty.String); !set {
+					rp.NextRotationAt = nil
+				}
+			}
+
 			updateReq.RotationPolicy = rp
 		}
 	}
 
-	_, err = client.UpdateKey(updateReq)
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		_, err := client.UpdateKey(updateReq)
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -256,9 +314,11 @@ func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	err = client.DeleteKey(&key_manager.DeleteKeyRequest{
-		Region: region,
-		KeyID:  keyID,
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return client.DeleteKey(&key_manager.DeleteKeyRequest{
+			Region: region,
+			KeyID:  keyID,
+		})
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -278,19 +338,16 @@ func validateUsageAlgorithmCombination() schema.CustomizeDiffFunc {
 func expandUsageAlgorithm(usage, algorithm string) (*key_manager.KeyUsage, error) {
 	switch usage {
 	case usageSymmetricEncryption:
-		typedAlgo := key_manager.KeyAlgorithmSymmetricEncryption(algorithm)
-
-		return &key_manager.KeyUsage{SymmetricEncryption: &typedAlgo}, nil
+		return &key_manager.KeyUsage{SymmetricEncryption: new(key_manager.KeyAlgorithmSymmetricEncryption(algorithm))}, nil
 
 	case usageAsymmetricEncryption:
-		typedAlgo := key_manager.KeyAlgorithmAsymmetricEncryption(algorithm)
-
-		return &key_manager.KeyUsage{AsymmetricEncryption: &typedAlgo}, nil
+		return &key_manager.KeyUsage{AsymmetricEncryption: new(key_manager.KeyAlgorithmAsymmetricEncryption(algorithm))}, nil
 
 	case usageAsymmetricSigning:
-		typedAlgo := key_manager.KeyAlgorithmAsymmetricSigning(algorithm)
+		return &key_manager.KeyUsage{AsymmetricSigning: new(key_manager.KeyAlgorithmAsymmetricSigning(algorithm))}, nil
 
-		return &key_manager.KeyUsage{AsymmetricSigning: &typedAlgo}, nil
+	case usageKeyEncapsulation:
+		return &key_manager.KeyUsage{KeyEncapsulation: new(key_manager.KeyAlgorithmKeyEncapsulation(algorithm))}, nil
 
 	default:
 		return nil, fmt.Errorf("unknown usage type: %s", usage)

@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -28,103 +29,108 @@ func ResourceInstanceGroup() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultZonal(),
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"template_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "ID of the Instance template to attach to the Instance group",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The Instance group name",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the Instance group",
-			},
-			"capacity": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The specification of the minimum and maximum replicas for the Instance group, and the cooldown interval between two scaling events",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"max_replicas": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "The maximum count of Instances for the Instance group",
-						},
-						"min_replicas": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "The minimum count of Instances for the Instance group",
-						},
-						"cooldown_delay": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "Time (in seconds) after a scaling action during which requests to carry out a new scaling action will be denied",
-						},
-					},
-				},
-			},
-			"load_balancer": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The specification of the Load Balancer to link to the Instance group",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Description:      "The ID of the load balancer",
-							DiffSuppressFunc: dsf.Locality,
-						},
-						"backend_ids": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type:             schema.TypeString,
-								DiffSuppressFunc: dsf.Locality,
-							},
-							Optional:    true,
-							Description: "The Load Balancer backend IDs",
-						},
-						"private_network_id": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Description:      "The ID of the Private Network attached to the Load Balancer",
-							DiffSuppressFunc: dsf.Locality,
-						},
-					},
-				},
-			},
-			"delete_servers_on_destroy": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Whether to delete all instances in this group when the group is destroyed. Set to `true` to tear them down, `false` (the default) leaves them running",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Instance group",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Instance group",
-			},
-			"zone":       zonal.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    instanceGroupSchema,
+	}
+}
+
+func instanceGroupSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"template_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "ID of the Instance template to attach to the Instance group",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The Instance group name",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the Instance group",
+		},
+		"capacity": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The specification of the minimum and maximum replicas for the Instance group, and the cooldown interval between two scaling events",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"max_replicas": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "The maximum count of Instances for the Instance group",
+					},
+					"min_replicas": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "The minimum count of Instances for the Instance group",
+					},
+					"cooldown_delay": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Time (in seconds) after a scaling action during which requests to carry out a new scaling action will be denied",
+					},
+				},
+			},
+		},
+		"load_balancer": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The specification of the Load Balancer to link to the Instance group",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Description:      "The ID of the load balancer",
+						DiffSuppressFunc: dsf.Locality,
+					},
+					"backend_ids": {
+						Type: schema.TypeList,
+						Elem: &schema.Schema{
+							Type:             schema.TypeString,
+							DiffSuppressFunc: dsf.Locality,
+						},
+						Optional:    true,
+						Description: "The Load Balancer backend IDs",
+					},
+					"private_network_id": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Description:      "The ID of the Private Network attached to the Load Balancer",
+						DiffSuppressFunc: dsf.Locality,
+					},
+				},
+			},
+		},
+		"delete_servers_on_destroy": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Whether to delete all instances in this group when the group is destroyed. Set to `true` to tear them down, `false` (the default) leaves them running",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the Instance group",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the Instance group",
+		},
+		"zone":       zonal.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -149,7 +155,10 @@ func ResourceInstanceGroupCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, group.ID))
+	err = identity.SetZonalIdentity(d, group.Zone, group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstanceGroupRead(ctx, d, m)
 }
@@ -174,14 +183,25 @@ func ResourceInstanceGroupRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
+	diags := setInstanceGroupState(d, group)
+
+	err = identity.SetZonalIdentity(d, group.Zone, group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setInstanceGroupState(d *schema.ResourceData, group *autoscaling.InstanceGroup) diag.Diagnostics {
 	_ = d.Set("name", group.Name)
-	_ = d.Set("template_id", zonal.NewIDString(zone, group.InstanceTemplateID))
+	_ = d.Set("template_id", zonal.NewIDString(group.Zone, group.InstanceTemplateID))
 	_ = d.Set("tags", group.Tags)
 	_ = d.Set("capacity", flattenInstanceCapacity(group.Capacity))
-	_ = d.Set("load_balancer", flattenInstanceLoadBalancer(group.Loadbalancer, zone))
+	_ = d.Set("load_balancer", flattenInstanceLoadBalancer(group.Loadbalancer, group.Zone))
 	_ = d.Set("created_at", types.FlattenTime(group.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(group.UpdatedAt))
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", group.Zone)
 	_ = d.Set("project_id", group.ProjectID)
 
 	return nil

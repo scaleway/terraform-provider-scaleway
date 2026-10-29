@@ -17,113 +17,117 @@ import (
 func DataSourceInvoices() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceBillingInvoicesRead,
-		Schema: map[string]*schema.Schema{
-			"started_after": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Invoice's start date is greater or equal to `started_after`",
-			},
-			"started_before": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Invoice's start date precedes `started_before`",
-			},
-			"invoice_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The invoice type. It can either be `periodic` or `purchase`",
-			},
-			"invoices": {
-				Type:        schema.TypeList,
-				Description: "List of invoices",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Invoice ID",
-						},
-						"organization_name": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Organization name",
-						},
-						"start_date": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Start date of the billing period",
-						},
-						"stop_date": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Stop date of the billing period",
-						},
-						"billing_period": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Billing period of the invoice in the YYYY-MM format",
-						},
-						"issued_date": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Date when the invoice was sent to the customer",
-						},
-						"due_date": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Payment time limit, set according to the Organization's payment conditions",
-						},
-						"total_untaxed": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Total amount of the invoice, untaxed",
-						},
-						"total_taxed": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Total amount of the invoice, taxed",
-						},
-						"total_tax": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The total tax amount of the invoice",
-						},
-						"total_discount": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The total discount amount of the invoice",
-						},
-						"total_undiscount": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The total amount of the invoice before applying the discount",
-						},
-						"invoice_type": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Type of invoice, either periodic or purchase",
-						},
-						"state": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The state of the invoice",
-						},
-						"number": {
-							Computed:    true,
-							Type:        schema.TypeInt,
-							Description: "The invoice number",
-						},
-						"seller_name": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The name of the seller (Scaleway)",
-						},
+		SchemaFunc:  invoiceSchema,
+	}
+}
+
+func invoiceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"started_after": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Invoice's start date is greater or equal to `started_after`",
+		},
+		"started_before": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Invoice's start date precedes `started_before`",
+		},
+		"invoice_type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The invoice type. It can either be `periodic` or `purchase`",
+		},
+		"invoices": {
+			Type:        schema.TypeList,
+			Description: "List of invoices",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Invoice ID",
+					},
+					"organization_name": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Organization name",
+					},
+					"start_date": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Start date of the billing period",
+					},
+					"stop_date": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Stop date of the billing period",
+					},
+					"billing_period": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Billing period of the invoice in the YYYY-MM format",
+					},
+					"issued_date": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Date when the invoice was sent to the customer",
+					},
+					"due_date": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Payment time limit, set according to the Organization's payment conditions",
+					},
+					"total_untaxed": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Total amount of the invoice, untaxed",
+					},
+					"total_taxed": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Total amount of the invoice, taxed",
+					},
+					"total_tax": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The total tax amount of the invoice",
+					},
+					"total_discount": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The total discount amount of the invoice",
+					},
+					"total_undiscount": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The total amount of the invoice before applying the discount",
+					},
+					"invoice_type": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Type of invoice, either periodic or purchase",
+					},
+					"state": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The state of the invoice",
+					},
+					"number": {
+						Computed:    true,
+						Type:        schema.TypeInt,
+						Description: "The invoice number",
+					},
+					"seller_name": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The name of the seller (Scaleway)",
 					},
 				},
 			},
-			"organization_id": account.OrganizationIDSchema(),
 		},
+		"organization_id": account.OrganizationIDSchema(),
 	}
 }
 

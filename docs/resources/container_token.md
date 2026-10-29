@@ -5,6 +5,9 @@ page_title: "Scaleway: scaleway_container_token"
 
 # Resource: scaleway_container_token
 
+> **Important:** The resource `scaleway_container_token` has been deprecated and will no longer be supported in v1 of the API.
+Please use IAM authentication instead. You will find an implementation example in the [IAM authentication](container.md#managing-authentication-of-private-containers-with-iam) section of the Container documentation.
+
 The `scaleway_container_token` resource allows you to create and manage authentication tokens for Scaleway [Serverless Containers](https://www.scaleway.com/en/docs/serverless/containers/).
 
 Refer to the Containers tokens [documentation](https://www.scaleway.com/en/docs/serverless/containers/how-to/create-auth-token-from-console/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-tokens-list-all-tokens) for more information.
@@ -40,15 +43,15 @@ The following arguments are supported:
 
 - `container_id` - (Required) The unique identifier of the container.
 
-~> Only one of `namespace_id` or `container_id` must be set.
+~> **Important:** Only one of `namespace_id` or `container_id` must be set.
 
 - `description` (Optional) The description of the token.
 
 - `expires_at` (Optional) The expiration date of the token.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
 
-~> **Important** Updating any of the arguments above will recreate the token.
+~> **Important:** Updating any of the arguments above will recreate the token.
 
 ## Attributes Reference
 

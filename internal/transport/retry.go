@@ -10,11 +10,51 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+)
+
+const (
+	// IAMPropagationTimeout bounds how long RetryOnStatusValue keeps retrying a transient HTTP 403 while IAM
+	// permissions propagate. IAM is eventually consistent and its cache is per-instance, so a freshly
+	// granted permission can intermittently 403 even after a prior 200.
+	IAMPropagationTimeout = 2 * time.Minute
+
+	// IAMPropagationWaitTime is the delay between retries on HTTP 403.
+	IAMPropagationWaitTime = 2 * time.Second
+
+	// NotFoundTimeout bounds how long RetryOnStatusValue keeps retrying a transient HTTP 404, typically
+	// to wait for consistency resolution in Secret/KM APIs.
+	NotFoundTimeout = 30 * time.Second
+
+	// NotFoundWaitTime is the delay between retries on HTTP 404.
+	NotFoundWaitTime = 2 * time.Second
 )
 
 // DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
 var DefaultWaitRetryInterval *time.Duration
+
+type RetryPolicy struct {
+	StatusCodes []int
+	Timeout     time.Duration
+	WaitTime    time.Duration
+}
+
+var (
+	// IAMPropagation retries on transient HTTP 403 while IAM permissions propagate.
+	IAMPropagation = RetryPolicy{
+		StatusCodes: []int{http.StatusForbidden},
+		Timeout:     IAMPropagationTimeout,
+		WaitTime:    IAMPropagationWaitTime,
+	}
+
+	// NotFound retries on transient HTTP 404, typically to wait for consistency resolution
+	NotFound = RetryPolicy{
+		StatusCodes: []int{http.StatusNotFound},
+		Timeout:     NotFoundTimeout,
+		WaitTime:    NotFoundWaitTime,
+	}
+)
 
 type RetryableTransportOptions struct {
 	RetryMax     *int
@@ -111,12 +151,55 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	return c.Do(req)
 }
 
+// RetryOnStatusValue retries fn while it returns an HTTP error with one of the policy.StatusCodes,
+// up to policy.Timeout. Any other error (including a matching status code that outlives the
+// window) is returned to the caller without further retries.
+func RetryOnStatusValue[T any](ctx context.Context, policy RetryPolicy, fn func(context.Context) (T, error)) (T, error) {
+	var (
+		result  T
+		lastErr error
+	)
+
+	wait := policy.WaitTime
+	if DefaultWaitRetryInterval != nil {
+		wait = *DefaultWaitRetryInterval
+	}
+
+	deadline := time.Now().Add(policy.Timeout)
+
+	for {
+		result, lastErr = fn(ctx)
+		if lastErr == nil {
+			return result, nil
+		}
+
+		// Stop on any non-matching error, or once the window elapses: a matching error
+		// outliving the window is treated as persistent, not transient.
+		if !httperrors.IsStatusCodeError(lastErr, policy.StatusCodes...) || time.Now().After(deadline) {
+			return result, lastErr
+		}
+
+		select {
+		case <-ctx.Done():
+			return result, ctx.Err()
+		case <-time.After(wait):
+		}
+	}
+}
+
+// Error-only variant of RetryOnStatusValue, for functions that return no value.
+func RetryOnStatus(ctx context.Context, policy RetryPolicy, fn func(context.Context) error) error {
+	_, err := RetryOnStatusValue(ctx, policy, func(ctx context.Context) (struct{}, error) {
+		return struct{}{}, fn(ctx)
+	})
+
+	return err
+}
+
 func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) {
 	t, err := action()
 
-	var transientStateError *scw.TransientStateError
-
-	if errors.As(err, &transientStateError) {
+	if _, ok := errors.AsType[*scw.TransientStateError](err); ok {
 		_, err := waiter()
 		if err != nil {
 			return t, err

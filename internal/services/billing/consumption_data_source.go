@@ -16,58 +16,62 @@ import (
 func DataSourceConsumptions() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceBillingConsumptionsRead,
-		Schema: map[string]*schema.Schema{
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"consumptions": {
-				Type:        schema.TypeList,
-				Description: "List of the consumptions.",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"value": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Monetary value of the consumption",
-						},
-						"product_name": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The product name",
-						},
-						"category_name": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Name of consumption category",
-						},
-						"sku": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Unique identifier of the product",
-						},
-						"unit": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Unit of consumed quantity",
-						},
-						"billed_quantity": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Consumed quantity",
-						},
-						"project_id": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Project ID of the consumption",
-						},
+		SchemaFunc:  consumptionSchema,
+	}
+}
+
+func consumptionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"consumptions": {
+			Type:        schema.TypeList,
+			Description: "List of the consumptions.",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"value": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Monetary value of the consumption",
+					},
+					"product_name": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The product name",
+					},
+					"category_name": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Name of consumption category",
+					},
+					"sku": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Unique identifier of the product",
+					},
+					"unit": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Unit of consumed quantity",
+					},
+					"billed_quantity": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Consumed quantity",
+					},
+					"project_id": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Project ID of the consumption",
 					},
 				},
 			},
-			"updated_at": {
-				Computed:    true,
-				Description: "Date and time when the consumption was updated",
-				Type:        schema.TypeString,
-			},
+		},
+		"updated_at": {
+			Computed:    true,
+			Description: "Date and time when the consumption was updated",
+			Type:        schema.TypeString,
 		},
 	}
 }

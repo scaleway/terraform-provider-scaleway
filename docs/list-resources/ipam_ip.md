@@ -1,0 +1,102 @@
+---
+page_title: "Scaleway: scaleway_ipam_ip"
+subcategory: "IPAM"
+description: |-
+  Lists Scaleway IPAM IPs across regions and projects.
+---
+
+# Resource: scaleway_ipam_ip
+
+Lists Scaleway IPAM IPs across regions and projects.
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/#ipam).
+
+## Example Usage
+
+```terraform
+# List all IPAM IPs across all regions and all projects
+list "scaleway_ipam_ip" "all" {
+  provider = scaleway
+
+  config {
+    regions     = ["*"]
+    project_ids = ["*"]
+  }
+}
+```
+
+```terraform
+# List only IPAM IPs that are attached to a resource
+list "scaleway_ipam_ip" "attached" {
+  provider = scaleway
+
+  config {
+    regions  = ["fr-par"]
+    attached = true
+  }
+}
+```
+
+```terraform
+# List IPAM IPs belonging to a specific Private Network
+list "scaleway_ipam_ip" "by_pn" {
+  provider = scaleway
+
+  config {
+    regions            = ["fr-par"]
+    private_network_id = "11111111-1111-1111-1111-111111111111"
+  }
+}
+```
+
+```terraform
+# List IPAM IPs filtered by tag
+list "scaleway_ipam_ip" "by_tag" {
+  provider = scaleway
+
+  config {
+    regions = ["*"]
+    tags    = ["production"]
+  }
+}
+```
+
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `tags` - (Optional) Tags to filter for.
+- `attached` - (Optional) Filter for IPs which are attached to a resource.
+- `is_ipv6` - (Optional) Filter only for IPv6 addresses.
+- `vpc_id` - (Optional) VPC ID to filter for. Only IPs owned by resources in this VPC will be returned.
+- `private_network_id` - (Optional) Private Network ID to filter for. Mutually exclusive with `zonal`, `subnet_id`, and `source_vpc_id`.
+- `subnet_id` - (Optional) Subnet ID to filter for. Mutually exclusive with `zonal`, `private_network_id`, and `source_vpc_id`.
+- `zonal` - (Optional) Zone to filter for. Mutually exclusive with `private_network_id`, `subnet_id`, and `source_vpc_id`.
+- `source_vpc_id` - (Optional) Source VPC ID to filter for. Mutually exclusive with `zonal`, `private_network_id`, and `subnet_id`.
+- `resource_name` - (Optional) Attached resource name to filter for.
+- `resource_type` - (Optional) Resource type to filter for (e.g. `instance_server`, `lb_server`).
+- `resource_types` - (Optional) List of resource types to filter for.
+- `resource_ids` - (Optional) List of resource IDs to filter for.
+- `mac_address` - (Optional) MAC address to filter for.
+- `organization_id` - (Optional) Organization ID to filter for.
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects.
+- `regions` - (Optional) Regions to filter for. Use `["*"]` to list from all regions.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each IPAM IP:
+
+- `id` - The ID of the IP.
+- `address` - The IP address.
+- `address_cidr` - The IP address in CIDR notation.
+- `project_id` - The ID of the project the IP is associated with.
+- `region` - The region of the IP.
+- `zone` - The zone of the IP (if zonal).
+- `is_ipv6` - Whether the IP is an IPv6 address.
+- `created_at` - The date and time of the creation of the IP.
+- `updated_at` - The date and time of the last update of the IP.
+- `tags` - The tags associated with the IP.
+- `source` - The source pool where the IP was reserved in.
+- `resource` - The resource the IP is attached to.
+- `reverses` - The reverse DNS entries associated with the IP.

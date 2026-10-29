@@ -1,0 +1,519 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 138
+        body: '{"message":"resource is not found","resource":"organization_saml","resource_id":"105bdce1-64c0-48ab-899d-868455867ecf","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "138"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 039edd90-b26f-43c3-b0d9-498329ed7811
+        status: 404 Not Found
+        code: 404
+        duration: 45.881266ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 2
+        host: api.scaleway.com
+        body: '{}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 337
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"", "single_sign_on_url":""}'
+        headers:
+            Content-Length:
+                - "337"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - ffbf5775-f8e0-47e5-85b4-dc29c3431297
+        status: 200 OK
+        code: 200
+        duration: 54.010151ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/metadata
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 59
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
+        headers:
+            Content-Length:
+                - "59"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - d1f307f5-91e1-43c3-8369-8db0e323deea
+        status: 200 OK
+        code: 200
+        duration: 22.570287ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 337
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"", "single_sign_on_url":""}'
+        headers:
+            Content-Length:
+                - "337"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 051f73ca-be1e-4a81-8aa7-bed849a1c59b
+        status: 200 OK
+        code: 200
+        duration: 50.208107ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 101
+        host: api.scaleway.com
+        body: '{"entity_id":"https://example.com/saml/metadata","single_sign_on_url":"https://example.com/saml/sso"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592
+        method: PATCH
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 398
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"https://example.com/saml/metadata", "single_sign_on_url":"https://example.com/saml/sso"}'
+        headers:
+            Content-Length:
+                - "398"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 1cbb5a36-29ed-43a8-896b-280581e40bcb
+        status: 200 OK
+        code: 200
+        duration: 51.12884ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 398
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"https://example.com/saml/metadata", "single_sign_on_url":"https://example.com/saml/sso"}'
+        headers:
+            Content-Length:
+                - "398"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 8dfedb6f-f267-4fb1-91b8-0dc5845999f2
+        status: 200 OK
+        code: 200
+        duration: 58.077915ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 398
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"https://example.com/saml/metadata", "single_sign_on_url":"https://example.com/saml/sso"}'
+        headers:
+            Content-Length:
+                - "398"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 44755af6-7856-486c-adc3-c01e6103e900
+        status: 200 OK
+        code: 200
+        duration: 49.638526ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 398
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"https://example.com/saml/metadata", "single_sign_on_url":"https://example.com/saml/sso"}'
+        headers:
+            Content-Length:
+                - "398"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 5e6558fe-e9e4-4e0a-8f7b-895c074f28b9
+        status: 200 OK
+        code: 200
+        duration: 34.860771ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 398
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"https://example.com/saml/metadata", "single_sign_on_url":"https://example.com/saml/sso"}'
+        headers:
+            Content-Length:
+                - "398"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - cad39f41-e312-4c94-94c1-f5e1bf89305c
+        status: 200 OK
+        code: 200
+        duration: 50.339826ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 398
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"https://example.com/saml/metadata", "single_sign_on_url":"https://example.com/saml/sso"}'
+        headers:
+            Content-Length:
+                - "398"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 7e58f873-58d5-44cb-a3e0-307d222602f5
+        status: 200 OK
+        code: 200
+        duration: 37.383378ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 398
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"https://example.com/saml/metadata", "single_sign_on_url":"https://example.com/saml/sso"}'
+        headers:
+            Content-Length:
+                - "398"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - c703e36e-d124-4f31-851a-136bd266b6bb
+        status: 200 OK
+        code: 200
+        duration: 52.447922ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 398
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"https://example.com/saml/metadata", "single_sign_on_url":"https://example.com/saml/sso"}'
+        headers:
+            Content-Length:
+                - "398"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 6344d10a-713d-4357-8e05-604c52c00373
+        status: 200 OK
+        code: 200
+        duration: 43.024592ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 398
+        body: '{"id":"a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "status":"missing_certificate", "service_provider":{"entity_id":"https://iam.scaleway.com/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592", "assertion_consumer_service_url":"https://api.scaleway.com/iam/v1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592/login"}, "entity_id":"https://example.com/saml/metadata", "single_sign_on_url":"https://example.com/saml/sso"}'
+        headers:
+            Content-Length:
+                - "398"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 8e650130-d428-4b92-b7e4-a2b5edc5c47d
+        status: 200 OK
+        code: 200
+        duration: 46.683506ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/saml/a033fd60-cdb7-4e81-bcec-5f0b8dedc592
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - e6bd3720-ee11-4a01-a656-dbccc5accf0b
+        status: 204 No Content
+        code: 204
+        duration: 75.112215ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 138
+        body: '{"message":"resource is not found","resource":"organization_saml","resource_id":"105bdce1-64c0-48ab-899d-868455867ecf","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "138"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:11 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 8b357f2c-83f5-4ed2-abce-41a10d43e3c7
+        status: 404 Not Found
+        code: 404
+        duration: 33.37201ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/iam/v1alpha1/organizations/105bdce1-64c0-48ab-899d-868455867ecf/saml
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 138
+        body: '{"message":"resource is not found","resource":"organization_saml","resource_id":"105bdce1-64c0-48ab-899d-868455867ecf","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "138"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Aug 2026 09:07:11 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 51baa42d-8176-42eb-9e5e-7d0d75e73f14
+        status: 404 Not Found
+        code: 404
+        duration: 43.199882ms

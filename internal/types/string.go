@@ -1,8 +1,8 @@
 package types
 
 import (
-	"hash/crc32"
 	"reflect"
+	"slices"
 	"sort"
 
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
@@ -24,7 +24,7 @@ func ExpandStringPtr(data any) *string {
 		return nil
 	}
 
-	return scw.StringPtr(data.(string))
+	return new(data.(string))
 }
 
 // NewRandomName returns a random name prefixed for terraform.
@@ -88,10 +88,16 @@ func ExpandUpdatedStringPtr(data any) *string {
 	return &str
 }
 
-func ExpandStrings(data any) []string {
-	stringSlice := make([]string, 0, len(data.([]any)))
+// expandStringSlice converts a schema []any of strings into []string.
+// Nil data or a non-slice yields an empty slice.
+func expandStringSlice(data any) []string {
+	raw, ok := data.([]any)
+	if !ok || data == nil {
+		return []string{}
+	}
 
-	for _, s := range data.([]any) {
+	stringSlice := make([]string, 0, len(raw))
+	for _, s := range raw {
 		// zero-value is nil, ["foo", ""]
 		if s == nil {
 			s = ""
@@ -103,22 +109,16 @@ func ExpandStrings(data any) []string {
 	return stringSlice
 }
 
-func ExpandStringsPtr(data any) *[]string {
-	stringSlice := make([]string, 0, len(data.([]any)))
+func ExpandStrings(data any) []string {
+	return expandStringSlice(data)
+}
 
+func ExpandStringsPtr(data any) *[]string {
 	if _, ok := data.([]any); !ok || data == nil {
 		return nil
 	}
 
-	for _, s := range data.([]any) {
-		// zero-value is nil, ["foo", ""]
-		if s == nil {
-			s = ""
-		}
-
-		stringSlice = append(stringSlice, s.(string))
-	}
-
+	stringSlice := expandStringSlice(data)
 	if len(stringSlice) == 0 {
 		return nil
 	}
@@ -129,64 +129,19 @@ func ExpandStringsPtr(data any) *[]string {
 // ExpandUpdatedStringsPtr expands a string slice but will default to an empty list.
 // Should be used on schema update so emptying a list will update resource.
 func ExpandUpdatedStringsPtr(data any) *[]string {
-	stringSlice := []string{}
-	if _, ok := data.([]any); !ok || data == nil {
-		return &stringSlice
-	}
-
-	for _, s := range data.([]any) {
-		// zero-value is nil, ["foo", ""]
-		if s == nil {
-			s = ""
-		}
-
-		stringSlice = append(stringSlice, s.(string))
-	}
+	stringSlice := expandStringSlice(data)
 
 	return &stringSlice
-}
-
-func ExpandSliceIDs(rawIDs any) []string {
-	stringSlice := make([]string, 0, len(rawIDs.([]any)))
-	if _, ok := rawIDs.([]any); !ok || rawIDs == nil {
-		return stringSlice
-	}
-
-	for _, s := range rawIDs.([]any) {
-		stringSlice = append(stringSlice, locality.ExpandID(s.(string)))
-	}
-
-	return stringSlice
 }
 
 func ExpandSliceIDsPtr(rawIDs any) *[]string {
-	stringSlice := make([]string, 0, len(rawIDs.([]any)))
-	if _, ok := rawIDs.([]any); !ok || rawIDs == nil {
-		return &stringSlice
-	}
+	ids := locality.ExpandIDs(rawIDs)
 
-	for _, s := range rawIDs.([]any) {
-		stringSlice = append(stringSlice, locality.ExpandID(s.(string)))
-	}
-
-	return &stringSlice
-}
-
-func ExpandStringsOrEmpty(data any) []string {
-	stringSlice := make([]string, 0, len(data.([]any)))
-	if _, ok := data.([]any); !ok || data == nil {
-		return stringSlice
-	}
-
-	for _, s := range data.([]any) {
-		stringSlice = append(stringSlice, s.(string))
-	}
-
-	return stringSlice
+	return &ids
 }
 
 func FlattenSliceIDs(certificates []string, zone scw.Zone) any {
-	res := []any(nil)
+	res := make([]any, 0, len(certificates))
 	for _, certificateID := range certificates {
 		res = append(res, zonal.NewIDString(zone, certificateID))
 	}
@@ -194,32 +149,8 @@ func FlattenSliceIDs(certificates []string, zone scw.Zone) any {
 	return res
 }
 
-// StringHashcode hashes a string to a unique hashcode.
-//
-// crc32 returns a uint32, but for our use we need
-// and non-negative integer. Here we cast to an integer
-// and invert it if the result is negative.
-func StringHashcode(s string) int {
-	v := int(crc32.ChecksumIEEE([]byte(s)))
-	if v >= 0 {
-		return v
-	}
-
-	if -v >= 0 {
-		return -v
-	}
-	// v == MinInt
-	return 0
-}
-
 func SliceContainsString(slice []string, str string) bool {
-	for _, v := range slice {
-		if v == str {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(slice, str)
 }
 
 func CompareStringListsIgnoringOrder(oldListStr, newListStr []string) bool {

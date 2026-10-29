@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -30,52 +31,57 @@ func ResourceNetwork() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultIoTHubTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"hub_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The ID of the hub on which this network will be created",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the network",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The type of the network",
-				ValidateDiagFunc: verify.ValidateEnum[iot.NetworkNetworkType](),
-			},
-			"topic_prefix": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The prefix that will be prepended to all topics for this Network",
-			},
-			// Computed elements
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the network",
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint to use when interacting with the network",
-			},
-			"secret": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint key to keep secret",
-				Sensitive:   true,
-			},
-			"region": regional.Schema(),
+		SchemaFunc:    networkSchema,
+		Identity:      identity.DefaultRegional(),
+	}
+}
+
+func networkSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"hub_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The ID of the hub on which this network will be created",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the network",
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The type of the network",
+			ValidateDiagFunc: verify.ValidateEnum[iot.NetworkNetworkType](),
+		},
+		"topic_prefix": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "The prefix that will be prepended to all topics for this Network",
+		},
+		// Computed elements
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the network",
+		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The endpoint to use when interacting with the network",
+		},
+		"secret": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The endpoint key to keep secret",
+			Sensitive:   true,
+		},
+		"region": regional.Schema(),
 	}
 }
 
@@ -101,7 +107,9 @@ func ResourceIotNetworkCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.Network.ID))
+	if err := identity.SetRegionalIdentity(d, region, res.Network.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// Secret key cannot be retrieved later
 	_ = d.Set("secret", res.Secret)
@@ -126,6 +134,10 @@ func ResourceIotNetworkRead(ctx context.Context, d *schema.ResourceData, m any) 
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, networkID); err != nil {
 		return diag.FromErr(err)
 	}
 

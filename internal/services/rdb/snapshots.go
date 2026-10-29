@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -26,61 +27,64 @@ func ResourceSnapshot() *schema.Resource {
 			Read:   schema.DefaultTimeout(defaultInstanceTimeout),
 			Delete: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "UUID of the Database Instance on which the snapshot is applied.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the snapshot.",
-			},
-			"expires_at": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
-			},
-			"node_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of the database instance for which the snapshot was created.",
-			},
-			"volume_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Type of volume where data are stored",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Status of the snapshot.",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Size of the snapshot in bytes.",
-			},
-			"region": regional.Schema(),
-		},
+		Importer:      identity.DefaultRegionalImporter(),
+		SchemaFunc:    snapshotSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
+	}
+}
+
+func snapshotSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "UUID of the Database Instance on which the snapshot is applied.",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Name of the snapshot.",
+		},
+		"expires_at": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
+		},
+		"node_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The type of the database instance for which the snapshot was created.",
+		},
+		"volume_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of volume where data are stored",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Status of the snapshot.",
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Size of the snapshot in bytes.",
+		},
+		"region": regional.Schema(),
 	}
 }
 
@@ -117,7 +121,9 @@ func ResourceRdbSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRdbSnapshotRead(ctx, d, meta)
 }
@@ -142,8 +148,17 @@ func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(err)
 	}
 
-	// Set resource data fields
-	_ = d.Set("instance_id", regional.NewIDString(region, res.InstanceID))
+	setSnapshotState(d, res)
+
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func setSnapshotState(d *schema.ResourceData, res *rdb.Snapshot) {
+	_ = d.Set("instance_id", regional.NewIDString(res.Region, res.InstanceID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("expires_at", res.ExpiresAt.Format(time.RFC3339))
 	_ = d.Set("created_at", res.CreatedAt.Format(time.RFC3339))
@@ -160,9 +175,7 @@ func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta a
 		_ = d.Set("size", int(*res.Size))
 	}
 
-	_ = d.Set("region", region)
-
-	return nil
+	_ = d.Set("region", string(res.Region))
 }
 
 func ResourceRdbSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -191,8 +204,7 @@ func ResourceRdbSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta
 	needsUpdate := false
 
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		snapshotUpdateRequest.Name = &name
+		snapshotUpdateRequest.Name = new(d.Get("name").(string))
 		needsUpdate = true
 	}
 

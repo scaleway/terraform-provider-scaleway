@@ -11,7 +11,7 @@ import (
 
 func DataSourceACL() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceACL().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceACL().SchemaFunc())
 
 	dsSchema["instance_id"].Computed = false
 	dsSchema["instance_id"].Required = true
@@ -47,5 +47,5 @@ func DataSourceRDBACLRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	return ResourceRdbACLRead(ctx, d, m)
+	return readACLIntoState(ctx, d, m)
 }

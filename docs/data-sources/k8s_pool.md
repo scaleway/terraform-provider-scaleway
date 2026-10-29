@@ -5,22 +5,31 @@ page_title: "Scaleway: scaleway_k8s_pool"
 
 # scaleway_k8s_pool
 
-Gets information about a Kubernetes Cluster's Pool.
+The [`scaleway_k8s_pool`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/k8s_pool) data source is used to retrieve information about a Kubernetes Cluster's Pool.
+
+Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute/kubernetes/) and [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/) for more information.
+
+
 
 ## Example Usage
 
-```hcl
-# Get info by pokl name (need cluster_id)
-data "scaleway_k8s_pool" "my_key" {
-  name       = "my-pool-name"
-  cluster_id = "11111111-1111-1111-1111-111111111111"
-}
-
+```terraform
 # Get info by pool id
 data "scaleway_k8s_pool" "my_key" {
   pool_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
+
+```terraform
+# Get info by pool name (need cluster_id)
+data "scaleway_k8s_pool" "my_key" {
+  name       = "my-pool-name"
+  cluster_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
+
+
 
 ## Argument Reference
 
@@ -30,7 +39,7 @@ data "scaleway_k8s_pool" "my_key" {
 
 - `cluster_id` - (Optional) The cluster ID. Required when `name` is set.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool exists.
 
 ## Attributes Reference
 
@@ -39,6 +48,8 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The ID of the pool.
 
 ~> **Important:** Kubernetes clusters pools' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
+- `srn` - The Scaleway Resource Name (SRN) of the pool.
 
 - `status` - The status of the pool.
 
@@ -51,6 +62,8 @@ In addition to all above arguments, the following attributes are exported:
     - `public_ip_v6` - The public IPv6.
 
     - `status` - The status of the node.
+
+    - `srn` - The Scaleway Resource Name (SRN) of the node.
 
 - `created_at` - The creation date of the pool.
 
@@ -77,3 +90,5 @@ In addition to all above arguments, the following attributes are exported:
 - `autohealing` - True if the autohealing feature is enabled for this pool.
 
 - `container_runtime` - The container runtime of the pool.
+
+- `user_data` - The pool's user data, as a map of key to content.

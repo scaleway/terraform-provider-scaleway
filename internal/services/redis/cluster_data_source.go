@@ -16,7 +16,7 @@ import (
 
 func DataSourceCluster() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceCluster().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceCluster().SchemaFunc())
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
@@ -86,5 +86,5 @@ func DataSourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(fmt.Errorf("no clusters found with the id %s", clusterID))
 	}
 
-	return ResourceClusterRead(ctx, d, m)
+	return readClusterIntoState(ctx, d, m)
 }

@@ -2,16 +2,16 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/std"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -28,12 +28,12 @@ func NewRegistrarDomainAPI(m any) *domain.RegistrarAPI {
 	return domain.NewRegistrarAPI(meta.ExtractScwClient(m))
 }
 
-func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []*domain.Record) (*domain.Record, error) {
+func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []*domain.Record, dnsZone string) (*domain.Record, error) {
 	var currentRecord *domain.Record
 
 	for _, r := range records {
-		flattedData := FlattenDomainData(strings.ToLower(r.Data), r.Type).(string)
-		flattenCurrentData := FlattenDomainData(strings.ToLower(data), r.Type).(string)
+		flattedData := FlattenDomainData(strings.ToLower(r.Data), r.Type, dnsZone).(string)
+		flattenCurrentData := FlattenDomainData(strings.ToLower(data), r.Type, dnsZone).(string)
 
 		if dnsType == domain.RecordTypeSRV {
 			if flattedData == flattenCurrentData {
@@ -236,31 +236,31 @@ func ExpandNewContact(contactMap map[string]any) *domain.NewContact {
 	}
 
 	if v, ok := contactMap["company_name"].(string); ok {
-		contact.CompanyName = scw.StringPtr(v)
+		contact.CompanyName = new(v)
 	}
 
 	if v, ok := contactMap["email_alt"].(string); ok {
-		contact.EmailAlt = scw.StringPtr(v)
+		contact.EmailAlt = new(v)
 	}
 
 	if v, ok := contactMap["fax_number"].(string); ok {
-		contact.FaxNumber = scw.StringPtr(v)
+		contact.FaxNumber = new(v)
 	}
 
 	if v, ok := contactMap["address_line_2"].(string); ok {
-		contact.AddressLine2 = scw.StringPtr(v)
+		contact.AddressLine2 = new(v)
 	}
 
 	if v, ok := contactMap["vat_identification_code"].(string); ok {
-		contact.VatIDentificationCode = scw.StringPtr(v)
+		contact.VatIDentificationCode = new(v)
 	}
 
 	if v, ok := contactMap["company_identification_code"].(string); ok {
-		contact.CompanyIDentificationCode = scw.StringPtr(v)
+		contact.CompanyIDentificationCode = new(v)
 	}
 
 	if v, ok := contactMap["state"].(string); ok {
-		contact.State = scw.StringPtr(v)
+		contact.State = new(v)
 	}
 
 	if extFr, ok := contactMap["extension_fr"].(map[string]any); ok && len(extFr) > 0 {
@@ -346,36 +346,6 @@ func mapToStruct(data map[string]any, target any) {
 	}
 }
 
-func getStatusTasks(ctx context.Context, api *domain.RegistrarAPI, taskID string) (domain.TaskStatus, error) {
-	var page int32 = 1
-
-	var pageSize uint32 = 1000
-
-	for {
-		listTasksResponse, err := api.ListTasks(&domain.RegistrarAPIListTasksRequest{
-			Page:     &page,
-			PageSize: &pageSize,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return "", fmt.Errorf("error retrieving tasks: %w", err)
-		}
-
-		for _, task := range listTasksResponse.Tasks {
-			if task.ID == taskID {
-				return task.Status, nil
-			}
-		}
-
-		if len(listTasksResponse.Tasks) == 0 || uint32(len(listTasksResponse.Tasks)) < pageSize {
-			break
-		}
-
-		page++
-	}
-
-	return "", fmt.Errorf("task with ID '%s' not found", taskID)
-}
-
 func SplitDomains(input *string) []string {
 	if input == nil || strings.TrimSpace(*input) == "" {
 		return nil
@@ -399,26 +369,104 @@ func SplitDomains(input *string) []string {
 	return result
 }
 
-func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *domain.RegistrarAPI) ([]string, error) {
-	parts := strings.Split(id, "/")
-	if len(parts) != 2 {
-		return nil, fmt.Errorf("invalid ID format, expected 'projectID/domainName', got: %s", id)
+func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, domainName string, projectID *string) (*domain.Task, error) {
+	req := &domain.RegistrarAPIListTasksRequest{
+		Domain:    &domainName,
+		ProjectID: projectID,
+		OrderBy:   domain.ListTasksRequestOrderByDomainDesc,
 	}
 
-	taskID := parts[1]
+	listTasksResponse, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListTasksResponse, error) {
+		return registrarAPI.ListTasks(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing tasks: %w", err)
+	}
 
-	listTasksResponse, err := registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{}, scw.WithContext(ctx), scw.WithAllPages())
+	domainNameLower := strings.ToLower(domainName)
+
+	for _, task := range listTasksResponse.Tasks {
+		domains := SplitDomains(task.Domain)
+		for _, d := range domains {
+			if strings.ToLower(d) == domainNameLower {
+				return task, nil
+			}
+		}
+	}
+
+	// No task found in history. This happens for domains transferred to Scaleway or registered
+	// outside Terraform where no create/transfer task exists in ListTasks (tasks are archived
+	// after some time and disappear from the active table).
+	// Fall back to GetDomain to confirm the domain is actually managed by this account.
+	domainResp, domainErr := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
+		return registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+			Domain: domainName,
+		}, scw.WithContext(ctx))
+	})
+	if domainErr != nil {
+		if httperrors.Is404(domainErr) {
+			return nil, fmt.Errorf("no domain registration found for domain %q: %w", domainName, domainErr)
+		}
+
+		return nil, fmt.Errorf("failed to get domain %q: %w", domainName, domainErr)
+	}
+
+	// Return a synthetic task: the domain exists but has no task history.
+	// task_id will be empty; the resource stays readable but the ID encodes the domain name.
+	return &domain.Task{
+		ProjectID: domainResp.ProjectID,
+		Domain:    &domainName,
+	}, nil
+}
+
+// ExtractDomainsFromTaskID resolves domain names from a resource ID.
+//
+// It accepts the following formats:
+//   - "task-uuid"   — looks up the task in ListTasks (standard case)
+//   - "a.com"       — uses the domain name directly (import when task is archived)
+//   - "a.com,b.com" — comma-separated domain names for multi-domain registrations
+//
+// A legacy "projectID/..." prefix is still tolerated: only the segment after the last
+// "/" is used, since domain names and task IDs are globally unique and the project is
+// resolved from the API. Domain formats are detected by the presence of a dot.
+func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *domain.RegistrarAPI) ([]string, error) {
+	taskOrDomains := id
+	if _, after, ok := strings.CutLast(id, "/"); ok {
+		taskOrDomains = after
+	}
+
+	if taskOrDomains == "" {
+		return nil, fmt.Errorf("invalid ID format, expected 'domain.tld' or 'taskID', got: %s", id)
+	}
+
+	// If the segment contains a dot it is a domain name (or comma-separated list),
+	// not a task UUID. Return domain names directly without hitting ListTasks.
+	if strings.Contains(taskOrDomains, ".") {
+		names := SplitDomains(&taskOrDomains)
+		if len(names) == 0 {
+			return nil, fmt.Errorf("invalid domain format in ID: %s", id)
+		}
+
+		return names, nil
+	}
+
+	listTasksResponse, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.ListTasksResponse, error) {
+		return registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{
+			PageSize: new(uint32(1000)),
+			OrderBy:  domain.ListTasksRequestOrderByDomainDesc,
+		}, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving tasks: %w", err)
 	}
 
 	for _, task := range listTasksResponse.Tasks {
-		if task.ID == taskID {
+		if task.ID == taskOrDomains {
 			return SplitDomains(task.Domain), nil
 		}
 	}
 
-	return nil, fmt.Errorf("task with ID '%s' not found", taskID)
+	return nil, fmt.Errorf("task with ID '%s' not found in ListTasks — if the task was archived, re-import using the domain name: terraform import <resource> <domain.tld>", taskOrDomains)
 }
 
 func flattenContact(contact *domain.Contact) []map[string]any {
@@ -567,31 +615,6 @@ func flattenContactExtensionNL(ext *domain.ContactExtensionNL) []map[string]any 
 	}
 }
 
-func waitForTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAPI, taskID string, duration int) error {
-	timeout := time.Duration(duration) * time.Second
-
-	return retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		status, err := getStatusTasks(ctx, registrarAPI, taskID)
-		if err != nil {
-			return retry.NonRetryableError(fmt.Errorf("failed to retrieve task status: %w", err))
-		}
-
-		if status == domain.TaskStatusPending || status == domain.TaskStatusWaitingPayment || status == domain.TaskStatusNew {
-			return retry.RetryableError(errors.New("task is not yet complete, retrying"))
-		}
-
-		if status == domain.TaskStatusSuccess {
-			return nil
-		}
-
-		if status == domain.TaskStatusError {
-			return retry.NonRetryableError(fmt.Errorf("task failed for domain: %s", taskID))
-		}
-
-		return retry.NonRetryableError(fmt.Errorf("unexpected task status: %v", status))
-	})
-}
-
 func FlattenDSRecord(dsRecords []*domain.DSRecord) []any {
 	if len(dsRecords) == 0 {
 		return []any{}
@@ -657,9 +680,51 @@ func normalizeRecordName(name, dnsZone string) string {
 	}
 
 	suffix := "." + dnsZone
-	if strings.HasSuffix(name, suffix) {
-		return strings.TrimSuffix(name, suffix)
+	if before, ok := strings.CutSuffix(name, suffix); ok {
+		return before
 	}
 
 	return name
+}
+
+func NormalizeRecordData(data string, recordType domain.RecordType, dnsZone string) string {
+	data = strings.TrimSpace(data)
+	if data == "" {
+		return ""
+	}
+
+	switch recordType {
+	case domain.RecordTypeSRV:
+		return NormalizeSRVData(data, dnsZone)
+	case domain.RecordTypeCNAME, domain.RecordTypeNS, domain.RecordTypeMX:
+		return NormalizeTargetFQDN(data, dnsZone)
+	default:
+		return data
+	}
+}
+
+func NormalizeTargetFQDN(target, dnsZone string) string {
+	target = strings.TrimSpace(target)
+	if target == "" || target == "@" {
+		return ""
+	}
+
+	// RFC 7505 "Null MX": the exchange "." is the DNS root and must be kept
+	// as-is instead of being qualified against the zone (which would produce
+	// ".<zone>." and corrupt the record).
+	if target == "." {
+		return "."
+	}
+
+	target = strings.ToLower(target)
+	dnsZone = strings.ToLower(strings.TrimSpace(dnsZone))
+
+	target = strings.TrimRight(target, ".")
+	dnsZone = strings.TrimRight(dnsZone, ".")
+
+	if strings.Contains(target, ".") {
+		return target + "."
+	}
+
+	return fmt.Sprintf("%s.%s.", target, dnsZone)
 }

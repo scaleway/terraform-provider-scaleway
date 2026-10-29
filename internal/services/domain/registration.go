@@ -2,17 +2,20 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func ResourceRegistration() *schema.Resource {
@@ -29,148 +32,205 @@ func ResourceRegistration() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultDomainRegistrationTimeout),
 		},
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceRegistrationImport,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"domain_names": {
-				Type:        schema.TypeList,
-				Required:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "List of domain names to be managed.",
+		SchemaFunc:    registrationSchema,
+		Identity:      registrationIdentity(),
+	}
+}
+
+func registrationIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		// project_id is optional for import: the domain name is globally unique and the
+		// project is resolved from the API, so it does not need to be provided.
+		"project_id": {
+			Type:              schema.TypeString,
+			Description:       "The ID of the project (UUID format)",
+			OptionalForImport: true,
+		},
+		"domain_name": {
+			Type:              schema.TypeString,
+			Description:       "The primary domain name of the registration",
+			RequiredForImport: true,
+		},
+		// task_id is kept in the identity schema for backward compatibility with
+		// states created before the domain_name identity. Existing states still
+		// decode their stored task_id, and legacy imports by task ID keep working.
+		"task_id": {
+			Type:              schema.TypeString,
+			Description:       "Legacy task ID of the registration, kept for backward compatibility",
+			OptionalForImport: true,
+		},
+	})
+}
+
+// resourceRegistrationImport supports importing by ID string (domain.tld, a.com,b.com
+// or a task ID, with an optional legacy projectID/ prefix) and by resource identity
+// (domain_name, or the legacy task_id).
+func resourceRegistrationImport(_ context.Context, d *schema.ResourceData, _ any) ([]*schema.ResourceData, error) {
+	if d.Id() != "" {
+		return []*schema.ResourceData{d}, nil
+	}
+
+	ident, err := d.Identity()
+	if err != nil {
+		return nil, fmt.Errorf("error getting identity: %w", err)
+	}
+
+	domainName, _ := ident.Get("domain_name").(string)
+	taskID, _ := ident.Get("task_id").(string)
+
+	switch {
+	case domainName != "":
+		d.SetId(domainName)
+	case taskID != "":
+		d.SetId(taskID)
+	default:
+		return nil, errors.New("import requires either domain_name or task_id in the resource identity")
+	}
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func registrationSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"domain_names": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+			Description: "List of domain names to be managed.",
+		},
+		"duration_in_years": {
+			Type:        schema.TypeInt,
+			Description: "Duration of the registration period in years.",
+			Optional:    true,
+			Default:     1,
+		},
+		"owner_contact_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+			ExactlyOneOf: []string{
+				"owner_contact_id",
+				"owner_contact",
 			},
-			"duration_in_years": {
-				Type:        schema.TypeInt,
-				Description: "Duration of the registration period in years.",
-				Optional:    true,
-				Default:     1,
+			Description: "ID of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+		},
+		"owner_contact": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
+			MaxItems: 1,
+			ExactlyOneOf: []string{
+				"owner_contact_id",
+				"owner_contact",
 			},
-			"owner_contact_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ExactlyOneOf: []string{
-					"owner_contact_id",
-					"owner_contact",
-				},
-				ValidateFunc: validation.IsUUID,
-				Description:  "ID of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+			Elem: &schema.Resource{
+				Schema: contactSchema(),
 			},
-			"owner_contact": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				MaxItems: 1,
-				ExactlyOneOf: []string{
-					"owner_contact_id",
-					"owner_contact",
-				},
-				Elem: &schema.Resource{
-					Schema: contactSchema(),
-				},
-				Description: "Details of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+			Description: "Details of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+		},
+		"administrative_contact": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: contactSchema(),
 			},
-			"administrative_contact": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: contactSchema(),
-				},
-				Description: "Details of the administrative contact.",
+			Description: "Details of the administrative contact (read-only, set by the API).",
+		},
+		"technical_contact": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: contactSchema(),
 			},
-			"technical_contact": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: contactSchema(),
-				},
-				Description: "Details of the technical contact.",
-			},
-			"auto_renew": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable or disable auto-renewal of the domain.",
-			},
-			"dnssec": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable or disable dnssec for the domain.",
-			},
-			"ds_record": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key_id": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The identifier for the dnssec key.",
-						},
-						"algorithm": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The algorithm used for dnssec (e.g., rsasha256, ecdsap256sha256).",
-						},
-						"digest": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"type": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The digest type for the DS record (e.g., sha_1, sha_256, gost_r_34_11_94, sha_384).",
-									},
-									"digest": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The digest value.",
-									},
-									"public_key": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"key": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The public key value.",
-												},
+			Description: "Details of the technical contact (read-only, set by the API).",
+		},
+		"auto_renew": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable or disable auto-renewal of the domain.",
+		},
+		"dnssec": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable or disable dnssec for the domain.",
+		},
+		"ds_record": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key_id": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The identifier for the dnssec key.",
+					},
+					"algorithm": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The algorithm used for dnssec (e.g., rsasha256, ecdsap256sha256).",
+					},
+					"digest": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"type": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The digest type for the DS record (e.g., sha_1, sha_256, gost_r_34_11_94, sha_384).",
+								},
+								"digest": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The digest value.",
+								},
+								"public_key": {
+									Type:     schema.TypeList,
+									Computed: true,
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"key": {
+												Type:        schema.TypeString,
+												Required:    true,
+												Description: "The public key value.",
 											},
 										},
-										Description: "The public key associated with the digest.",
 									},
+									Description: "The public key associated with the digest.",
 								},
 							},
-							Description: "Details about the digest.",
 						},
-						"public_key": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"key": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The public key value.",
-									},
+						Description: "Details about the digest.",
+					},
+					"public_key": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"key": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "The public key value.",
 								},
 							},
-							Description: "Public key associated with the dnssec record.",
 						},
+						Description: "Public key associated with the dnssec record.",
 					},
 				},
-				Description: "dnssec DS record configuration.",
 			},
-			"project_id": account.ProjectIDSchema(),
+			Description: "dnssec DS record configuration.",
+		},
+		"project_id": account.ProjectIDSchema(),
 
-			"task_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the task that created the domain.",
-			},
+		"task_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ID of the task that created the domain.",
 		},
 	}
 }
@@ -251,12 +311,14 @@ func contactSchema() map[string]*schema.Schema {
 		},
 		"vat_identification_code": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
+			Computed:    true,
 			Description: "VAT identification code of the contact, if applicable.",
 		},
 		"company_identification_code": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
+			Computed:    true,
 			Description: "Company identification code (e.g., SIREN/SIRET in France) for the contact.",
 		},
 		"lang": {
@@ -414,9 +476,12 @@ func contactSchema() map[string]*schema.Schema {
 func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 
-	projectID := d.Get("project_id").(string)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	domainNames := make([]string, 0)
+	domainNames := make([]string, 0, len(d.Get("domain_names").([]any)))
 	for _, v := range d.Get("domain_names").([]any) {
 		domainNames = append(domainNames, v.(string))
 	}
@@ -440,12 +505,9 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 		}
 	}
 
-	resp, err := registrarAPI.BuyDomains(buyDomainsRequest, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = waitForTaskCompletion(ctx, registrarAPI, resp.TaskID, 3600)
+	resp, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.OrderResponse, error) {
+		return registrarAPI.BuyDomains(buyDomainsRequest, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -461,9 +523,13 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 
 	if newDnssec {
 		for _, domainName := range domainNames {
-			_, err = registrarAPI.EnableDomainDNSSEC(&domain.RegistrarAPIEnableDomainDNSSECRequest{
-				Domain: domainName,
-			}, scw.WithContext(ctx))
+			err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+				_, err := registrarAPI.EnableDomainDNSSEC(&domain.RegistrarAPIEnableDomainDNSSECRequest{
+					Domain: domainName,
+				}, scw.WithContext(ctx))
+
+				return err
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -475,18 +541,65 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 		}
 	}
 
-	d.SetId(projectID + "/" + resp.TaskID)
+	apiProjectID := resp.ProjectID
+	if apiProjectID == "" {
+		apiProjectID = projectID
+	}
+
+	_ = d.Set("task_id", resp.TaskID)
+
+	if err := setRegistrationIdentity(d, apiProjectID, domainNames); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceRegistrationsRead(ctx, d, m)
 }
 
 func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readRegistrationIntoState(ctx, d, m)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	projectID := d.Get("project_id").(string)
+
+	var domainNames []string
+
+	for _, v := range d.Get("domain_names").([]any) {
+		if s, ok := v.(string); ok && s != "" {
+			domainNames = append(domainNames, s)
+		}
+	}
+
+	if err := setRegistrationIdentity(d, projectID, domainNames); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+// readRegistrationIntoState fetches the registration state from the API and populates the schema.
+func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
 	domainNames, err := ExtractDomainsFromTaskID(ctx, id, registrarAPI)
 	if err != nil {
-		return diag.FromErr(err)
+		// Task purged from ListTasks — fall back to domain_names already in state.
+		rawNames := d.Get("domain_names").([]any)
+		for _, v := range rawNames {
+			if s, ok := v.(string); ok && s != "" {
+				domainNames = append(domainNames, s)
+			}
+		}
+
+		if len(domainNames) == 0 {
+			return diag.FromErr(err)
+		}
 	}
 
 	if len(domainNames) == 0 {
@@ -497,9 +610,11 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m an
 
 	firstDomain := domainNames[0]
 
-	firstResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
-		Domain: firstDomain,
-	}, scw.WithContext(ctx))
+	firstResp, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
+		return registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+			Domain: firstDomain,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -538,13 +653,46 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("auto_renew", computedAutoRenew)
 	_ = d.Set("dnssec", computedDnssec)
 	_ = d.Set("ds_record", computedDSRecord)
-	parts := strings.Split(id, "/")
-
-	if len(parts) != 2 {
-		return diag.FromErr(fmt.Errorf("invalid ID format, expected 'projectID/domainName', got: %s", id))
+	// project_id is resolved from the API response; the import ID no longer carries it.
+	// A legacy "projectID/..." prefix is still tolerated as a fallback.
+	projectID := firstResp.ProjectID
+	if projectID == "" {
+		if legacyProjectID, _, ok := strings.Cut(id, "/"); ok {
+			projectID = legacyProjectID
+		}
 	}
 
-	_ = d.Set("task_id", parts[1])
+	_ = d.Set("project_id", projectID)
+
+	// When the ID segment is a task UUID (no dot), preserve it as task_id.
+	// In domain format, look up the task when task_id is missing so import by
+	// domain name converges with create (task_id set when the task still exists).
+	idSegment := id
+	if _, after, ok := strings.CutLast(id, "/"); ok {
+		idSegment = after
+	}
+
+	switch {
+	case idSegment != "" && !strings.Contains(idSegment, "."):
+		_ = d.Set("task_id", idSegment)
+	case d.Get("task_id").(string) == "":
+		// Do not filter by project_id: domain names are globally unique and a
+		// project filter would change the ListTasks query shape (breaks VCR and
+		// is unnecessary for this lookup).
+		task, findErr := FindTaskByDomain(ctx, registrarAPI, firstDomain, nil)
+		if findErr != nil {
+			return diag.FromErr(findErr)
+		}
+
+		if task.ID != "" {
+			_ = d.Set("task_id", task.ID)
+		}
+	}
+
+	// The stable resource ID stores all domain names comma-separated so multi-domain
+	// registrations survive refresh without losing any domain name. The project ID is
+	// no longer part of the ID since the domain name is globally unique.
+	d.SetId(strings.Join(domainNames, ","))
 
 	return nil
 }
@@ -555,7 +703,12 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m a
 
 	domainNames, err := ExtractDomainsFromTaskID(ctx, id, registrarAPI)
 	if err != nil {
-		return diag.FromErr(err)
+		// Task purged from ListTasks — fall back to domain_names already in state
+		// (same path as Read/Delete for archived registration tasks).
+		domainNames = registrationDomainNamesFromState(d)
+		if len(domainNames) == 0 {
+			return diag.FromErr(err)
+		}
 	}
 
 	if len(domainNames) == 0 {
@@ -568,9 +721,11 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m a
 		newAutoRenew := d.Get("auto_renew").(bool)
 
 		for _, domainName := range domainNames {
-			domainResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
-				Domain: domainName,
-			}, scw.WithContext(ctx))
+			domainResp, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
+				return registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+					Domain: domainName,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -578,9 +733,11 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m a
 			if newAutoRenew {
 				if domainResp.AutoRenewStatus != domain.DomainFeatureStatusEnabled &&
 					domainResp.AutoRenewStatus != domain.DomainFeatureStatusEnabling {
-					_, err = registrarAPI.EnableDomainAutoRenew(&domain.RegistrarAPIEnableDomainAutoRenewRequest{
-						Domain: domainName,
-					}, scw.WithContext(ctx))
+					_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
+						return registrarAPI.EnableDomainAutoRenew(&domain.RegistrarAPIEnableDomainAutoRenewRequest{
+							Domain: domainName,
+						}, scw.WithContext(ctx))
+					})
 					if err != nil {
 						return diag.FromErr(err)
 					}
@@ -588,9 +745,11 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m a
 			} else {
 				if domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled ||
 					domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabling {
-					_, err = registrarAPI.DisableDomainAutoRenew(&domain.RegistrarAPIDisableDomainAutoRenewRequest{
-						Domain: domainName,
-					}, scw.WithContext(ctx))
+					_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
+						return registrarAPI.DisableDomainAutoRenew(&domain.RegistrarAPIDisableDomainAutoRenewRequest{
+							Domain: domainName,
+						}, scw.WithContext(ctx))
+					})
 					if err != nil {
 						return diag.FromErr(err)
 					}
@@ -608,25 +767,31 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m a
 		newDnssec := d.Get("dnssec").(bool)
 
 		for _, domainName := range domainNames {
-			domainResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
-				Domain: domainName,
-			}, scw.WithContext(ctx))
+			domainResp, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
+				return registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+					Domain: domainName,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 			if newDnssec {
-				_, err = registrarAPI.EnableDomainDNSSEC(&domain.RegistrarAPIEnableDomainDNSSECRequest{
-					Domain: domainName,
-				}, scw.WithContext(ctx))
+				_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
+					return registrarAPI.EnableDomainDNSSEC(&domain.RegistrarAPIEnableDomainDNSSECRequest{
+						Domain: domainName,
+					}, scw.WithContext(ctx))
+				})
 				if err != nil {
 					return diag.FromErr(err)
 				}
 			} else if domainResp.Dnssec != nil &&
 				domainResp.Dnssec.Status == domain.DomainFeatureStatusEnabled {
-				_, err = registrarAPI.DisableDomainDNSSEC(&domain.RegistrarAPIDisableDomainDNSSECRequest{
-					Domain: domainName,
-				}, scw.WithContext(ctx))
+				_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
+					return registrarAPI.DisableDomainDNSSEC(&domain.RegistrarAPIDisableDomainDNSSECRequest{
+						Domain: domainName,
+					}, scw.WithContext(ctx))
+				})
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -639,22 +804,40 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m a
 		}
 	}
 
+	if d.HasChanges("owner_contact_id", "owner_contact") {
+		// Changing the registrant (owner) requires a domain trade, which is a sensitive
+		// ownership-transfer operation that may involve payment or legal validation.
+		// This must be done via the Scaleway console or API, then followed by
+		// `terraform apply -refresh-only` to sync the state.
+		return diag.Diagnostics{{
+			Severity: diag.Error,
+			Summary:  "owner_contact cannot be changed via Terraform",
+			Detail:   "Changing the registrant contact requires a domain trade (TradeDomain). Please update the owner contact via the Scaleway console or API, then run `terraform apply -refresh-only` to sync the Terraform state.",
+		}}
+	}
+
 	return resourceRegistrationsRead(ctx, d, m)
 }
 
 func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
-	id := d.Id()
 
-	domainNames, err := ExtractDomainsFromTaskID(ctx, id, registrarAPI)
-	if err != nil {
-		return diag.FromErr(err)
+	domainNames := registrationDomainNamesFromState(d)
+	if len(domainNames) == 0 {
+		var err error
+
+		domainNames, err = ExtractDomainsFromTaskID(ctx, d.Id(), registrarAPI)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	for _, domainName := range domainNames {
-		domainResp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
-			Domain: domainName,
-		}, scw.WithContext(ctx))
+		domainResp, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
+			return registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+				Domain: domainName,
+			}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			if httperrors.Is404(err) {
 				continue
@@ -665,9 +848,11 @@ func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m a
 
 		if domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabled ||
 			domainResp.AutoRenewStatus == domain.DomainFeatureStatusEnabling {
-			_, err = registrarAPI.DisableDomainAutoRenew(&domain.RegistrarAPIDisableDomainAutoRenewRequest{
-				Domain: domainName,
-			}, scw.WithContext(ctx))
+			_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*domain.Domain, error) {
+				return registrarAPI.DisableDomainAutoRenew(&domain.RegistrarAPIDisableDomainAutoRenewRequest{
+					Domain: domainName,
+				}, scw.WithContext(ctx))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -675,6 +860,53 @@ func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	d.SetId("")
+
+	return nil
+}
+
+func registrationDomainNamesFromState(d *schema.ResourceData) []string {
+	rawNames := d.Get("domain_names").([]any)
+
+	var domainNames []string
+
+	for _, v := range rawNames {
+		if s, ok := v.(string); ok && s != "" {
+			domainNames = append(domainNames, s)
+		}
+	}
+
+	return domainNames
+}
+
+// setRegistrationIdentity sets the resource identity using the first domain name (stable, globally unique)
+// and stores all domain names comma-separated in d.SetId() so multi-domain registrations survive refresh.
+// The project ID is recorded in the identity but is not part of the resource ID.
+func setRegistrationIdentity(d *schema.ResourceData, projectID string, domainNames []string) error {
+	if len(domainNames) == 0 {
+		return errors.New("cannot set registration identity: no domain names provided")
+	}
+
+	ident, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	if err := ident.Set("project_id", projectID); err != nil {
+		return err
+	}
+
+	if err := ident.Set("domain_name", domainNames[0]); err != nil {
+		return err
+	}
+
+	// Preserve the task ID in the identity for backward compatibility. It may be
+	// empty when the registration was imported by domain name and the task was
+	// already archived.
+	if err := ident.Set("task_id", d.Get("task_id").(string)); err != nil {
+		return err
+	}
+
+	d.SetId(strings.Join(domainNames, ","))
 
 	return nil
 }

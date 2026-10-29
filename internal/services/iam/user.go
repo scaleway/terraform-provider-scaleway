@@ -2,134 +2,173 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/user.md
+var userDescription string
+
 func ResourceUser() *schema.Resource {
 	return &schema.Resource{
+		Description:   userDescription,
 		CreateContext: resourceIamUserCreate,
 		ReadContext:   resourceIamUserRead,
 		UpdateContext: resourceIamUserUpdate,
 		DeleteContext: resourceIamUserDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"organization_id": account.OrganizationIDOptionalSchema(),
-			// User input data
-			"email": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The email of the user",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
-				Description: "The tags associated with the user",
-			},
-			"send_password_email": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether or not to send an email containing the member's password",
-			},
-			"send_welcome_email": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether or not to send a welcome email that includes onboarding information",
-			},
-			"username": {
-				Type:        schema.TypeString,
-				Description: "The member's username",
-				Required:    true,
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Sensitive:   true,
-				Description: "The member's password for first access",
-			},
-			"first_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The member's first name",
-			},
-			"last_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The member's last name",
-			},
-			"phone_number": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The member's phone number",
-			},
-			"locale": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The member's locale",
-			},
-			// Computed data
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the iam user",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the iam user",
-			},
-			"deletable": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the iam user is editable",
-			},
-			"last_login_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of last login of the iam user",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of the iam user",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of user invitation",
-			},
-			"mfa": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the MFA is enabled",
-			},
-			"account_root_user_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the account root user associated with the iam user",
-			},
-			"locked": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Defines whether the user is locked",
-			},
+		SchemaFunc:    userSchema,
+	}
+}
+
+func userSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"organization_id": account.OrganizationIDOptionalSchema(),
+		// User input data
+		"email": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The email of the user",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+			Optional:    true,
+			Description: "The tags associated with the user",
+		},
+		"send_password_email": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether or not to send an email containing the member's password",
+		},
+		"send_welcome_email": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether or not to send a welcome email that includes onboarding information",
+		},
+		"username": {
+			Type:        schema.TypeString,
+			Description: "The member's username",
+			Required:    true,
+		},
+		"password": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Sensitive:     true,
+			Description:   "The member's password for first access. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{"password_wo"},
+		},
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "The member's password for first access in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
+		},
+		"first_name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The member's first name",
+		},
+		"last_name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The member's last name",
+		},
+		"phone_number": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The member's phone number",
+		},
+		"locale": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The member's locale",
+		},
+		// Computed data
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the iam user",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the iam user",
+		},
+		"deletable": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Whether or not the iam user is editable",
+		},
+		"last_login_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of last login of the iam user",
+		},
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The type of the iam user",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of user invitation",
+		},
+		"mfa": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Whether or not the MFA is enabled",
+		},
+		"account_root_user_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The ID of the account root user associated with the iam user",
+		},
+		"locked": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Defines whether the user is locked",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the user",
 		},
 	}
 }
 
 func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
+
+	var password string
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	} else {
+		// If `password` is not set, it will be set as the default empty string
+		password = d.Get("password").(string)
+	}
 
 	req := &iam.CreateUserRequest{
 		OrganizationID: d.Get("organization_id").(string),
@@ -139,7 +178,7 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m any) d
 			SendPasswordEmail: d.Get("send_password_email").(bool),
 			SendWelcomeEmail:  d.Get("send_welcome_email").(bool),
 			Username:          d.Get("username").(string),
-			Password:          d.Get("password").(string),
+			Password:          password,
 			FirstName:         d.Get("first_name").(string),
 			LastName:          d.Get("last_name").(string),
 			PhoneNumber:       d.Get("phone_number").(string),
@@ -152,7 +191,10 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(user.ID)
+	err = identity.SetGlobalIdentity(d, user.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamUserRead(ctx, d, m)
 }
@@ -173,25 +215,12 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("organization_id", user.OrganizationID)
-	// User input data
-	_ = d.Set("email", user.Email)
-	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
-	_ = d.Set("username", user.Username)
-	_ = d.Set("first_name", user.FirstName)
-	_ = d.Set("last_name", user.LastName)
-	_ = d.Set("phone_number", user.PhoneNumber)
-	_ = d.Set("locale", user.Locale)
-	// Computed data
-	_ = d.Set("created_at", types.FlattenTime(user.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(user.UpdatedAt))
-	_ = d.Set("deletable", user.Deletable)
-	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
-	_ = d.Set("type", user.Type)
-	_ = d.Set("status", user.Status.String()) //nolint:staticcheck // convert enum to string for schema compatibility
-	_ = d.Set("mfa", user.Mfa)
-	_ = d.Set("account_root_user_id", user.AccountRootUserID)
-	_ = d.Set("locked", user.Locked)
+	setUserState(d, user)
+
+	err = identity.SetGlobalIdentity(d, user.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -213,23 +242,23 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("email") {
-		req.Email = scw.StringPtr(d.Get("email").(string))
+		req.Email = new(d.Get("email").(string))
 	}
 
 	if d.HasChange("first_name") {
-		req.FirstName = scw.StringPtr(d.Get("first_name").(string))
+		req.FirstName = new(d.Get("first_name").(string))
 	}
 
 	if d.HasChanges("last_name") {
-		req.LastName = scw.StringPtr(d.Get("last_name").(string))
+		req.LastName = new(d.Get("last_name").(string))
 	}
 
 	if d.HasChange("phone_number") {
-		req.PhoneNumber = scw.StringPtr(d.Get("phone_number").(string))
+		req.PhoneNumber = new(d.Get("phone_number").(string))
 	}
 
 	if d.HasChange("locale") {
-		req.Locale = scw.StringPtr(d.Get("locale").(string))
+		req.Locale = new(d.Get("locale").(string))
 	}
 
 	_, err = api.UpdateUser(req, scw.WithContext(ctx))
@@ -261,4 +290,25 @@ func resourceIamUserDelete(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	return nil
+}
+
+func setUserState(d *schema.ResourceData, user *iam.User) {
+	_ = d.Set("organization_id", user.OrganizationID)
+	_ = d.Set("email", user.Email)
+	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
+	_ = d.Set("username", user.Username)
+	_ = d.Set("first_name", user.FirstName)
+	_ = d.Set("last_name", user.LastName)
+	_ = d.Set("phone_number", user.PhoneNumber)
+	_ = d.Set("locale", user.Locale)
+	_ = d.Set("created_at", types.FlattenTime(user.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(user.UpdatedAt))
+	_ = d.Set("deletable", user.Deletable)
+	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
+	_ = d.Set("type", user.Type)
+	_ = d.Set("status", user.Status.String()) //nolint:staticcheck // convert enum to string for schema compatibility
+	_ = d.Set("mfa", user.Mfa)
+	_ = d.Set("account_root_user_id", user.AccountRootUserID)
+	_ = d.Set("locked", user.Locked)
+	_ = d.Set("srn", user.Srn)
 }

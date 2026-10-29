@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
@@ -38,7 +37,7 @@ func CheckBucketExists(tt *acctest.TestTools, n string, shouldBeAllowed bool) re
 		}
 
 		_, err = s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 		})
 		if err != nil {
 			if !shouldBeAllowed && object.IsS3Err(err, object.ErrCodeForbidden, object.ErrCodeForbidden) {
@@ -67,7 +66,6 @@ func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			regionalID := regional.ExpandID(rs.Primary.ID)
 			bucketRegion := regionalID.Region.String()
-			bucketName := regionalID.ID
 
 			s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 			if err != nil {
@@ -75,7 +73,43 @@ func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			}
 
 			_, err = s3Client.ListObjects(ctx, &s3.ListObjectsInput{
-				Bucket: &bucketName,
+				Bucket: new(regionalID.ID),
+			})
+			if err != nil {
+				if errors.As(err, new(*types.NoSuchBucket)) {
+					// Bucket doesn't exist
+					continue
+				}
+
+				return fmt.Errorf("couldn't get bucket to verify if it still exists: %w", err)
+			}
+
+			return errors.New("bucket should be deleted")
+		}
+
+		return nil
+	}
+}
+
+func IsBucketDestroyedFromProject(tt *acctest.TestTools, projectId string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		ctx := context.Background()
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway" {
+				continue
+			}
+
+			regionalID := regional.ExpandID(rs.Primary.ID)
+			bucketRegion := regionalID.Region.String()
+
+			s3Client, err := object.NewS3ClientFromMetaWithProjectID(ctx, tt.Meta, bucketRegion, projectId)
+			if err != nil {
+				return err
+			}
+
+			_, err = s3Client.ListObjects(ctx, &s3.ListObjectsInput{
+				Bucket: new(regionalID.ID),
 			})
 			if err != nil {
 				if errors.As(err, new(*types.NoSuchBucket)) {
@@ -112,9 +146,9 @@ func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = s3Client.GetObject(ctx, &s3.GetObjectInput{
-				Bucket: scw.StringPtr(bucketName),
-				Key:    scw.StringPtr(key),
+			_, err = s3Client.HeadObject(ctx, &s3.HeadObjectInput{
+				Bucket: new(bucketName),
+				Key:    new(key),
 			})
 			if err != nil {
 				if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "The specified bucket does not exist") {
@@ -234,9 +268,9 @@ func IsObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return errors.New("no ID is set")
 		}
 
-		_, err = s3Client.GetObject(ctx, &s3.GetObjectInput{
-			Bucket: scw.StringPtr(bucketName),
-			Key:    scw.StringPtr(key),
+		_, err = s3Client.HeadObject(ctx, &s3.HeadObjectInput{
+			Bucket: new(bucketName),
+			Key:    new(key),
 		})
 		if err != nil {
 			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "") {

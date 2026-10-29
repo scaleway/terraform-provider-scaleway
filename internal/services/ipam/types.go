@@ -2,6 +2,7 @@
 package ipam
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
@@ -20,9 +21,9 @@ func expandLastID(i any) string {
 	composedID := i.(string)
 
 	elems := strings.Split(composedID, "/")
-	for i := len(elems) - 1; i >= 0; i-- {
-		if validation.IsUUID(elems[i]) {
-			return elems[i]
+	for _, v := range slices.Backward(elems) {
+		if validation.IsUUID(v) {
+			return v
 		}
 	}
 

@@ -20,7 +20,8 @@ func TestAccVPC_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "test-vpc"
+					  name 				  = "test-vpc"
+ 					  enable_transitivity = true	
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -31,7 +32,14 @@ func TestAccVPC_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc.vpc01", "updated_at"),
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_routing", "true"),
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_custom_routes_propagation", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_transitivity", "true"),
+					resource.TestMatchResourceAttr("scaleway_vpc.vpc01", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/vpcs/.+$`)),
 				),
+			},
+			{
+				ResourceName:      "scaleway_vpc.vpc01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -117,6 +125,24 @@ func TestAccVPC_DisableRouting(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcchecks.CheckVPCDestroy(tt),
 		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name           = "test-vpc-disable-routing"
+					  enable_routing = false
+					}
+				`,
+				ExpectError: regexp.MustCompile("routing cannot be disabled on this VPC"),
+			},
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name                             = "test-vpc-disable-routing"
+					  enable_custom_routes_propagation = false
+					}
+				`,
+				ExpectError: regexp.MustCompile("custom routes propagation cannot be disabled on this VPC"),
+			},
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {

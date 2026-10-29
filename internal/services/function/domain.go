@@ -29,29 +29,38 @@ func ResourceDomain() *schema.Resource {
 			Create:  schema.DefaultTimeout(DefaultFunctionTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"function_id": {
-				Type:             schema.TypeString,
-				Description:      "The ID of the function",
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"hostname": {
-				Type:        schema.TypeString,
-				Description: "The hostname that should be redirected to the function",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"url": {
-				Type:        schema.TypeString,
-				Description: "URL to use to trigger the function",
-				Computed:    true,
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    domainSchema,
 		CustomizeDiff: cdf.LocalityCheck("function_id"),
+	}
+}
+
+func domainSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"function_id": {
+			Type:             schema.TypeString,
+			Description:      "The ID of the function",
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"hostname": {
+			Type:        schema.TypeString,
+			Description: "The hostname that should be redirected to the function",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"url": {
+			Type:        schema.TypeString,
+			Description: "URL to use to trigger the function",
+			Computed:    true,
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the function domain",
+		},
+		"region": regional.Schema(),
 	}
 }
 
@@ -111,6 +120,7 @@ func ResourceFunctionDomainRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("hostname", domain.Hostname)
 	_ = d.Set("function_id", regional.NewIDString(region, domain.FunctionID))
 	_ = d.Set("url", domain.URL)
+	_ = d.Set("srn", domain.Srn)
 	_ = d.Set("region", region)
 
 	return nil

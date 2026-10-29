@@ -2,6 +2,7 @@ package block_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -35,7 +36,38 @@ func TestAccSnapshot_Basic(t *testing.T) {
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_block_snapshot.main", "name", "test-block-snapshot-basic"),
+					resource.TestMatchResourceAttr("scaleway_block_snapshot.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
 				),
+			},
+		},
+	})
+}
+
+func TestAccSnapshot_VolumeIDConflict(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						iops = 5000
+						size_in_gb = 10
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-block-snapshot-conflict"
+						volume_id = scaleway_block_volume.main.id
+						import {
+							bucket = "tf-test-block-snapshot-conflict"
+							key    = "test-acc-block-snapshot-conflict.qcow2"
+						}
+					}
+				`,
+				ExpectError: regexp.MustCompile(`"volume_id" cannot be specified when "import" is specified`),
 			},
 		},
 	})
@@ -45,7 +77,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-block-snapshot")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -88,7 +120,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-export-block-snapshot")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-export-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(

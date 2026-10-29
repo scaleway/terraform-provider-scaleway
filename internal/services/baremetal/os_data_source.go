@@ -16,28 +16,32 @@ import (
 func DataSourceOS() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceOSRead,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Exact label of the desired image",
-				ConflictsWith: []string{"os_id"},
-			},
-			"version": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Version string of the desired OS",
-				ConflictsWith: []string{"os_id"},
-			},
-			"os_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the os",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith:    []string{"name"},
-			},
-			"zone": zonal.Schema(),
+		SchemaFunc:  osSchema,
+	}
+}
+
+func osSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Exact label of the desired image",
+			ConflictsWith: []string{"os_id"},
 		},
+		"version": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Version string of the desired OS",
+			ConflictsWith: []string{"os_id"},
+		},
+		"os_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the os",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			ConflictsWith:    []string{"name"},
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

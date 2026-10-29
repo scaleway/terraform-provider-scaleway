@@ -23,26 +23,35 @@ func ResourceDatabase() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"region": regional.Schema(),
-			"deployment_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "ID of the Datawarehouse deployment to which this database belongs.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Name of the database.",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Size of the database (in GB).",
-			},
+		SchemaFunc: databaseSchema,
+	}
+}
+
+func databaseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"region": regional.Schema(),
+		"deployment_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "ID of the Datawarehouse deployment to which this database belongs.",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Name of the database.",
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Size of the database (in GB).",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the database",
 		},
 	}
 }
@@ -83,7 +92,7 @@ func resourceDatabaseRead(ctx context.Context, d *schema.ResourceData, meta any)
 	resp, err := api.ListDatabases(&datawarehouseapi.ListDatabasesRequest{
 		Region:       region,
 		DeploymentID: deploymentID,
-		Name:         scw.StringPtr(name),
+		Name:         new(name),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
@@ -114,6 +123,7 @@ func resourceDatabaseRead(ctx context.Context, d *schema.ResourceData, meta any)
 	_ = d.Set("deployment_id", deploymentID)
 	_ = d.Set("name", found.Name)
 	_ = d.Set("size", int(found.Size))
+	_ = d.Set("srn", found.Srn)
 
 	return nil
 }

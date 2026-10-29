@@ -5,7 +5,10 @@ page_title: "Scaleway: scaleway_k8s_cluster"
 
 # Resource: scaleway_k8s_cluster
 
-Creates and manages Scaleway Kubernetes clusters. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
+The [`scaleway_k8s_cluster`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/k8s_cluster) resource allows you to create and manage Scaleway Kubernetes clusters.
+
+Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute/kubernetes/) and [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/) for more information.
+
 
 ## Example Usage
 
@@ -16,7 +19,7 @@ resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
-  version                     = "1.32.3"
+  version                     = "1.35.3"
   cni                         = "cilium"
   private_network_id          = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
@@ -24,35 +27,14 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
 }
 ```
 
-### Multicloud
-
-```terraform
-resource "scaleway_k8s_cluster" "cluster" {
-  name                        = "tf-cluster"
-  type                        = "multicloud"
-  version                     = "1.32.3"
-  cni                         = "kilo"
-  delete_additional_resources = false
-}
-
-resource "scaleway_k8s_pool" "pool" {
-  cluster_id = scaleway_k8s_cluster.cluster.id
-  name       = "tf-pool"
-  node_type  = "external"
-  size       = 0
-  min_size   = 0
-}
-```
-
-For a detailed example of how to add or run Elastic Metal servers instead of Instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
-
-### With additional configuration
+### Using autoscaler_config
 
 ```terraform
 resource "scaleway_vpc_private_network" "pn" {}
@@ -60,7 +42,7 @@ resource "scaleway_vpc_private_network" "pn" {}
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
   description                 = "cluster made in terraform"
-  version                     = "1.32.3"
+  version                     = "1.35.3"
   cni                         = "calico"
   tags                        = ["terraform"]
   private_network_id          = scaleway_vpc_private_network.pn.id
@@ -79,6 +61,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id  = scaleway_k8s_cluster.cluster.id
+  version     = scaleway_k8s_cluster.cluster.version
   name        = "tf-pool"
   node_type   = "DEV1-M"
   size        = 3
@@ -89,47 +72,6 @@ resource "scaleway_k8s_pool" "pool" {
 }
 ```
 
-### With the kubernetes provider
-
-```terraform
-resource "scaleway_vpc_private_network" "pn" {}
-
-resource "scaleway_k8s_cluster" "cluster" {
-  name                        = "tf-cluster"
-  version                     = "1.29.1"
-  cni                         = "cilium"
-  private_network_id          = scaleway_vpc_private_network.pn.id
-  delete_additional_resources = false
-}
-
-resource "scaleway_k8s_pool" "pool" {
-  cluster_id = scaleway_k8s_cluster.cluster.id
-  name       = "tf-pool"
-  node_type  = "DEV1-M"
-  size       = 1
-}
-
-resource "null_resource" "kubeconfig" {
-  depends_on = [scaleway_k8s_pool.pool] # at least one pool here
-  triggers = {
-    host                   = scaleway_k8s_cluster.cluster.kubeconfig[0].host
-    token                  = scaleway_k8s_cluster.cluster.kubeconfig[0].token
-    cluster_ca_certificate = scaleway_k8s_cluster.cluster.kubeconfig[0].cluster_ca_certificate
-  }
-}
-
-provider "kubernetes" {
-  host  = null_resource.kubeconfig.triggers.host
-  token = null_resource.kubeconfig.triggers.token
-  cluster_ca_certificate = base64decode(
-    null_resource.kubeconfig.triggers.cluster_ca_certificate
-  )
-}
-```
-
-The `null_resource` is needed because when the cluster is created, its status is `pool_required`, but the kubeconfig can already be downloaded.
-It leads the `kubernetes` provider to start creating its objects, but the DNS entry for the Kubernetes master is not yet ready, that's why it's needed to wait for at least a pool.
-
 ### With the Helm provider
 
 ```terraform
@@ -137,7 +79,7 @@ resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
-  version                     = "1.29.1"
+  version                     = "1.35.3"
   cni                         = "cilium"
   delete_additional_resources = false
   private_network_id          = scaleway_vpc_private_network.pn.id
@@ -145,6 +87,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
@@ -216,6 +159,70 @@ resource "helm_release" "nginx_ingress" {
 }
 ```
 
+### With the Kubernetes provider
+
+```terraform
+resource "scaleway_vpc_private_network" "pn" {}
+
+resource "scaleway_k8s_cluster" "cluster" {
+  name                        = "tf-cluster"
+  version                     = "1.35.3"
+  cni                         = "cilium"
+  private_network_id          = scaleway_vpc_private_network.pn.id
+  delete_additional_resources = false
+}
+
+resource "scaleway_k8s_pool" "pool" {
+  cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
+  name       = "tf-pool"
+  node_type  = "DEV1-M"
+  size       = 1
+}
+
+# The `null_resource` is needed because when the cluster is created, its status is `pool_required`, but the kubeconfig can already be downloaded.
+# It leads the `kubernetes` provider to start creating its objects, but the DNS entry for the Kubernetes master is not yet ready, that's why it's needed to wait for at least a pool.
+resource "null_resource" "kubeconfig" {
+  depends_on = [scaleway_k8s_pool.pool] # at least one pool here
+  triggers = {
+    host                   = scaleway_k8s_cluster.cluster.kubeconfig[0].host
+    token                  = scaleway_k8s_cluster.cluster.kubeconfig[0].token
+    cluster_ca_certificate = scaleway_k8s_cluster.cluster.kubeconfig[0].cluster_ca_certificate
+  }
+}
+
+provider "kubernetes" {
+  host  = null_resource.kubeconfig.triggers.host
+  token = null_resource.kubeconfig.triggers.token
+  cluster_ca_certificate = base64decode(
+    null_resource.kubeconfig.triggers.cluster_ca_certificate
+  )
+}
+```
+
+### Multicloud
+
+```terraform
+# For a detailed example of how to add or run Elastic Metal servers instead of Instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
+
+resource "scaleway_k8s_cluster" "cluster" {
+  name                        = "tf-cluster"
+  type                        = "multicloud"
+  version                     = "1.35.3"
+  cni                         = "kilo"
+  delete_additional_resources = false
+}
+
+resource "scaleway_k8s_pool" "pool" {
+  cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
+  name       = "tf-pool"
+  node_type  = "external"
+  size       = 0
+  min_size   = 0
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -272,14 +279,26 @@ you can still set it now. In this case it will not destroy and recreate your clu
 
     - `max_graceful_termination_sec` - (Defaults to `600`) Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node
 
+    - `skip_nodes_with_local_storage` - If set to true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath.
+      ~> **Important:** For now, it is not possible to change the value of `skip_nodes_with_local_storage` after creation. Changes to this field will recreate a new cluster resource.
+
+    - `log_level` - Autoscaler logging level expressed from 0 (least verbose) to 4 (most verbose).
+      Check out the [autoscaler's FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-can-i-increase-the-information-that-the-ca-is-logging) for details.
+      ~> **Important:** For now, it is not possible to change the value of `log_level` after creation. Changes to this field will recreate a new cluster resource.
+
 - `auto_upgrade` - (Optional) The auto upgrade configuration.
 
     - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
-~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
+      ~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
 
     - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
 
     - `maintenance_window_day` - (Optional) The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
+
+- `upgrade_pools` - (Optional, defaults to `true`) Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.
+If `false` (cluster and pool version are independent of each other), pool upgrades can be conducted by setting the `version` field in the pool resource.
+If `true`, upgrading a cluster also performs an upgrade on the pools, but this change is made outside of Terraform, as the config of the pool resource may stay the same.
+In that case, refreshing the state will be required for the pool to be read again and the version changes to be shown in the state.
 
 - `feature_gates` - (Optional) The list of [feature gates](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/) to enable on the cluster.
 
@@ -318,7 +337,7 @@ unsetting it to go back to the default value will not have any effect.
 ~> **Important:** Changes to this field will recreate a new resource. However once it has been set to a custom value,
 unsetting it to go back to the default value will not have any effect.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the cluster is associated with.
 
@@ -330,6 +349,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Kubernetes clusters' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
+- `srn` - The Scaleway Resource Name (SRN) of the cluster.
 - `created_at` - The creation date of the cluster.
 - `updated_at` - The last update date of the cluster.
 - `apiserver_url` - The URL of the Kubernetes API server.

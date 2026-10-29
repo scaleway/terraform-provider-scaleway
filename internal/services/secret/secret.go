@@ -2,9 +2,9 @@ package secret
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"path/filepath"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,18 +12,26 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/secret.md
+var secretDescription string
+
 func ResourceSecret() *schema.Resource {
 	return &schema.Resource{
+		Description:   secretDescription,
 		CreateContext: ResourceSecretCreate,
 		ReadContext:   ResourceSecretRead,
 		UpdateContext: ResourceSecretUpdate,
 		DeleteContext: ResourceSecretDelete,
+		Identity:      identity.DefaultRegional(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -31,147 +39,166 @@ func ResourceSecret() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultSecretTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The secret name",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the secret",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "List of tags [\"tag1\", \"tag2\", ...] associated to secret",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Status of the secret",
-			},
-			"version_count": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The number of versions for this Secret",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of secret's creation (RFC 3339 format)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of secret's creation (RFC 3339 format)",
-			},
-			"path": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Location of the secret in the directory structure.",
-				Default:     "/",
-				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-					return filepath.Clean(oldValue) == filepath.Clean(newValue)
-				},
-			},
-			"type": {
-				ForceNew: true,
-				Type:     schema.TypeString,
-				Description: func() string {
-					var t secret.SecretType
+		SchemaFunc:    secretSchema,
+	}
+}
 
-					secretTypes := t.Values()
-
-					return fmt.Sprintf("Type of the secret could be any value among: %s", secretTypes)
-				}(),
-				Optional:         true,
-				Default:          secret.SecretTypeOpaque,
-				ValidateDiagFunc: verify.ValidateEnum[secret.SecretType](),
-			},
-			"protected": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "True if secret protection is enabled on a given secret. A protected secret cannot be deleted.",
-			},
-			"ephemeral_policy": {
-				Type:        schema.TypeList,
-				Description: "Ephemeral policy of the secret. Policy that defines whether/when a secret's versions expire. By default, the policy is applied to all the secret's versions.",
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ttl": {
-							Optional:         true,
-							Type:             schema.TypeString,
-							DiffSuppressFunc: dsf.Duration,
-							ValidateDiagFunc: verify.IsDuration(),
-							Description:      "Time frame, from one second and up to one year, during which the secret's versions are valid. Has to be specified in Go Duration format",
-						},
-						"expires_once_accessed": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "True if the secret version expires after a single user access.",
-						},
-						"action": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.ValidateEnum[secret.EphemeralPolicyAction](),
-							Description:      "Action to perform when the version of a secret expires.",
-						},
-					},
-				},
-			},
-			"versions": {
-				Type:        schema.TypeList,
-				Description: "List of the versions of the secret",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"revision": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The revision of secret version",
-						},
-						"secret_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The secret ID associated with this version",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Status of the secret version",
-						},
-						"created_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Date and time of secret version's creation (RFC 3339 format)",
-						},
-						"updated_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Date and time of secret version's creation (RFC 3339 format)",
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Description of the secret version",
-						},
-						"latest": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Returns true if the version is the latest.",
-						},
-					},
-				},
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+func secretSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The secret name",
 		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Description of the secret",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "List of tags [\"tag1\", \"tag2\", ...] associated to secret",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Status of the secret",
+		},
+		"version_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The number of versions for this Secret",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of secret's creation (RFC 3339 format)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of secret's creation (RFC 3339 format)",
+		},
+		"path": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Location of the secret in the directory structure.",
+			Default:     "/",
+			DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+				return filepath.Clean(oldValue) == filepath.Clean(newValue)
+			},
+		},
+		"type": {
+			ForceNew: true,
+			Type:     schema.TypeString,
+			Description: func() string {
+				var t secret.SecretType
+
+				secretTypes := t.Values()
+
+				return fmt.Sprintf("Type of the secret could be any value among: %s", secretTypes)
+			}(),
+			Optional:         true,
+			Default:          secret.SecretTypeOpaque,
+			ValidateDiagFunc: verify.ValidateEnum[secret.SecretType](),
+		},
+		"key_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of the Scaleway Key Manager key used to encrypt and decrypt secret versions. Can be a UUID or a localized ID (region/UUID). If not set, Secret Manager will use a Key Manager internal key.",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+				return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
+			},
+		},
+		"protected": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "True if secret protection is enabled on a given secret. A protected secret cannot be deleted.",
+		},
+		"ephemeral_policy": {
+			Type:        schema.TypeList,
+			Description: "Ephemeral policy of the secret. Policy that defines whether/when a secret's versions expire. By default, the policy is applied to all the secret's versions.",
+			Optional:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ttl": {
+						Optional:         true,
+						Type:             schema.TypeString,
+						DiffSuppressFunc: dsf.Duration,
+						ValidateDiagFunc: verify.IsDuration(),
+						Description:      "Time frame, from one second and up to one year, during which the secret's versions are valid. Has to be specified in Go Duration format",
+					},
+					"expires_once_accessed": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "True if the secret version expires after a single user access.",
+					},
+					"action": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.ValidateEnum[secret.EphemeralPolicyAction](),
+						Description:      "Action to perform when the version of a secret expires.",
+					},
+				},
+			},
+		},
+		"versions": {
+			Type:        schema.TypeList,
+			Description: "List of the versions of the secret",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"revision": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The revision of secret version",
+					},
+					"secret_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The secret ID associated with this version",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Status of the secret version",
+					},
+					"created_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Date and time of secret version's creation (RFC 3339 format)",
+					},
+					"updated_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Date and time of secret version's creation (RFC 3339 format)",
+					},
+					"description": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Description of the secret version",
+					},
+					"latest": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "Returns true if the version is the latest.",
+					},
+				},
+			},
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the secret",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -204,6 +231,11 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		secretCreateRequest.Path = types.ExpandStringPtr(rawPath)
 	}
 
+	rawKeyID, keyIDExist := d.GetOk("key_id")
+	if keyIDExist {
+		secretCreateRequest.KeyID = types.ExpandStringPtr(locality.ExpandID(rawKeyID))
+	}
+
 	rawEphemeralPolicy, policyExists := d.GetOk("ephemeral_policy")
 	if policyExists {
 		secretCreateRequest.EphemeralPolicy, err = expandEphemeralPolicy(rawEphemeralPolicy)
@@ -212,12 +244,23 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		}
 	}
 
-	secretResponse, err := api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
+	var secretResponse *secret.Secret
+
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		var err error
+
+		secretResponse, err = api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, secretResponse.ID))
+	err = identity.SetRegionalIdentity(d, region, secretResponse.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceSecretRead(ctx, d, m)
 }
@@ -228,10 +271,13 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	secretResponse, err := api.GetSecret(&secret.GetSecretRequest{
-		Region:   region,
-		SecretID: id,
-	}, scw.WithContext(ctx))
+	// Retry on 404 to handle eventual consistency issues
+	secretResponse, err := transport.RetryOnStatusValue(ctx, transport.NotFound, func(ctx context.Context) (*secret.Secret, error) {
+		return api.GetSecret(&secret.GetSecretRequest{
+			Region:   region,
+			SecretID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -246,10 +292,13 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		_ = d.Set("tags", types.FlattenSliceString(secretResponse.Tags))
 	}
 
-	versions, err := api.ListSecretVersions(&secret.ListSecretVersionsRequest{
-		Region:   region,
-		SecretID: id,
-	}, scw.WithAllPages(), scw.WithContext(ctx))
+	// Retry on 404 to handle eventual consistency issues
+	versionsResponse, err := transport.RetryOnStatusValue(ctx, transport.NotFound, func(ctx context.Context) (*secret.ListSecretVersionsResponse, error) {
+		return api.ListSecretVersions(&secret.ListSecretVersionsRequest{
+			Region:   region,
+			SecretID: id,
+		}, scw.WithAllPages(), scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -260,33 +309,12 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", secretResponse.Name)
-	_ = d.Set("description", types.FlattenStringPtr(secretResponse.Description))
-	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
-	_ = d.Set("status", secretResponse.Status.String())
-	_ = d.Set("version_count", int(versions.TotalCount))
-	_ = d.Set("region", string(region))
-	_ = d.Set("project_id", secretResponse.ProjectID)
-	_ = d.Set("path", secretResponse.Path)
-	_ = d.Set("protected", secretResponse.Protected)
-	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secretResponse.EphemeralPolicy))
-	_ = d.Set("type", secretResponse.Type)
+	setSecretState(d, secretResponse, versionsResponse)
 
-	versionsList := make([]map[string]any, 0, len(versions.Versions))
-	for _, version := range versions.Versions {
-		versionsList = append(versionsList, map[string]any{
-			"revision":    strconv.Itoa(int(version.Revision)),
-			"secret_id":   version.SecretID,
-			"status":      version.Status.String(),
-			"created_at":  types.FlattenTime(version.CreatedAt),
-			"updated_at":  types.FlattenTime(version.UpdatedAt),
-			"description": types.FlattenStringPtr(version.Description),
-			"latest":      types.FlattenBoolPtr(&version.Latest),
-		})
+	err = identity.SetRegionalIdentity(d, region, id)
+	if err != nil {
+		return diag.FromErr(err)
 	}
-
-	_ = d.Set("versions", versionsList)
 
 	return nil
 }
@@ -356,10 +384,12 @@ func ResourceSecretDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteSecret(&secret.DeleteSecretRequest{
-		Region:   region,
-		SecretID: id,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return api.DeleteSecret(&secret.DeleteSecretRequest{
+			Region:   region,
+			SecretID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}

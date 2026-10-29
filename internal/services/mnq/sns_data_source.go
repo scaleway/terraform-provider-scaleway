@@ -12,13 +12,15 @@ import (
 
 func DataSourceSNS() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceSNS().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceSNS().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 
 	return &schema.Resource{
 		ReadContext: DataSourceMNQSNSRead,
-		Schema:      dsSchema,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return dsSchema
+		},
 	}
 }
 
@@ -32,6 +34,17 @@ func DataSourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) di
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 	})
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sns, err = api.GetSnsInfo(&mnq.SnsAPIGetSnsInfoRequest{
+				Region:    region,
+				ProjectID: d.Get("project_id").(string),
+			})
+
+			return err
+		})
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -43,7 +56,7 @@ func DataSourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) di
 	regionID := datasource.NewRegionalID(sns.ProjectID, region)
 	d.SetId(regionID)
 
-	diags := ResourceMNQSNSRead(ctx, d, m)
+	diags := readSNSIntoState(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read sns state")...)
 	}

@@ -9,13 +9,17 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-const domainNameValidation = "scaleway-terraform.com"
+const (
+	domainNameValidation = "scaleway-terraform.com"
+	// testAccTEMProjectID is the project ID used in TEM VCR cassettes.
+	testAccTEMProjectID = "105bdce1-64c0-48ab-899d-868455867ecf"
+)
 
 func TestAccDomainValidation_Validation(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "validation-validation"
+	subDomainName := "tf-test-tem-validation"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -27,6 +31,7 @@ func TestAccDomainValidation_Validation(t *testing.T) {
 					resource "scaleway_domain_zone" "test" {
   						domain    = "%s"
   						subdomain = "%s"
+						project_id = "%s"
 					}
 
 					resource scaleway_tem_domain cr01 {
@@ -40,7 +45,7 @@ func TestAccDomainValidation_Validation(t *testing.T) {
   						region = scaleway_tem_domain.cr01.region
 						timeout = 3600
 					}
-				`, domainNameValidation, subDomainName),
+				`, domainNameValidation, subDomainName, testAccTEMProjectID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
 				),
@@ -53,7 +58,7 @@ func TestAccDomainValidation_TimeoutError(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "validation-timeout"
+	subDomainName := "tf-test-tem-validation-timeout"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -65,6 +70,7 @@ func TestAccDomainValidation_TimeoutError(t *testing.T) {
                     resource "scaleway_domain_zone" "test" {
                         domain    = "%s"
                         subdomain = "%s"
+                        project_id = "%s"
                     }
 
                     resource scaleway_tem_domain cr01 {
@@ -77,7 +83,7 @@ func TestAccDomainValidation_TimeoutError(t *testing.T) {
                         region    = scaleway_tem_domain.cr01.region
                         timeout   = 1
                     }
-                `, domainNameValidation, subDomainName),
+                `, domainNameValidation, subDomainName, testAccTEMProjectID),
 				ExpectError: regexp.MustCompile("(?i)domain validation did not complete"),
 			},
 		},

@@ -14,7 +14,7 @@ import (
 
 func DataSourceServer() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceServer().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceServer().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
@@ -46,7 +46,7 @@ func DataSourceServerRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 		res, err := api.ListServers(&baremetal.ListServersRequest{
 			Zone:      zone,
-			Name:      scw.StringPtr(serverName),
+			Name:      new(serverName),
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {

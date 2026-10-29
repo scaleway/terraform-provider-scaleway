@@ -1,0 +1,52 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "VPC"
+description: |-
+  Lists Scaleway VPC Private Networks across regions and projects.
+---
+
+# Resource: {{ .Name }}
+
+{{ .Description }}
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/#private-networks).
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `name` - (Optional) Name of the Private Network to filter for.
+- `tags` - (Optional) Tags to filter for.
+- `vpc_id` - (Optional) VPC ID to filter for. Only Private Networks belonging to this VPC will be returned.
+- `organization_id` - (Optional) Organization ID to filter for.
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects.
+- `regions` - (Optional) Regions to filter for. Use `["*"]` to list from all regions.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each Private Network:
+
+- `id` - The ID of the Private Network.
+- `name` - The name of the Private Network.
+- `created_at` - The date and time of the creation of the Private Network.
+- `updated_at` - The date and time of the last update of the Private Network.
+- `organization_id` - The ID of the organization the Private Network is associated with.
+- `project_id` - The ID of the project the Private Network is associated with.
+- `region` - The region of the Private Network.
+- `vpc_id` - The ID of the VPC the Private Network belongs to.
+- `tags` - The tags associated with the Private Network.
+- `ipv4_subnet` - The IPv4 subnet associated with the Private Network.
+- `ipv6_subnets` - The IPv6 subnets associated with the Private Network.
+- `is_regional` - Whether the Private Network is regional.
+- `enable_default_route_propagation` - Whether default route propagation is enabled.

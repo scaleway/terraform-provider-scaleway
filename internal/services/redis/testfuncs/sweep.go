@@ -1,12 +1,11 @@
 package redistestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	redisSDK "github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -27,7 +26,9 @@ func testSweepRedisCluster(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing redis clusters in (%s) in sweeper: %w", zone, err)
+			logging.L.Warningf("error listing redis clusters in (%s) in sweeper: %s", zone, err)
+
+			return nil
 		}
 
 		for _, cluster := range listClusters.Clusters {
@@ -36,7 +37,9 @@ func testSweepRedisCluster(_ string) error {
 				ClusterID: cluster.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting redis cluster in sweeper: %w", err)
+				if !httperrors.Is404(err) {
+					logging.L.Warningf("error deleting redis cluster %s in sweeper: %s", cluster.ID, err)
+				}
 			}
 		}
 

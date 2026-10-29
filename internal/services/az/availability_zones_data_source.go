@@ -20,21 +20,25 @@ func DataSourceAvailabilityZones() *schema.Resource {
 			Read: schema.DefaultTimeout(20 * time.Minute),
 		},
 
-		Schema: map[string]*schema.Schema{
-			"region": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Region is represented as a Geographical area such as France",
-				Default:     scw.RegionFrPar,
+		SchemaFunc: availabilityZoneSchema,
+	}
+}
+
+func availabilityZoneSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"region": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Region is represented as a Geographical area such as France",
+			Default:     scw.RegionFrPar,
+		},
+		"zones": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"zones": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Computed:    true,
-				Description: "Availability Zones (AZ)",
-			},
+			Computed:    true,
+			Description: "Availability Zones (AZ)",
 		},
 	}
 }

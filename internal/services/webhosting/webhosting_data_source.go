@@ -14,7 +14,7 @@ import (
 )
 
 func DataSourceWebhosting() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceWebhosting().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceWebhosting().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "domain")
 
@@ -82,7 +82,7 @@ func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	diags := resourceWebhostingRead(ctx, d, m)
+	diags := readWebhostingIntoState(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read hosting")...)
 	}

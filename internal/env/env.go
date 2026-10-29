@@ -17,4 +17,7 @@ const (
 	// AccRunningOpenTofu is set to "true" in the CI to document that we are using OpenTofu. It can be helpful to skip
 	// tests that are not yet compatible with OpenTofu
 	AccRunningOpenTofu = "TF_ACC_OPENTOFU"
+	// TestDatadogAPIKey is the name of the env var that holds the Datadog key for live
+	// cockpit exporter acceptance tests (not a credential value itself).
+	TestDatadogAPIKey = "TF_TEST_DATADOG_API_KEY" //nolint: gosec // G101: env var name, not a secret
 )

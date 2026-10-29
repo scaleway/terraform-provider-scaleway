@@ -13,7 +13,7 @@ import (
 )
 
 func DataSourceDevice() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceDevice().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceDevice().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region")
 
@@ -80,7 +80,7 @@ func DataSourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceIotDeviceRead(ctx, d, m)
+	diags := readDeviceIntoState(ctx, d, m)
 	if diags != nil {
 		return diags
 	}

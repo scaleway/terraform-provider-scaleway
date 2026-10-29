@@ -15,7 +15,7 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ### Let's Encrypt
 
-```hcl
+```terraform
 resource "scaleway_lb_ip" "main" {
 }
 
@@ -34,12 +34,12 @@ resource "scaleway_lb_certificate" "main" {
 }
 
 data "scaleway_lb_certificate" "byID" {
-  certificate_id = "${scaleway_lb_certificate.main.id}"
+  certificate_id = scaleway_lb_certificate.main.id
 }
 
 data "scaleway_lb_certificate" "byName" {
-  name  = "${scaleway_lb_certificate.main.name}"
-  lb_id = "${scaleway_lb.main.id}"
+  name  = scaleway_lb_certificate.main.name
+  lb_id = scaleway_lb.main.id
 }
 ```
 

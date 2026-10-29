@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +25,7 @@ func ResourceMACAddress() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity: identity.DefaultZonal(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultFlexibleIPTimeout),
 			Read:    schema.DefaultTimeout(defaultFlexibleIPTimeout),
@@ -32,53 +34,57 @@ func ResourceMACAddress() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultFlexibleIPTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"flexible_ip_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The ID of the flexible IP for which to generate a virtual MAC",
+		SchemaFunc:    macAddressSchema,
+		CustomizeDiff: cdf.LocalityCheck("flexible_ip_id"),
+	}
+}
+
+func macAddressSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"flexible_ip_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The ID of the flexible IP for which to generate a virtual MAC",
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The type of the virtual MAC",
+			ValidateDiagFunc: verify.ValidateEnum[flexibleip.MACAddressType](),
+		},
+		"flexible_ip_ids_to_duplicate": {
+			Type: schema.TypeSet,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The type of the virtual MAC",
-				ValidateDiagFunc: verify.ValidateEnum[flexibleip.MACAddressType](),
-			},
-			"flexible_ip_ids_to_duplicate": {
-				Type: schema.TypeSet,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional: true,
-				Description: `The IDs of the flexible IPs on which to duplicate the virtual MAC
+			Optional: true,
+			Description: `The IDs of the flexible IPs on which to duplicate the virtual MAC
 
 **NOTE** : The flexible IPs need to be attached to the same server for the operation to work.`,
-			},
-			// computed
-			"address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Virtual MAC address",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Virtual MAC status",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the virtual MAC (Format ISO 8601)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the virtual MAC (Format ISO 8601)",
-			},
-			"zone": zonal.Schema(),
 		},
-		CustomizeDiff: cdf.LocalityCheck("flexible_ip_id"),
+		// computed
+		"address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Virtual MAC address",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Virtual MAC status",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the virtual MAC (Format ISO 8601)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the virtual MAC (Format ISO 8601)",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 
@@ -105,7 +111,10 @@ func ResourceFlexibleIPMACCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if res.MacAddress != nil {
-		d.SetId(zonal.NewIDString(zone, res.MacAddress.ID))
+		err = identity.SetZonalIdentity(d, res.MacAddress.Zone, res.MacAddress.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	fip, err := waitFlexibleIP(ctx, fipAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
@@ -142,22 +151,45 @@ func ResourceFlexibleIPMACRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	fip, err := fipAPI.GetFlexibleIP(&flexibleip.GetFlexibleIPRequest{
-		Zone:  zone,
-		FipID: locality.ExpandID(d.Get("flexible_ip_id")),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		// We check for 403 because flexible API returns 403 for a deleted IP
-		if httperrors.Is404(err) || httperrors.Is403(err) {
+	fipIDRaw := d.Get("flexible_ip_id")
+
+	var fip *flexibleip.FlexibleIP
+
+	if fipIDRaw != nil && fipIDRaw.(string) != "" {
+		fip, err = fipAPI.GetFlexibleIP(&flexibleip.GetFlexibleIPRequest{
+			Zone:  zone,
+			FipID: locality.ExpandID(fipIDRaw),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			// We check for 403 because flexible API returns 403 for a deleted IP
+			if httperrors.Is404(err) || httperrors.Is403(err) {
+				d.SetId("")
+
+				return nil
+			}
+
+			return diag.FromErr(err)
+		}
+	} else {
+		zone, macID, err := zonal.ParseID(d.Id())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		fip, err = findFlexibleIPByMACID(ctx, fipAPI, zone, macID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if fip == nil {
 			d.SetId("")
 
 			return nil
 		}
-
-		return diag.FromErr(err)
 	}
 
 	_ = d.Set("flexible_ip_id", zonal.NewIDString(zone, fip.ID))
+
 	if fip.MacAddress != nil {
 		_ = d.Set("type", fip.MacAddress.MacType.String())
 		_ = d.Set("address", fip.MacAddress.MacAddress)
@@ -165,6 +197,11 @@ func ResourceFlexibleIPMACRead(ctx context.Context, d *schema.ResourceData, m an
 		_ = d.Set("created_at", types.FlattenTime(fip.MacAddress.CreatedAt))
 		_ = d.Set("updated_at", types.FlattenTime(fip.MacAddress.UpdatedAt))
 		_ = d.Set("zone", fip.MacAddress.Zone)
+
+		err = identity.SetZonalIdentity(d, fip.MacAddress.Zone, fip.MacAddress.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	_ = d.Set("flexible_ip_ids_to_duplicate", types.ExpandStrings(d.Get("flexible_ip_ids_to_duplicate").(*schema.Set).List()))

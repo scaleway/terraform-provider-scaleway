@@ -11,17 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -36,6 +35,7 @@ func ResourceLb() *schema.Resource {
 		ReadContext:   resourceLbRead,
 		UpdateContext: resourceLbUpdate,
 		DeleteContext: resourceLbDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -55,184 +55,188 @@ func ResourceLb() *schema.Resource {
 			customizeDiffLBIPIDs,
 			customizeDiffAssignFlexibleIPv6,
 		),
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the lb",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the lb",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				DiffSuppressFunc: dsf.IgnoreCase,
-				Description:      "The type of load-balancer you want to create",
-			},
-			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "Array of tags to associate with the load-balancer",
-			},
-			"ip_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				Description:      "The load-balance public IP ID",
-				DiffSuppressFunc: dsf.Locality,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Deprecated:       "Please use ip_ids",
-			},
-			"ip_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The load-balance public IPv4 address",
-			},
-			"ipv6_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The load-balance public IPv6 address",
-			},
-			"release_ip": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Release the IPs related to this load-balancer",
-				Deprecated:  "The resource ip will be destroyed by it's own resource. Please set this to `false`",
-			},
-			"private_network": {
-				Type:          schema.TypeSet,
-				Optional:      true,
-				Computed:      true,
-				MaxItems:      8,
-				Set:           lbPrivateNetworkSetHash,
-				ConflictsWith: []string{"external_private_networks"},
-				Description:   "List of private network to connect with your load balancer",
-				DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
-					// Check if the key is for the 'private_network_id' attribute
-					if strings.HasSuffix(k, "private_network_id") {
-						return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
-					}
-					// For all other attributes, don't suppress the diff
-					return false
-				},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"private_network_id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							Description:      "The Private Network ID",
-						},
-						"static_config": {
-							Description: "Define an IP address in the subnet of your private network that will be assigned to your load balancer instance",
-							Type:        schema.TypeList,
-							Computed:    true,
-							Deprecated:  "static_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
-							Elem: &schema.Schema{
-								Type:             schema.TypeString,
-								ValidateDiagFunc: verify.IsStandaloneIPorCIDR(),
-							},
-						},
-						"dhcp_config": {
-							Description: "Set to true if you want to let DHCP assign IP addresses",
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Deprecated:  "dhcp_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
-						},
-						"ipam_ids": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							MaxItems:    1,
-							Optional:    true,
-							Computed:    true,
-							Description: "IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network",
-						},
-						// Readonly attributes
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The status of private network connection",
-						},
-						"zone": {
-							Type:        schema.TypeString,
-							Description: "Zone",
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"external_private_networks": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Default:       false,
-				Description:   "This boolean determines if private network attachments should be managed externally through the `scaleway_lb_private_network` resource. When set, `private_network` must not be configured in this resource",
-				ConflictsWith: []string{"private_network"},
-			},
-			"ssl_compatibility_level": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "Enforces minimal SSL version (in SSL/TLS offloading context)",
-				Default:          lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
-				ValidateDiagFunc: verify.ValidateEnum[lbSDK.SSLCompatibilityLevel](),
-			},
-			"assign_flexible_ip": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "Defines whether to automatically assign a flexible public IP to the load balancer",
-				ConflictsWith: []string{"ip_ids"},
-			},
-			"assign_flexible_ipv6": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Description:   "Defines whether to automatically assign a flexible public IPv6 to the load balancer",
-				ConflictsWith: []string{"ip_ids"},
-			},
-			"ip_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				},
-				Description:      "List of IP IDs to attach to the Load Balancer",
-				DiffSuppressFunc: dsf.OrderDiff,
-				ConflictsWith:    []string{"assign_flexible_ip", "assign_flexible_ipv6"},
-			},
-			"private_ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IP address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IP address",
-						},
-					},
-				},
-			},
-			"region":          regional.ComputedSchema(),
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaFunc: lbSchema,
+	}
+}
+
+func lbSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Name of the lb",
 		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the lb",
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			DiffSuppressFunc: dsf.IgnoreCase,
+			Description:      "The type of load-balancer you want to create",
+		},
+		"tags": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "Array of tags to associate with the load-balancer",
+		},
+		"ip_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Description:      "The load-balance public IP ID",
+			DiffSuppressFunc: dsf.Locality,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Deprecated:       "Please use ip_ids",
+		},
+		"ip_address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The load-balance public IPv4 address",
+		},
+		"ipv6_address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The load-balance public IPv6 address",
+		},
+		"release_ip": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Release the IPs related to this load-balancer",
+			Deprecated:  "The resource ip will be destroyed by it's own resource. Please set this to `false`",
+		},
+		"private_network": {
+			Type:          schema.TypeSet,
+			Optional:      true,
+			Computed:      true,
+			MaxItems:      8,
+			Set:           lbPrivateNetworkSetHash,
+			ConflictsWith: []string{"external_private_networks"},
+			Description:   "List of private network to connect with your load balancer",
+			DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
+				// Check if the key is for the 'private_network_id' attribute
+				if strings.HasSuffix(k, "private_network_id") {
+					return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
+				}
+				// For all other attributes, don't suppress the diff
+				return false
+			},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"private_network_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						Description:      "The Private Network ID",
+					},
+					"static_config": {
+						Description: "Define an IP address in the subnet of your private network that will be assigned to your load balancer instance",
+						Type:        schema.TypeList,
+						Computed:    true,
+						Deprecated:  "static_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
+						Elem: &schema.Schema{
+							Type:             schema.TypeString,
+							ValidateDiagFunc: verify.IsStandaloneIPorCIDR(),
+						},
+					},
+					"dhcp_config": {
+						Description: "Set to true if you want to let DHCP assign IP addresses",
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Deprecated:  "dhcp_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
+					},
+					"ipam_ids": {
+						Type: schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						MaxItems:    1,
+						Optional:    true,
+						Computed:    true,
+						Description: "IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network",
+					},
+					// Readonly attributes
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The status of private network connection",
+					},
+					"zone": {
+						Type:        schema.TypeString,
+						Description: "Zone",
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"external_private_networks": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       false,
+			Description:   "This boolean determines if private network attachments should be managed externally through the `scaleway_lb_private_network` resource. When set, `private_network` must not be configured in this resource",
+			ConflictsWith: []string{"private_network"},
+		},
+		"ssl_compatibility_level": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Enforces minimal SSL version (in SSL/TLS offloading context)",
+			Default:          lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
+			ValidateDiagFunc: verify.ValidateEnum[lbSDK.SSLCompatibilityLevel](),
+		},
+		"assign_flexible_ip": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			ForceNew:      true,
+			Description:   "Defines whether to automatically assign a flexible public IP to the load balancer",
+			ConflictsWith: []string{"ip_ids"},
+		},
+		"assign_flexible_ipv6": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Description:   "Defines whether to automatically assign a flexible public IPv6 to the load balancer",
+			ConflictsWith: []string{"ip_ids"},
+		},
+		"ip_ids": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			},
+			Description:      "List of IP IDs to attach to the Load Balancer",
+			DiffSuppressFunc: dsf.OrderDiff,
+			ConflictsWith:    []string{"assign_flexible_ip", "assign_flexible_ipv6"},
+		},
+		"private_ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of private IPv4 and IPv6 addresses associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IP address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IP address",
+					},
+				},
+			},
+		},
+		"region":          regional.ComputedSchema(),
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 
@@ -244,8 +248,8 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 
 	createReq := &lbSDK.ZonedAPICreateLBRequest{
 		Zone:                  zone,
-		IPIDs:                 types.ExpandSliceIDs(d.Get("ip_ids")),
-		IPID:                  types.ExpandStringPtr(locality.ExpandID(d.Get("ip_id"))),
+		IPIDs:                 locality.ExpandIDs(d.Get("ip_ids")),
+		IPID:                  types.ExpandStringPtr(locality.ExpandID(d.Get("ip_id"))), //nolint:staticcheck
 		ProjectID:             types.ExpandStringPtr(d.Get("project_id")),
 		Name:                  types.ExpandOrGenerateString(d.Get("name"), "lb"),
 		Description:           d.Get("description").(string),
@@ -266,7 +270,10 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, lb.ID))
+	err = identity.SetZonalIdentity(d, lb.Zone, lb.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	// check err waiting process
 	_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutCreate))
@@ -314,8 +321,31 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 
 		return diag.FromErr(err)
 	}
-	// set the region from zone
-	region, err := zone.Region()
+
+	external := d.Get("external_private_networks").(bool)
+
+	diags := setLBState(ctx, d, m, lbAPI, lb, external)
+
+	err = identity.SetZonalIdentity(d, lb.Zone, lb.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setLBState(ctx context.Context, d *schema.ResourceData, m any, lbAPI *lbSDK.ZonedAPI, lb *lbSDK.LB, external bool) diag.Diagnostics {
+	region, err := lb.Zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	privateNetworks, err := waitForPrivateNetworks(ctx, lbAPI, lb.Zone, lb.ID, d.Timeout(schema.TimeoutRead))
+	if err != nil && !httperrors.Is404(err) {
+		return diag.FromErr(err)
+	}
+
+	allPrivateIPs, err := getLBPrivateIPs(ctx, m, region, lb.ID, privateNetworks)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -333,8 +363,8 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 	_ = d.Set("ssl_compatibility_level", lb.SslCompatibilityLevel.String())
 
 	if len(lb.IP) > 0 {
-		_ = d.Set("ip_id", zonal.NewIDString(zone, lb.IP[0].ID))
-		_ = d.Set("ip_ids", flattenLBIPIDs(zone, lb.IP))
+		_ = d.Set("ip_id", zonal.NewIDString(lb.Zone, lb.IP[0].ID))
+		_ = d.Set("ip_ids", flattenLBIPIDs(lb.Zone, lb.IP))
 
 		var ipv4Address, ipv6Address string
 
@@ -353,46 +383,10 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 		_ = d.Set("ipv6_address", ipv6Address)
 	}
 
-	// retrieve attached private networks
-	privateNetworks, err := waitForPrivateNetworks(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	external := d.Get("external_private_networks").(bool)
 	if !external {
 		_ = d.Set("private_network", flattenPrivateNetworkConfigs(privateNetworks))
 	} else {
 		_ = d.Set("private_network", schema.NewSet(lbPrivateNetworkSetHash, []any{}))
-	}
-
-	privateNetworkIDs := make([]string, 0, len(privateNetworks))
-	for _, pn := range privateNetworks {
-		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
-	}
-
-	allPrivateIPs := []map[string]any(nil)
-	resourceType := ipamAPI.ResourceTypeLBServer
-
-	for _, privateNetworkID := range privateNetworkIDs {
-		opts := &ipam.GetResourcePrivateIPsOptions{
-			ResourceType:     &resourceType,
-			PrivateNetworkID: &privateNetworkID,
-			ResourceID:       &lb.ID,
-		}
-
-		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		if privateIPs != nil {
-			allPrivateIPs = append(allPrivateIPs, privateIPs...)
-		}
 	}
 
 	_ = d.Set("private_ips", allPrivateIPs)

@@ -3,12 +3,15 @@ package iam
 import (
 	"context"
 	"fmt"
+	"sync"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -20,110 +23,179 @@ func ResourcePolicy() *schema.Resource {
 		ReadContext:   resourceIamPolicyRead,
 		UpdateContext: resourceIamPolicyUpdate,
 		DeleteContext: resourceIamPolicyDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the iam policy",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the iam policy",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the policy",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the policy",
-			},
-			"editable": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the policy is editable.",
-			},
-			"organization_id": account.OrganizationIDOptionalSchema(),
-			"user_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "User id",
-				ValidateDiagFunc: verify.IsUUID(),
-				ExactlyOneOf:     []string{"group_id", "application_id", "no_principal"},
-			},
-			"group_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "Group id",
-				ValidateDiagFunc: verify.IsUUID(),
-				ExactlyOneOf:     []string{"user_id", "application_id", "no_principal"},
-			},
-			"application_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "Application id",
-				ValidateDiagFunc: verify.IsUUID(),
-				ExactlyOneOf:     []string{"user_id", "group_id", "no_principal"},
-			},
-			"no_principal": {
-				Type:         schema.TypeBool,
-				Optional:     true,
-				Description:  "Deactivate policy to a principal",
-				ExactlyOneOf: []string{"user_id", "group_id", "application_id"},
-			},
-			"rule": {
-				Type:        schema.TypeList,
-				Required:    true,
-				Description: "Rules of the policy to create",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"organization_id": {
+		SchemaFunc:    policySchema,
+		CustomizeDiff: resourceIamPolicyCustomizeDiff,
+	}
+}
+
+func resourceIamPolicyCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	if !diff.HasChange("rule") {
+		return nil
+	}
+
+	organizationID := diff.Get("organization_id").(string)
+	api := NewAPI(m)
+
+	// The lazy fetcher will only be executed once and return the cached result. In
+	// case it returns an error we're returning anyway.
+	fetchScopeTypes := sync.OnceValues(func() (map[string]iam.PermissionSetScopeType, error) {
+		resp, err := api.ListPermissionSets(&iam.ListPermissionSetsRequest{
+			OrganizationID: organizationID,
+			PageSize:       new(uint32(100)),
+		}, scw.WithContext(ctx), scw.WithAllPages())
+		if err != nil {
+			return nil, fmt.Errorf("failed to list permission sets: %w", err)
+		}
+
+		sets := make(map[string]iam.PermissionSetScopeType, len(resp.PermissionSets))
+		for _, set := range resp.PermissionSets {
+			sets[set.Name] = set.ScopeType
+		}
+
+		return sets, nil
+	})
+
+	for i, rule := range expandPolicyRuleSpecs(diff.Get("rule")) {
+		if rule.PermissionSetNames == nil || len(*rule.PermissionSetNames) < 2 {
+			continue
+		}
+
+		scopeTypes, err := fetchScopeTypes()
+		if err != nil {
+			tflog.Warn(ctx, "skipping permission set scope type validation", map[string]any{
+				"error": err.Error(),
+			})
+
+			//nolint:nilerr // fetch failure is intentionally ignored and logged above
+			return nil
+		}
+
+		v := scopeTypes[(*rule.PermissionSetNames)[0]]
+		for _, name := range *rule.PermissionSetNames {
+			scopeType, ok := scopeTypes[name]
+			if !ok {
+				return fmt.Errorf("permission set %q not found in organization %s", name, organizationID)
+			}
+
+			if scopeType != v {
+				return fmt.Errorf("rule[%d].permission_set_names: permission sets must be of the same scope type", i)
+			}
+		}
+	}
+
+	return nil
+}
+
+func policySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the iam policy",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the iam policy",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the policy",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the policy",
+		},
+		"editable": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Whether or not the policy is editable.",
+		},
+		"organization_id": account.OrganizationIDOptionalSchema(),
+		"user_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "User id",
+			ValidateDiagFunc: verify.IsUUID(),
+			ExactlyOneOf:     []string{"group_id", "application_id", "no_principal"},
+		},
+		"group_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Group id",
+			ValidateDiagFunc: verify.IsUUID(),
+			ExactlyOneOf:     []string{"user_id", "application_id", "no_principal"},
+		},
+		"application_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Application id",
+			ValidateDiagFunc: verify.IsUUID(),
+			ExactlyOneOf:     []string{"user_id", "group_id", "no_principal"},
+		},
+		"no_principal": {
+			Type:         schema.TypeBool,
+			Optional:     true,
+			Description:  "Deactivate policy to a principal",
+			ExactlyOneOf: []string{"user_id", "group_id", "application_id"},
+		},
+		"rule": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Description: "Rules of the policy to create",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"organization_id": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Description:      "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
+						ValidateDiagFunc: verify.IsUUID(),
+					},
+					"project_ids": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "List of project IDs scoped to the rule. Only one of project_ids and organization_id may be set.",
+						Elem: &schema.Schema{
 							Type:             schema.TypeString,
-							Optional:         true,
-							Description:      "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
 							ValidateDiagFunc: verify.IsUUID(),
 						},
-						"project_ids": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "List of project IDs scoped to the rule. Only one of project_ids and organization_id may be set.",
-							Elem: &schema.Schema{
-								Type:             schema.TypeString,
-								ValidateDiagFunc: verify.IsUUID(),
-							},
+					},
+					"permission_set_names": {
+						Type:        schema.TypeSet,
+						Required:    true,
+						Description: "Names of permission sets bound to the rule.",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
-						"permission_set_names": {
-							Type:        schema.TypeSet,
-							Required:    true,
-							Description: "Names of permission sets bound to the rule.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"condition": {
-							Type:        schema.TypeString,
-							Description: "Conditions of the policy",
-							Optional:    true,
-						},
+					},
+					"condition": {
+						Type:        schema.TypeString,
+						Description: "Conditions of the policy",
+						Optional:    true,
 					},
 				},
 			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the policy",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
+			Optional:    true,
+			Description: "The tags associated with the policy",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the policy",
 		},
 	}
 }
@@ -146,7 +218,10 @@ func resourceIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	d.SetId(pol.ID)
+	err = identity.SetGlobalIdentity(d, pol.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamPolicyRead(ctx, d, m)
 }
@@ -167,28 +242,6 @@ func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", pol.Name)
-	_ = d.Set("description", pol.Description)
-	_ = d.Set("created_at", types.FlattenTime(pol.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(pol.UpdatedAt))
-	_ = d.Set("organization_id", pol.OrganizationID)
-	_ = d.Set("editable", pol.Editable)
-	_ = d.Set("tags", types.FlattenSliceString(pol.Tags))
-
-	if pol.UserID != nil {
-		_ = d.Set("user_id", types.FlattenStringPtr(pol.UserID))
-	}
-
-	if pol.GroupID != nil {
-		_ = d.Set("group_id", types.FlattenStringPtr(pol.GroupID))
-	}
-
-	if pol.ApplicationID != nil {
-		_ = d.Set("application_id", types.FlattenStringPtr(pol.ApplicationID))
-	}
-
-	_ = d.Set("no_principal", types.FlattenBoolPtr(pol.NoPrincipal))
-
 	listRules, err := api.ListRules(&iam.ListRulesRequest{
 		PolicyID: pol.ID,
 	})
@@ -196,7 +249,12 @@ func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(fmt.Errorf("failed to list policy's rules: %w", err))
 	}
 
-	_ = d.Set("rule", flattenPolicyRules(listRules.Rules))
+	setPolicyState(d, pol, listRules.Rules)
+
+	err = identity.SetGlobalIdentity(d, pol.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -282,4 +340,30 @@ func resourceIamPolicyDelete(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	return nil
+}
+
+func setPolicyState(d *schema.ResourceData, pol *iam.Policy, rules []*iam.Rule) {
+	_ = d.Set("name", pol.Name)
+	_ = d.Set("description", pol.Description)
+	_ = d.Set("created_at", types.FlattenTime(pol.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(pol.UpdatedAt))
+	_ = d.Set("organization_id", pol.OrganizationID)
+	_ = d.Set("editable", pol.Editable)
+	_ = d.Set("tags", types.FlattenSliceString(pol.Tags))
+	_ = d.Set("srn", pol.Srn)
+
+	if pol.UserID != nil {
+		_ = d.Set("user_id", types.FlattenStringPtr(pol.UserID))
+	}
+
+	if pol.GroupID != nil {
+		_ = d.Set("group_id", types.FlattenStringPtr(pol.GroupID))
+	}
+
+	if pol.ApplicationID != nil {
+		_ = d.Set("application_id", types.FlattenStringPtr(pol.ApplicationID))
+	}
+
+	_ = d.Set("no_principal", types.FlattenBoolPtr(pol.NoPrincipal))
+	_ = d.Set("rule", flattenPolicyRules(rules))
 }

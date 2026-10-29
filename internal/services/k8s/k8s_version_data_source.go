@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -13,45 +14,59 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
+//go:embed descriptions/version_datasource.md
+var versionDataSourceDescription string
+
 func DataSourceVersion() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceK8SVersionRead,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the Kubernetes version in the form x.y.z",
+		SchemaFunc:  versionSchema,
+		Description: versionDataSourceDescription,
+	}
+}
+
+func versionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Name of the Kubernetes version in the form x.y.z",
+		},
+		"major_minor_only": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The name of the version in the form x.y (ignoring patch version)",
+		},
+		"available_cnis": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"major_minor_only": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the version in the form x.y (ignoring patch version)",
+			Description: "The list of supported Container Network Interface (CNI) plugins for this version",
+		},
+		"available_container_runtimes": {
+			Type:       schema.TypeList,
+			Computed:   true,
+			Deprecated: "deprecated",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"available_cnis": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "The list of supported Container Network Interface (CNI) plugins for this version",
+			Description: "The list of supported container runtimes for this version",
+		},
+		"available_feature_gates": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"available_container_runtimes": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "The list of supported container runtimes for this version",
-			},
-			"available_feature_gates": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "The list of supported feature gates for this version",
-			},
-			"region": regional.Schema(),
+			Description: "The list of supported feature gates for this version",
+		},
+		"region": regional.Schema(),
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the version",
 		},
 	}
 }
@@ -103,9 +118,10 @@ func DataSourceK8SVersionRead(ctx context.Context, d *schema.ResourceData, m any
 	_ = d.Set("name", version.Name)
 	_ = d.Set("major_minor_only", majorMinor)
 	_ = d.Set("available_cnis", version.AvailableCnis)
-	_ = d.Set("available_container_runtimes", version.AvailableContainerRuntimes)
+	_ = d.Set("available_container_runtimes", []string{"containerd"}) // field is deprecated and only containerd is available
 	_ = d.Set("available_feature_gates", version.AvailableFeatureGates)
 	_ = d.Set("region", region)
+	_ = d.Set("srn", version.Srn)
 
 	return nil
 }

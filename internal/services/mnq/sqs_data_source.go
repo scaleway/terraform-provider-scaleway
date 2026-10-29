@@ -12,13 +12,15 @@ import (
 
 func DataSourceSQS() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceSQS().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceSQS().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 
 	return &schema.Resource{
 		ReadContext: DataSourceMNQSQSRead,
-		Schema:      dsSchema,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return dsSchema
+		},
 	}
 }
 
@@ -32,6 +34,17 @@ func DataSourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m any) di
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 	})
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sqs, err = api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+				Region:    region,
+				ProjectID: d.Get("project_id").(string),
+			})
+
+			return err
+		})
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -43,7 +56,7 @@ func DataSourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m any) di
 	regionID := datasource.NewRegionalID(sqs.ProjectID, region)
 	d.SetId(regionID)
 
-	diags := ResourceMNQSQSRead(ctx, d, m)
+	diags := readSQSIntoState(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read sqs state")...)
 	}

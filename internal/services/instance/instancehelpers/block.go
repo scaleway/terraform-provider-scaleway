@@ -4,8 +4,9 @@ import (
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -33,16 +34,19 @@ func InstanceAndBlockAPIWithZoneAndID(m any, zonedID string) (*BlockAndInstanceA
 
 type BlockAndInstanceAPI struct {
 	*instance.API
-	BlockAPI *block.API
+	InstanceV2API *instanceV2.API
+	BlockAPI      *block.API
 }
 
 func NewBlockAndInstanceAPI(client *scw.Client) *BlockAndInstanceAPI {
 	instanceAPI := instance.NewAPI(client)
+	instanceV2API := instanceV2.NewAPI(client)
 	blockAPI := block.NewAPI(client)
 
 	return &BlockAndInstanceAPI{
-		API:      instanceAPI,
-		BlockAPI: blockAPI,
+		API:           instanceAPI,
+		InstanceV2API: instanceV2API,
+		BlockAPI:      blockAPI,
 	}
 }
 
@@ -53,6 +57,12 @@ type GetUnknownVolumeRequest struct {
 
 type ResizeUnknownVolumeRequest struct {
 	Size     *scw.Size
+	VolumeID string
+	Zone     scw.Zone
+}
+
+type RenameUnknownVolumeRequest struct {
+	Name     *string
 	VolumeID string
 	Zone     scw.Zone
 }
@@ -198,6 +208,32 @@ func (api *BlockAndInstanceAPI) ResizeUnknownVolume(req *ResizeUnknownVolumeRequ
 			Zone:     req.Zone,
 			VolumeID: req.VolumeID,
 			Size:     req.Size,
+		}, opts...)
+	}
+
+	return err
+}
+
+func (api *BlockAndInstanceAPI) RenameUnknownVolume(req *RenameUnknownVolumeRequest, opts ...scw.RequestOption) error {
+	unknownVolume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+		VolumeID: req.VolumeID,
+		Zone:     req.Zone,
+	}, opts...)
+	if err != nil {
+		return err
+	}
+
+	if unknownVolume.IsBlockVolume() {
+		_, err = api.BlockAPI.UpdateVolume(&block.UpdateVolumeRequest{
+			Zone:     req.Zone,
+			VolumeID: req.VolumeID,
+			Name:     req.Name,
+		}, opts...)
+	} else {
+		_, err = api.UpdateVolume(&instance.UpdateVolumeRequest{
+			Zone:     req.Zone,
+			VolumeID: req.VolumeID,
+			Name:     req.Name,
 		}, opts...)
 	}
 

@@ -5,15 +5,17 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instance "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func DataSourcePlacementGroup() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePlacementGroup().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePlacementGroup().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone")
 
@@ -33,35 +35,55 @@ func DataSourcePlacementGroup() *schema.Resource {
 }
 
 func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := newAPIWithZone(d, m)
+	api, zone, err := newAPIV2WithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	var pg *instance.PlacementGroup
+
 	placementGroupID, placementGroupIDExists := d.GetOk("placement_group_id")
 	if !placementGroupIDExists {
+		name := d.Get("name").(string)
+
 		res, err := api.ListPlacementGroups(&instance.ListPlacementGroupsRequest{
-			Zone:    zone,
-			Name:    types.ExpandStringPtr(d.Get("name")),
-			Project: types.ExpandStringPtr(d.Get("project_id")),
+			Zone:      zone,
+			Name:      types.ExpandStringPtr(name),
+			ProjectID: d.Get("project_id").(string),
 		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		for _, placementGroup := range res.PlacementGroups {
-			if placementGroup.Name == d.Get("name").(string) {
+			if placementGroup.Name == name {
 				if placementGroupID != "" {
-					return diag.Errorf("more than 1 placement group found with the same name %s", d.Get("name"))
+					return diag.Errorf("more than 1 placement group found with the same name %s", name)
 				}
 
+				pg = placementGroup
 				placementGroupID = placementGroup.ID
 			}
 		}
 
 		if placementGroupID == "" {
-			return diag.Errorf("no placementgroup found with the name %s", d.Get("name"))
+			return diag.Errorf("no placement group found with the name %s", name)
 		}
+	} else {
+		id, err := locality.ExtractUUID(placementGroupID.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		placementGroup, err := api.GetPlacementGroup(&instance.GetPlacementGroupRequest{
+			Zone:             zone,
+			PlacementGroupID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		pg = placementGroup
 	}
 
 	zoneID := datasource.NewZonedID(placementGroupID, zone)
@@ -72,14 +94,10 @@ func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceInstancePlacementGroupRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read placement group state")...)
+	pgV1, err := fetchPlacementGroupV1(ctx, d, m, pg.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("placement group (%s) not found", zoneID)
-	}
-
-	return nil
+	return setPlacementGroupState(d, pg, pgV1)
 }

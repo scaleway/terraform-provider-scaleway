@@ -9,8 +9,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -24,56 +26,73 @@ func ResourceRoute() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"vpc_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "VPC ID the Route belongs to",
-				DiffSuppressFunc: dsf.Locality,
+		SchemaFunc:    routeSchema,
+		Identity:      identity.DefaultRegional(),
+	}
+}
+
+func routeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"vpc_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "VPC ID the Route belongs to",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The route description",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The tags associated with the Route",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The route description",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The tags associated with the Route",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"destination": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The destination IP or IP range of the route",
-			},
-			"nexthop_resource_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the nexthop resource",
-				DiffSuppressFunc: diffSuppressFuncRouteResourceID,
-			},
-			"nexthop_private_network_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the nexthop private network",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"region": regional.Schema(),
-			// Computed elements
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the route",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the route",
-			},
+		},
+		"destination": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The destination IP or IP range of the route",
+		},
+		"nexthop_resource_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the nexthop resource",
+			DiffSuppressFunc: diffSuppressFuncRouteResourceID,
+		},
+		"nexthop_private_network_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the nexthop private network",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"nexthop_vpc_connector_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the nexthop VPC Connector",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"region": regional.Schema(),
+		// Computed elements
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the route",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the route",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the route",
 		},
 	}
 }
@@ -99,17 +118,23 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		Tags:                    types.ExpandStrings(d.Get("tags")),
 		VpcID:                   locality.ExpandID(d.Get("vpc_id").(string)),
 		NexthopResourceID:       types.ExpandStringPtr(resourceID),
-		NexthopPrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_private_network_id"))),
+		NexthopPrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_private_network_id").(string))),
+		NexthopVpcConnectorID:   types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_vpc_connector_id").(string))),
 		Destination:             destination,
 		Region:                  region,
 	}
 
-	res, err := vpcAPI.CreateRoute(req, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.Route, error) {
+		return vpcAPI.CreateRoute(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRouteRead(ctx, d, m)
 }
@@ -120,10 +145,12 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	res, err := vpcAPI.GetRoute(&vpc.GetRouteRequest{
-		Region:  region,
-		RouteID: ID,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.Route, error) {
+		return vpcAPI.GetRoute(&vpc.GetRouteRequest{
+			Region:  region,
+			RouteID: ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -134,13 +161,25 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
+	diags := setRouteState(d, res)
+
+	err = identity.SetRegionalIdentity(d, region, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setRouteState(d *schema.ResourceData, res *vpc.Route) diag.Diagnostics {
 	_ = d.Set("description", res.Description)
-	_ = d.Set("vpc_id", regional.NewIDString(region, res.VpcID))
+	_ = d.Set("vpc_id", regional.NewIDString(res.Region, res.VpcID))
 	_ = d.Set("nexthop_resource_id", types.FlattenStringPtr(res.NexthopResourceID))
-	_ = d.Set("nexthop_private_network_id", regional.NewIDString(region, types.FlattenStringPtr(res.NexthopPrivateNetworkID).(string)))
+	_ = d.Set("nexthop_private_network_id", regional.NewIDString(res.Region, types.FlattenStringPtr(res.NexthopPrivateNetworkID).(string)))
+	_ = d.Set("nexthop_vpc_connector_id", regional.NewIDString(res.Region, types.FlattenStringPtr(res.NexthopVpcConnectorID).(string)))
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("region", region)
+	_ = d.Set("region", res.Region)
 
 	destination, err := types.FlattenIPNet(res.Destination)
 	if err != nil {
@@ -152,6 +191,8 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
 	}
+
+	_ = d.Set("srn", res.Srn)
 
 	return nil
 }
@@ -199,13 +240,22 @@ func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) dia
 		hasChanged = true
 	}
 
+	if d.HasChange("nexthop_vpc_connector_id") {
+		updateRequest.NexthopVpcConnectorID = types.ExpandUpdatedStringPtr(locality.ExpandID(d.Get("nexthop_vpc_connector_id")))
+		hasChanged = true
+	}
+
 	if d.HasChange("tags") {
 		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
 	if hasChanged {
-		_, err = vpcAPI.UpdateRoute(updateRequest, scw.WithContext(ctx))
+		err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+			_, err := vpcAPI.UpdateRoute(updateRequest, scw.WithContext(ctx))
+
+			return err
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -221,10 +271,12 @@ func ResourceRouteDelete(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	// issue with route deletion for now, permissions_denied
-	err = vpcAPI.DeleteRoute(&vpc.DeleteRouteRequest{
-		Region:  region,
-		RouteID: ID,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return vpcAPI.DeleteRoute(&vpc.DeleteRouteRequest{
+			Region:  region,
+			RouteID: ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

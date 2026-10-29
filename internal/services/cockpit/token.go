@@ -8,9 +8,11 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -32,41 +34,46 @@ func ResourceToken() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: cockpitTokenUpgradeV1SchemaType(), Upgrade: cockpitTokenV1UpgradeFunc},
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the token",
-			},
-			"scopes": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				MaxItems:    1,
-				Description: "Endpoints",
-				Elem:        resourceCockpitTokenScopes(),
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The secret key of the token",
-				Sensitive:   true,
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Cockpit Token (Format ISO 8601)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Cockpit Token (Format ISO 8601)",
-			},
-			"project_id": account.ProjectIDSchema(),
-			"region":     regional.Schema(),
+		SchemaFunc: tokenSchema,
+		Identity:   identity.DefaultRegional(),
+	}
+}
+
+func tokenSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the token",
 		},
+		"scopes": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			MaxItems:    1,
+			Description: "Endpoints",
+			Elem:        resourceCockpitTokenScopes(),
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The secret key of the token",
+			Sensitive:   true,
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the Cockpit Token (Format ISO 8601)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the Cockpit Token (Format ISO 8601)",
+		},
+		"project_id": account.ProjectIDSchema(),
+		"region":     regional.Schema(),
 	}
 }
 
@@ -153,32 +160,30 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m a
 	var scopes []cockpit.TokenScope
 
 	if !scopesSet || len(rawScopes.([]any)) == 0 {
-		schema := resourceCockpitTokenScopes().Schema
-		for key, val := range schema {
-			if defaultVal, ok := val.Default.(bool); ok && defaultVal {
-				if scopeConst, found := scopeMapping[key]; found {
-					scopes = append(scopes, scopeConst)
-				}
-			}
-		}
+		scopes = defaultCockpitTokenScopes()
 	} else {
 		scopes = expandCockpitTokenScopes(rawScopes)
 	}
 
 	logging.L.Debugf("Creating token %+v", scopes)
 
-	res, err := api.CreateToken(&cockpit.RegionalAPICreateTokenRequest{
-		Name:        name,
-		TokenScopes: scopes,
-		ProjectID:   projectID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Token, error) {
+		return api.CreateToken(&cockpit.RegionalAPICreateTokenRequest{
+			Name:        name,
+			TokenScopes: scopes,
+			ProjectID:   projectID,
+			Region:      region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("secret_key", res.SecretKey)
-	d.SetId(regional.NewIDString(region, res.ID))
+
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCockpitTokenRead(ctx, d, m)
 }
@@ -189,10 +194,12 @@ func ResourceCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	res, err := api.GetToken(&cockpit.RegionalAPIGetTokenRequest{
-		Region:  region,
-		TokenID: id,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Token, error) {
+		return api.GetToken(&cockpit.RegionalAPIGetTokenRequest{
+			Region:  region,
+			TokenID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -200,6 +207,10 @@ func ResourceCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m any
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -219,10 +230,12 @@ func ResourceCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
-		Region:  region,
-		TokenID: id,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return api.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
+			Region:  region,
+			TokenID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

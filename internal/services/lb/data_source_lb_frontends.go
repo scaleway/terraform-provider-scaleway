@@ -15,93 +15,97 @@ import (
 func DataSourceFrontends() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceLbFrontendsRead,
-		Schema: map[string]*schema.Schema{
-			"lb_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "frontends with a lb id like it are listed.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "frontends with a name like it are listed.",
-			},
-			"frontends": {
-				Type:        schema.TypeList,
-				Description: "List of frontends.",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The load-balancer frontend ID",
+		SchemaFunc:  frontendsSchema,
+	}
+}
+
+func frontendsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"lb_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "frontends with a lb id like it are listed.",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "frontends with a name like it are listed.",
+		},
+		"frontends": {
+			Type:        schema.TypeList,
+			Description: "List of frontends.",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The load-balancer frontend ID",
+					},
+					"name": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The name of the frontend",
+					},
+					"inbound_port": {
+						Computed:    true,
+						Type:        schema.TypeInt,
+						Description: "TCP port to listen on the front side",
+					},
+					"backend_id": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The load-balancer backend ID",
+					},
+					"lb_id": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The load-balancer ID",
+					},
+					"timeout_client": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "Set the maximum inactivity time on the client side",
+					},
+					"certificate_ids": {
+						Computed: true,
+						Type:     schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
-						"name": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The name of the frontend",
-						},
-						"inbound_port": {
-							Computed:    true,
-							Type:        schema.TypeInt,
-							Description: "TCP port to listen on the front side",
-						},
-						"backend_id": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The load-balancer backend ID",
-						},
-						"lb_id": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The load-balancer ID",
-						},
-						"timeout_client": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "Set the maximum inactivity time on the client side",
-						},
-						"certificate_ids": {
-							Computed: true,
-							Type:     schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Description: "Collection of Certificate IDs related to the load balancer and domain",
-						},
-						"created_at": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The date and time of the creation of the frontend",
-						},
-						"update_at": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "The date and time of the last update of the frontend",
-						},
-						"enable_http3": {
-							Computed:    true,
-							Type:        schema.TypeBool,
-							Description: "Activates HTTP/3 protocol",
-						},
-						"connection_rate_limit": {
-							Computed:    true,
-							Type:        schema.TypeInt,
-							Description: "Rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second",
-						},
-						"enable_access_logs": {
-							Computed:    true,
-							Type:        schema.TypeBool,
-							Description: "Defines whether to enable access logs on the frontend",
-						},
+						Description: "Collection of Certificate IDs related to the load balancer and domain",
+					},
+					"created_at": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The date and time of the creation of the frontend",
+					},
+					"update_at": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "The date and time of the last update of the frontend",
+					},
+					"enable_http3": {
+						Computed:    true,
+						Type:        schema.TypeBool,
+						Description: "Activates HTTP/3 protocol",
+					},
+					"connection_rate_limit": {
+						Computed:    true,
+						Type:        schema.TypeInt,
+						Description: "Rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second",
+					},
+					"enable_access_logs": {
+						Computed:    true,
+						Type:        schema.TypeBool,
+						Description: "Defines whether to enable access logs on the frontend",
 					},
 				},
 			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
 		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

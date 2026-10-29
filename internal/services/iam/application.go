@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -18,46 +19,56 @@ func ResourceApplication() *schema.Resource {
 		ReadContext:   resourceIamApplicationRead,
 		UpdateContext: resourceIamApplicationUpdate,
 		DeleteContext: resourceIamApplicationDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the iam application",
+		SchemaFunc:    applicationSchema,
+	}
+}
+
+func applicationSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the iam application",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the iam application",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the application",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the application",
+		},
+		"editable": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Whether or not the application is editable.",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the iam application",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the application",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the application",
-			},
-			"editable": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the application is editable.",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the application",
-			},
-			"organization_id": account.OrganizationIDOptionalSchema(),
+			Optional:    true,
+			Description: "The tags associated with the application",
+		},
+		"organization_id": account.OrganizationIDOptionalSchema(),
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the application",
 		},
 	}
 }
@@ -75,7 +86,10 @@ func resourceIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(app.ID)
+	err = identity.SetGlobalIdentity(d, app.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamApplicationRead(ctx, d, m)
 }
@@ -96,13 +110,12 @@ func resourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", app.Name)
-	_ = d.Set("description", app.Description)
-	_ = d.Set("created_at", types.FlattenTime(app.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(app.UpdatedAt))
-	_ = d.Set("organization_id", app.OrganizationID)
-	_ = d.Set("editable", app.Editable)
-	_ = d.Set("tags", types.FlattenSliceString(app.Tags))
+	setApplicationState(d, app)
+
+	err = identity.SetGlobalIdentity(d, app.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -152,4 +165,15 @@ func resourceIamApplicationDelete(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	return nil
+}
+
+func setApplicationState(d *schema.ResourceData, app *iam.Application) {
+	_ = d.Set("name", app.Name)
+	_ = d.Set("description", app.Description)
+	_ = d.Set("created_at", types.FlattenTime(app.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(app.UpdatedAt))
+	_ = d.Set("organization_id", app.OrganizationID)
+	_ = d.Set("editable", app.Editable)
+	_ = d.Set("tags", types.FlattenSliceString(app.Tags))
+	_ = d.Set("srn", app.Srn)
 }

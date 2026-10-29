@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
@@ -28,6 +28,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -36,6 +37,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -57,353 +59,360 @@ func ResourceServer() *schema.Resource {
 			Default: schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the server",
-			},
-			"image": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The UUID or the label of the base image used by the server",
-				DiffSuppressFunc: dsf.Locality,
-				ExactlyOneOf:     []string{"image", "root_volume.0.volume_id"},
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The instance type of the server", // TODO: link to scaleway pricing in the doc
-				DiffSuppressFunc: dsf.IgnoreCase,
-			},
-			"protected": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, the instance is protected against accidental deletion via the Scaleway API.",
-			},
-			"replace_on_type_change": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Delete and re-create server if type change",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the server",
-			},
-			"security_group_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: dsf.Locality,
-				Description:      "The security group the server is attached to",
-			},
-			"placement_group_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: dsf.Locality,
-				Description:      "The placement group the server is attached to",
-			},
-			"placement_group_policy_respected": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "True when the placement group policy is respected",
-			},
-			"root_volume": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "Root volume attached to the server on creation",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Optional:    true,
-							Description: "Name of the root volume",
-						},
-						"size_in_gb": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "Size of the root volume in gigabytes",
-						},
-						"volume_type": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							ForceNew:    true,
-							Description: "Volume type of the root volume",
-							ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics {
-								diags := verify.ValidateEnum[instanceSDK.VolumeVolumeType]()(i, path)
-								if i.(string) == "b_ssd" {
-									diags = append(diags, diag.Diagnostic{
-										Severity:      diag.Error,
-										Summary:       "b_ssd volumes are not supported anymore",
-										Detail:        "Remove explicit b_ssd volume_type, migrate to sbs or downgrade terraform.\nLearn more about migration: https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/",
-										AttributePath: path,
-									})
-								}
-
-								return diags
-							},
-						},
-						"delete_on_termination": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     true,
-							Description: "Force deletion of the root volume on instance termination",
-						},
-						"boot": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "Set the volume where the boot the server",
-						},
-						"volume_id": {
-							Type:         schema.TypeString,
-							Computed:     true,
-							Optional:     true,
-							Description:  "Volume ID of the root volume",
-							ExactlyOneOf: []string{"image", "root_volume.0.volume_id"},
-						},
-						"sbs_iops": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Optional:    true,
-							Description: "SBS Volume IOPS, only with volume_type as sbs_volume",
-						},
-					},
-				},
-			},
-			"additional_volume_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-					DiffSuppressFunc: dsf.Locality,
-				},
-				Optional:    true,
-				Description: "The additional volumes attached to the server",
-			},
-			"filesystems": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "Filesystems attach to the server",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"filesystem_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The filesystem ID attached to the server",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The state of the filesystem",
-						},
-					},
-				},
-			},
-			"ip_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the reserved IP for the server",
-				DiffSuppressFunc: dsf.Locality,
-				ConflictsWith:    []string{"ip_ids"},
-			},
-			"ip_ids": {
-				Type:          schema.TypeList,
-				Description:   "The IDs of the reserved IP for the server",
-				Optional:      true,
-				ConflictsWith: []string{"ip_id"},
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					Description:      "ID of the reserved IP for the server",
-					DiffSuppressFunc: dsf.Locality,
-				},
-			},
-			"enable_dynamic_ip": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable dynamic IP on the server",
-			},
-			"state": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     InstanceServerStateStarted,
-				Description: "The state of the server should be: started, stopped, standby",
-				ValidateFunc: validation.StringInSlice([]string{
-					InstanceServerStateStarted,
-					InstanceServerStateStopped,
-					InstanceServerStateStandby,
-				}, false),
-			},
-			"boot_type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The boot type of the server",
-				Default:          instanceSDK.BootTypeLocal,
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.BootType](),
-			},
-			"bootscript_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				Description:      "ID of the target bootscript (set boot_type to bootscript)",
-				ValidateDiagFunc: verify.IsUUID(),
-				Deprecated:       "bootscript is not supported anymore.",
-			},
-			"cloud_init": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The cloud init script associated with this server",
-				ValidateFunc: validation.StringLenBetween(0, 127998),
-			},
-			"user_data": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Computed:    true,
-				Description: "The user data associated with the server",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				DiffSuppressFunc: func(k, _, _ string, _ *schema.ResourceData) bool {
-					return k == "user_data.ssh-host-fingerprints"
-				},
-			},
-			"private_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    8,
-				Description: "List of private network to connect with your instance",
-				Elem: &schema.Resource{
-					Timeouts: &schema.ResourceTimeout{
-						Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
-					},
-					Schema: map[string]*schema.Schema{
-						"pn_id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							Description:      "The Private Network ID",
-							DiffSuppressFunc: dsf.Locality,
-						},
-						// Computed
-						"mac_address": {
-							Type:        schema.TypeString,
-							Description: "MAC address of the NIC",
-							Computed:    true,
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private NIC state",
-						},
-						"pnic_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the NIC",
-						},
-						"zone": zonal.Schema(),
-					},
-				},
-			},
-			"public_ips": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "List of private IPv4 and IPv6 addresses attached to your instance",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the IP",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IP Address",
-						},
-						"gateway": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Gateway's IP address",
-						},
-						"netmask": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "CIDR netmask",
-						},
-						"family": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IP address family (inet or inet6)",
-						},
-						"dynamic": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Whether the IP is dynamic",
-						},
-						"provisioning_mode": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Provisioning mode of the IP address",
-						},
-					},
-				},
-			},
-			"private_ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IP address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IP address",
-						},
-					},
-				},
-			},
-			"admin_password_encryption_ssh_key_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: verify.IsUUIDOrEmpty(),
-				Description:      "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-		},
+		SchemaFunc:    serverSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck(
 				"placement_group_id",
 				"additional_volume_ids.#",
 				"ip_id",
+				"ip_ids.#",
 			),
 			customDiffInstanceServerType,
 			customDiffInstanceServerImage,
 			customDiffInstanceRootVolumeSize,
+			customDiffInstanceServerPublicIPs,
 		),
+	}
+}
+
+func serverSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the server",
+		},
+		"image": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The UUID or the label of the base image used by the server",
+			DiffSuppressFunc: dsf.Locality,
+			ExactlyOneOf:     []string{"image", "root_volume.0.volume_id"},
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The instance type of the server", // TODO: link to scaleway pricing in the doc
+			DiffSuppressFunc: dsf.IgnoreCase,
+		},
+		"protected": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, the instance is protected against accidental deletion via the Scaleway API.",
+		},
+		"replace_on_type_change": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Delete and re-create server if type change",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the server",
+		},
+		"security_group_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			DiffSuppressFunc: dsf.Locality,
+			Description:      "The security group the server is attached to",
+		},
+		"placement_group_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			DiffSuppressFunc: dsf.Locality,
+			Description:      "The placement group the server is attached to",
+		},
+		"placement_group_policy_respected": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "True when the placement group policy is respected",
+		},
+		"root_volume": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "Root volume attached to the server on creation",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Optional:    true,
+						Description: "Name of the root volume",
+					},
+					"size_in_gb": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: "Size of the root volume in gigabytes",
+					},
+					"volume_type": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						ForceNew:    true,
+						Description: "Volume type of the root volume",
+						ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics {
+							diags := verify.ValidateEnum[instanceSDK.VolumeVolumeType]()(i, path)
+							if i.(string) == "b_ssd" {
+								diags = append(diags, diag.Diagnostic{
+									Severity:      diag.Error,
+									Summary:       "b_ssd volumes are not supported anymore",
+									Detail:        "Remove explicit b_ssd volume_type, migrate to sbs or downgrade terraform.\nLearn more about migration: https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/",
+									AttributePath: path,
+								})
+							}
+
+							return diags
+						},
+					},
+					"delete_on_termination": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Default:     true,
+						Description: "Force deletion of the root volume on instance termination",
+					},
+					"boot": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Default:     false,
+						Description: "Set the volume where the boot the server",
+					},
+					"volume_id": {
+						Type:         schema.TypeString,
+						Computed:     true,
+						Optional:     true,
+						Description:  "Volume ID of the root volume",
+						ExactlyOneOf: []string{"image", "root_volume.0.volume_id"},
+					},
+					"sbs_iops": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Optional:    true,
+						Description: "SBS Volume IOPS, only with volume_type as sbs_volume",
+					},
+				},
+			},
+		},
+		"additional_volume_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				DiffSuppressFunc: dsf.Locality,
+			},
+			Optional:    true,
+			Description: "The additional volumes attached to the server",
+		},
+		"filesystems": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			Description: "Filesystems attach to the server",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"filesystem_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The filesystem ID attached to the server",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The state of the filesystem",
+					},
+				},
+			},
+		},
+		"ip_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the reserved IP for the server",
+			DiffSuppressFunc: dsf.Locality,
+			ConflictsWith:    []string{"ip_ids"},
+		},
+		"ip_ids": {
+			Type:          schema.TypeList,
+			Description:   "The IDs of the reserved IP for the server",
+			Optional:      true,
+			ConflictsWith: []string{"ip_id"},
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				Description:      "ID of the reserved IP for the server",
+				DiffSuppressFunc: dsf.Locality,
+			},
+		},
+		"enable_dynamic_ip": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable dynamic IP on the server",
+		},
+		"state": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The state of the server should be: started, stopped, standby",
+			ValidateFunc: validation.StringInSlice([]string{
+				InstanceServerStateStarted,
+				InstanceServerStateStopped,
+				InstanceServerStateStandby,
+			}, false),
+		},
+		"boot_type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The boot type of the server",
+			Default:          instanceSDK.BootTypeLocal,
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.BootType](),
+		},
+		"bootscript_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Description:      "ID of the target bootscript (set boot_type to bootscript)",
+			ValidateDiagFunc: verify.IsUUID(),
+			Deprecated:       "bootscript is not supported anymore.",
+		},
+		"cloud_init": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			Description:  "The cloud init script associated with this server",
+			ValidateFunc: validation.StringLenBetween(0, 127998),
+		},
+		"user_data": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Computed:    true,
+			Description: "The user data associated with the server",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			DiffSuppressFunc: func(k, _, _ string, _ *schema.ResourceData) bool {
+				return k == "user_data.ssh-host-fingerprints"
+			},
+		},
+		"private_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    8,
+			Description: "List of private network to connect with your instance",
+			Elem: &schema.Resource{
+				Timeouts: &schema.ResourceTimeout{
+					Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
+				},
+				Schema: map[string]*schema.Schema{
+					"pn_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						Description:      "The Private Network ID",
+						DiffSuppressFunc: dsf.Locality,
+					},
+					// Computed
+					"mac_address": {
+						Type:        schema.TypeString,
+						Description: "MAC address of the NIC",
+						Computed:    true,
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private NIC state",
+					},
+					"pnic_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the NIC",
+					},
+					"zone": zonal.Schema(),
+				},
+			},
+		},
+		"public_ips": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			Description: "List of private IPv4 and IPv6 addresses attached to your instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "ID of the IP",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "IP Address",
+					},
+					"gateway": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Gateway's IP address",
+					},
+					"netmask": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "CIDR netmask",
+					},
+					"family": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "IP address family (inet or inet6)",
+					},
+					"dynamic": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Description: "Whether the IP is dynamic",
+					},
+					"provisioning_mode": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Provisioning mode of the IP address",
+					},
+				},
+			},
+		},
+		"private_ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "List of private IPv4 and IPv6 addresses associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IP address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IP address",
+					},
+				},
+			},
+		},
+		"admin_password_encryption_ssh_key_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: verify.IsUUIDOrEmpty(),
+			Description:      "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 
@@ -428,14 +437,13 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		Project:           types.ExpandStringPtr(d.Get("project_id")),
 		CommercialType:    commercialType,
 		SecurityGroup:     types.ExpandStringPtr(zonal.ExpandID(d.Get("security_group_id")).ID),
-		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
+		DynamicIPRequired: new(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              types.ExpandStrings(d.Get("tags")),
 		Protected:         d.Get("protected").(bool),
 	}
 
 	if bootType, ok := d.GetOk("boot_type"); ok {
-		bootType := instanceSDK.BootType(bootType.(string))
-		req.BootType = &bootType
+		req.BootType = new(instanceSDK.BootType(bootType.(string)))
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
@@ -504,7 +512,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if imageUUID != "" {
-		req.Image = scw.StringPtr(imageUUID)
+		req.Image = new(imageUUID)
 	}
 
 	res, err := api.CreateServer(req, scw.WithContext(ctx))
@@ -512,7 +520,10 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewID(zone, res.Server.ID).String())
+	err = identity.SetZonalIdentity(d, res.Server.Zone, res.Server.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -596,7 +607,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 				return diag.FromErr(err)
 			}
 
-			_, err = waitForFilesystems(ctx, api.API, zone, res.Server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			_, err = waitForFilesystems(ctx, api.API, zone, res.Server.ID, DefaultInstanceServerWaitTimeout)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -623,35 +634,30 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 				return diag.FromErr(err)
 			}
 
-			pn, err := api.CreatePrivateNIC(q, scw.WithContext(ctx))
+			pn, err := api.InstanceV2API.CreatePrivateNetworkInterface(q, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
-			tflog.Debug(ctx, fmt.Sprintf("private network created (ID: %s, status: %s)", pn.PrivateNic.ID, pn.PrivateNic.State))
+			tflog.Debug(ctx, fmt.Sprintf("private network created (ID: %s, status: %s)", pn.ID, pn.Status))
 
-			_, err = waitForPrivateNIC(ctx, api.API, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
+			_, err = waitForPrivateNIC(ctx, api.InstanceV2API, zone, pn.ID, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
-			_, err = waitForMACAddress(ctx, api.API, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
+			err = waitForMACAddress(ctx, api.API, zone, res.Server.ID, pn.ID, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	}
 
-	return append(diags, ResourceInstanceServerRead(ctx, d, m)...)
+	return append(diags, setServerState(ctx, d, m, api, res.Server.Zone, res.Server.ID)...)
 }
 
 //gocyclo:ignore
-func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
+func setServerState(ctx context.Context, d *schema.ResourceData, m any, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string) diag.Diagnostics {
 	server, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if errorCheck(err, "is not found") {
@@ -664,9 +670,6 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	////
-	// Read Server
-	////
 	state, err := serverStateFlatten(server.State)
 	if err != nil {
 		return diag.FromErr(err)
@@ -706,32 +709,46 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 	////
 	// Read server's public IPs
 	////
-	if ipID, hasIPID := d.GetOk("ip_id"); hasIPID {
-		publicIP := FindIPInList(ipID.(string), server.PublicIPs)
-		if publicIP != nil && !publicIP.Dynamic {
-			_ = d.Set("ip_id", zonal.NewID(zone, publicIP.ID).String())
-		} else {
-			_ = d.Set("ip_id", "")
-		}
-	} else {
-		_ = d.Set("ip_id", "")
-	}
-
 	if len(server.PublicIPs) > 0 {
 		_ = d.Set("public_ips", flattenServerPublicIPs(server.Zone, server.PublicIPs))
+
+		var ipIDToSet string
+
+		var ipIDsToSet []any
+
+		ipID, hasIPID := d.GetOk("ip_id")
+		_, hasIPIDs := d.GetOk("ip_ids")
+
+		switch {
+		case hasIPID:
+			publicIP := FindIPInList(ipID.(string), server.PublicIPs)
+			if publicIP != nil && !publicIP.Dynamic {
+				ipIDToSet = zonal.NewID(zone, publicIP.ID).String()
+			}
+		case hasIPIDs:
+			ipIDsToSet = flattenServerIPIDs(server.PublicIPs, server.Zone)
+		default:
+			// In import context, we don't know if the field that was used is 'ip_id' or 'ip_ids', so we set them both
+			for _, publicIP := range server.PublicIPs {
+				if !publicIP.Dynamic {
+					ipIDToSet = zonal.NewID(zone, publicIP.ID).String()
+					ipIDsToSet = append(ipIDsToSet, zonal.NewID(zone, publicIP.ID).String())
+				}
+			}
+		}
+
+		_ = d.Set("ip_id", ipIDToSet)
+		_ = d.Set("ip_ids", ipIDsToSet)
+
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
 			"host": server.PublicIPs[0].Address.String(),
 		})
 	} else {
 		_ = d.Set("public_ips", []any{})
-		d.SetConnInfo(nil)
-	}
-
-	if _, hasIPIDs := d.GetOk("ip_ids"); hasIPIDs {
-		_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
-	} else {
 		_ = d.Set("ip_ids", []any{})
+		_ = d.Set("ip_id", "")
+		d.SetConnInfo(nil)
 	}
 
 	if server.AdminPasswordEncryptionSSHKeyID != nil {
@@ -764,10 +781,13 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 	////
 	// Read server user data
 	////
-	allUserData, _ := api.GetAllServerUserData(&instanceSDK.GetAllServerUserDataRequest{
+	allUserData, err := api.GetAllServerUserData(&instanceSDK.GetAllServerUserDataRequest{
 		Zone:     zone,
 		ServerID: id,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	userData := make(map[string]any)
 
@@ -826,7 +846,7 @@ You can check the full list of compatible server types:
 	////
 	// Read server private networks
 	////
-	ph, err := newPrivateNICHandler(api.API, id, zone)
+	ph, err := newPrivateNICHandler(api.InstanceV2API, api.API, id, zone, server.Project)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -889,6 +909,20 @@ You can check the full list of compatible server types:
 	return diags
 }
 
+func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = identity.SetZonalIdentity(d, zone, id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setServerState(ctx, d, m, api, zone, id)
+}
+
 //gocyclo:ignore
 func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
@@ -934,7 +968,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("enable_dynamic_ip") {
 		serverShouldUpdate = true
-		updateRequest.DynamicIPRequired = scw.BoolPtr(d.Get("enable_dynamic_ip").(bool))
+		updateRequest.DynamicIPRequired = new(d.Get("enable_dynamic_ip").(bool))
 	}
 
 	if d.HasChange("protected") {
@@ -978,8 +1012,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	if d.HasChange("ip_id") && !instanceIPHasMigrated(d) {
 		ipID := zonal.ExpandID(d.Get("ip_id")).ID
 		if ipID == "" {
-			emptyIPList := make([]string, 0)
-			updateRequest.PublicIPs = &emptyIPList
+			updateRequest.PublicIPs = new(make([]string, 0))
 			serverShouldUpdate = true
 		} else {
 			err := ResourceInstanceServerUpdateIPs(ctx, d, api.API, zone, id, "ip_id")
@@ -997,9 +1030,8 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChanges("boot_type") {
-		bootType := instanceSDK.BootType(d.Get("boot_type").(string))
 		serverShouldUpdate = true
-		updateRequest.BootType = &bootType
+		updateRequest.BootType = new(instanceSDK.BootType(d.Get("boot_type").(string)))
 
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{
@@ -1075,7 +1107,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	// Update server private network
 	////
 	if d.HasChanges("private_network") {
-		ph, err := newPrivateNICHandler(api.API, id, zone)
+		ph, err := newPrivateNICHandler(api.InstanceV2API, api.API, id, zone, server.Project)
 		if err != nil {
 			diag.FromErr(err)
 		}
@@ -1198,24 +1230,6 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	// Delete private-nic if managed by instance_server resource
-	if raw, ok := d.GetOk("private_network"); ok {
-		ph, err := newPrivateNICHandler(api.API, id, zone)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		for index := range raw.([]any) {
-			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
-			pn := d.Get(pnKey)
-
-			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
 	// Detach filesystem
 	if filesystems, ok := d.GetOk("filesystems"); ok {
 		fsList := filesystems.([]any)
@@ -1243,7 +1257,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 				return diag.FromErr(err)
 			}
 
-			_, err = waitForFilesystems(ctx, api.API, zone, id, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			_, err = waitForFilesystems(ctx, api.API, zone, id, DefaultInstanceServerWaitTimeout)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -1252,7 +1266,15 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 
 	// Delete private-nic if managed by instance_server resource
 	if raw, ok := d.GetOk("private_network"); ok {
-		ph, err := newPrivateNICHandler(api.API, id, zone)
+		server, err := api.GetServer(&instanceSDK.GetServerRequest{
+			Zone:     zone,
+			ServerID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		ph, err := newPrivateNICHandler(api.InstanceV2API, api.API, id, zone, server.Server.Project)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1493,6 +1515,14 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 	return nil
 }
 
+func customDiffInstanceServerPublicIPs(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	if diff.HasChange("ip_ids") || diff.HasChange("ip_id") || diff.HasChange("enable_dynamic_ip") {
+		return diff.SetNewComputed("public_ips")
+	}
+
+	return nil
+}
+
 func ResourceInstanceServerMigrate(ctx context.Context, d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string) error {
 	server, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
@@ -1596,25 +1626,46 @@ func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *instan
 	}
 
 	rootVolume, exists := res.Server.Volumes["0"]
-	if exists {
-		_, err := api.BlockAPI.UpdateVolume(&block.UpdateVolumeRequest{
-			Zone:     zone,
-			VolumeID: rootVolume.ID,
-			PerfIops: iops,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.Diagnostics{{
-				Severity:      diag.Warning,
-				Summary:       "Failed to update root_volume iops",
-				Detail:        err.Error(),
-				AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
-			}}
-		}
-	} else {
+	if !exists {
 		return diag.Diagnostics{{
 			Severity:      diag.Warning,
 			Summary:       "Failed to find root_volume",
 			Detail:        "Failed to update root_volume IOPS",
+			AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+		}}
+	}
+
+	updateReq := &block.UpdateVolumeRequest{
+		Zone:     zone,
+		VolumeID: rootVolume.ID,
+		PerfIops: iops,
+	}
+
+	_, err = api.BlockAPI.UpdateVolume(updateReq, scw.WithContext(ctx))
+	// Root SBS volume may still be provisioning after the server is ready.
+	if err != nil && errorCheck(err, "volume is not available") {
+		_, waitErr := api.BlockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeAndReferencesRequest{
+			VolumeID:      rootVolume.ID,
+			Zone:          zone,
+			RetryInterval: transport.DefaultWaitRetryInterval,
+		}, scw.WithContext(ctx))
+		if waitErr != nil {
+			return diag.Diagnostics{{
+				Severity:      diag.Warning,
+				Summary:       "Failed to update root_volume iops",
+				Detail:        waitErr.Error(),
+				AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+			}}
+		}
+
+		_, err = api.BlockAPI.UpdateVolume(updateReq, scw.WithContext(ctx))
+	}
+
+	if err != nil {
+		return diag.Diagnostics{{
+			Severity:      diag.Warning,
+			Summary:       "Failed to update root_volume iops",
+			Detail:        err.Error(),
 			AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
 		}}
 	}
@@ -1632,7 +1683,7 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 		err := api.ResizeUnknownVolume(&instancehelpers.ResizeUnknownVolumeRequest{
 			VolumeID: zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID,
 			Zone:     zone,
-			Size:     scw.SizePtr(scw.Size(d.Get("root_volume.0.size_in_gb").(int)) * scw.GB),
+			Size:     new(scw.Size(d.Get("root_volume.0.size_in_gb").(int)) * scw.GB),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return nil, err
@@ -1640,8 +1691,8 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 	}
 
 	volumes["0"] = &instanceSDK.VolumeServerTemplate{
-		ID:   scw.StringPtr(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),
-		Name: scw.StringPtr(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
+		ID:   new(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),
+		Name: new(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
 		Boot: types.ExpandBoolPtr(d.Get("root_volume.0.boot")),
 	}
 
@@ -1679,32 +1730,30 @@ func GetEndOfServiceDate(ctx context.Context, client *scw.Client, zone scw.Zone,
 		ProductTypes: []product_catalog.ListPublicCatalogProductsRequestProductType{
 			product_catalog.ListPublicCatalogProductsRequestProductTypeInstance,
 		},
+		APIIDs: []string{commercialType},
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		return "", fmt.Errorf("could not list product catalog entries: %w", err)
 	}
 
-	for _, product := range products.Products {
-		if product.Properties != nil && product.Properties.Instance != nil &&
-			product.Properties.Instance.OfferID == commercialType {
-			return product.EndOfLifeAt.Format(time.DateOnly), nil
-		}
+	if products.TotalCount != 1 {
+		return "", fmt.Errorf("expected exactly 1 PCU entry for %q, got %d", commercialType, products.TotalCount)
 	}
 
-	return "", fmt.Errorf("could not find product catalog entry for %q in %s", commercialType, zone)
+	return products.Products[0].EndOfLifeAt.Format(time.DateOnly), nil
 }
 
 func renameRootVolumeIfNeeded(d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumes map[string]*instanceSDK.VolumeServer) error {
-	if volumes == nil || volumes["0"] == nil || volumes["0"].Name != nil {
+	if volumes == nil || volumes["0"] == nil {
 		return nil
 	}
 
 	if rootVolumeName, setByUser := meta.GetRawConfigForKey(d, "root_volume.0.name", cty.String); setByUser {
-		if *volumes["0"].Name != rootVolumeName {
-			_, err := api.UpdateVolume(&instanceSDK.UpdateVolumeRequest{
+		if volumes["0"].Name == nil || *volumes["0"].Name != rootVolumeName {
+			err := api.RenameUnknownVolume(&instancehelpers.RenameUnknownVolumeRequest{
 				Zone:     zone,
 				VolumeID: volumes["0"].ID,
-				Name:     scw.StringPtr(rootVolumeName.(string)),
+				Name:     new(rootVolumeName.(string)),
 			})
 			if err != nil {
 				return err

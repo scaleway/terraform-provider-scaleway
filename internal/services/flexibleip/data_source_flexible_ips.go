@@ -16,122 +16,126 @@ import (
 func DataSourceFlexibleIPs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceFlexibleIPsRead,
-		Schema: map[string]*schema.Schema{
-			"server_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "Flexible IPs that are attached to these server IDs are listed",
+		SchemaFunc:  flexibleIpsSchema,
+	}
+}
+
+func flexibleIpsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"server_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "Flexible IPs with these exact tags are listed",
-			},
-			"ips": {
-				Type:        schema.TypeList,
-				Description: "List of flexible IPs",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Computed:    true,
-							Description: "ID of the flexible IP",
-							Type:        schema.TypeString,
-						},
-						"description": {
-							Computed:    true,
-							Description: "Description of the flexible IP",
-							Type:        schema.TypeString,
-						},
-						"tags": {
-							Computed:    true,
-							Description: "List of flexible IP tags",
-							Type:        schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"status": {
-							Computed:    true,
-							Description: "Status of the flexible IP",
-							Type:        schema.TypeString,
-						},
-						"ip_address": {
-							Computed:    true,
-							Description: "IP address of the flexible IP",
-							Type:        schema.TypeString,
-						},
-						"reverse": {
-							Computed:    true,
-							Description: "Reverse DNS of the flexible IP",
-							Type:        schema.TypeString,
-						},
-						"mac_address": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The MAC address of the server associated with this flexible IP",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "MAC address ID",
-									},
-									"mac_address": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "MAC address of the Virtual MAC",
-									},
-									"mac_type": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Type of virtual MAC",
-									},
-									"status": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Status of virtual MAC",
-									},
-									"created_at": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The date on which the virtual MAC was created (RFC 3339 format)",
-									},
-									"updated_at": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The date on which the virtual MAC was last updated (RFC 3339 format)",
-									},
-									"zone": zonal.Schema(),
-								},
-							},
-						},
-						"created_at": {
-							Computed:    true,
-							Description: "Date on which the flexible IP was created (RFC 3339 format)",
-							Type:        schema.TypeString,
-						},
-						"updated_at": {
-							Computed:    true,
-							Description: "Date on which the flexible IP was last updated (RFC 3339 format)",
-							Type:        schema.TypeString,
-						},
-						"zone":            zonal.ComputedSchema(),
-						"organization_id": account.OrganizationIDSchema(),
-						"project_id":      account.ProjectIDSchema(),
-					},
-				},
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+			Optional:    true,
+			Description: "Flexible IPs that are attached to these server IDs are listed",
 		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "Flexible IPs with these exact tags are listed",
+		},
+		"ips": {
+			Type:        schema.TypeList,
+			Description: "List of flexible IPs",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Computed:    true,
+						Description: "ID of the flexible IP",
+						Type:        schema.TypeString,
+					},
+					"description": {
+						Computed:    true,
+						Description: "Description of the flexible IP",
+						Type:        schema.TypeString,
+					},
+					"tags": {
+						Computed:    true,
+						Description: "List of flexible IP tags",
+						Type:        schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+					"status": {
+						Computed:    true,
+						Description: "Status of the flexible IP",
+						Type:        schema.TypeString,
+					},
+					"ip_address": {
+						Computed:    true,
+						Description: "IP address of the flexible IP",
+						Type:        schema.TypeString,
+					},
+					"reverse": {
+						Computed:    true,
+						Description: "Reverse DNS of the flexible IP",
+						Type:        schema.TypeString,
+					},
+					"mac_address": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Description: "The MAC address of the server associated with this flexible IP",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"id": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "MAC address ID",
+								},
+								"mac_address": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "MAC address of the Virtual MAC",
+								},
+								"mac_type": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Type of virtual MAC",
+								},
+								"status": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Status of virtual MAC",
+								},
+								"created_at": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The date on which the virtual MAC was created (RFC 3339 format)",
+								},
+								"updated_at": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The date on which the virtual MAC was last updated (RFC 3339 format)",
+								},
+								"zone": zonal.Schema(),
+							},
+						},
+					},
+					"created_at": {
+						Computed:    true,
+						Description: "Date on which the flexible IP was created (RFC 3339 format)",
+						Type:        schema.TypeString,
+					},
+					"updated_at": {
+						Computed:    true,
+						Description: "Date on which the flexible IP was last updated (RFC 3339 format)",
+						Type:        schema.TypeString,
+					},
+					"zone":            zonal.ComputedSchema(),
+					"organization_id": account.OrganizationIDSchema(),
+					"project_id":      account.ProjectIDSchema(),
+				},
+			},
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

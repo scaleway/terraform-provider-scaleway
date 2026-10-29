@@ -2,7 +2,6 @@ package regional
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -16,23 +15,30 @@ func ComputedSchema() *schema.Schema {
 	}
 }
 
-func allRegions() []string {
-	regions := make([]string, 0, len(scw.AllRegions))
-	for _, z := range scw.AllRegions {
-		regions = append(regions, z.String())
-	}
-
-	return regions
-}
-
 // Schema returns a standard schema for a region
 func Schema() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeString,
 		Description:      "The region you want to attach the resource to",
+		Computed:         true,
 		Optional:         true,
 		ForceNew:         true,
-		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(allRegions(), "region"),
+		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(AllRegions(), "region"),
+		DiffSuppressFunc: locality.SuppressSDKNullAssignment,
+	}
+}
+
+// ProviderSchema returns a standard schema for a region attribute inside the
+// provider schema.
+// This schema does not define the "Computed" field for compatibility with the
+// schema of the provider using the Terraform Framework.
+func ProviderSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:             schema.TypeString,
+		Description:      "The region you want to attach the resource to",
+		Optional:         true,
+		ForceNew:         true,
+		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(AllRegions(), "region"),
 		DiffSuppressFunc: locality.SuppressSDKNullAssignment,
 	}
 }

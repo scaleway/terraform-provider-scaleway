@@ -23,7 +23,7 @@ func TestAccSNSCredentials_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_account_project main {
-						name = "tf_tests_mnq_sqs_credentials_basic"
+						name = "tf_tests_mnq_sns_credentials_basic"
 					}
 
 					resource scaleway_mnq_sns main {
@@ -46,7 +46,7 @@ func TestAccSNSCredentials_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_account_project main {
-						name = "tf_tests_mnq_sqs_credentials_basic"
+						name = "tf_tests_mnq_sns_credentials_basic"
 					}
 
 					resource scaleway_mnq_sns main {
@@ -73,7 +73,7 @@ func TestAccSNSCredentials_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_account_project main {
-						name = "tf_tests_mnq_sqs_credentials_basic"
+						name = "tf_tests_mnq_sns_credentials_basic"
 					}
 
 					resource scaleway_mnq_sns main {
@@ -113,15 +113,14 @@ func isSNSCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheck
 			return err
 		}
 
-		_, err = api.GetSnsCredentials(&mnqSDK.SnsAPIGetSnsCredentialsRequest{
-			SnsCredentialsID: id,
-			Region:           region,
+		_, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.SnsCredentials, error) {
+			return api.GetSnsCredentials(&mnqSDK.SnsAPIGetSnsCredentialsRequest{
+				SnsCredentialsID: id,
+				Region:           region,
+			})
 		})
-		if err != nil {
-			return err
-		}
 
-		return nil
+		return err
 	}
 }
 

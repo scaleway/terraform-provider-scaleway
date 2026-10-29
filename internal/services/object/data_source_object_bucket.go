@@ -15,7 +15,7 @@ import (
 
 func DataSourceBucket() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceBucket().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceBucket().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
@@ -68,5 +68,5 @@ func DataSourceObjectStorageRead(ctx context.Context, d *schema.ResourceData, m 
 	bucketRegionalID := regional.NewIDString(region, bucket)
 	d.SetId(bucketRegionalID)
 
-	return resourceObjectBucketRead(ctx, d, m)
+	return setBucketState(ctx, d, m, bucket, region, s3Client)
 }

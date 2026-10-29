@@ -2,19 +2,25 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/cluster_datasource.md
+var clusterDataSourceDescription string
+
 func DataSourceCluster() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceCluster().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceCluster().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
@@ -31,8 +37,8 @@ func DataSourceCluster() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: DataSourceK8SClusterRead,
-
-		Schema: dsSchema,
+		Description: clusterDataSourceDescription,
+		Schema:      dsSchema,
 	}
 }
 
@@ -41,6 +47,8 @@ func DataSourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	var uuid string
 
 	clusterID, ok := d.GetOk("cluster_id")
 	if !ok {
@@ -64,12 +72,28 @@ func DataSourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any
 			return diag.FromErr(err)
 		}
 
-		clusterID = foundCluster.ID
+		uuid = foundCluster.ID
+	} else {
+		uuid, err = locality.ExtractUUID(clusterID.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	regionalizedID := datasource.NewRegionalID(clusterID, region)
+	regionalizedID := datasource.NewRegionalID(uuid, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("cluster_id", regionalizedID)
 
-	return ResourceK8SClusterRead(ctx, d, m)
+	cluster, err := waitCluster(ctx, k8sAPI, region, uuid, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setClusterState(ctx, d, cluster, k8sAPI)
 }

@@ -14,7 +14,7 @@ func TestAccDataSourceObject_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-data-source-object-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-data-source-object-basic")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(

@@ -31,6 +31,11 @@ func TestAccEdgeServicesPlan_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_edge_services_plan.main", "name", "starter"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_edge_services_plan.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

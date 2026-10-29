@@ -5,15 +5,16 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func DataSourceVolume() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceVolume().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceVolume().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")
 
@@ -71,14 +72,15 @@ func DataSourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceBlockVolumeRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read volume state")...)
+	res, err := api.GetVolume(&block.GetVolumeRequest{
+		Zone:     zone,
+		VolumeID: zonal.ExpandID(volumeID).ID,
+	})
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("volume (%s) not found", zoneID)
-	}
+	setVolumeState(api, d, res)
 
 	return nil
 }

@@ -5,9 +5,10 @@ page_title: "Scaleway: scaleway_account_projects"
 
 # scaleway_account_projects
 
-The `scaleway_account_projects` data source is used to list all Scaleway projects in an Organization.
+The [`scaleway_account_projects`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/account_projects) data source is used to list all Scaleway projects in an Organization.
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
+
 
 ## Retrieve a Scaleway Projects
 
@@ -15,9 +16,9 @@ The following commands allow you to:
 
 - retrieve all Projects in an Organization
 
-```hcl
+```terraform
 # Get all Projects in an Organization
-data scaleway_account_projects "all" {
+data "scaleway_account_projects" "all" {
   organization_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
 ```
@@ -26,8 +27,8 @@ data scaleway_account_projects "all" {
 
 ### Deploy an SSH key in all your organization's projects
 
-```hcl
-data scaleway_account_projects "all" {}
+```terraform
+data "scaleway_account_projects" "all" {}
 
 resource "scaleway_account_ssh_key" "main" {
   name       = "main"

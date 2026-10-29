@@ -1,7 +1,7 @@
 package acctest
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"encoding/xml"
 	"flag"
 	"fmt"
@@ -13,8 +13,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
@@ -27,15 +27,22 @@ import (
 // UpdateCassettes will update all cassettes of a given test
 var UpdateCassettes = flag.Bool("cassettes", os.Getenv(env.UpdateCassettes) == "true", "Record Cassettes")
 
-// SensitiveFields is a map with keys listing fields that should be anonymized
-// value will be set in place of its old value
-var SensitiveFields = map[string]any{
-	"secret_key": "00000000-0000-0000-0000-000000000000",
-}
-
 // QueryMatcherIgnore contains the list of query value that should be ignored when matching requests with cassettes
 var QueryMatcherIgnore = []string{
 	"organization_id",
+	"access_keys",
+}
+
+var HeaderMatcherIgnore = []string{
+	"Amz-Sdk-Invocation-Id", // unique per request
+	"Amz-Sdk-Request",       // AWS attempt counter (may carry a per-request ttl suffix)
+	"Authorization",         // stripped from cassettes before save
+	"User-Agent",            // changes on SDK updates
+	"X-Amz-Checksum-Crc32",  // payload checksum; absent from older cassettes (SDK version drift)
+	"X-Amz-Content-Sha256",  // payload hash; varies when body matcher forgives generated content
+	"X-Amz-Copy-Source",     // embeds generated bucket/object names
+	"X-Amz-Date",            // per-request timestamp
+	"X-Auth-Token",          // scw auth token
 }
 
 // BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes
@@ -49,15 +56,27 @@ var BodyMatcherIgnore = []string{
 	"mnq_region",
 	"mnq_nats_account_id",
 	"mnq_nats_subject",
+	// cockpit exporter datadog destination
+	"api_key",
+	// secrets that must never be compared literally (anonymized in cassettes)
+	"password",
+	"new_password",
 }
 
-// removeKeyRecursive removes a key from a map and all its nested maps
+// removeKeyRecursive removes a key from a map and all its nested maps/slices.
 func removeKeyRecursive(m map[string]any, key string) {
 	delete(m, key)
 
 	for _, v := range m {
-		if v, ok := v.(map[string]any); ok {
-			removeKeyRecursive(v, key)
+		switch nested := v.(type) {
+		case map[string]any:
+			removeKeyRecursive(nested, key)
+		case []any:
+			for _, item := range nested {
+				if child, ok := item.(map[string]any); ok {
+					removeKeyRecursive(child, key)
+				}
+			}
 		}
 	}
 }
@@ -102,12 +121,16 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 
 	r, err := request.GetBody()
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to copy request body: %w", err)) // lintignore: R009
+		logging.L.Errorf("cassette body matcher: failed to copy request body: %v", err)
+
+		return false
 	}
 
 	requestBody, err := io.ReadAll(r)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to read actualRequest body: %w", err)) // lintignore: R009
+		logging.L.Errorf("cassette body matcher: failed to read actualRequest body: %v", err)
+
+		return false
 	}
 
 	// Try to match raw bodies if they are not JSON (ex: cloud-init config)
@@ -124,10 +147,12 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 		return true
 	}
 
-	if !json.Valid(requestBody) {
+	if !jsonValid(requestBody) {
 		requestValues, err := url.ParseQuery(string(requestBody))
 		if err != nil {
-			panic(fmt.Errorf("cassette body matcher: failed to parse body as url values: %w", err)) // lintignore: R009
+			logging.L.Errorf("cassette body matcher: failed to parse body as url values: %v", err)
+
+			return false
 		}
 
 		// Remove keys that should be ignored during comparison
@@ -140,7 +165,9 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 
 	err = json.Unmarshal(requestBody, &requestJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse request body as json: %w", err)) // lintignore: R009
+		logging.L.Errorf("cassette body matcher: failed to parse request body as json: %v", err)
+
+		return false
 	}
 
 	err = json.Unmarshal([]byte(cassette.Body), &cassetteJSON)
@@ -170,9 +197,6 @@ func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
 		requestURLValues.Del(query)
 		cassetteURLValues.Del(query)
 	}
-
-	requestURL.RawQuery = requestURLValues.Encode()
-	cassetteURL.RawQuery = cassetteURLValues.Encode()
 
 	// Specific handling of s3 URLs
 	// Url format is https://test-acc-scaleway-object-bucket-lifecycle-8445817190507446251.s3.fr-par.scw.cloud/?lifecycle=
@@ -205,10 +229,49 @@ func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
 		}
 	}
 
-	return request.Method == cassette.Method &&
-		request.URL.Path == cassetteURL.Path &&
-		requestURL.RawQuery == cassetteURL.RawQuery &&
-		cassetteBodyMatcher(request, cassette)
+	if request.Method != cassette.Method {
+		return false
+	}
+
+	if !compareFieldsStrings(request.URL.Path, cassetteURL.Path) {
+		return false
+	}
+
+	if !compareURLQueries(requestURLValues, cassetteURLValues) {
+		return false
+	}
+
+	if !compareHeaders(request.Header, cassette.Headers) {
+		return false
+	}
+
+	if !cassetteBodyMatcher(request, cassette) {
+		return false
+	}
+
+	return true
+}
+
+// compareURLQueries compares query maps, fuzzing generated name prefixes in values.
+func compareURLQueries(request, cassette url.Values) bool {
+	if len(request) != len(cassette) {
+		return false
+	}
+
+	for key, requestValues := range request {
+		cassetteValues, ok := cassette[key]
+		if !ok || len(requestValues) != len(cassetteValues) {
+			return false
+		}
+
+		for i := range requestValues {
+			if !compareFieldsStrings(requestValues[i], cassetteValues[i]) {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
@@ -220,9 +283,17 @@ func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 		return nil
 	}
 
-	for key, value := range SensitiveFields {
-		if _, ok := jsonBody[key]; ok {
-			jsonBody[key] = value
+	namespace := i.Request.URL
+
+	for key, placeholder := range SensitiveFields {
+		if !FieldApplies(key, namespace) {
+			continue
+		}
+
+		if val, ok := jsonBody[key]; ok {
+			if s, ok := val.(string); ok && s != "" && s != placeholder {
+				jsonBody[key] = placeholder
+			}
 		}
 	}
 
@@ -290,7 +361,7 @@ func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.C
 
 	retryOptions := transport.RetryableTransportOptions{}
 	if !*UpdateCassettes {
-		retryOptions.RetryWaitMax = scw.TimeDurationPtr(0)
+		retryOptions.RetryWaitMax = new(time.Duration(0))
 	}
 
 	return &http.Client{Transport: transport.NewRetryableTransportWithOptions(r, retryOptions)}, func() {

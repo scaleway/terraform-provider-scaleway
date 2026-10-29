@@ -113,15 +113,14 @@ func isSQSCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheck
 			return err
 		}
 
-		_, err = api.GetSqsCredentials(&mnqSDK.SqsAPIGetSqsCredentialsRequest{
-			SqsCredentialsID: id,
-			Region:           region,
+		_, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.SqsCredentials, error) {
+			return api.GetSqsCredentials(&mnqSDK.SqsAPIGetSqsCredentialsRequest{
+				SqsCredentialsID: id,
+				Region:           region,
+			})
 		})
-		if err != nil {
-			return err
-		}
 
-		return nil
+		return err
 	}
 }
 

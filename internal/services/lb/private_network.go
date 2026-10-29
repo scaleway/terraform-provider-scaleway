@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -16,11 +17,20 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+func lbPrivateNetworkIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"zone":               identity.DefaultZoneAttribute(),
+		"lb_id":              {Type: schema.TypeString, Description: "The load-balancer ID", RequiredForImport: true},
+		"private_network_id": {Type: schema.TypeString, Description: "The private network ID", RequiredForImport: true},
+	})
+}
+
 func ResourcePrivateNetwork() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceLbPrivateNetworkCreate,
 		ReadContext:   resourceLbPrivateNetworkRead,
 		DeleteContext: resourceLbPrivateNetworkDelete,
+		Identity:      lbPrivateNetworkIdentity(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -30,50 +40,54 @@ func ResourcePrivateNetwork() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"lb_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The load-balancer ID to attach the private network to",
-			},
-			"private_network_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The private network ID to attach",
-			},
-			"ipam_ip_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network",
-			},
-			"zone": zonal.Schema(),
-			// Computed
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of private network connection",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the private network connection",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the private network connection",
-			},
-			"project_id": account.ProjectIDSchema(),
-		},
+		SchemaFunc:    privateNetworkSchema,
 		CustomizeDiff: cdf.LocalityCheck("lb_id", "private_network_id"),
+	}
+}
+
+func privateNetworkSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"lb_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The load-balancer ID to attach the private network to",
+		},
+		"private_network_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The private network ID to attach",
+		},
+		"ipam_ip_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Description: "IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network",
+		},
+		"zone": zonal.Schema(),
+		// Computed
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of private network connection",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the private network connection",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the private network connection",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -110,13 +124,14 @@ func resourceLbPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(
-		zonal.NewNestedIDString(
-			zone,
-			attach.LB.ID,
-			attach.PrivateNetworkID,
-		),
-	)
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"zone":               attach.LB.Zone.String(),
+		"lb_id":              attach.LB.ID,
+		"private_network_id": attach.PrivateNetworkID,
+	}, "zone", "lb_id", "private_network_id")
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceLbPrivateNetworkRead(ctx, d, m)
 }
@@ -173,7 +188,11 @@ func resourceLbPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("zone", foundPN.LB.Zone)
 	_ = d.Set("project_id", foundPN.LB.ProjectID)
 
-	return nil
+	return diag.FromErr(identity.SetMultiPartIdentity(d, map[string]string{
+		"zone":               foundPN.LB.Zone.String(),
+		"lb_id":              foundPN.LB.ID,
+		"private_network_id": foundPN.PrivateNetworkID,
+	}, "zone", "lb_id", "private_network_id"))
 }
 
 func resourceLbPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

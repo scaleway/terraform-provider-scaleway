@@ -10,6 +10,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"golang.org/x/crypto/ssh"
@@ -21,65 +22,75 @@ func ResourceSSKKey() *schema.Resource {
 		ReadContext:   resourceIamSSHKeyRead,
 		UpdateContext: resourceIamSSKKeyUpdate,
 		DeleteContext: resourceIamSSKKeyDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the iam SSH key",
-			},
-			"public_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The public SSH key",
-				// We don't consider trailing \n as diff
-				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-					parsedOldValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(oldValue))
-					if err != nil {
-						return false
-					}
+		SchemaFunc:    sshKeySchema,
+	}
+}
 
-					parsedNewValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(newValue))
-					if err != nil {
-						return false
-					}
+func sshKeySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the iam SSH key",
+		},
+		"public_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The public SSH key",
+			// We don't consider trailing \n as diff
+			DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+				parsedOldValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(oldValue))
+				if err != nil {
+					return false
+				}
 
-					marshalledOldValue := ssh.MarshalAuthorizedKey(parsedOldValue)
-					marshalledNewValue := ssh.MarshalAuthorizedKey(parsedNewValue)
+				parsedNewValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(newValue))
+				if err != nil {
+					return false
+				}
 
-					areEqual := bytes.Equal(marshalledOldValue, marshalledNewValue)
+				marshalledOldValue := ssh.MarshalAuthorizedKey(parsedOldValue)
+				marshalledNewValue := ssh.MarshalAuthorizedKey(parsedNewValue)
 
-					return areEqual
-				},
+				areEqual := bytes.Equal(marshalledOldValue, marshalledNewValue)
+
+				return areEqual
 			},
-			"fingerprint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The fingerprint of the iam SSH key",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the iam SSH Key",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the iam SSH Key",
-			},
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"disabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "The SSH key status",
-			},
+		},
+		"fingerprint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The fingerprint of the iam SSH key",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the iam SSH Key",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the iam SSH Key",
+		},
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"disabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "The SSH key status",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the SSH key",
 		},
 	}
 }
@@ -90,7 +101,7 @@ func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 	res, err := api.CreateSSHKey(&iam.CreateSSHKeyRequest{
 		Name:      d.Get("name").(string),
 		PublicKey: strings.Trim(d.Get("public_key").(string), "\n"),
-		ProjectID: (d.Get("project_id")).(string),
+		ProjectID: d.Get("project_id").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -106,7 +117,10 @@ func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	d.SetId(res.ID)
+	err = identity.SetGlobalIdentity(d, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamSSHKeyRead(ctx, d, m)
 }
@@ -127,14 +141,26 @@ func resourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", res.Name)
-	_ = d.Set("public_key", res.PublicKey)
-	_ = d.Set("fingerprint", res.Fingerprint)
-	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("organization_id", res.OrganizationID)
-	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("disabled", res.Disabled)
+	diags := setSSHKeyState(d, res)
+
+	err = identity.SetGlobalIdentity(d, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setSSHKeyState(d *schema.ResourceData, sshKey *iam.SSHKey) diag.Diagnostics {
+	_ = d.Set("name", sshKey.Name)
+	_ = d.Set("public_key", sshKey.PublicKey)
+	_ = d.Set("fingerprint", sshKey.Fingerprint)
+	_ = d.Set("created_at", types.FlattenTime(sshKey.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(sshKey.UpdatedAt))
+	_ = d.Set("organization_id", sshKey.OrganizationID)
+	_ = d.Set("project_id", sshKey.ProjectID)
+	_ = d.Set("disabled", sshKey.Disabled)
+	_ = d.Set("srn", sshKey.Srn)
 
 	return nil
 }

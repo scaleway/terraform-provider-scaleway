@@ -1,19 +1,18 @@
 package secret_test
 
 import (
-	"context"
 	"fmt"
 	"regexp"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	secretSDK "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
+	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
 var DestroyWaitTimeout = 3 * time.Minute
@@ -22,12 +21,14 @@ func TestAccSecret_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	secretName := "secretNameBasic"
-	updatedName := "secretNameBasicUpdated"
-	secretDescription := "secret description"
+	const (
+		secretDescription = "secret description"
+		secretName        = "secretNameBasic"
+		updatedName       = "secretNameBasicUpdated"
+	)
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckSecretDestroy(tt),
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -48,6 +49,7 @@ func TestAccSecret_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_secret.main", "tags.#", "3"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "type", "opaque"),
+					resource.TestMatchResourceAttr("scaleway_secret.main", "srn", regexp.MustCompile(`^srn://secret-manager\..+/regions/.+/secrets/.+$`)),
 					resource.TestCheckResourceAttrSet("scaleway_secret.main", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_secret.main", "created_at"),
 					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
@@ -84,6 +86,11 @@ func TestAccSecret_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_secret.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -94,7 +101,7 @@ func TestAccSecret_Path(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckSecretDestroy(tt),
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -169,7 +176,7 @@ func TestAccSecret_Protected(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckSecretDestroy(tt),
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -221,7 +228,7 @@ func TestAccSecret_EphemeralPolicy(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckSecretDestroy(tt),
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -291,6 +298,121 @@ func TestAccSecret_EphemeralPolicy(t *testing.T) {
 	})
 }
 
+func TestAccSecret_WithKMSKey(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_key_manager_key" "main" {
+				  name        = "tf-test-secret-kms-key"
+				  region      = "fr-par"
+				  usage       = "symmetric_encryption"
+				  algorithm   = "aes_256_gcm"
+				  unprotected = true
+				}
+
+				resource "scaleway_secret" "main" {
+				  name   = "test-secret-kms-secret"
+				  region = "fr-par"
+				  key_id = scaleway_key_manager_key.main.id
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+					testAccCheckSecretKMSKeyID("scaleway_secret.main", "scaleway_key_manager_key.main"),
+					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_secret.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccSecret_WithVersions(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_secret" "main" {
+						name = "test-secret-resource-versions"
+					}
+
+					resource "scaleway_secret_version" "v1" {
+						secret_id = scaleway_secret.main.id
+						data_wo   = "version-data"
+					}
+
+					resource "scaleway_secret_version" "v2" {
+						secret_id = scaleway_secret.main.id
+						data_wo   = "updated-version-data"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_secret" "main" {
+						name = "test-secret-resource-versions"
+					}
+
+					resource "scaleway_secret_version" "v1" {
+						secret_id = scaleway_secret.main.id
+						data_wo   = "version-data"
+					}
+
+					resource "scaleway_secret_version" "v2" {
+						secret_id = scaleway_secret.main.id
+						data_wo   = "updated-version-data"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "version_count", "2"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "versions.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "versions.0.revision", "2"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "versions.1.revision", "1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckSecretKMSKeyID(secretName, keyName string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		secretRS, ok := state.RootModule().Resources[secretName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", secretName)
+		}
+
+		keyRS, ok := state.RootModule().Resources[keyName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", keyName)
+		}
+
+		if locality.ExpandID(secretRS.Primary.Attributes["key_id"]) != locality.ExpandID(keyRS.Primary.ID) {
+			return fmt.Errorf("secret key_id %q does not match key manager key id %q", secretRS.Primary.Attributes["key_id"], keyRS.Primary.ID)
+		}
+
+		return nil
+	}
+}
+
 func testAccCheckSecretExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
@@ -312,41 +434,5 @@ func testAccCheckSecretExists(tt *acctest.TestTools, n string) resource.TestChec
 		}
 
 		return nil
-	}
-}
-
-func testAccCheckSecretDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		ctx := context.Background()
-
-		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
-			for _, rs := range state.RootModule().Resources {
-				if rs.Type != "scaleway_secret" {
-					continue
-				}
-
-				api, region, id, err := secret.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-				if err != nil {
-					return retry.NonRetryableError(err)
-				}
-
-				sec, err := api.GetSecret(&secretSDK.GetSecretRequest{
-					SecretID: id,
-					Region:   region,
-				})
-
-				switch {
-				case err == nil && sec != nil && sec.DeletionRequestedAt != nil:
-					// Soft-deleted (scheduled for deletion), treat as destroyed for tests
-					continue
-				case httperrors.Is404(err):
-					continue
-				case err != nil:
-					return retry.NonRetryableError(err)
-				}
-			}
-
-			return nil
-		})
 	}
 }

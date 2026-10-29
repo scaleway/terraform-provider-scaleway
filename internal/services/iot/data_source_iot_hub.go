@@ -13,7 +13,7 @@ import (
 )
 
 func DataSourceHub() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceHub().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceHub().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
@@ -71,7 +71,7 @@ func DataSourceIotHubRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceIotHubRead(ctx, d, m)
+	diags := readHubIntoState(ctx, d, m)
 	if diags != nil {
 		return diags
 	}

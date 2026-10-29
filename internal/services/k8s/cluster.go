@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"net"
@@ -17,6 +18,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -31,8 +33,12 @@ var NetworkingDefaultValues = map[string]string{
 	"service_dns_ip": "10.32.0.10",
 }
 
+//go:embed descriptions/cluster.md
+var clusterDescription string
+
 func ResourceCluster() *schema.Resource {
 	return &schema.Resource{
+		Description:   clusterDescription,
 		CreateContext: ResourceK8SClusterCreate,
 		ReadContext:   ResourceK8SClusterRead,
 		UpdateContext: ResourceK8SClusterUpdate,
@@ -48,222 +54,8 @@ func ResourceCluster() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultK8SClusterTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the cluster",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The type of cluster",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "",
-				Description: "The description of the cluster",
-			},
-			"version": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The version of the cluster",
-			},
-			"cni": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The CNI plugin of the cluster",
-				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
-					cniValues := k8s.CNI("").Values()
-
-					cniStringValues := make([]string, 0, len(cniValues))
-					for _, cniValue := range cniValues {
-						cniStringValues = append(cniStringValues, cniValue.String())
-					}
-
-					return verify.ValidateStringInSliceWithWarning(cniStringValues, "cni")(i, p)
-				},
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the cluster",
-			},
-			"autoscaler_config": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "The autoscaler configuration for the cluster",
-				Elem:        autoscalerConfigSchema(),
-			},
-			"auto_upgrade": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "The auto upgrade configuration for the cluster",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"enable": {
-							Type:        schema.TypeBool,
-							Required:    true,
-							Description: "Enables the Kubernetes patch version auto upgrade",
-						},
-						"maintenance_window_start_hour": {
-							Type:         schema.TypeInt,
-							Required:     true,
-							Description:  "Start hour of the 2-hour maintenance window",
-							ValidateFunc: validation.IntBetween(0, 23),
-						},
-						"maintenance_window_day": {
-							Type:             schema.TypeString,
-							Required:         true,
-							Description:      "Day of the maintenance window",
-							ValidateDiagFunc: verify.ValidateEnum[k8s.MaintenanceWindowDayOfTheWeek](),
-						},
-					},
-				},
-			},
-			"feature_gates": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The list of feature gates to enable on the cluster",
-			},
-			"admission_plugins": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The list of admission plugins to enable on the cluster",
-			},
-			"open_id_connect_config": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "The OpenID Connect configuration of the cluster",
-				Elem:        openIDConnectConfigSchema(),
-			},
-			"apiserver_cert_sans": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "Additional Subject Alternative Names for the Kubernetes API server certificate",
-			},
-			"delete_additional_resources": {
-				Type:        schema.TypeBool,
-				Required:    true,
-				Description: "Delete additional resources like block volumes, load-balancers and the private network (if empty) on cluster deletion",
-			},
-			"private_network_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the cluster's private network",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"pod_cidr": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				Description:  "The subnet used for the Pod CIDR.",
-				ValidateFunc: validation.IsCIDR,
-			},
-			"service_cidr": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				Description:  "The subnet used for the Service CIDR.",
-				ValidateFunc: validation.IsCIDR,
-			},
-			"service_dns_ip": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				Description:  "The IP used for the DNS Service.",
-				ValidateFunc: validation.IsIPAddress,
-			},
-			"region":          regional.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			// Computed elements
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Kubernetes cluster",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Kubernetes cluster",
-			},
-			"apiserver_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Kubernetes API server URL",
-			},
-			"wildcard_dns": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Wildcard DNS pointing to all the ready nodes",
-			},
-			"kubeconfig": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Sensitive:   true,
-				Description: "The kubeconfig configuration file of the Kubernetes cluster",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"config_file": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The whole kubeconfig file",
-						},
-						"host": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The kubernetes master URL",
-						},
-						"cluster_ca_certificate": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The kubernetes cluster CA certificate",
-						},
-						"token": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The kubernetes cluster admin token",
-						},
-					},
-				},
-			},
-			"upgrade_available": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "True if an upgrade is available",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the cluster",
-			},
-		},
+		SchemaFunc:    clusterSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: customdiff.All(
 			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 				autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
@@ -355,6 +147,236 @@ func ResourceCluster() *schema.Resource {
 	}
 }
 
+func clusterSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The name of the cluster",
+		},
+		"type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The type of cluster",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "",
+			Description: "The description of the cluster",
+		},
+		"version": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The version of the cluster",
+		},
+		"cni": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The CNI plugin of the cluster",
+			ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
+				cniValues := k8s.CNI("").Values()
+
+				cniStringValues := make([]string, 0, len(cniValues))
+				for _, cniValue := range cniValues {
+					cniStringValues = append(cniStringValues, cniValue.String())
+				}
+
+				return verify.ValidateStringInSliceWithWarning(cniStringValues, "cni")(i, p)
+			},
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the cluster",
+		},
+		"autoscaler_config": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "The autoscaler configuration for the cluster",
+			Elem:        autoscalerConfigSchema(),
+		},
+		"auto_upgrade": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "The auto upgrade configuration for the cluster",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"enable": {
+						Type:        schema.TypeBool,
+						Required:    true,
+						Description: "Enables the Kubernetes patch version auto upgrade",
+					},
+					"maintenance_window_start_hour": {
+						Type:         schema.TypeInt,
+						Required:     true,
+						Description:  "Start hour of the 2-hour maintenance window",
+						ValidateFunc: validation.IntBetween(0, 23),
+					},
+					"maintenance_window_day": {
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      "Day of the maintenance window",
+						ValidateDiagFunc: verify.ValidateEnum[k8s.MaintenanceWindowDayOfTheWeek](),
+					},
+				},
+			},
+		},
+		"feature_gates": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The list of feature gates to enable on the cluster",
+		},
+		"admission_plugins": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The list of admission plugins to enable on the cluster",
+		},
+		"open_id_connect_config": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "The OpenID Connect configuration of the cluster",
+			Elem:        openIDConnectConfigSchema(),
+		},
+		"apiserver_cert_sans": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "Additional Subject Alternative Names for the Kubernetes API server certificate",
+		},
+		"delete_additional_resources": {
+			Type:        schema.TypeBool,
+			Required:    true,
+			Description: "Delete additional resources like block volumes, load-balancers and the private network (if empty) on cluster deletion",
+		},
+		"private_network_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the cluster's private network",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"pod_cidr": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Computed:     true,
+			Description:  "The subnet used for the Pod CIDR.",
+			ValidateFunc: validation.IsCIDR,
+		},
+		"service_cidr": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Computed:     true,
+			Description:  "The subnet used for the Service CIDR.",
+			ValidateFunc: validation.IsCIDR,
+		},
+		"service_dns_ip": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Computed:     true,
+			Description:  "The IP used for the DNS Service.",
+			ValidateFunc: validation.IsIPAddress,
+		},
+		"upgrade_pools": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.",
+		},
+		"region":          regional.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		// Computed elements
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the Kubernetes cluster",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the Kubernetes cluster",
+		},
+		"apiserver_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Kubernetes API server URL",
+		},
+		"wildcard_dns": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Wildcard DNS pointing to all the ready nodes",
+		},
+		"kubeconfig": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Sensitive:   true,
+			Description: "The kubeconfig configuration file of the Kubernetes cluster",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"config_file": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The whole kubeconfig file",
+					},
+					"host": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The kubernetes master URL",
+					},
+					"cluster_ca_certificate": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The kubernetes cluster CA certificate",
+					},
+					"token": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The kubernetes cluster admin token",
+					},
+				},
+			},
+		},
+		"upgrade_available": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "True if an upgrade is available",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the cluster",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the cluster",
+		},
+	}
+}
+
 //gocyclo:ignore
 func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, err := newAPIWithRegion(d, m)
@@ -405,7 +427,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	autoscalerReq := &k8s.CreateClusterRequestAutoscalerConfig{}
 
 	if scaleDownDisabled, ok := d.GetOk("autoscaler_config.0.disable_scale_down"); ok {
-		autoscalerReq.ScaleDownDisabled = scw.BoolPtr(scaleDownDisabled.(bool))
+		autoscalerReq.ScaleDownDisabled = new(scaleDownDisabled.(bool))
 	}
 
 	if scaleDownDelayAfterAdd, ok := d.GetOk("autoscaler_config.0.scale_down_delay_after_add"); ok {
@@ -425,24 +447,30 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if ignoreDaemonsetsUtilization, ok := d.GetOk("autoscaler_config.0.ignore_daemonsets_utilization"); ok {
-		autoscalerReq.IgnoreDaemonsetsUtilization = scw.BoolPtr(ignoreDaemonsetsUtilization.(bool))
+		autoscalerReq.IgnoreDaemonsetsUtilization = new(ignoreDaemonsetsUtilization.(bool))
 	}
 
 	if balanceSimilarNodeGroups, ok := d.GetOk("autoscaler_config.0.balance_similar_node_groups"); ok {
-		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
+		autoscalerReq.BalanceSimilarNodeGroups = new(balanceSimilarNodeGroups.(bool))
 	}
 
 	if balanceSimilarNodeGroups, ok := d.GetOk("autoscaler_config.0.balance_similar_node_groups"); ok {
-		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
+		autoscalerReq.BalanceSimilarNodeGroups = new(balanceSimilarNodeGroups.(bool))
 	}
 
-	autoscalerReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
+	autoscalerReq.ExpendablePodsPriorityCutoff = new(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
 
 	if utilizationThreshold, ok := d.GetOk("autoscaler_config.0.scale_down_utilization_threshold"); ok {
-		autoscalerReq.ScaleDownUtilizationThreshold = scw.Float32Ptr(float32(utilizationThreshold.(float64)))
+		autoscalerReq.ScaleDownUtilizationThreshold = new(float32(utilizationThreshold.(float64)))
 	}
 
-	autoscalerReq.MaxGracefulTerminationSec = scw.Uint32Ptr(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+	autoscalerReq.MaxGracefulTerminationSec = new(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+
+	autoscalerReq.SkipNodesWithLocalStorage = new(d.Get("autoscaler_config.0.skip_nodes_with_local_storage").(bool))
+
+	if logLevel, ok := d.GetOk("autoscaler_config.0.log_level"); ok {
+		autoscalerReq.LogLevel = new(int32(logLevel.(int)))
+	}
 
 	req.AutoscalerConfig = autoscalerReq
 
@@ -450,9 +478,10 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	createClusterRequestOpenIDConnectConfig := &k8s.CreateClusterRequestOpenIDConnectConfig{}
 
-	if issuerURL, ok := d.GetOk("open_id_connect_config.0.issuer_url"); ok {
+	issuerURL, issuerURLOK := d.GetOk("open_id_connect_config.0.issuer_url")
+	if issuerURLOK {
 		req.OpenIDConnectConfig = createClusterRequestOpenIDConnectConfig
-		createClusterRequestOpenIDConnectConfig.IssuerURL = issuerURL.(string)
+		createClusterRequestOpenIDConnectConfig.IssuerURL = strings.TrimSuffix(issuerURL.(string), "/")
 	}
 
 	if clientID, ok := d.GetOk("open_id_connect_config.0.client_id"); ok {
@@ -463,23 +492,23 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	// createClusterRequestOpenIDConnectConfig is always defined here
 
 	if usernameClaim, ok := d.GetOk("open_id_connect_config.0.username_claim"); ok {
-		createClusterRequestOpenIDConnectConfig.UsernameClaim = scw.StringPtr(usernameClaim.(string))
+		createClusterRequestOpenIDConnectConfig.UsernameClaim = new(usernameClaim.(string))
 	}
 
 	if usernamePrefix, ok := d.GetOk("open_id_connect_config.0.username_prefix"); ok {
-		createClusterRequestOpenIDConnectConfig.UsernamePrefix = scw.StringPtr(usernamePrefix.(string))
+		createClusterRequestOpenIDConnectConfig.UsernamePrefix = new(usernamePrefix.(string))
 	}
 
 	if groupsClaim, ok := d.GetOk("open_id_connect_config.0.groups_claim"); ok {
-		createClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(types.ExpandStrings(groupsClaim))
+		createClusterRequestOpenIDConnectConfig.GroupsClaim = new(types.ExpandStrings(groupsClaim))
 	}
 
 	if groupsPrefix, ok := d.GetOk("open_id_connect_config.0.groups_prefix"); ok {
-		createClusterRequestOpenIDConnectConfig.GroupsPrefix = scw.StringPtr(groupsPrefix.(string))
+		createClusterRequestOpenIDConnectConfig.GroupsPrefix = new(groupsPrefix.(string))
 	}
 
 	if requiredClaim, ok := d.GetOk("open_id_connect_config.0.required_claim"); ok {
-		createClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(types.ExpandStrings(requiredClaim))
+		createClusterRequestOpenIDConnectConfig.RequiredClaim = new(types.ExpandStrings(requiredClaim))
 	}
 
 	// Auto-upgrade configuration
@@ -535,7 +564,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	// Private network configuration
 
 	if pnID, ok := d.GetOk("private_network_id"); ok {
-		req.PrivateNetworkID = scw.StringPtr(regional.ExpandID(pnID.(string)).ID)
+		req.PrivateNetworkID = new(regional.ExpandID(pnID.(string)).ID)
 	}
 
 	// Networking configuration
@@ -551,8 +580,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if serviceDNSIP, ok := d.GetOk("service_dns_ip"); ok {
-		serviceDNSIPNetIP := net.ParseIP(serviceDNSIP.(string))
-		req.ServiceDNSIP = &serviceDNSIPNetIP
+		req.ServiceDNSIP = new(net.ParseIP(serviceDNSIP.(string)))
 	}
 
 	// Cluster creation
@@ -562,7 +590,10 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 		return append(diag.FromErr(err), diags...)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if strings.Contains(clusterType.(string), "multicloud") {
 		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
@@ -574,6 +605,19 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	if err != nil {
 		return append(diag.FromErr(err), diags...)
+	}
+
+	if issuerURLOK && strings.HasSuffix(issuerURL.(string), "/") {
+		_, err = k8sAPI.UpdateCluster(&k8s.UpdateClusterRequest{
+			Region:    region,
+			ClusterID: res.ID,
+			OpenIDConnectConfig: &k8s.UpdateClusterRequestOpenIDConnectConfig{
+				IssuerURL: new(issuerURL.(string)),
+			},
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return append(diag.FromErr(err), diags...)
+		}
 	}
 
 	return append(ResourceK8SClusterRead(ctx, d, m), diags...)
@@ -599,7 +643,21 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("region", string(region))
+	diagnostics := setClusterState(ctx, d, cluster, k8sAPI)
+	if diagnostics.HasError() {
+		return diagnostics
+	}
+
+	err = identity.SetRegionalIdentity(d, cluster.Region, cluster.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func setClusterState(ctx context.Context, d *schema.ResourceData, cluster *k8s.Cluster, k8sAPI *k8s.API) diag.Diagnostics {
+	_ = d.Set("region", cluster.Region)
 	_ = d.Set("name", cluster.Name)
 	_ = d.Set("type", cluster.Type)
 	_ = d.Set("organization_id", cluster.OrganizationID)
@@ -619,6 +677,8 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	// if autoupgrade is enabled, we only set the minor k8s version (x.y)
 	version := cluster.Version
+
+	var err error
 	if cluster.AutoUpgrade != nil && cluster.AutoUpgrade.Enabled {
 		version, err = GetMinorVersionFromFull(version)
 		if err != nil {
@@ -640,19 +700,22 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("pod_cidr", cluster.PodCidr.String())
 	_ = d.Set("service_cidr", cluster.ServiceCidr.String())
 	_ = d.Set("service_dns_ip", cluster.ServiceDNSIP.String())
+	_ = d.Set("srn", cluster.Srn)
 
 	////
 	// Read kubeconfig
 	////
-	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, region, clusterID)
+	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, cluster.Region, cluster.ID)
 	if err != nil {
 		if httperrors.Is403(err) {
-			return diag.Diagnostics{diag.Diagnostic{
-				Severity:      diag.Warning,
-				Summary:       "Cannot read kubeconfig: unauthorized",
-				Detail:        "Got 403 while reading kubeconfig, please check your permissions",
-				AttributePath: cty.GetAttrPath("kubeconfig"),
-			}}
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "Cannot read kubeconfig: unauthorized",
+					Detail:        "Got 403 while reading kubeconfig, please check your permissions",
+					AttributePath: cty.GetAttrPath("kubeconfig"),
+				},
+			}
 		}
 
 		return diag.FromErr(err)
@@ -743,7 +806,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	autoupgradeEnabled := d.Get("auto_upgrade.0.enable").(bool)
 
 	if d.HasChange("auto_upgrade.0.enable") {
-		updateRequest.AutoUpgrade.Enable = scw.BoolPtr(d.Get("auto_upgrade.0.enable").(bool))
+		updateRequest.AutoUpgrade.Enable = new(d.Get("auto_upgrade.0.enable").(bool))
 	}
 
 	if d.HasChanges("auto_upgrade.0.maintenance_window_start_hour", "auto_upgrade.0.maintenance_window_day") {
@@ -799,7 +862,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	autoscalerReq := &k8s.UpdateClusterRequestAutoscalerConfig{}
 
 	if d.HasChange("autoscaler_config.0.disable_scale_down") {
-		autoscalerReq.ScaleDownDisabled = scw.BoolPtr(d.Get("autoscaler_config.0.disable_scale_down").(bool))
+		autoscalerReq.ScaleDownDisabled = new(d.Get("autoscaler_config.0.disable_scale_down").(bool))
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_delay_after_add") {
@@ -819,23 +882,33 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if d.HasChange("autoscaler_config.0.ignore_daemonsets_utilization") {
-		autoscalerReq.IgnoreDaemonsetsUtilization = scw.BoolPtr(d.Get("autoscaler_config.0.ignore_daemonsets_utilization").(bool))
+		autoscalerReq.IgnoreDaemonsetsUtilization = new(d.Get("autoscaler_config.0.ignore_daemonsets_utilization").(bool))
 	}
 
 	if d.HasChange("autoscaler_config.0.balance_similar_node_groups") {
-		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(d.Get("autoscaler_config.0.balance_similar_node_groups").(bool))
+		autoscalerReq.BalanceSimilarNodeGroups = new(d.Get("autoscaler_config.0.balance_similar_node_groups").(bool))
 	}
 
 	if d.HasChange("autoscaler_config.0.expendable_pods_priority_cutoff") {
-		autoscalerReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
+		autoscalerReq.ExpendablePodsPriorityCutoff = new(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_utilization_threshold") {
-		autoscalerReq.ScaleDownUtilizationThreshold = scw.Float32Ptr(float32(d.Get("autoscaler_config.0.scale_down_utilization_threshold").(float64)))
+		autoscalerReq.ScaleDownUtilizationThreshold = new(float32(d.Get("autoscaler_config.0.scale_down_utilization_threshold").(float64)))
 	}
 
 	if d.HasChange("autoscaler_config.0.max_graceful_termination_sec") {
-		autoscalerReq.MaxGracefulTerminationSec = scw.Uint32Ptr(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+		autoscalerReq.MaxGracefulTerminationSec = new(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+	}
+
+	// Changes for "autoscaler_config.0.skip_nodes_with_local_storage" are not properly picked up by Terraform since the attribute is a bool nested in an Optional/Computed block
+	skipNodesWithLocalStorage, skipNodesWithLocalStorageSet := meta.GetRawConfigForKey(d, "autoscaler_config.0.skip_nodes_with_local_storage", cty.Bool)
+	if skipNodesWithLocalStorageSet {
+		autoscalerReq.SkipNodesWithLocalStorage = new(skipNodesWithLocalStorage.(bool))
+	}
+
+	if d.HasChange("autoscaler_config.0.log_level") {
+		autoscalerReq.LogLevel = new(int32(d.Get("autoscaler_config.0.log_level").(int)))
 	}
 
 	updateRequest.AutoscalerConfig = autoscalerReq
@@ -846,19 +919,19 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	updateClusterRequestOpenIDConnectConfig := &k8s.UpdateClusterRequestOpenIDConnectConfig{}
 
 	if d.HasChange("open_id_connect_config.0.issuer_url") {
-		updateClusterRequestOpenIDConnectConfig.IssuerURL = scw.StringPtr(d.Get("open_id_connect_config.0.issuer_url").(string))
+		updateClusterRequestOpenIDConnectConfig.IssuerURL = new(d.Get("open_id_connect_config.0.issuer_url").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.client_id") {
-		updateClusterRequestOpenIDConnectConfig.ClientID = scw.StringPtr(d.Get("open_id_connect_config.0.client_id").(string))
+		updateClusterRequestOpenIDConnectConfig.ClientID = new(d.Get("open_id_connect_config.0.client_id").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.username_claim") {
-		updateClusterRequestOpenIDConnectConfig.UsernameClaim = scw.StringPtr(d.Get("open_id_connect_config.0.username_claim").(string))
+		updateClusterRequestOpenIDConnectConfig.UsernameClaim = new(d.Get("open_id_connect_config.0.username_claim").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.username_prefix") {
-		updateClusterRequestOpenIDConnectConfig.UsernamePrefix = scw.StringPtr(d.Get("open_id_connect_config.0.username_prefix").(string))
+		updateClusterRequestOpenIDConnectConfig.UsernamePrefix = new(d.Get("open_id_connect_config.0.username_prefix").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_claim") {
@@ -866,7 +939,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_prefix") {
-		updateClusterRequestOpenIDConnectConfig.GroupsPrefix = scw.StringPtr(d.Get("open_id_connect_config.0.groups_prefix").(string))
+		updateClusterRequestOpenIDConnectConfig.GroupsPrefix = new(d.Get("open_id_connect_config.0.groups_prefix").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.required_claim") {
@@ -902,12 +975,14 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	////
 	// Upgrade if needed
 	////
+	upgradePools := d.Get("upgrade_pools").(bool)
+
 	if canUpgrade {
 		upgradeRequest := &k8s.UpgradeClusterRequest{
 			Region:       region,
 			ClusterID:    clusterID,
 			Version:      version,
-			UpgradePools: true,
+			UpgradePools: upgradePools,
 		}
 
 		_, err = k8sAPI.UpgradeCluster(upgradeRequest)
@@ -945,7 +1020,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 		}
 	}
 
-	return append(ResourceK8SClusterRead(ctx, d, m), diags...)
+	return append(diags, ResourceK8SClusterRead(ctx, d, m)...)
 }
 
 func ResourceK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -1044,6 +1119,18 @@ func autoscalerConfigSchema() *schema.Resource {
 				Optional:    true,
 				Default:     600,
 				Description: "Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node",
+			},
+			"skip_nodes_with_local_storage": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "If true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath.",
+			},
+			"log_level": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Autoscaler logging level expressed from 0 to 4 (4 being the more verbose).",
 			},
 		},
 	}

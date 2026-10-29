@@ -30,25 +30,29 @@ func ResourceIPReverseDNS() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultIPReverseDNSTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"ipam_ip_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The IPAM IP ID",
-			},
-			"hostname": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The reverse domain name",
-			},
-			"address": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The IP corresponding to the hostname",
-				ValidateFunc: validation.IsIPAddress,
-			},
-			"region": regional.Schema(),
+		SchemaFunc:    ipReverseDNSSchema,
+	}
+}
+
+func ipReverseDNSSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"ipam_ip_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The IPAM IP ID",
 		},
+		"hostname": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The reverse domain name",
+		},
+		"address": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "The IP corresponding to the hostname",
+			ValidateFunc: validation.IsIPAddress,
+		},
+		"region": regional.Schema(),
 	}
 }
 
@@ -71,7 +75,7 @@ func ResourceIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData,
 	if hostname, ok := d.GetOk("hostname"); ok {
 		reverse := &ipam.Reverse{
 			Hostname: hostname.(string),
-			Address:  scw.IPPtr(net.ParseIP(d.Get("address").(string))),
+			Address:  new(net.ParseIP(d.Get("address").(string))),
 		}
 
 		updateReverseReq := &ipam.UpdateIPRequest{
@@ -135,7 +139,7 @@ func ResourceIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChanges("hostname", "address") {
 		reverse := &ipam.Reverse{
 			Hostname: d.Get("hostname").(string),
-			Address:  scw.IPPtr(net.ParseIP(d.Get("address").(string))),
+			Address:  new(net.ParseIP(d.Get("address").(string))),
 		}
 
 		updateReverseReq := &ipam.UpdateIPRequest{

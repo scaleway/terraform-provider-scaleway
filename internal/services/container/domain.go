@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -30,29 +30,39 @@ func ResourceDomain() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultContainerDomainTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"hostname": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Domain's hostname",
-			},
-			"container_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "Container the domain will be bound to",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "URL used to query the container",
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    domainSchema,
 		CustomizeDiff: cdf.LocalityCheck("container_id"),
+	}
+}
+
+func domainSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"hostname": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Domain's hostname",
+		},
+		"container_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "Container the domain will be bound to",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "URL used to query the container",
+			Deprecated:  "URL won't be displayed on v1",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the container domain",
+		},
+		"region": regional.Schema(),
 	}
 }
 
@@ -110,8 +120,8 @@ func ResourceContainerDomainRead(ctx context.Context, d *schema.ResourceData, m 
 
 	_ = d.Set("hostname", domain.Hostname)
 	_ = d.Set("container_id", domain.ContainerID)
-	_ = d.Set("url", domain.URL)
 	_ = d.Set("region", region)
+	_ = d.Set("srn", domain.Srn)
 
 	return nil
 }

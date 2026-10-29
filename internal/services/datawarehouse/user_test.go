@@ -34,6 +34,8 @@ resource "scaleway_datawarehouse_deployment" "test_deploy" {
   cpu_max        = 4
   ram_per_cpu    = 4
   password       = "password@1234567"
+
+  public_network {}
 }
 
 resource "scaleway_datawarehouse_user" "test_user" {
@@ -47,6 +49,8 @@ resource "scaleway_datawarehouse_user" "test_user" {
 					isUserPresent(tt, "scaleway_datawarehouse_user.test_user"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_user.test_user", "name", "tf_test_user"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_user.test_user", "is_admin", "false"),
+					// TODO: uncomment once API properly returns srn (currently empty)
+					// resource.TestMatchResourceAttr("scaleway_datawarehouse_user.test_user", "srn", regexp.MustCompile(`^srn://datawarehouse\..+/regions/.+/users/.+$`)),
 				),
 			},
 			{
@@ -97,7 +101,7 @@ func isUserPresent(tt *acctest.TestTools, resourceName string) resource.TestChec
 		resp, err := api.ListUsers(&datawarehouseSDK.ListUsersRequest{
 			Region:       region,
 			DeploymentID: deploymentID,
-			Name:         scw.StringPtr(userName),
+			Name:         new(userName),
 		}, scw.WithContext(context.Background()))
 		if err != nil {
 			return err
@@ -132,7 +136,7 @@ func isUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			resp, err := api.ListUsers(&datawarehouseSDK.ListUsersRequest{
 				Region:       region,
 				DeploymentID: deploymentID,
-				Name:         scw.StringPtr(userName),
+				Name:         new(userName),
 			}, scw.WithContext(context.Background()))
 
 			if err != nil && !httperrors.Is404(err) {

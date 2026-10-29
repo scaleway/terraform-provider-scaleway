@@ -1,0 +1,49 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "VPC"
+description: |-
+  Lists Scaleway VPC Connectors across regions and projects.
+---
+
+# Resource: {{ .Name }}
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/).
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `name` - (Optional) Name of the VPC connector to filter for.
+- `tags` - (Optional) Tags to filter for.
+- `organization_id` - (Optional) Organization ID to filter for.
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects.
+- `regions` - (Optional) Regions to filter for. Use `["*"]` to list from all regions.
+- `vpc_id` - (Optional) Filter for connectors attached to this source VPC (regional ID or plain UUID).
+- `target_vpc_id` - (Optional) Filter for connectors attached to this target VPC (regional ID or plain UUID).
+
+## Attributes Reference
+
+In addition to the arguments above, each listed VPC connector exports the same attributes as the `scaleway_vpc_connector` managed resource:
+
+- `id` - The ID of the VPC connector.
+- `name` - The name of the VPC connector.
+- `vpc_id` - The ID of the source VPC.
+- `target_vpc_id` - The ID of the target VPC.
+- `status` - The VPC connector status.
+- `region` - The region of the VPC connector.
+- `organization_id` - The ID of the organization the VPC connector is associated with.
+- `project_id` - The ID of the project the VPC connector is associated with.
+- `tags` - The tags associated with the VPC connector.
+- `created_at` - The date and time of the creation of the VPC connector.
+- `updated_at` - The date and time of the last update of the VPC connector.

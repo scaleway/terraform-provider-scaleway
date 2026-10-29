@@ -19,7 +19,7 @@ const (
 	updatedWebhookName = "terraform-webhook-updated"
 	organizationID     = "105bdce1-64c0-48ab-899d-868455867ecf"
 	webhookDomainName  = "scaleway-terraform.com"
-	DomainZone         = "webhook-test"
+	DomainZone         = "tf-test-tem-webhook"
 )
 
 func TestAccWebhook_BasicAndUpdate(t *testing.T) {
@@ -62,6 +62,7 @@ func TestAccWebhook_BasicAndUpdate(t *testing.T) {
 					resource "scaleway_domain_zone" "test" {
   						domain    = "%s"
   						subdomain = "%s"
+						project_id = "%s"
 					}
 
 					resource "scaleway_tem_domain" "main" {
@@ -83,7 +84,7 @@ func TestAccWebhook_BasicAndUpdate(t *testing.T) {
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
 						depends_on = [scaleway_mnq_sns_topic.sns_topic]
 					}
-				`, organizationID, webhookDomainName, DomainZone, webhookName, initialEventTypes[0], initialEventTypes[1]),
+				`, organizationID, webhookDomainName, DomainZone, testAccTEMProjectID, webhookName, initialEventTypes[0], initialEventTypes[1]),
 				Check: resource.ComposeTestCheckFunc(
 					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", webhookName),
@@ -120,6 +121,7 @@ func TestAccWebhook_BasicAndUpdate(t *testing.T) {
 					resource "scaleway_domain_zone" "test" {
   						domain    = "%s"
   						subdomain = "%s"
+						project_id = "%s"
 					}
 
 					resource "scaleway_tem_domain" "main" {
@@ -141,7 +143,7 @@ func TestAccWebhook_BasicAndUpdate(t *testing.T) {
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
 						depends_on = [scaleway_mnq_sns_topic.sns_topic]
 					}
-				`, organizationID, webhookDomainName, DomainZone, updatedWebhookName, updatedEventTypes[0]),
+				`, organizationID, webhookDomainName, DomainZone, testAccTEMProjectID, updatedWebhookName, updatedEventTypes[0]),
 				Check: resource.ComposeTestCheckFunc(
 					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", updatedWebhookName),
