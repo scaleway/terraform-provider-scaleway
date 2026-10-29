@@ -100,7 +100,7 @@ func customS3BodyMatcher(r *http.Request, i cassette.Request) bool {
 		panic(fmt.Errorf("cassette body matcher: failed to parse body as url values: %w", err)) // lintignore: R009
 	}
 
-	return compareFormBodies(requestValues, i.Form)
+	return CompareFormBodies(requestValues, i.Form)
 }
 
 // cassetteBodyMatcher is a custom matcher that checks equivalence of request bodies
@@ -156,7 +156,7 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 			requestValues.Del(key)
 		}
 
-		return compareFormBodies(requestValues, cassette.Form)
+		return CompareFormBodies(requestValues, cassette.Form)
 	}
 
 	err = json.Unmarshal(requestBody, &requestJSON)
@@ -170,7 +170,13 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 		return false
 	}
 
-	return compareJSONBodies(requestJSON, cassetteJSON, false)
+	// Remove keys that should be ignored during comparison
+	for _, key := range BodyMatcherIgnore {
+		RemoveKeyRecursive(requestJSON, key)
+		RemoveKeyRecursive(cassetteJSON, key)
+	}
+
+	return CompareJSONBodies(requestJSON, cassetteJSON, false)
 }
 
 // CassetteMatcher is a custom matcher that checks equivalence of a played request against a recorded one
