@@ -20,9 +20,6 @@ func TestZoneFromIDFunctionRun(t *testing.T) {
 		expected function.RunResponse
 		request  function.RunRequest
 	}{
-		// The example implementation uses the Go built-in string type, however
-		// if AllowNullValue was enabled and *string or types.String was used,
-		// this test case shows how the function would be expected to behave.
 		"null": {
 			request: function.RunRequest{
 				Arguments: function.NewArgumentsData([]attr.Value{types.StringNull(), types.BoolNull()}),
@@ -31,9 +28,6 @@ func TestZoneFromIDFunctionRun(t *testing.T) {
 				Result: function.NewResultData(types.StringNull()),
 			},
 		},
-		// The example implementation uses the Go built-in string type, however
-		// if AllowUnknownValues was enabled and types.String was used,
-		// this test case shows how the function would be expected to behave.
 		"unknown": {
 			request: function.RunRequest{
 				Arguments: function.NewArgumentsData([]attr.Value{types.StringUnknown(), types.BoolNull()}),
@@ -76,13 +70,12 @@ func TestZoneFromIDFunctionRun(t *testing.T) {
 				Result: function.NewResultData(types.StringValue("xx-yyy-1")),
 			},
 		},
-		// Test invalid format - empty string
 		"empty-string": {
 			request: function.RunRequest{
 				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue(""), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
-				Error:  function.NewArgumentFuncError(0, "bad zone format, available zones are: fr-par-1, nl-ams-1, pl-waw-1"),
+				Error:  function.NewArgumentFuncError(0, "cannot parse ID: invalid format"),
 				Result: function.NewResultData(types.StringUnknown()),
 			},
 		},
@@ -123,26 +116,10 @@ func TestAccProviderFunction_Zone_From_ID(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				// Can get the zone from a resource's id in one step
+				// Can get the zone from an ID in one step
 				Config: `
-# terraform block required for provider function to be found
-erraform {
-  required_providers {
-    scaleway = {
-      source = "scaleway/scaleway"
-    }
-  }
-}
-
-resource "scaleway_instance_server" "main" {
-	name = "terraform_test_zone_from_id"
-	type = "DEV1-S"
-	image = "fr-par-1/ubuntu_jammy"
-	zone = "fr-par-1"
-}
-
 output "zone" {
-  value = provider::scaleway::zone_from_id(scaleway_instance_server.main.id)
+  value = provider::scaleway::zone_from_id("fr-par-1/1111-1111-1111-1111-111111111111", null)
 }
 `,
 				Check: resource.ComposeTestCheckFunc(

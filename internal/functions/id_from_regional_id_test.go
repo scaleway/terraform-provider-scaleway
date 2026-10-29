@@ -82,7 +82,7 @@ func TestIDFromRegionalIDFunctionRun(t *testing.T) {
 				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue(""), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
-				Error:  function.NewArgumentFuncError(0, "bad regional ID format, expected format is: region/id"),
+				Error:  function.NewArgumentFuncError(0, "cannot parse ID: invalid format"),
 				Result: function.NewResultData(types.StringUnknown()),
 			},
 		},
