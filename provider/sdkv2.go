@@ -55,7 +55,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/webhosting"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -293,7 +292,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_ip_reverse_dns":                  vpcgw.ResourceIPReverseDNS(),
 				"scaleway_vpc_public_gateway_pat_rule":                        vpcgw.ResourcePATRule(),
 				"scaleway_vpc_route":                                          vpc.ResourceRoute(),
-				"scaleway_webhosting":                                         webhosting.ResourceWebhosting(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
@@ -429,8 +427,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_route":                                          vpc.DataSourceRoute(),
 				"scaleway_vpc_routes":                                         vpc.DataSourceRoutes(),
 				"scaleway_vpcs":                                               vpc.DataSourceVPCs(),
-				"scaleway_webhosting":                                         webhosting.DataSourceWebhosting(),
-				"scaleway_webhosting_offer":                                   webhosting.DataSourceOffer(),
 			},
 		}
 

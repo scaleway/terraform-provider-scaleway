@@ -1,33 +1,36 @@
+---
+version: 2
 interactions:
     - id: 0
       request:
-        body: '{"customer_id":"tf_test_partner_list","email":"tf_test@example.com","organization_name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","partner_id":"7fbc0d5f-9d3e-48e4-8fef-6a4533c9ab2e"}'
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
         content_length: 231
+        host: api.scaleway.com
+        body: '{"email":"tf_test@example.com","organization_name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","customer_id":"tf_test_partner_list","partner_id":"7fbc0d5f-9d3e-48e4-8fef-6a4533c9ab2e"}'
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: POST
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/partner/v1/organizations
+        method: POST
       response:
-        body: '{"comment":"","created_at":"2026-09-16T08:01:24.538599Z","customer_id":"tf_test_partner_list","email":"tf_test@example.com","id":"e74d2600-1f78-4c5b-a6bd-353e60954d9c","lock_reason_message":"validate_email","locked_at":"2026-09-16T08:01:24.645870Z","locked_by":"scaleway","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":null,"picture_link":null,"status":"locked"}'
-        code: 200
-        content_length: 441
-        duration: 1.032169188s
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 451
+        body: '{"srn":"","picture_link":null,"name":"tf_test_partner_list","email":"tf_test@example.com","locked_by":"scaleway","id":"bf540871-312e-4d45-94aa-cd4768b8e2c0","status":"locked","locked_at":"2026-10-29T11:55:15.245485Z","owner_firstname":"John","phone_number":null,"customer_id":"tf_test_partner_list","lock_reason_message":"validate_email","created_at":"2026-10-29T11:55:15.114238Z","owner_lastname":"Doe","comment":""}'
         headers:
             Content-Length:
-                - "441"
+                - "451"
             Content-Type:
                 - application/json
             Date:
-                - Wed, 16 Sep 2026 08:01:25 GMT
+                - Thu, 29 Oct 2026 11:55:16 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-2;edge01)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
@@ -35,37 +38,37 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - ba703ff2-9cbe-41b7-bbe5-beab843917fd
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
+                - 5c6f71bc-7cf2-4984-b42f-6398af9ee524
         status: 200 OK
+        code: 200
+        duration: 1.299101133s
     - id: 1
       request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/partner/v1/organizations/e74d2600-1f78-4c5b-a6bd-353e60954d9c
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/metadata
+        method: GET
       response:
-        body: '{"comment":"","created_at":"2026-09-16T08:01:24.538599Z","customer_id":"tf_test_partner_list","email":"tf_test@example.com","id":"e74d2600-1f78-4c5b-a6bd-353e60954d9c","lock_reason_message":"validate_email","locked_at":"2026-09-16T08:01:24.645870Z","locked_by":"scaleway","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":null,"picture_link":null,"status":"locked"}'
-        code: 200
-        content_length: 441
-        duration: 92.612305ms
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 59
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
         headers:
             Content-Length:
-                - "441"
+                - "59"
             Content-Type:
                 - application/json
             Date:
-                - Wed, 16 Sep 2026 08:01:25 GMT
+                - Thu, 29 Oct 2026 11:55:16 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-2;edge01)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
@@ -73,14 +76,55 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - a3b512e8-6635-4f1d-a3f0-192e3443c5af
+                - d9437c59-729d-42ed-88aa-15a1202c2683
+        status: 200 OK
+        code: 200
+        duration: 35.289954ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/partner/v1/organizations/bf540871-312e-4d45-94aa-cd4768b8e2c0
+        method: GET
+      response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
+        content_length: 451
+        body: '{"name":"tf_test_partner_list","email":"tf_test@example.com","status":"locked","owner_lastname":"Doe","customer_id":"tf_test_partner_list","phone_number":null,"locked_by":"scaleway","owner_firstname":"John","lock_reason_message":"validate_email","created_at":"2026-10-29T11:55:15.114238Z","locked_at":"2026-10-29T11:55:15.245485Z","picture_link":null,"id":"bf540871-312e-4d45-94aa-cd4768b8e2c0","comment":"","srn":""}'
+        headers:
+            Content-Length:
+                - "451"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 29 Oct 2026 11:55:16 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 1cbe5c0c-8f81-4d41-ba50-3e73d49a7a2a
         status: 200 OK
-    - id: 2
+        code: 200
+        duration: 100.795729ms
+    - id: 3
       request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
         content_length: 0
+        host: api.scaleway.com
         form:
             customer_id:
                 - tf_test_partner_list
@@ -94,27 +138,24 @@ interactions:
                 - unknown_status
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/partner/v1/organizations?customer_id=tf_test_partner_list&locked_by=unknown_locked_by&order_by=created_at_asc&page=1&status=unknown_status
+        method: GET
       response:
-        body: '{"organizations":[{"comment":"","created_at":"2026-09-15T12:36:22.283841Z","customer_id":"tf_test_partner_list","email":"tf_test@example.com","id":"a34d3fe8-49f6-40d5-8a22-93a2ffbd879c","lock_reason_message":"validate_email","locked_at":"2026-09-15T12:36:22.423486Z","locked_by":"scaleway","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":"","picture_link":null,"status":"locked"},{"comment":"","created_at":"2026-09-15T12:37:21.170308Z","customer_id":"tf_test_partner_list","email":"tf_test@example.com","id":"6f1e15d1-57ca-4395-91a5-378fdb457ae6","lock_reason_message":"validate_email","locked_at":"2026-09-15T12:37:21.278816Z","locked_by":"scaleway","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":"","picture_link":null,"status":"locked"},{"comment":"","created_at":"2026-09-16T08:01:24.538599Z","customer_id":"tf_test_partner_list","email":"tf_test@example.com","id":"e74d2600-1f78-4c5b-a6bd-353e60954d9c","lock_reason_message":"validate_email","locked_at":"2026-09-16T08:01:24.645870Z","locked_by":"scaleway","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":"","picture_link":null,"status":"locked"}],"total_count":3}'
-        code: 200
-        content_length: 1358
-        duration: 61.377473ms
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 21814
+        body: '{"organizations":[{"email":"tf_test@example.com","owner_lastname":"Doe","lock_reason_message":"validate_email","phone_number":"","customer_id":"tf_test_partner_list","locked_by":"scaleway","srn":"","id":"a34d3fe8-49f6-40d5-8a22-93a2ffbd879c","name":"tf_test_partner_list","status":"locked","owner_firstname":"John","created_at":"2026-09-15T12:36:22.283841Z","locked_at":"2026-09-15T12:36:22.423486Z","picture_link":null,"comment":""},{"name":"tf_test_partner_list","phone_number":"","customer_id":"tf_test_partner_list","locked_by":"scaleway","srn":"","owner_lastname":"Doe","lock_reason_message":"validate_email","created_at":"2026-09-15T12:37:21.170308Z","locked_at":"2026-09-15T12:37:21.278816Z","picture_link":null,"email":"tf_test@example.com","status":"locked","owner_firstname":"John","id":"6f1e15d1-57ca-4395-91a5-378fdb457ae6","comment":""},{"locked_by":"partner","phone_number":"","lock_reason_message":"locked_by_reseller","picture_link":null,"srn":"","id":"e74d2600-1f78-4c5b-a6bd-353e60954d9c","owner_lastname":"Doe","customer_id":"tf_test_partner_list","locked_at":"2026-09-16T08:01:26.685680Z","comment":"","name":"tf_test_partner_list","owner_firstname":"John","created_at":"2026-09-16T08:01:24.538599Z","email":"tf_test@example.com","status":"locked"},{"srn":"","email":"tf_test@example.com","created_at":"2026-09-17T03:03:15.381580Z","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","picture_link":null,"id":"2c474500-bfe5-4da7-984a-813bdd2c6fc7","status":"locked","phone_number":"","locked_by":"partner","locked_at":"2026-09-17T03:03:18.855830Z","comment":""},{"id":"1d0d0369-2a04-49ae-a12f-dadf0e321013","comment":"","status":"locked","phone_number":"","customer_id":"tf_test_partner_list","created_at":"2026-09-18T02:51:17.954762Z","locked_at":"2026-09-18T02:51:21.366206Z","email":"tf_test@example.com","owner_firstname":"John","locked_by":"partner","picture_link":null,"name":"tf_test_partner_list","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","srn":""},{"email":"tf_test@example.com","locked_at":"2026-09-19T02:50:01.932057Z","id":"65f8fe95-e126-4fc0-979c-f4cc39f155e0","owner_firstname":"John","created_at":"2026-09-19T02:49:58.461982Z","locked_by":"partner","owner_lastname":"Doe","phone_number":"","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","comment":"","srn":"","name":"tf_test_partner_list","status":"locked","picture_link":null},{"name":"tf_test_partner_list","email":"tf_test@example.com","lock_reason_message":"locked_by_reseller","locked_at":"2026-09-20T03:01:54.722877Z","comment":"","status":"locked","owner_firstname":"John","srn":"","phone_number":"","customer_id":"tf_test_partner_list","created_at":"2026-09-20T03:01:51.272915Z","locked_by":"partner","id":"4fb94ef9-7add-4486-8eea-c71f6d40ba3c","owner_lastname":"Doe","picture_link":null},{"email":"tf_test@example.com","status":"locked","owner_firstname":"John","owner_lastname":"Doe","created_at":"2026-09-21T02:59:27.572283Z","comment":"","lock_reason_message":"locked_by_reseller","locked_by":"partner","picture_link":null,"name":"tf_test_partner_list","locked_at":"2026-09-21T02:59:32.093222Z","srn":"","id":"ef7d1cad-6648-4dd4-8634-0fcc39fd35de","phone_number":"","customer_id":"tf_test_partner_list"},{"phone_number":"","email":"tf_test@example.com","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","name":"tf_test_partner_list","locked_at":"2026-09-22T02:59:46.057738Z","picture_link":null,"comment":"","srn":"","locked_by":"partner","id":"2368c8c0-c4a5-4846-94d5-b2dfa329c119","status":"locked","owner_firstname":"John","owner_lastname":"Doe","created_at":"2026-09-22T02:59:42.303809Z"},{"picture_link":null,"email":"tf_test@example.com","owner_firstname":"John","created_at":"2026-09-22T12:43:13.373009Z","locked_at":"2026-09-22T12:43:16.073762Z","name":"tf_test_partner_list","status":"locked","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","srn":"","id":"9e5d388b-0874-49ae-a419-42f8cbac2873","owner_lastname":"Doe","comment":"","phone_number":"","locked_by":"partner"},{"name":"tf_test_partner_list","owner_firstname":"John","created_at":"2026-09-23T02:59:46.766483Z","locked_at":"2026-09-23T02:59:50.201477Z","comment":"","email":"tf_test@example.com","status":"locked","owner_lastname":"Doe","phone_number":"","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","picture_link":null,"id":"bf020da8-e82a-4624-8f38-54c16ef8d865","srn":"","locked_by":"partner"},{"customer_id":"tf_test_partner_list","created_at":"2026-09-24T02:50:18.299507Z","locked_at":"2026-09-24T02:50:22.308384Z","id":"6e429322-00b3-4939-aa24-66732165f949","name":"tf_test_partner_list","picture_link":null,"status":"locked","phone_number":"","locked_by":"partner","email":"tf_test@example.com","owner_firstname":"John","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","comment":"","srn":""},{"customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","locked_at":"2026-09-25T09:10:04.404313Z","name":"tf_test_partner_list","status":"locked","locked_by":"partner","picture_link":null,"srn":"","email":"tf_test@example.com","phone_number":"","comment":"","id":"98c9b10e-e73d-420d-8f84-b8ed78b4a138","owner_lastname":"Doe","created_at":"2026-09-25T09:10:00.095967Z","owner_firstname":"John"},{"id":"85cb57db-2b31-4733-bbe8-8e6ec34860b4","owner_firstname":"John","created_at":"2026-09-26T03:10:21.903368Z","name":"tf_test_partner_list","email":"tf_test@example.com","status":"locked","owner_lastname":"Doe","comment":"","srn":"","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","picture_link":null,"phone_number":"","locked_by":"partner","locked_at":"2026-09-26T03:10:27.776983Z"},{"id":"a23d7f7c-c2c1-4021-a104-9e50407f384c","owner_firstname":"John","lock_reason_message":"locked_by_reseller","locked_by":"partner","locked_at":"2026-09-27T03:17:19.321222Z","comment":"","name":"tf_test_partner_list","email":"tf_test@example.com","status":"locked","customer_id":"tf_test_partner_list","picture_link":null,"srn":"","owner_lastname":"Doe","phone_number":"","created_at":"2026-09-27T03:17:15.714304Z"},{"email":"tf_test@example.com","picture_link":null,"status":"locked","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","created_at":"2026-09-28T03:14:11.625891Z","comment":"","id":"92b1c190-d1dc-4e08-8010-8232f55096e4","name":"tf_test_partner_list","owner_firstname":"John","phone_number":"","locked_by":"partner","locked_at":"2026-09-28T03:14:16.555475Z","owner_lastname":"Doe","srn":""},{"phone_number":"","customer_id":"tf_test_partner_list","srn":"","id":"405cb1c1-a9a3-4e17-89fb-c3c492fd94e1","owner_lastname":"Doe","picture_link":null,"email":"tf_test@example.com","status":"locked","created_at":"2026-09-29T03:51:37.541842Z","name":"tf_test_partner_list","owner_firstname":"John","lock_reason_message":"locked_by_reseller","locked_by":"partner","locked_at":"2026-09-29T03:51:42.750319Z","comment":""},{"id":"bcc0b801-ddd8-4101-9925-175d07602485","owner_lastname":"Doe","locked_by":"partner","srn":"","name":"tf_test_partner_list","email":"tf_test@example.com","owner_firstname":"John","lock_reason_message":"locked_by_reseller","comment":"","customer_id":"tf_test_partner_list","created_at":"2026-09-30T03:40:37.125591Z","locked_at":"2026-09-30T03:40:40.554796Z","status":"locked","phone_number":"","picture_link":null},{"name":"tf_test_partner_list","id":"0868a8e0-e9d0-4061-87d6-52cb3090e951","status":"locked","phone_number":"","locked_by":"partner","srn":"","email":"tf_test@example.com","owner_firstname":"John","owner_lastname":"Doe","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","locked_at":"2026-10-01T03:46:16.526712Z","comment":"","created_at":"2026-10-01T03:46:12.251642Z","picture_link":null},{"status":"locked","owner_lastname":"Doe","phone_number":"","name":"tf_test_partner_list","owner_firstname":"John","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","locked_by":"partner","id":"ad3099cc-6b49-4e66-9f54-32f55a44b434","email":"tf_test@example.com","created_at":"2026-10-02T03:44:31.447412Z","locked_at":"2026-10-02T03:44:38.264215Z","comment":"","srn":"","picture_link":null},{"owner_firstname":"John","locked_by":"partner","locked_at":"2026-10-03T03:29:52.588662Z","comment":"","id":"5fbe136b-0e03-4ea9-8dcf-aaf27a74e5ad","email":"tf_test@example.com","picture_link":null,"name":"tf_test_partner_list","phone_number":"","customer_id":"tf_test_partner_list","created_at":"2026-10-03T03:29:47.463631Z","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","srn":"","status":"locked"},{"name":"tf_test_partner_list","phone_number":"","created_at":"2026-10-04T03:57:24.346628Z","locked_by":"partner","id":"2db92348-f271-46bc-a4df-3021f12ecc50","owner_lastname":"Doe","comment":"","lock_reason_message":"locked_by_reseller","locked_at":"2026-10-04T03:57:33.678881Z","srn":"","email":"tf_test@example.com","status":"locked","owner_firstname":"John","customer_id":"tf_test_partner_list","picture_link":null},{"owner_lastname":"Doe","customer_id":"tf_test_partner_list","comment":"","status":"locked","phone_number":"","name":"tf_test_partner_list","email":"tf_test@example.com","owner_firstname":"John","created_at":"2026-10-05T03:42:39.805317Z","locked_by":"partner","locked_at":"2026-10-05T03:42:46.235663Z","srn":"","lock_reason_message":"locked_by_reseller","picture_link":null,"id":"8125f1b2-15bf-4cf0-b709-d89656823232"},{"id":"ca2dc26f-2c7a-4821-b330-cff1378134e9","owner_firstname":"John","phone_number":"","locked_at":"2026-10-06T04:30:24.649660Z","lock_reason_message":"locked_by_reseller","locked_by":"partner","name":"tf_test_partner_list","owner_lastname":"Doe","created_at":"2026-10-06T04:30:16.869194Z","picture_link":null,"srn":"","email":"tf_test@example.com","status":"locked","customer_id":"tf_test_partner_list","comment":""},{"id":"db363f37-03d3-4f90-8043-4ae600403d2c","name":"tf_test_partner_list","email":"tf_test@example.com","owner_firstname":"John","phone_number":"","lock_reason_message":"locked_by_reseller","created_at":"2026-10-07T03:56:26.145855Z","locked_at":"2026-10-07T03:56:30.132742Z","locked_by":"partner","srn":"","status":"locked","owner_lastname":"Doe","customer_id":"tf_test_partner_list","picture_link":null,"comment":""},{"lock_reason_message":"locked_by_reseller","status":"locked","owner_firstname":"John","created_at":"2026-10-08T04:09:41.472507Z","picture_link":null,"id":"7cc67296-f529-44aa-ae96-20ae553a779d","name":"tf_test_partner_list","owner_lastname":"Doe","customer_id":"tf_test_partner_list","locked_at":"2026-10-08T04:09:48.389621Z","srn":"","locked_by":"partner","comment":"","email":"tf_test@example.com","phone_number":""},{"id":"a0767863-9186-4fdf-a1d6-6fd2fe2939de","phone_number":"","lock_reason_message":"locked_by_reseller","email":"tf_test@example.com","owner_firstname":"John","owner_lastname":"Doe","customer_id":"tf_test_partner_list","created_at":"2026-10-09T04:14:57.663013Z","locked_at":"2026-10-09T04:15:01.535669Z","picture_link":null,"name":"tf_test_partner_list","status":"locked","comment":"","locked_by":"partner","srn":""},{"owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","locked_by":"partner","picture_link":null,"srn":"","id":"64e50560-1d33-438b-a1b6-d38b3d9ec126","email":"tf_test@example.com","status":"locked","customer_id":"tf_test_partner_list","created_at":"2026-10-10T03:59:29.829712Z","owner_firstname":"John","phone_number":"","locked_at":"2026-10-10T03:59:34.185058Z","comment":"","name":"tf_test_partner_list"},{"owner_firstname":"John","picture_link":null,"comment":"","id":"71472d4a-c880-49e5-903c-a0ed3f7ae06c","name":"tf_test_partner_list","phone_number":"","lock_reason_message":"locked_by_reseller","email":"tf_test@example.com","owner_lastname":"Doe","locked_at":"2026-10-11T03:34:20.026832Z","srn":"","status":"locked","customer_id":"tf_test_partner_list","created_at":"2026-10-11T03:34:15.995126Z","locked_by":"partner"},{"owner_lastname":"Doe","comment":"","owner_firstname":"John","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","srn":"","id":"41476093-46d8-4153-a14d-a3e86af9bc20","status":"locked","phone_number":"","created_at":"2026-10-12T03:58:06.951420Z","locked_by":"partner","name":"tf_test_partner_list","email":"tf_test@example.com","locked_at":"2026-10-12T03:58:11.717626Z","picture_link":null},{"id":"3d8cc1d3-e87b-46a9-a935-d746ff983871","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","locked_by":"partner","picture_link":null,"customer_id":"tf_test_partner_list","status":"locked","owner_firstname":"John","phone_number":"","locked_at":"2026-10-13T05:07:55.213825Z","comment":"","srn":"","name":"tf_test_partner_list","email":"tf_test@example.com","created_at":"2026-10-13T05:07:51.229526Z"},{"status":"locked","created_at":"2026-10-14T03:14:06.543846Z","name":"tf_test_partner_list","picture_link":null,"id":"c6f1adaf-6674-4885-93ec-e4a7aa2e9d13","email":"tf_test@example.com","owner_lastname":"Doe","phone_number":"","locked_at":"2026-10-14T03:14:12.089227Z","owner_firstname":"John","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","locked_by":"partner","comment":"","srn":""},{"status":"locked","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","created_at":"2026-10-15T02:53:33.482475Z","locked_at":"2026-10-15T02:53:40.351291Z","comment":"","name":"tf_test_partner_list","owner_firstname":"John","locked_by":"partner","srn":"","phone_number":"","customer_id":"tf_test_partner_list","id":"7180be1d-80b6-44b3-ae42-62cbd73c6ffb","email":"tf_test@example.com","picture_link":null},{"status":"locked","locked_by":"partner","name":"tf_test_partner_list","email":"tf_test@example.com","owner_lastname":"Doe","phone_number":"","customer_id":"tf_test_partner_list","srn":"","id":"e237115c-f63b-44e3-85fd-f475fb384f90","owner_firstname":"John","lock_reason_message":"locked_by_reseller","locked_at":"2026-10-16T02:51:26.364602Z","created_at":"2026-10-16T02:51:22.742187Z","picture_link":null,"comment":""},{"customer_id":"tf_test_partner_list","created_at":"2026-10-17T02:42:54.789356Z","name":"tf_test_partner_list","email":"tf_test@example.com","lock_reason_message":"locked_by_reseller","locked_at":"2026-10-17T02:43:00.589503Z","picture_link":null,"srn":"","id":"d07079f8-411d-4453-87cf-245a56ab7303","status":"locked","locked_by":"partner","comment":"","owner_firstname":"John","owner_lastname":"Doe","phone_number":""},{"id":"2c6cda8b-1d4c-4cd4-910b-26086b13e39e","status":"locked","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","locked_at":"2026-10-18T02:44:24.289767Z","name":"tf_test_partner_list","created_at":"2026-10-18T02:44:21.485606Z","owner_firstname":"John","phone_number":"","locked_by":"partner","picture_link":null,"comment":"","srn":"","email":"tf_test@example.com","customer_id":"tf_test_partner_list"},{"created_at":"2026-10-19T02:57:53.371721Z","srn":"","id":"3afe0700-d860-4cd8-ad11-f0a5647c11f9","name":"tf_test_partner_list","email":"tf_test@example.com","picture_link":null,"status":"locked","lock_reason_message":"locked_by_reseller","locked_by":"partner","locked_at":"2026-10-19T02:57:58.035112Z","owner_firstname":"John","owner_lastname":"Doe","comment":"","phone_number":"","customer_id":"tf_test_partner_list"},{"customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","created_at":"2026-10-20T03:07:39.585237Z","owner_firstname":"John","comment":"","srn":"","id":"93c1622e-55f2-4a8d-aff2-7110f10e8017","name":"tf_test_partner_list","email":"tf_test@example.com","owner_lastname":"Doe","locked_by":"partner","status":"locked","phone_number":"","locked_at":"2026-10-20T03:07:42.398534Z","picture_link":null},{"customer_id":"tf_test_partner_list","locked_by":"partner","locked_at":"2026-10-21T03:01:26.136911Z","srn":"","picture_link":null,"name":"tf_test_partner_list","status":"locked","lock_reason_message":"locked_by_reseller","id":"237ff5e9-2b32-4ff8-8837-913f0ca88e76","email":"tf_test@example.com","owner_firstname":"John","owner_lastname":"Doe","phone_number":"","created_at":"2026-10-21T03:01:20.732600Z","comment":""},{"status":"locked","srn":"","name":"tf_test_partner_list","email":"tf_test@example.com","owner_firstname":"John","lock_reason_message":"locked_by_reseller","locked_by":"partner","owner_lastname":"Doe","phone_number":"","customer_id":"tf_test_partner_list","picture_link":null,"comment":"","id":"29a0f0cc-95ab-4b25-9cf9-ef68abca1872","created_at":"2026-10-22T03:01:00.385838Z","locked_at":"2026-10-22T03:01:06.966194Z"},{"id":"b0601b40-3d67-484c-ab49-b05117f948f7","created_at":"2026-10-23T03:04:43.589033Z","owner_lastname":"Doe","phone_number":"","lock_reason_message":"locked_by_reseller","locked_at":"2026-10-23T03:04:48.670513Z","picture_link":null,"status":"locked","owner_firstname":"John","name":"tf_test_partner_list","email":"tf_test@example.com","customer_id":"tf_test_partner_list","locked_by":"partner","comment":"","srn":""},{"customer_id":"tf_test_partner_list","comment":"","srn":"","email":"tf_test@example.com","status":"locked","owner_firstname":"John","lock_reason_message":"locked_by_reseller","created_at":"2026-10-24T03:00:56.445120Z","locked_at":"2026-10-24T03:01:00.128315Z","id":"c5ac443a-9af5-4488-808d-a5eb038f53bc","name":"tf_test_partner_list","owner_lastname":"Doe","phone_number":"","locked_by":"partner","picture_link":null},{"srn":"","locked_by":"partner","locked_at":"2026-10-25T02:54:31.657521Z","picture_link":null,"comment":"","id":"96d5519c-2429-4873-a380-192ba8e40191","status":"locked","phone_number":"","customer_id":"tf_test_partner_list","name":"tf_test_partner_list","owner_firstname":"John","lock_reason_message":"locked_by_reseller","email":"tf_test@example.com","owner_lastname":"Doe","created_at":"2026-10-25T02:54:23.551617Z"},{"lock_reason_message":"locked_by_reseller","comment":"","email":"tf_test@example.com","phone_number":"","created_at":"2026-10-26T02:52:54.561748Z","locked_at":"2026-10-26T02:52:59.657146Z","picture_link":null,"id":"0bfd03e1-a937-4c77-8bc4-9ae2afed95c3","status":"locked","owner_firstname":"John","owner_lastname":"Doe","srn":"","name":"tf_test_partner_list","locked_by":"partner","customer_id":"tf_test_partner_list"},{"id":"100c0f8c-8530-4219-b949-f339c601f2ee","name":"tf_test_partner_list","email":"tf_test@example.com","locked_by":"partner","locked_at":"2026-10-27T03:26:30.329506Z","srn":"","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","created_at":"2026-10-27T03:26:27.547800Z","picture_link":null,"status":"locked","owner_firstname":"John","phone_number":"","customer_id":"tf_test_partner_list","comment":""},{"comment":"","owner_lastname":"Doe","locked_by":"partner","locked_at":"2026-10-28T03:43:11.201600Z","name":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","srn":"","email":"tf_test@example.com","status":"locked","owner_firstname":"John","created_at":"2026-10-28T03:43:08.174296Z","picture_link":null,"id":"1b0d7c11-e9d7-4688-89cc-e8e372ca31d0","phone_number":"","customer_id":"tf_test_partner_list"},{"id":"44471444-822d-4105-bc44-9a882f40e1f5","email":"tf_test@example.com","customer_id":"tf_test_partner_list","created_at":"2026-10-29T04:05:50.333325Z","locked_at":"2026-10-29T04:05:53.600622Z","srn":"","name":"tf_test_partner_list","locked_by":"partner","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","picture_link":null,"comment":"","status":"locked","owner_firstname":"John","phone_number":""},{"name":"tf_test_partner_list","owner_lastname":"Doe","locked_at":"2026-10-29T11:55:15.245485Z","owner_firstname":"John","phone_number":"","customer_id":"tf_test_partner_list","locked_by":"scaleway","comment":"","id":"bf540871-312e-4d45-94aa-cd4768b8e2c0","status":"locked","lock_reason_message":"validate_email","created_at":"2026-10-29T11:55:15.114238Z","picture_link":null,"email":"tf_test@example.com","srn":""}],"total_count":48}'
         headers:
             Content-Length:
-                - "1358"
+                - "21814"
             Content-Type:
                 - application/json
             Date:
-                - Wed, 16 Sep 2026 08:01:26 GMT
+                - Thu, 29 Oct 2026 11:55:16 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
+                - Scaleway API Gateway (fr-par-2;edge01)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
@@ -122,14 +163,17 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 8cf28966-0a6f-4933-a61b-1f1b0c843530
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
+                - 4f385716-7db6-4714-a7b6-f794cf70e0d8
         status: 200 OK
-    - id: 3
+        code: 200
+        duration: 80.518482ms
+    - id: 4
       request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
         content_length: 0
+        host: api.scaleway.com
         form:
             customer_id:
                 - tf_test_partner_list
@@ -143,78 +187,73 @@ interactions:
                 - unknown_status
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/partner/v1/organizations?customer_id=tf_test_partner_list&locked_by=unknown_locked_by&order_by=created_at_asc&page=1&status=unknown_status
+        method: GET
       response:
-        body: '{"organizations":[{"comment":"","created_at":"2026-09-15T12:36:22.283841Z","customer_id":"tf_test_partner_list","email":"tf_test@example.com","id":"a34d3fe8-49f6-40d5-8a22-93a2ffbd879c","lock_reason_message":"validate_email","locked_at":"2026-09-15T12:36:22.423486Z","locked_by":"scaleway","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":"","picture_link":null,"status":"locked"},{"comment":"","created_at":"2026-09-15T12:37:21.170308Z","customer_id":"tf_test_partner_list","email":"tf_test@example.com","id":"6f1e15d1-57ca-4395-91a5-378fdb457ae6","lock_reason_message":"validate_email","locked_at":"2026-09-15T12:37:21.278816Z","locked_by":"scaleway","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":"","picture_link":null,"status":"locked"},{"comment":"","created_at":"2026-09-16T08:01:24.538599Z","customer_id":"tf_test_partner_list","email":"tf_test@example.com","id":"e74d2600-1f78-4c5b-a6bd-353e60954d9c","lock_reason_message":"validate_email","locked_at":"2026-09-16T08:01:24.645870Z","locked_by":"scaleway","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":"","picture_link":null,"status":"locked"}],"total_count":3}'
-        code: 200
-        content_length: 1358
-        duration: 72.206964ms
-        headers:
-            Content-Length:
-                - "1358"
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 16 Sep 2026 08:01:26 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - a6afed1d-ebcb-421e-9618-156a44d0d2e1
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
+        content_length: 21814
+        body: '{"organizations":[{"id":"a34d3fe8-49f6-40d5-8a22-93a2ffbd879c","name":"tf_test_partner_list","customer_id":"tf_test_partner_list","comment":"","email":"tf_test@example.com","status":"locked","owner_firstname":"John","phone_number":"","lock_reason_message":"validate_email","created_at":"2026-09-15T12:36:22.283841Z","locked_by":"scaleway","picture_link":null,"locked_at":"2026-09-15T12:36:22.423486Z","owner_lastname":"Doe","srn":""},{"owner_firstname":"John","locked_by":"scaleway","srn":"","owner_lastname":"Doe","created_at":"2026-09-15T12:37:21.170308Z","email":"tf_test@example.com","customer_id":"tf_test_partner_list","locked_at":"2026-09-15T12:37:21.278816Z","picture_link":null,"comment":"","id":"6f1e15d1-57ca-4395-91a5-378fdb457ae6","name":"tf_test_partner_list","phone_number":"","lock_reason_message":"validate_email","status":"locked"},{"id":"e74d2600-1f78-4c5b-a6bd-353e60954d9c","email":"tf_test@example.com","status":"locked","name":"tf_test_partner_list","phone_number":"","customer_id":"tf_test_partner_list","locked_at":"2026-09-16T08:01:26.685680Z","picture_link":null,"owner_firstname":"John","owner_lastname":"Doe","created_at":"2026-09-16T08:01:24.538599Z","srn":"","lock_reason_message":"locked_by_reseller","locked_by":"partner","comment":""},{"name":"tf_test_partner_list","owner_lastname":"Doe","phone_number":"","srn":"","picture_link":null,"email":"tf_test@example.com","status":"locked","owner_firstname":"John","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","locked_at":"2026-09-17T03:03:18.855830Z","comment":"","id":"2c474500-bfe5-4da7-984a-813bdd2c6fc7","created_at":"2026-09-17T03:03:15.381580Z","locked_by":"partner"},{"picture_link":null,"owner_firstname":"John","locked_at":"2026-09-18T02:51:21.366206Z","srn":"","comment":"","name":"tf_test_partner_list","status":"locked","owner_lastname":"Doe","id":"1d0d0369-2a04-49ae-a12f-dadf0e321013","customer_id":"tf_test_partner_list","locked_by":"partner","email":"tf_test@example.com","phone_number":"","lock_reason_message":"locked_by_reseller","created_at":"2026-09-18T02:51:17.954762Z"},{"name":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","picture_link":null,"comment":"","customer_id":"tf_test_partner_list","locked_by":"partner","status":"locked","phone_number":"","locked_at":"2026-09-19T02:50:01.932057Z","email":"tf_test@example.com","owner_firstname":"John","owner_lastname":"Doe","created_at":"2026-09-19T02:49:58.461982Z","srn":"","id":"65f8fe95-e126-4fc0-979c-f4cc39f155e0"},{"created_at":"2026-09-20T03:01:51.272915Z","srn":"","email":"tf_test@example.com","owner_firstname":"John","lock_reason_message":"locked_by_reseller","locked_by":"partner","locked_at":"2026-09-20T03:01:54.722877Z","picture_link":null,"status":"locked","owner_lastname":"Doe","customer_id":"tf_test_partner_list","comment":"","id":"4fb94ef9-7add-4486-8eea-c71f6d40ba3c","name":"tf_test_partner_list","phone_number":""},{"owner_firstname":"John","comment":"","name":"tf_test_partner_list","picture_link":null,"id":"ef7d1cad-6648-4dd4-8634-0fcc39fd35de","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","created_at":"2026-09-21T02:59:27.572283Z","locked_by":"partner","locked_at":"2026-09-21T02:59:32.093222Z","srn":"","phone_number":"","customer_id":"tf_test_partner_list","email":"tf_test@example.com","status":"locked"},{"created_at":"2026-09-22T02:59:42.303809Z","srn":"","email":"tf_test@example.com","owner_lastname":"Doe","locked_at":"2026-09-22T02:59:46.057738Z","owner_firstname":"John","phone_number":"","customer_id":"tf_test_partner_list","locked_by":"partner","picture_link":null,"comment":"","id":"2368c8c0-c4a5-4846-94d5-b2dfa329c119","name":"tf_test_partner_list","status":"locked","lock_reason_message":"locked_by_reseller"},{"srn":"","id":"9e5d388b-0874-49ae-a419-42f8cbac2873","owner_firstname":"John","locked_at":"2026-09-22T12:43:16.073762Z","picture_link":null,"name":"tf_test_partner_list","email":"tf_test@example.com","status":"locked","owner_lastname":"Doe","created_at":"2026-09-22T12:43:13.373009Z","customer_id":"tf_test_partner_list","locked_by":"partner","comment":"","phone_number":"","lock_reason_message":"locked_by_reseller"},{"created_at":"2026-09-23T02:59:46.766483Z","picture_link":null,"customer_id":"tf_test_partner_list","locked_by":"partner","comment":"","name":"tf_test_partner_list","email":"tf_test@example.com","status":"locked","phone_number":"","locked_at":"2026-09-23T02:59:50.201477Z","id":"bf020da8-e82a-4624-8f38-54c16ef8d865","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","srn":"","owner_firstname":"John"},{"owner_lastname":"Doe","locked_by":"partner","locked_at":"2026-09-24T02:50:22.308384Z","id":"6e429322-00b3-4939-aa24-66732165f949","owner_firstname":"John","customer_id":"tf_test_partner_list","comment":"","name":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","created_at":"2026-09-24T02:50:18.299507Z","srn":"","phone_number":"","picture_link":null,"email":"tf_test@example.com","status":"locked"},{"locked_by":"partner","picture_link":null,"srn":"","id":"98c9b10e-e73d-420d-8f84-b8ed78b4a138","status":"locked","phone_number":"","created_at":"2026-09-25T09:10:00.095967Z","locked_at":"2026-09-25T09:10:04.404313Z","comment":"","name":"tf_test_partner_list","owner_firstname":"John","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","email":"tf_test@example.com","owner_lastname":"Doe"},{"locked_by":"partner","owner_firstname":"John","created_at":"2026-09-26T03:10:21.903368Z","locked_at":"2026-09-26T03:10:27.776983Z","id":"85cb57db-2b31-4733-bbe8-8e6ec34860b4","name":"tf_test_partner_list","phone_number":"","customer_id":"tf_test_partner_list","picture_link":null,"srn":"","status":"locked","comment":"","email":"tf_test@example.com","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller"},{"email":"tf_test@example.com","phone_number":"","locked_by":"partner","locked_at":"2026-09-27T03:17:19.321222Z","picture_link":null,"status":"locked","comment":"","owner_firstname":"John","lock_reason_message":"locked_by_reseller","created_at":"2026-09-27T03:17:15.714304Z","srn":"","id":"a23d7f7c-c2c1-4021-a104-9e50407f384c","name":"tf_test_partner_list","owner_lastname":"Doe","customer_id":"tf_test_partner_list"},{"email":"tf_test@example.com","owner_lastname":"Doe","locked_by":"partner","picture_link":null,"srn":"","name":"tf_test_partner_list","status":"locked","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","owner_firstname":"John","phone_number":"","locked_at":"2026-09-28T03:14:16.555475Z","created_at":"2026-09-28T03:14:11.625891Z","comment":"","id":"92b1c190-d1dc-4e08-8010-8232f55096e4"},{"email":"tf_test@example.com","created_at":"2026-09-29T03:51:37.541842Z","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":"","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","locked_by":"partner","id":"405cb1c1-a9a3-4e17-89fb-c3c492fd94e1","status":"locked","srn":"","picture_link":null,"comment":"","locked_at":"2026-09-29T03:51:42.750319Z"},{"srn":"","name":"tf_test_partner_list","phone_number":"","comment":"","id":"bcc0b801-ddd8-4101-9925-175d07602485","email":"tf_test@example.com","owner_lastname":"Doe","created_at":"2026-09-30T03:40:37.125591Z","customer_id":"tf_test_partner_list","locked_at":"2026-09-30T03:40:40.554796Z","picture_link":null,"status":"locked","owner_firstname":"John","lock_reason_message":"locked_by_reseller","locked_by":"partner"},{"email":"tf_test@example.com","picture_link":null,"owner_firstname":"John","owner_lastname":"Doe","locked_by":"partner","comment":"","srn":"","status":"locked","lock_reason_message":"locked_by_reseller","locked_at":"2026-10-01T03:46:16.526712Z","id":"0868a8e0-e9d0-4061-87d6-52cb3090e951","phone_number":"","customer_id":"tf_test_partner_list","created_at":"2026-10-01T03:46:12.251642Z","name":"tf_test_partner_list"},{"phone_number":"","srn":"","id":"ad3099cc-6b49-4e66-9f54-32f55a44b434","customer_id":"tf_test_partner_list","locked_at":"2026-10-02T03:44:38.264215Z","status":"locked","created_at":"2026-10-02T03:44:31.447412Z","comment":"","name":"tf_test_partner_list","email":"tf_test@example.com","lock_reason_message":"locked_by_reseller","locked_by":"partner","picture_link":null,"owner_firstname":"John","owner_lastname":"Doe"},{"locked_at":"2026-10-03T03:29:52.588662Z","comment":"","picture_link":null,"customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","locked_by":"partner","id":"5fbe136b-0e03-4ea9-8dcf-aaf27a74e5ad","status":"locked","owner_lastname":"Doe","phone_number":"","created_at":"2026-10-03T03:29:47.463631Z","srn":"","name":"tf_test_partner_list","email":"tf_test@example.com","owner_firstname":"John"},{"id":"2db92348-f271-46bc-a4df-3021f12ecc50","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","created_at":"2026-10-04T03:57:24.346628Z","srn":"","email":"tf_test@example.com","comment":"","status":"locked","phone_number":"","customer_id":"tf_test_partner_list","locked_by":"partner","locked_at":"2026-10-04T03:57:33.678881Z","picture_link":null},{"email":"tf_test@example.com","lock_reason_message":"locked_by_reseller","picture_link":null,"comment":"","id":"8125f1b2-15bf-4cf0-b709-d89656823232","name":"tf_test_partner_list","owner_firstname":"John","phone_number":"","locked_at":"2026-10-05T03:42:46.235663Z","srn":"","status":"locked","owner_lastname":"Doe","customer_id":"tf_test_partner_list","created_at":"2026-10-05T03:42:39.805317Z","locked_by":"partner"},{"id":"ca2dc26f-2c7a-4821-b330-cff1378134e9","customer_id":"tf_test_partner_list","comment":"","email":"tf_test@example.com","phone_number":"","name":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","created_at":"2026-10-06T04:30:16.869194Z","srn":"","status":"locked","owner_firstname":"John","owner_lastname":"Doe","locked_by":"partner","locked_at":"2026-10-06T04:30:24.649660Z","picture_link":null},{"name":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","created_at":"2026-10-07T03:56:26.145855Z","locked_by":"partner","locked_at":"2026-10-07T03:56:30.132742Z","picture_link":null,"id":"db363f37-03d3-4f90-8043-4ae600403d2c","email":"tf_test@example.com","owner_firstname":"John","owner_lastname":"Doe","srn":"","status":"locked","phone_number":"","customer_id":"tf_test_partner_list","comment":""},{"owner_lastname":"Doe","created_at":"2026-10-08T04:09:41.472507Z","locked_by":"partner","locked_at":"2026-10-08T04:09:48.389621Z","picture_link":null,"id":"7cc67296-f529-44aa-ae96-20ae553a779d","status":"locked","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","name":"tf_test_partner_list","email":"tf_test@example.com","owner_firstname":"John","phone_number":"","comment":"","srn":""},{"id":"a0767863-9186-4fdf-a1d6-6fd2fe2939de","email":"tf_test@example.com","owner_firstname":"John","owner_lastname":"Doe","phone_number":"","lock_reason_message":"locked_by_reseller","picture_link":null,"srn":"","customer_id":"tf_test_partner_list","locked_by":"partner","comment":"","locked_at":"2026-10-09T04:15:01.535669Z","name":"tf_test_partner_list","status":"locked","created_at":"2026-10-09T04:14:57.663013Z"},{"locked_at":"2026-10-10T03:59:34.185058Z","id":"64e50560-1d33-438b-a1b6-d38b3d9ec126","name":"tf_test_partner_list","phone_number":"","lock_reason_message":"locked_by_reseller","created_at":"2026-10-10T03:59:29.829712Z","srn":"","picture_link":null,"email":"tf_test@example.com","owner_lastname":"Doe","locked_by":"partner","status":"locked","owner_firstname":"John","customer_id":"tf_test_partner_list","comment":""},{"name":"tf_test_partner_list","owner_lastname":"Doe","srn":"","email":"tf_test@example.com","status":"locked","owner_firstname":"John","locked_at":"2026-10-11T03:34:20.026832Z","picture_link":null,"comment":"","id":"71472d4a-c880-49e5-903c-a0ed3f7ae06c","phone_number":"","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","created_at":"2026-10-11T03:34:15.995126Z","locked_by":"partner"},{"id":"41476093-46d8-4153-a14d-a3e86af9bc20","owner_firstname":"John","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","comment":"","srn":"","email":"tf_test@example.com","phone_number":"","picture_link":null,"owner_lastname":"Doe","locked_by":"partner","locked_at":"2026-10-12T03:58:11.717626Z","name":"tf_test_partner_list","status":"locked","created_at":"2026-10-12T03:58:06.951420Z"},{"customer_id":"tf_test_partner_list","locked_at":"2026-10-13T05:07:55.213825Z","locked_by":"partner","id":"3d8cc1d3-e87b-46a9-a935-d746ff983871","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":"","status":"locked","picture_link":null,"comment":"","email":"tf_test@example.com","lock_reason_message":"locked_by_reseller","created_at":"2026-10-13T05:07:51.229526Z","srn":""},{"status":"locked","owner_firstname":"John","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","locked_at":"2026-10-14T03:14:12.089227Z","email":"tf_test@example.com","customer_id":"tf_test_partner_list","picture_link":null,"phone_number":"","id":"c6f1adaf-6674-4885-93ec-e4a7aa2e9d13","name":"tf_test_partner_list","created_at":"2026-10-14T03:14:06.543846Z","locked_by":"partner","comment":"","srn":""},{"lock_reason_message":"locked_by_reseller","status":"locked","owner_firstname":"John","customer_id":"tf_test_partner_list","srn":"","locked_by":"partner","locked_at":"2026-10-15T02:53:40.351291Z","comment":"","id":"7180be1d-80b6-44b3-ae42-62cbd73c6ffb","name":"tf_test_partner_list","created_at":"2026-10-15T02:53:33.482475Z","picture_link":null,"email":"tf_test@example.com","owner_lastname":"Doe","phone_number":""},{"email":"tf_test@example.com","phone_number":"","customer_id":"tf_test_partner_list","locked_at":"2026-10-16T02:51:26.364602Z","srn":"","id":"e237115c-f63b-44e3-85fd-f475fb384f90","status":"locked","owner_firstname":"John","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","picture_link":null,"comment":"","name":"tf_test_partner_list","locked_by":"partner","created_at":"2026-10-16T02:51:22.742187Z"},{"id":"d07079f8-411d-4453-87cf-245a56ab7303","owner_lastname":"Doe","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","created_at":"2026-10-17T02:42:54.789356Z","locked_at":"2026-10-17T02:43:00.589503Z","name":"tf_test_partner_list","email":"tf_test@example.com","status":"locked","owner_firstname":"John","phone_number":"","locked_by":"partner","comment":"","srn":"","picture_link":null},{"locked_by":"partner","status":"locked","phone_number":"","lock_reason_message":"locked_by_reseller","srn":"","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","customer_id":"tf_test_partner_list","created_at":"2026-10-18T02:44:21.485606Z","locked_at":"2026-10-18T02:44:24.289767Z","comment":"","id":"2c6cda8b-1d4c-4cd4-910b-26086b13e39e","email":"tf_test@example.com","picture_link":null},{"lock_reason_message":"locked_by_reseller","locked_at":"2026-10-19T02:57:58.035112Z","comment":"","email":"tf_test@example.com","owner_firstname":"John","customer_id":"tf_test_partner_list","created_at":"2026-10-19T02:57:53.371721Z","locked_by":"partner","picture_link":null,"srn":"","name":"tf_test_partner_list","owner_lastname":"Doe","phone_number":"","id":"3afe0700-d860-4cd8-ad11-f0a5647c11f9","status":"locked"},{"owner_lastname":"Doe","locked_at":"2026-10-20T03:07:42.398534Z","id":"93c1622e-55f2-4a8d-aff2-7110f10e8017","status":"locked","lock_reason_message":"locked_by_reseller","created_at":"2026-10-20T03:07:39.585237Z","email":"tf_test@example.com","locked_by":"partner","picture_link":null,"comment":"","name":"tf_test_partner_list","owner_firstname":"John","phone_number":"","customer_id":"tf_test_partner_list","srn":""},{"phone_number":"","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller","name":"tf_test_partner_list","email":"tf_test@example.com","owner_firstname":"John","customer_id":"tf_test_partner_list","locked_by":"partner","locked_at":"2026-10-21T03:01:26.136911Z","srn":"","id":"237ff5e9-2b32-4ff8-8837-913f0ca88e76","status":"locked","created_at":"2026-10-21T03:01:20.732600Z","picture_link":null,"comment":""},{"picture_link":null,"comment":"","name":"tf_test_partner_list","owner_lastname":"Doe","phone_number":"","locked_by":"partner","locked_at":"2026-10-22T03:01:06.966194Z","id":"29a0f0cc-95ab-4b25-9cf9-ef68abca1872","lock_reason_message":"locked_by_reseller","email":"tf_test@example.com","owner_firstname":"John","customer_id":"tf_test_partner_list","status":"locked","created_at":"2026-10-22T03:01:00.385838Z","srn":""},{"srn":"","id":"b0601b40-3d67-484c-ab49-b05117f948f7","status":"locked","owner_lastname":"Doe","locked_by":"partner","name":"tf_test_partner_list","customer_id":"tf_test_partner_list","comment":"","owner_firstname":"John","locked_at":"2026-10-23T03:04:48.670513Z","picture_link":null,"email":"tf_test@example.com","phone_number":"","lock_reason_message":"locked_by_reseller","created_at":"2026-10-23T03:04:43.589033Z"},{"email":"tf_test@example.com","lock_reason_message":"locked_by_reseller","comment":"","srn":"","id":"c5ac443a-9af5-4488-808d-a5eb038f53bc","name":"tf_test_partner_list","owner_lastname":"Doe","picture_link":null,"phone_number":"","created_at":"2026-10-24T03:00:56.445120Z","locked_at":"2026-10-24T03:01:00.128315Z","status":"locked","owner_firstname":"John","customer_id":"tf_test_partner_list","locked_by":"partner"},{"name":"tf_test_partner_list","email":"tf_test@example.com","status":"locked","picture_link":null,"phone_number":"","customer_id":"tf_test_partner_list","owner_firstname":"John","lock_reason_message":"locked_by_reseller","created_at":"2026-10-25T02:54:23.551617Z","locked_at":"2026-10-25T02:54:31.657521Z","srn":"","id":"96d5519c-2429-4873-a380-192ba8e40191","owner_lastname":"Doe","locked_by":"partner","comment":""},{"id":"0bfd03e1-a937-4c77-8bc4-9ae2afed95c3","picture_link":null,"locked_by":"partner","comment":"","email":"tf_test@example.com","status":"locked","phone_number":"","customer_id":"tf_test_partner_list","srn":"","locked_at":"2026-10-26T02:52:59.657146Z","created_at":"2026-10-26T02:52:54.561748Z","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","lock_reason_message":"locked_by_reseller"},{"picture_link":null,"status":"locked","owner_firstname":"John","lock_reason_message":"locked_by_reseller","locked_at":"2026-10-27T03:26:30.329506Z","name":"tf_test_partner_list","owner_lastname":"Doe","customer_id":"tf_test_partner_list","comment":"","id":"100c0f8c-8530-4219-b949-f339c601f2ee","email":"tf_test@example.com","phone_number":"","srn":"","created_at":"2026-10-27T03:26:27.547800Z","locked_by":"partner"},{"status":"locked","phone_number":"","lock_reason_message":"locked_by_reseller","srn":"","id":"1b0d7c11-e9d7-4688-89cc-e8e372ca31d0","owner_firstname":"John","created_at":"2026-10-28T03:43:08.174296Z","name":"tf_test_partner_list","locked_at":"2026-10-28T03:43:11.201600Z","picture_link":null,"email":"tf_test@example.com","owner_lastname":"Doe","customer_id":"tf_test_partner_list","locked_by":"partner","comment":""},{"owner_lastname":"Doe","customer_id":"tf_test_partner_list","lock_reason_message":"locked_by_reseller","locked_by":"partner","locked_at":"2026-10-29T04:05:53.600622Z","email":"tf_test@example.com","status":"locked","phone_number":"","srn":"","id":"44471444-822d-4105-bc44-9a882f40e1f5","owner_firstname":"John","created_at":"2026-10-29T04:05:50.333325Z","picture_link":null,"comment":"","name":"tf_test_partner_list"},{"locked_at":"2026-10-29T11:55:15.245485Z","created_at":"2026-10-29T11:55:15.114238Z","phone_number":"","lock_reason_message":"validate_email","name":"tf_test_partner_list","status":"locked","owner_lastname":"Doe","locked_by":"scaleway","picture_link":null,"comment":"","srn":"","id":"bf540871-312e-4d45-94aa-cd4768b8e2c0","email":"tf_test@example.com","owner_firstname":"John","customer_id":"tf_test_partner_list"}],"total_count":48}'
+        headers:
+            Content-Length:
+                - "21814"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 29 Oct 2026 11:55:17 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - ac9c746f-875d-410f-841b-9780af0f3469
         status: 200 OK
-    - id: 4
+        code: 200
+        duration: 72.698849ms
+    - id: 5
       request:
-        body: '{}'
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
         content_length: 2
+        host: api.scaleway.com
+        body: '{}'
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
+                - scaleway-sdk-go/v1.39.1-0.20261026155125-082296ec20b5 (go1.27.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/partner/v1/organizations/bf540871-312e-4d45-94aa-cd4768b8e2c0/lock
         method: POST
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/partner/v1/organizations/e74d2600-1f78-4c5b-a6bd-353e60954d9c/lock
       response:
-        body: '{"comment":"","created_at":"2026-09-16T08:01:24.538599Z","customer_id":"tf_test_partner_list","email":"tf_test@example.com","id":"e74d2600-1f78-4c5b-a6bd-353e60954d9c","lock_reason_message":"locked_by_reseller","locked_at":"2026-09-16T08:01:26.685680Z","locked_by":"partner","name":"tf_test_partner_list","owner_firstname":"John","owner_lastname":"Doe","phone_number":null,"picture_link":null,"status":"locked"}'
-        code: 200
-        content_length: 444
-        duration: 88.554394ms
-        headers:
-            Content-Length:
-                - "444"
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 16 Sep 2026 08:01:26 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 116ea3d0-af5e-4af4-816e-1af69aab8b2f
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
+        content_length: 454
+        body: '{"locked_at":"2026-10-29T11:55:17.354075Z","picture_link":null,"id":"bf540871-312e-4d45-94aa-cd4768b8e2c0","lock_reason_message":"locked_by_reseller","srn":"","name":"tf_test_partner_list","status":"locked","owner_lastname":"Doe","phone_number":null,"customer_id":"tf_test_partner_list","email":"tf_test@example.com","owner_firstname":"John","created_at":"2026-10-29T11:55:15.114238Z","locked_by":"partner","comment":""}'
+        headers:
+            Content-Length:
+                - "454"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 29 Oct 2026 11:55:17 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 37a77d3c-5c48-49f9-967c-0d3a4d8e0e7b
         status: 200 OK
-version: 2
+        code: 200
+        duration: 120.929438ms
