@@ -137,5 +137,6 @@ func flattenDataSource(d *schema.ResourceData, ds *cockpit.DataSource) {
 	_ = d.Set("updated_at", types.FlattenTime(ds.UpdatedAt))
 	_ = d.Set("synchronized_with_grafana", ds.SynchronizedWithGrafana)
 	_ = d.Set("retention_days", int(ds.RetentionDays))
+	_ = d.Set("srn", ds.Srn)
 	_ = d.Set("region", ds.Region.String())
 }

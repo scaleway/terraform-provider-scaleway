@@ -49,3 +49,4 @@ In addition to all arguments above, the following attributes are exported:
 - `otlp_destination` - OTLP destination configuration.
 - `created_at` - Creation date (RFC 3339).
 - `updated_at` - Last update date (RFC 3339).
+- `srn` - The Scaleway Resource Name (SRN) of the data export.

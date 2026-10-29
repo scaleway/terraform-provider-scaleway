@@ -79,6 +79,11 @@ func alertManagerSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Alert manager URL",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the alert manager",
+		},
 	}
 }
 
@@ -217,6 +222,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("region", string(alertManager.Region))
 	_ = d.Set("alert_manager_url", alertManager.AlertManagerURL)
 	_ = d.Set("project_id", projectID)
+	_ = d.Set("srn", alertManager.Srn)
 
 	if err := setCockpitAlertManagerIdentity(d, alertManager.Region, projectID); err != nil {
 		return diag.FromErr(err)

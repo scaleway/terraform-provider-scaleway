@@ -118,5 +118,6 @@ func flattenDataSourceToMap(ds *cockpit.DataSource) map[string]any {
 		"retention_days":            int(ds.RetentionDays),
 		"region":                    ds.Region.String(),
 		"push_url":                  pushURL,
+		"srn":                       ds.Srn,
 	}
 }

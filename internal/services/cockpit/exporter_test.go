@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -136,6 +137,7 @@ func TestAccCockpitExporter_Basic_OTLP(t *testing.T) {
 				`, orgID, exporterName),
 				Check: resource.ComposeTestCheckFunc(
 					isExporterPresent(tt, "scaleway_cockpit_exporter.main"),
+					resource.TestMatchResourceAttr("scaleway_cockpit_exporter.main", "srn", regexp.MustCompile(`^srn://cockpit\..+/regions/.+/exporters/.+$`)),
 					resource.TestCheckResourceAttr("scaleway_cockpit_exporter.main", "name", exporterName),
 					resource.TestCheckResourceAttr("scaleway_cockpit_exporter.main", "region", "fr-par"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_exporter.main", "status"),
