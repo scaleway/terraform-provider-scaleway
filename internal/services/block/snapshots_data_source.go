@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -52,6 +53,7 @@ func snapshotsItemAttrTypes() map[string]attr.Type {
 		"tags":       types.ListType{ElemType: types.StringType},
 		"srn":        types.StringType,
 		"zone":       types.StringType,
+		"kms_key_id": types.StringType,
 		"project_id": types.StringType,
 	}
 }
@@ -124,6 +126,10 @@ func (d *SnapshotsDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 							Computed:            true,
 							ElementType:         types.StringType,
 							MarkdownDescription: "List of tags assigned to the snapshot",
+						},
+						"kms_key_id": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "UUID of the KMS key used to protect the parent volume's encryption",
 						},
 						"srn": schema.StringAttribute{
 							Computed:            true,
@@ -254,9 +260,21 @@ func flattenSnapshotsList(ctx context.Context, snapshots []*block.Snapshot, diag
 			"name":       types.StringValue(snapshot.Name),
 			"volume_id":  volumeID,
 			"tags":       tags,
+			"kms_key_id": types.StringValue(""),
 			"srn":        types.StringValue(snapshot.Srn),
 			"zone":       types.StringValue(string(snapshot.Zone)),
 			"project_id": types.StringValue(snapshot.ProjectID),
+		}
+
+		if snapshot.KmsKeyID != nil && *snapshot.KmsKeyID != "" {
+			// KMS keys are regional resources, but the API returns a bare UUID.
+			// Localize it so state matches the regional ID the user configured.
+			region, err := snapshot.Zone.Region()
+			if err != nil {
+				*diags = append(*diags, diag.NewErrorDiagnostic("failed to parse zone region", err.Error()))
+			} else {
+				attrValues["kms_key_id"] = types.StringValue(regional.NewIDString(region, *snapshot.KmsKeyID))
+			}
 		}
 
 		obj, d := types.ObjectValue(itemType.AttrTypes, attrValues)

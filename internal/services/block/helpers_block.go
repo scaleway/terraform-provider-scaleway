@@ -4,14 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
@@ -23,18 +19,6 @@ const (
 	BlockVolumeType           = instance.VolumeServerVolumeType("sbs_volume")
 )
 
-// blockAPIWithZone returns a new block API and the zone for a Create request
-func blockAPIWithZone(d *schema.ResourceData, m any) (*block.API, scw.Zone, error) {
-	blockAPI := block.NewAPI(meta.ExtractScwClient(m))
-
-	zone, err := meta.ExtractZone(d, m)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return blockAPI, zone, nil
-}
-
 // NewAPIWithZoneAndID returns a new block API with zone and ID extracted from the state
 func NewAPIWithZoneAndID(m any, zonedID string) (*block.API, scw.Zone, string, error) {
 	blockAPI := block.NewAPI(meta.ExtractScwClient(m))
@@ -45,43 +29,6 @@ func NewAPIWithZoneAndID(m any, zonedID string) (*block.API, scw.Zone, string, e
 	}
 
 	return blockAPI, zone, ID, nil
-}
-
-// customDiffCannotShrink set key to forceNew if value shrink
-func customDiffCannotShrink(key string) schema.CustomizeDiffFunc {
-	return customdiff.ForceNewIf(key, func(_ context.Context, d *schema.ResourceDiff, _ any) bool {
-		oldValueI, newValueI := d.GetChange(key)
-		oldValue := oldValueI.(int)
-		newValue := newValueI.(int)
-
-		return oldValue > newValue
-	})
-}
-
-func customDiffSnapshot(key string) schema.CustomizeDiffFunc {
-	return func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
-		if !diff.HasChange(key) {
-			return nil
-		}
-
-		oldValue, newValue := diff.GetChange(key)
-		if dsf.Locality(key, oldValue.(string), newValue.(string), nil) {
-			return nil
-		}
-
-		blockAPI := block.NewAPI(meta.ExtractScwClient(i))
-		zone, id, _ := locality.ParseLocalizedID(oldValue.(string))
-
-		_, err := blockAPI.GetSnapshot(&block.GetSnapshotRequest{
-			SnapshotID: id,
-			Zone:       scw.Zone(zone),
-		})
-		if (httperrors.Is403(err) || httperrors.Is404(err)) && newValue == "" {
-			return nil
-		}
-
-		return diff.ForceNew(key)
-	}
 }
 
 func migrateInstanceToBlockVolume(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumeID string, timeout time.Duration) (*block.Volume, error) {
