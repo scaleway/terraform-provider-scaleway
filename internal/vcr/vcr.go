@@ -12,14 +12,12 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
 
-// getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
-func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
-	t.Helper()
-
+// BuildCassetteName returns a valid filename path based on the test name and suffix.
+func BuildCassetteName(testName string, pkgFolder string, suffix string) string {
 	specialChars := regexp.MustCompile(`[\\?%*:|"'<>. ]`)
 
 	// Replace nested tests separators.
-	fileName := strings.ReplaceAll(t.Name(), "/", "-")
+	fileName := strings.ReplaceAll(testName, "/", "-")
 
 	fileName = strcase.ToBashArg(fileName)
 
@@ -30,6 +28,13 @@ func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
 	fileName = strings.TrimPrefix(fileName, "test-acc-")
 
 	return filepath.Join(pkgFolder, "testdata", fileName)
+}
+
+// getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
+func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
+	t.Helper()
+
+	return BuildCassetteName(t.Name(), pkgFolder, suffix)
 }
 
 func cassetteRequestFilter(i *cassette.Interaction) error {

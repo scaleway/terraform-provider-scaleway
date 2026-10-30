@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -19,9 +20,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	vcr "github.com/scaleway/terraform-provider-scaleway/v2/internal/vcr"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/dnaeon/go-vcr.v3/cassette"
-	"gopkg.in/dnaeon/go-vcr.v3/recorder"
+	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
+	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
 
 // UpdateCassettes will update all cassettes of a given test
@@ -61,24 +63,6 @@ var BodyMatcherIgnore = []string{
 	// secrets that must never be compared literally (anonymized in cassettes)
 	"password",
 	"new_password",
-}
-
-// removeKeyRecursive removes a key from a map and all its nested maps/slices.
-func removeKeyRecursive(m map[string]any, key string) {
-	delete(m, key)
-
-	for _, v := range m {
-		switch nested := v.(type) {
-		case map[string]any:
-			removeKeyRecursive(nested, key)
-		case []any:
-			for _, item := range nested {
-				if child, ok := item.(map[string]any); ok {
-					removeKeyRecursive(child, key)
-				}
-			}
-		}
-	}
 }
 
 func BuildCassetteName(testName string, pkgFolder string, suffix string) string {
@@ -160,7 +144,7 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 			requestValues.Del(key)
 		}
 
-		return compareFormBodies(requestValues, cassette.Form)
+		return vcr.CompareFormBodies(requestValues, cassette.Body)
 	}
 
 	err = json.Unmarshal(requestBody, &requestJSON)
@@ -177,11 +161,11 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 	}
 	// remove keys that should be ignored during comparison
 	for _, key := range BodyMatcherIgnore {
-		removeKeyRecursive(requestJSON, key)
-		removeKeyRecursive(cassetteJSON, key)
+		vcr.RemoveKeyRecursive(requestJSON, key)
+		vcr.RemoveKeyRecursive(cassetteJSON, key)
 	}
 
-	return compareJSONBodies(requestJSON, cassetteJSON, false)
+	return vcr.CompareJSONBodies(requestJSON, cassetteJSON, false)
 }
 
 // CassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
@@ -233,7 +217,7 @@ func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
 		return false
 	}
 
-	if !compareFieldsStrings(request.URL.Path, cassetteURL.Path) {
+	if !vcr.CompareFieldsStrings(request.URL.Path, cassetteURL.Path) {
 		return false
 	}
 
@@ -252,6 +236,28 @@ func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
 	return true
 }
 
+// compareHeaders checks that every non-ignored header of the played request is present in the
+// cassette request with the same value. Extra headers in the cassette are allowed, mirroring the
+// body matcher: a request may add new headers without invalidating old cassettes.
+func compareHeaders(requestHeaders, cassetteHeaders http.Header) bool {
+	for key, requestValues := range requestHeaders {
+		if slices.Contains(HeaderMatcherIgnore, key) {
+			continue
+		}
+
+		cassetteValues, ok := cassetteHeaders[key]
+		if !ok {
+			return false
+		}
+
+		if !vcr.CompareStringSlices(requestValues, cassetteValues) {
+			return false
+		}
+	}
+
+	return true
+}
+
 // compareURLQueries compares query maps, fuzzing generated name prefixes in values.
 func compareURLQueries(request, cassette url.Values) bool {
 	if len(request) != len(cassette) {
@@ -265,7 +271,7 @@ func compareURLQueries(request, cassette url.Values) bool {
 		}
 
 		for i := range requestValues {
-			if !compareFieldsStrings(requestValues[i], cassetteValues[i]) {
+			if !vcr.CompareFieldsStrings(requestValues[i], cassetteValues[i]) {
 				return false
 			}
 		}
@@ -331,33 +337,26 @@ func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.C
 	}
 
 	// Setup recorder and scw client
-	r, err := recorder.NewWithOptions(&recorder.Options{
-		CassetteName:       getTestFilePath(t, pkgFolder, ".cassette"),
-		Mode:               recorderMode,
-		SkipRequestLatency: true,
-	})
+	r, err := recorder.New(cassetteFilePath,
+		recorder.WithMode(recorderMode),
+		recorder.WithSkipRequestLatency(true),
+		recorder.WithMatcher(CassetteMatcher),
+		recorder.WithHook(func(i *cassette.Interaction) error {
+			i.Request.Headers = i.Request.Headers.Clone()
+			delete(i.Request.Headers, "x-auth-token")
+			delete(i.Request.Headers, "X-Auth-Token")
+			delete(i.Request.Headers, "Authorization")
+
+			return nil
+		}, recorder.BeforeSaveHook),
+		recorder.WithHook(cassetteSensitiveFieldsAnonymizer, recorder.BeforeSaveHook),
+	)
 	if err != nil {
 		return nil, nil, err
 	}
 	defer func(r *recorder.Recorder) {
 		_ = r.Stop()
 	}(r)
-
-	// Add custom matcher for requests and cassettes
-	r.SetMatcher(CassetteMatcher)
-
-	// Add a filter which removes Authorization headers from all requests:
-	r.AddHook(func(i *cassette.Interaction) error {
-		i.Request.Headers = i.Request.Headers.Clone()
-		delete(i.Request.Headers, "x-auth-token")
-		delete(i.Request.Headers, "X-Auth-Token")
-		delete(i.Request.Headers, "Authorization")
-
-		return nil
-	}, recorder.BeforeSaveHook)
-
-	// Add a filter that will replace sensitive values with fixed values
-	r.AddHook(cassetteSensitiveFieldsAnonymizer, recorder.BeforeSaveHook)
 
 	retryOptions := transport.RetryableTransportOptions{}
 	if !*UpdateCassettes {
