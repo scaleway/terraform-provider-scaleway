@@ -221,7 +221,7 @@ func (r *ObjectResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	if closeFn != nil {
-		defer closeFn()
+		defer closeFn() //nolint:errcheck
 	}
 
 	putReq.Body = body
@@ -325,12 +325,17 @@ func (r *ObjectResource) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 
 		if closeFn != nil {
-			defer closeFn()
+			defer closeFn() //nolint:errcheck
 		}
 
 		putReq.Body = body
 
 		_, err = s3Client.PutObject(ctx, putReq)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to put object", err.Error())
+
+			return
+		}
 	} else {
 		copyReq := &s3.CopyObjectInput{
 			Bucket:       aws.String(bucketUpdated),
@@ -511,6 +516,7 @@ func (r *ObjectResource) readInto(
 
 	metadataVal, d := types.MapValueFrom(ctx, types.StringType, obj.Metadata)
 	diags.Append(d...)
+
 	model.Metadata = metadataVal
 
 	if obj.ContentType != nil {
@@ -589,7 +595,7 @@ func setCopyObjectEncryption(sseCustomerKey types.String, copyReq *s3.CopyObject
 // be deferred by the caller to release any opened file handle.
 func objectBody(plan objectResourceModel) (body io.Reader, closeFn func() error, err error) {
 	if file := plan.File.ValueString(); file != "" && !plan.File.IsNull() {
-		f, ferr := os.Open(file)
+		f, ferr := os.Open(file) //nolint:gosec
 		if ferr != nil {
 			return nil, nil, ferr
 		}

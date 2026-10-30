@@ -203,33 +203,6 @@ func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m an
 	return s3Client, region, name, nil
 }
 
-func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData, m any, name string) (*s3.Client, scw.Region, string, string, error) {
-	region, outerID, innerID, err := regional.ParseNestedID(name)
-	if err != nil {
-		return nil, "", "", "", err
-	}
-
-	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
-	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
-		accessKey = accessKeyWithProjectID(accessKey, projectID)
-	}
-
-	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
-	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
-
-	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
-	if err != nil {
-		return nil, "", "", "", err
-	}
-
-	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
-	if err != nil {
-		return nil, "", "", "", err
-	}
-
-	return s3Client, region, outerID, innerID, err
-}
-
 func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, m any, name string) (*s3.Client, scw.Region, string, string, error) {
 	region, name, outerID, err := locality.ParseLocalizedNestedOwnerID(name)
 	if err != nil {
@@ -833,8 +806,8 @@ func TransitionSCWStorageClassValues() []string {
 	}
 }
 
-func SuppressEquivalentPolicyDiffs(k, old, newP string, _ *schema.ResourceData) bool {
-	tflog.Debug(context.Background(),
+func SuppressEquivalentPolicyDiffs(ctx context.Context, k, old, newP string, _ *schema.ResourceData) bool {
+	tflog.Debug(ctx,
 		fmt.Sprintf("[DEBUG] suppress policy on key: %s, old: %s new: %s", k, old, newP))
 
 	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "" {

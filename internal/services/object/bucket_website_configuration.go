@@ -382,12 +382,14 @@ func (r *BucketWebsiteConfigurationResource) readInto(
 		return
 	}
 
-	indexList, indexDiags := flattenWebsiteIndexDocument(output.IndexDocument)
+	indexList, indexDiags := flattenWebsiteIndexDocument(ctx, output.IndexDocument)
 	diags.Append(indexDiags...)
+
 	model.IndexDocument = indexList
 
-	errorList, errorDiags := flattenWebsiteErrorDocument(output.ErrorDocument)
+	errorList, errorDiags := flattenWebsiteErrorDocument(ctx, output.ErrorDocument)
 	diags.Append(errorDiags...)
+
 	model.ErrorDocument = errorList
 
 	websiteEndpoint := WebsiteEndpoint(bucket, region)
@@ -412,8 +414,10 @@ func (r *BucketWebsiteConfigurationResource) readInto(
 
 func expandWebsiteConfiguration(ctx context.Context, model bucketWebsiteConfigurationModel, diags *diag.Diagnostics) (*s3Types.WebsiteConfiguration, error) {
 	var indexDocs []websiteIndexDocumentModel
+
 	ddiags := model.IndexDocument.ElementsAs(ctx, &indexDocs, false)
 	diags.Append(ddiags...)
+
 	if diags.HasError() {
 		return nil, nil
 	}
@@ -429,8 +433,10 @@ func expandWebsiteConfiguration(ctx context.Context, model bucketWebsiteConfigur
 
 	if !model.ErrorDocument.IsNull() && !model.ErrorDocument.IsUnknown() && len(model.ErrorDocument.Elements()) > 0 {
 		var errorDocs []websiteErrorDocumentModel
+
 		ediags := model.ErrorDocument.ElementsAs(ctx, &errorDocs, false)
 		diags.Append(ediags...)
+
 		if diags.HasError() {
 			return nil, nil
 		}
@@ -446,11 +452,11 @@ func expandWebsiteConfiguration(ctx context.Context, model bucketWebsiteConfigur
 	return config, nil
 }
 
-func flattenWebsiteIndexDocument(i *s3Types.IndexDocument) (types.List, diag.Diagnostics) {
+func flattenWebsiteIndexDocument(ctx context.Context, i *s3Types.IndexDocument) (types.List, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if i == nil {
-		list, d := types.ListValueFrom(context.Background(), types.ObjectType{
+		list, d := types.ListValueFrom(ctx, types.ObjectType{
 			AttrTypes: map[string]attr.Type{
 				"suffix": types.StringType,
 			},
@@ -465,7 +471,7 @@ func flattenWebsiteIndexDocument(i *s3Types.IndexDocument) (types.List, diag.Dia
 		m.Suffix = types.StringValue(aws.ToString(i.Suffix))
 	}
 
-	list, d := types.ListValueFrom(context.Background(), types.ObjectType{
+	list, d := types.ListValueFrom(ctx, types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"suffix": types.StringType,
 		},
@@ -475,11 +481,11 @@ func flattenWebsiteIndexDocument(i *s3Types.IndexDocument) (types.List, diag.Dia
 	return list, diags
 }
 
-func flattenWebsiteErrorDocument(e *s3Types.ErrorDocument) (types.List, diag.Diagnostics) {
+func flattenWebsiteErrorDocument(ctx context.Context, e *s3Types.ErrorDocument) (types.List, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if e == nil {
-		list, d := types.ListValueFrom(context.Background(), types.ObjectType{
+		list, d := types.ListValueFrom(ctx, types.ObjectType{
 			AttrTypes: map[string]attr.Type{
 				"key": types.StringType,
 			},
@@ -494,7 +500,7 @@ func flattenWebsiteErrorDocument(e *s3Types.ErrorDocument) (types.List, diag.Dia
 		m.Key = types.StringValue(aws.ToString(e.Key))
 	}
 
-	list, d := types.ListValueFrom(context.Background(), types.ObjectType{
+	list, d := types.ListValueFrom(ctx, types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"key": types.StringType,
 		},

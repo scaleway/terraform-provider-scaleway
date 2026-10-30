@@ -348,7 +348,7 @@ func (r *BucketPolicyResource) readInto(
 func retryPutBucketPolicy(ctx context.Context, s3Client *s3.Client, params *s3.PutBucketPolicyInput) error {
 	var lastErr error
 
-	for retry := 0; retry < 6; retry++ {
+	for range 6 {
 		_, err := s3Client.PutBucketPolicy(ctx, params)
 		if err == nil {
 			return nil
@@ -381,13 +381,13 @@ func (m equivalentPolicyPlanModifier) MarkdownDescription(ctx context.Context) s
 }
 
 func (m equivalentPolicyPlanModifier) PlanModifyString(
-	_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse,
+	ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse,
 ) {
 	if req.StateValue.IsNull() || req.PlanValue.IsNull() {
 		return
 	}
 
-	if SuppressEquivalentPolicyDiffs("", req.StateValue.ValueString(), req.PlanValue.ValueString(), nil) {
+	if SuppressEquivalentPolicyDiffs(ctx, "", req.StateValue.ValueString(), req.PlanValue.ValueString(), nil) {
 		resp.PlanValue = req.StateValue
 	}
 }

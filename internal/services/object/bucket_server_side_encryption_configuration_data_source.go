@@ -212,6 +212,7 @@ func (d *BucketServerSideEncryptionConfigurationDataSource) Read(ctx context.Con
 
 	ruleSet, ruleDiags := flattenSSERules(ctx, sse.Rules)
 	resp.Diagnostics.Append(ruleDiags...)
+
 	config.Rule = ruleSet
 
 	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{

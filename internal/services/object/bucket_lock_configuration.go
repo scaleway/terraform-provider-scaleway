@@ -380,6 +380,7 @@ func (r *BucketLockConfigurationResource) readInto(
 	if output.ObjectLockConfiguration != nil {
 		ruleList, ruleDiags := flattenBucketLockRule(ctx, output.ObjectLockConfiguration.Rule)
 		diags.Append(ruleDiags...)
+
 		model.Rule = ruleList
 	} else {
 		empty, _ := flattenBucketLockRule(ctx, nil)
@@ -406,8 +407,10 @@ func expandBucketLockRule(ctx context.Context, ruleList types.List, diags *diag.
 	}
 
 	var rules []lockRuleModel
+
 	ddiags := ruleList.ElementsAs(ctx, &rules, false)
 	diags.Append(ddiags...)
+
 	if diags.HasError() {
 		return nil, nil
 	}
@@ -417,8 +420,10 @@ func expandBucketLockRule(ctx context.Context, ruleList types.List, diags *diag.
 	}
 
 	var retentionModels []lockDefaultRetentionModel
+
 	rddiags := rules[0].DefaultRetention.ElementsAs(ctx, &retentionModels, false)
 	diags.Append(rddiags...)
+
 	if diags.HasError() {
 		return nil, nil
 	}

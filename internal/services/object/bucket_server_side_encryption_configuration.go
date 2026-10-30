@@ -404,6 +404,7 @@ func (r *BucketServerSideEncryptionConfigurationResource) readInto(
 
 	ruleSet, ruleDiags := flattenSSERules(ctx, sse.Rules)
 	diags.Append(ruleDiags...)
+
 	model.Rule = ruleSet
 
 	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
@@ -426,8 +427,10 @@ func expandSSERules(ctx context.Context, ruleSet types.Set, diags *diag.Diagnost
 	}
 
 	var rules []sseRuleModel
+
 	ddiags := ruleSet.ElementsAs(ctx, &rules, false)
 	diags.Append(ddiags...)
+
 	if diags.HasError() {
 		return nil, nil
 	}
@@ -439,8 +442,10 @@ func expandSSERules(ctx context.Context, ruleSet types.Set, diags *diag.Diagnost
 
 		if !rule.ApplyServerSideEncryptionByDefault.IsNull() && !rule.ApplyServerSideEncryptionByDefault.IsUnknown() && len(rule.ApplyServerSideEncryptionByDefault.Elements()) > 0 {
 			var defaults []sseDefaultModel
+
 			ediags := rule.ApplyServerSideEncryptionByDefault.ElementsAs(ctx, &defaults, false)
 			diags.Append(ediags...)
+
 			if diags.HasError() {
 				return nil, nil
 			}
@@ -494,6 +499,7 @@ func flattenSSERules(ctx context.Context, rules []awstypes.ServerSideEncryptionR
 				},
 			}, []sseDefaultModel{d})
 			diags.Append(dd...)
+
 			m.ApplyServerSideEncryptionByDefault = defaultList
 		} else {
 			defaultList, dd := types.ListValueFrom(ctx, types.ObjectType{
@@ -503,6 +509,7 @@ func flattenSSERules(ctx context.Context, rules []awstypes.ServerSideEncryptionR
 				},
 			}, []sseDefaultModel{})
 			diags.Append(dd...)
+
 			m.ApplyServerSideEncryptionByDefault = defaultList
 		}
 
