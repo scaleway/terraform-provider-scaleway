@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/vpc_public_gateway_pat_rule_data_source.md
+var patruleDataSourceDescription string
 
 func DataSourcePATRule() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourcePATRule().SchemaFunc())
@@ -25,6 +29,7 @@ func DataSourcePATRule() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "zone")
 
 	return &schema.Resource{
+		Description: patruleDataSourceDescription,
 		Schema:      dsSchema,
 		ReadContext: DataSourceVPCPublicGatewayPATRuleRead,
 	}

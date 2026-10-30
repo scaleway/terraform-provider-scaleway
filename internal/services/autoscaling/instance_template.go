@@ -2,6 +2,7 @@ package autoscaling
 
 import (
 	"context"
+	_ "embed"
 	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -19,8 +20,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/autoscaling_instance_template_resource.md
+var instanceTemplateResourceDescription string
+
 func ResourceInstanceTemplate() *schema.Resource {
 	return &schema.Resource{
+		Description:   instanceTemplateResourceDescription,
 		CreateContext: ResourceInstanceTemplateCreate,
 		ReadContext:   ResourceInstanceTemplateRead,
 		UpdateContext: ResourceInstanceTemplateUpdate,

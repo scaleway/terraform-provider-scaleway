@@ -2,6 +2,7 @@ package sdb
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/sdb_sql_database_resource.md
+var databaseResourceDescription string
+
 func ResourceDatabase() *schema.Resource {
 	return &schema.Resource{
+		Description:   databaseResourceDescription,
 		CreateContext: ResourceDatabaseCreate,
 		ReadContext:   ResourceDatabaseRead,
 		UpdateContext: ResourceDatabaseUpdate,

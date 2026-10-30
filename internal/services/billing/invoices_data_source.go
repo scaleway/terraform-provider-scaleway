@@ -3,6 +3,7 @@ package billing
 import (
 	"context"
 	"crypto/sha256"
+	_ "embed"
 	"encoding/hex"
 	"fmt"
 
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/billing_invoices_data_source.md
+var invoicesDataSourceDescription string
+
 func DataSourceInvoices() *schema.Resource {
 	return &schema.Resource{
+		Description: invoicesDataSourceDescription,
 		ReadContext: DataSourceBillingInvoicesRead,
 		SchemaFunc:  invoiceSchema,
 	}

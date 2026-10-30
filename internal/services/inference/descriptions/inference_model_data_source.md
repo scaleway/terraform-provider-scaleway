@@ -1,0 +1,1 @@
+The `scaleway_inference_model` data source allows you to retrieve information about an inference model available in the Scaleway Inference API, either by providing the model's `name` or its `model_id`.

@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
+//go:embed descriptions/instance_ip_reverse_dns_resource.md
+var ipreverseDNSResourceDescription string
+
 func ResourceIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
+		Description:   ipreverseDNSResourceDescription,
 		CreateContext: ResourceInstanceIPReverseDNSCreate,
 		ReadContext:   ResourceInstanceIPReverseDNSRead,
 		UpdateContext: ResourceInstanceIPReverseDNSUpdate,

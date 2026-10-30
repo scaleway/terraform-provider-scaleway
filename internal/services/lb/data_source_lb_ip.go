@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,6 +14,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/lb_ip_data_source.md
+var ipDataSourceDescription string
 
 func DataSourceIP() *schema.Resource {
 	// Generate datasource schema from resource
@@ -35,6 +39,7 @@ func DataSourceIP() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description:   ipDataSourceDescription,
 		ReadContext:   DataSourceLbIPRead,
 		Schema:        dsSchema,
 		SchemaVersion: 1,

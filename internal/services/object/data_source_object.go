@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"

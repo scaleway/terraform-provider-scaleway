@@ -70,6 +70,11 @@ func DataSourcePop() *schema.Resource {
 				Computed:    true,
 				Description: "Human-readable display name of the PoP",
 			},
+			"srn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Scaleway Resource Name (SRN) of the PoP",
+			},
 		},
 	}
 }
@@ -146,6 +151,7 @@ func setPopState(d *schema.ResourceData, pop *interlink.Pop) diag.Diagnostics {
 	_ = d.Set("city", pop.City)
 	_ = d.Set("logo_url", pop.LogoURL)
 	_ = d.Set("display_name", pop.DisplayName)
+	_ = d.Set("srn", pop.Srn)
 	_ = d.Set("region", pop.Region.String())
 
 	bandwidths := make([]int, len(pop.AvailableLinkBandwidthsMbps))

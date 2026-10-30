@@ -52,6 +52,7 @@ var budgetAlertNotificationDataSourceDescription string
 func (d *BudgetAlertNotificationDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: budgetAlertNotificationDataSourceDescription,
+		Description:         budgetAlertNotificationDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"notification_id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the budget alert notification to retrieve.",

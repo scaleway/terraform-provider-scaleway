@@ -2,6 +2,7 @@ package container
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/container_namespace_resource.md
+var namespaceResourceDescription string
+
 func ResourceNamespace() *schema.Resource {
 	return &schema.Resource{
+		Description:   namespaceResourceDescription,
 		CreateContext: ResourceContainerNamespaceCreate,
 		ReadContext:   ResourceContainerNamespaceRead,
 		UpdateContext: ResourceContainerNamespaceUpdate,

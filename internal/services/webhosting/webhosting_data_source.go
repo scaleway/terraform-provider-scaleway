@@ -44,6 +44,7 @@ func (d *WebhostingDataSource) Metadata(_ context.Context, req datasource.Metada
 func (d *WebhostingDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = fwschema.Schema{
 		MarkdownDescription: "Finds a Scaleway WebHosting by ID or domain.",
+		Description:         "Finds a Scaleway WebHosting by ID or domain.",
 		Attributes: map[string]fwschema.Attribute{
 			"webhosting_id": fwschema.StringAttribute{
 				Optional:            true,

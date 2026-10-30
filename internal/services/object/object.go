@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5" //nolint:gosec
+	_ "embed"
 	"encoding/base64"
 	"fmt"
 	"io"

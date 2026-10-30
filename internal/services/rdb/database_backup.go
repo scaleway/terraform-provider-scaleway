@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/rdb_database_backup_resource.md
+var databaseBackupResourceDescription string
+
 func ResourceDatabaseBackup() *schema.Resource {
 	return &schema.Resource{
+		Description:   databaseBackupResourceDescription,
 		CreateContext: ResourceRdbDatabaseBackupCreate,
 		ReadContext:   ResourceRdbDatabaseBackupRead,
 		UpdateContext: ResourceRdbDatabaseBackupUpdate,

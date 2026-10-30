@@ -57,6 +57,7 @@ func flattenPartners(region scw.Region, partners []*interlink.Partner) []map[str
 			"portal_url":    partner.PortalURL,
 			"created_at":    types.FlattenTime(partner.CreatedAt),
 			"updated_at":    types.FlattenTime(partner.UpdatedAt),
+			"srn":           partner.Srn,
 		}
 	}
 
@@ -106,6 +107,7 @@ func flattenPops(pops []*interlink.Pop) []map[string]any {
 			"available_link_bandwidths_mbps": bandwidths,
 			"display_name":                   pop.DisplayName,
 			"region":                         pop.Region.String(),
+			"srn":                            pop.Srn,
 		}
 	}
 

@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 	"net"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/lb_ip_resource.md
+var ipResourceDescription string
+
 func ResourceIP() *schema.Resource {
 	return &schema.Resource{
+		Description:   ipResourceDescription,
 		CreateContext: resourceLbIPCreate,
 		ReadContext:   resourceLbIPRead,
 		UpdateContext: resourceLbIPUpdate,

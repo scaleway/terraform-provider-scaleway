@@ -2,6 +2,7 @@ package baremetal
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/baremetal_option_data_source.md
+var optionDataSourceDescription string
+
 func DataSourceOption() *schema.Resource {
 	return &schema.Resource{
+		Description: optionDataSourceDescription,
 		ReadContext: dataSourceOptionRead,
 		SchemaFunc:  optionSchema,
 	}

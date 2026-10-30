@@ -1,0 +1,1 @@
+The `scaleway_object_bucket_server_side_encryption_configuration` resource allows you to manage server-side encryption configuration for [Scaleway Object Storage](https://www.scaleway.com/en/docs/object-storage/) buckets.

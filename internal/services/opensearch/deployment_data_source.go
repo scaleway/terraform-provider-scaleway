@@ -2,6 +2,7 @@ package opensearch
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,6 +14,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/opensearch_deployment_data_source.md
+var deploymentDataSourceDescription string
 
 func DataSourceDeployment() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceDeployment().SchemaFunc())
@@ -29,6 +33,7 @@ func DataSourceDeployment() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: deploymentDataSourceDescription,
 		ReadContext: DataSourceDeploymentRead,
 		Schema:      dsSchema,
 	}

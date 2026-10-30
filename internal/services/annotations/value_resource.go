@@ -56,6 +56,7 @@ var annotationsValueResourceDescription string
 func (r *AnnotationsValueResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: annotationsValueResourceDescription,
+		Description:         annotationsValueResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

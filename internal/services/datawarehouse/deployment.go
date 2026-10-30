@@ -2,6 +2,7 @@ package datawarehouse
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"time"
@@ -21,8 +22,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/datawarehouse_deployment_resource.md
+var deploymentResourceDescription string
+
 func ResourceDeployment() *schema.Resource {
 	return &schema.Resource{
+		Description:   deploymentResourceDescription,
 		CreateContext: resourceDeploymentCreate,
 		ReadContext:   resourceDeploymentRead,
 		UpdateContext: resourceDeploymentUpdate,

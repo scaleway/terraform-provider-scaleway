@@ -56,6 +56,7 @@ func (d *InstanceLogsDetailsDataSource) Metadata(_ context.Context, req datasour
 func (d *InstanceLogsDetailsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: instanceLogsDetailsDataSourceDescription,
+		Description:         instanceLogsDetailsDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"instance_id": schema.StringAttribute{
 				Required:            true,

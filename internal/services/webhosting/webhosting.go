@@ -117,6 +117,7 @@ func (r *WebhostingResource) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Scaleway WebHosting",
+		Description:         "Manages a Scaleway WebHosting",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

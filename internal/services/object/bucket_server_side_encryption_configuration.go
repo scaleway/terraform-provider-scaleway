@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"log"
 

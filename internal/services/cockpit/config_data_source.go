@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,8 +12,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
+//go:embed descriptions/cockpit_config_data_source.md
+var cockpitConfigDataSourceDescription string
+
 func DataSourceCockpitConfig() *schema.Resource {
 	return &schema.Resource{
+		Description: cockpitConfigDataSourceDescription,
 		ReadContext: dataSourceCockpitConfigRead,
 		Schema: map[string]*schema.Schema{
 			"region":                    regional.Schema(),

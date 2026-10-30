@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance_image_resource.md
+var imageResourceDescription string
+
 func ResourceImage() *schema.Resource {
 	return &schema.Resource{
+		Description:   imageResourceDescription,
 		CreateContext: ResourceInstanceImageCreate,
 		ReadContext:   ResourceInstanceImageRead,
 		UpdateContext: ResourceInstanceImageUpdate,

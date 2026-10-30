@@ -60,6 +60,7 @@ func (d *DeploymentDataSource) Metadata(_ context.Context, req datasource.Metada
 func (d *DeploymentDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: deploymentDataSourceDescription,
+		Description:         deploymentDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"deployment_id": schema.StringAttribute{
 				Optional:            true,

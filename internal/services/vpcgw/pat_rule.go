@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 	"math"
 	"net"
 	"time"
@@ -19,8 +20,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/vpc_public_gateway_pat_rule_resource.md
+var patruleResourceDescription string
+
 func ResourcePATRule() *schema.Resource {
 	return &schema.Resource{
+		Description:   patruleResourceDescription,
 		CreateContext: ResourceVPCPublicGatewayPATRuleCreate,
 		ReadContext:   ResourceVPCPublicGatewayPATRuleRead,
 		UpdateContext: ResourceVPCPublicGatewayPATRuleUpdate,

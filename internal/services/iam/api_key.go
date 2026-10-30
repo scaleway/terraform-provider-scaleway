@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/iam_api_key_resource.md
+var apikeyResourceDescription string
+
 func ResourceAPIKey() *schema.Resource {
 	return &schema.Resource{
+		Description:   apikeyResourceDescription,
 		CreateContext: resourceIamAPIKeyCreate,
 		ReadContext:   resourceIamAPIKeyRead,
 		UpdateContext: resourceIamAPIKeyUpdate,

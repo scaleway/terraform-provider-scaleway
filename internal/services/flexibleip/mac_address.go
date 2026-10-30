@@ -2,6 +2,7 @@ package flexibleip
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/flexible_ip_mac_address_resource.md
+var macaddressResourceDescription string
+
 func ResourceMACAddress() *schema.Resource {
 	return &schema.Resource{
+		Description:   macaddressResourceDescription,
 		CreateContext: ResourceFlexibleIPMACCreate,
 		ReadContext:   ResourceFlexibleIPMACRead,
 		UpdateContext: ResourceFlexibleIPMACUpdate,

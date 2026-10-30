@@ -2,6 +2,7 @@ package secret
 
 import (
 	"context"
+	_ "embed"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/secret_version_resource.md
+var versionResourceDescription string
+
 func ResourceVersion() *schema.Resource {
 	return &schema.Resource{
+		Description:   versionResourceDescription,
 		CreateContext: ResourceVersionCreate,
 		ReadContext:   ResourceVersionRead,
 		UpdateContext: ResourceVersionUpdate,
