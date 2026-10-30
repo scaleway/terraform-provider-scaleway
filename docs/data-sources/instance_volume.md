@@ -56,3 +56,5 @@ In addition to all above arguments, the following attributes are exported:
 - `server` - Information about the server attached to the volume.
 
 - `organization_id` - The ID of the organization the volume is associated with.
+
+- `srn` - The Scaleway Resource Name (SRN) of the volume.

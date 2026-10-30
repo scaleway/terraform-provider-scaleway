@@ -38,6 +38,26 @@ func newAPIWithZone(d *schema.ResourceData, m any) (*instance.API, scw.Zone, err
 	return instanceAPI, zone, nil
 }
 
+// buildSRN returns the SRN for an instance v1 resource. It prefers the
+// server-provided value when non-empty; otherwise it constructs it from the
+// API metadata domain, the zone, and the id.
+func buildSRN(client *scw.Client, product, resourceType string, zone scw.Zone, id, srn string) (string, error) {
+	if srn != "" {
+		return srn, nil
+	}
+
+	if zone == "" || id == "" {
+		return "", nil
+	}
+
+	apiMeta, err := client.GetAPIMetadata()
+	if err != nil {
+		return "", fmt.Errorf("could not fetch API metadata to build SRN: %w", err)
+	}
+
+	return fmt.Sprintf("srn://%s.%s/zones/%s/%s/%s", product, apiMeta.Domain, zone, resourceType, id), nil
+}
+
 // newAPIV2WithZone returns a new instance API v2 and the zone for a Create request
 func newAPIV2WithZone(d *schema.ResourceData, m any) (*instanceV2.API, scw.Zone, error) {
 	instanceAPI := instanceV2.NewAPI(meta.ExtractScwClient(m))

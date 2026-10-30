@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -109,6 +110,11 @@ func securityGroupSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the security group",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the security group",
+		},
 		"zone":            zonal.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -148,13 +154,13 @@ func ResourceInstanceSecurityGroupCreate(ctx context.Context, d *schema.Resource
 	}
 
 	if d.Get("external_rules").(bool) {
-		return setSecurityGroupState(ctx, instanceAPI, d, res.SecurityGroup)
+		return setSecurityGroupState(ctx, instanceAPI, d, res.SecurityGroup, m)
 	}
 	// We call update instead of read as it will take care of creating rules.
 	return ResourceInstanceSecurityGroupUpdate(ctx, d, m)
 }
 
-func setSecurityGroupState(ctx context.Context, instanceAPI *instanceSDK.API, d *schema.ResourceData, sg *instanceSDK.SecurityGroup) diag.Diagnostics {
+func setSecurityGroupState(ctx context.Context, instanceAPI *instanceSDK.API, d *schema.ResourceData, sg *instanceSDK.SecurityGroup, m any) diag.Diagnostics {
 	_ = d.Set("zone", sg.Zone)
 	_ = d.Set("organization_id", sg.Organization)
 	_ = d.Set("project_id", sg.Project)
@@ -165,6 +171,13 @@ func setSecurityGroupState(ctx context.Context, instanceAPI *instanceSDK.API, d 
 	_ = d.Set("outbound_default_policy", sg.OutboundDefaultPolicy.String())
 	_ = d.Set("enable_default_security", sg.EnableDefaultSecurity)
 	_ = d.Set("tags", sg.Tags)
+
+	srn, err := buildSRN(meta.ExtractScwClient(m), "instance", "security-groups", sg.Zone, sg.ID, sg.Srn)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("srn", srn)
 
 	if !d.Get("external_rules").(bool) {
 		inboundRules, outboundRules, err := getSecurityGroupRules(ctx, instanceAPI, sg.Zone, sg.ID, d)
@@ -204,7 +217,7 @@ func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	return setSecurityGroupState(ctx, instanceAPI, d, res.SecurityGroup)
+	return setSecurityGroupState(ctx, instanceAPI, d, res.SecurityGroup, m)
 }
 
 func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) ([]any, []any, error) {
