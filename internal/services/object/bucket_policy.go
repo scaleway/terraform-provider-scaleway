@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -346,26 +347,18 @@ func (r *BucketPolicyResource) readInto(
 }
 
 func retryPutBucketPolicy(ctx context.Context, s3Client *s3.Client, params *s3.PutBucketPolicyInput) error {
-	var lastErr error
-
-	for range 6 {
+	return retry.RetryContext(ctx, 1*time.Minute, func() *retry.RetryError {
 		_, err := s3Client.PutBucketPolicy(ctx, params)
 		if err == nil {
 			return nil
 		}
 
-		lastErr = err
-
 		if tfawserr.ErrCodeEquals(err, "MalformedPolicy") {
-			time.Sleep(10 * time.Second)
-
-			continue
+			return retry.RetryableError(err)
 		}
 
-		return err
-	}
-
-	return lastErr
+		return retry.NonRetryableError(err)
+	})
 }
 
 // equivalentPolicyPlanModifier suppresses diffs between semantically equivalent
