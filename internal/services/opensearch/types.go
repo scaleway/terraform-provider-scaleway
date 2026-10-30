@@ -62,3 +62,26 @@ func publicDashboardURLFromEndpoints(endpoints []*searchdbapi.Endpoint) string {
 
 	return ""
 }
+
+// EndpointHasOpenSearchAPI reports whether the endpoint exposes the OpenSearch
+// HTTP API (as opposed to Dashboards-only public endpoints left after a
+// private-network create).
+func EndpointHasOpenSearchAPI(endpoint *searchdbapi.Endpoint) bool {
+	if endpoint == nil {
+		return false
+	}
+
+	for _, svc := range endpoint.Services {
+		if svc == nil {
+			continue
+		}
+
+		// API historically used "api"; current SearchDB responses use "api-opensearch".
+		switch svc.Name {
+		case "api", "api-opensearch":
+			return true
+		}
+	}
+
+	return false
+}

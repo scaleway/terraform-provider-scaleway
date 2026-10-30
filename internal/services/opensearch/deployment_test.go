@@ -277,13 +277,9 @@ resource "scaleway_opensearch_deployment" "pn" {
 	})
 }
 
-// TestAccDeployment_UpdatePrivateNetwork verifies Bug #2: when changing the
-// private_network_id from one private network to another, the old private
-// endpoint should be deleted and the new one created without a conflict error.
-//
-// The bug: updating only the private_network_id resulted in a conflict error
-// saying that a private endpoint already exists, instead of replacing the old
-// endpoint with the new one.
+// TestAccDeployment_UpdatePrivateNetwork verifies private_network updates:
+// switching PN id (no conflict), then removing PN restores a public api-opensearch
+// after a create-with-PN (Dashboards-only public is not enough).
 func TestAccDeployment_UpdatePrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -390,6 +386,50 @@ resource "scaleway_opensearch_deployment" "pn" {
 					testAccCheckOpenSearchHasPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
 					testAccCheckOpenSearchHasPublicEndpoint("scaleway_opensearch_deployment.pn"),
 					testAccCheckOpenSearchAPIPrivateNetworkID(tt, "scaleway_opensearch_deployment.pn", "scaleway_vpc_private_network.pn2"),
+					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
+				),
+			},
+			{
+				// Removing private_network after a create-with-PN must restore a
+				// public api-opensearch (not leave Dashboards-only).
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "tf-test-opensearch-vpc-update"
+}
+
+resource "scaleway_vpc_private_network" "pn1" {
+  name   = "tf-test-opensearch-pn1"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_vpc_private_network" "pn2" {
+  name       = "tf-test-opensearch-pn2"
+  vpc_id     = scaleway_vpc.main.id
+  depends_on = [scaleway_vpc_private_network.pn1]
+}
+
+resource "scaleway_opensearch_deployment" "pn" {
+  name        = "tf-test-opensearch-pn-update"
+  version     = "%s"
+  node_count  = 1
+  node_type   = "%s"
+  user_name   = "%s"
+  password    = "ThisIsASecurePassword123!"
+
+  depends_on = [scaleway_vpc_private_network.pn1, scaleway_vpc_private_network.pn2]
+
+  volume {
+    type        = "sbs_5k"
+    size_in_gb  = 5
+  }
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
+					testAccCheckOpenSearchHasNoPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
+					testAccCheckOpenSearchHasPublicEndpoint("scaleway_opensearch_deployment.pn"),
+					testAccCheckOpenSearchAPIHasNoPrivateEndpoint(tt, "scaleway_opensearch_deployment.pn"),
+					testAccCheckOpenSearchAPIHasPublicAPI(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
 				),
 			},
@@ -500,6 +540,47 @@ func testAccCheckOpenSearchAPIHasPrivateEndpoint(tt *acctest.TestTools, resource
 		}
 
 		return fmt.Errorf("expected a private network endpoint in API state, got %d endpoints", len(deployment.Endpoints))
+	}
+}
+
+// testAccCheckOpenSearchAPIHasPublicAPI calls GetDeployment and verifies that a
+// public endpoint exposes api-opensearch (not Dashboards-only).
+//
+// This catches the remove-PN bug: create-with-PN leaves a public Dashboards
+// endpoint; after removing private_network the provider must restore the public API.
+func testAccCheckOpenSearchAPIHasPublicAPI(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		api, region, id, err := opensearch.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		var deployment *searchdbSDK.Deployment
+
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+			deployment, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
+				Region:       region,
+				DeploymentID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+		if err != nil {
+			return err
+		}
+
+		for _, ep := range deployment.Endpoints {
+			if ep != nil && ep.Public != nil && opensearch.EndpointHasOpenSearchAPI(ep) {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("expected a public OpenSearch API service among %d endpoints", len(deployment.Endpoints))
 	}
 }
 
