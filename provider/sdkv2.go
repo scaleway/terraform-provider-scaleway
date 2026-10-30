@@ -255,7 +255,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_object_bucket":                                      object.ResourceBucket(),
 				"scaleway_object_bucket_acl":                                  object.ResourceBucketACL(),
 				"scaleway_object_bucket_lock_configuration":                   object.ResourceLockConfiguration(),
-				"scaleway_object_bucket_policy":                               object.ResourceBucketPolicy(),
 				"scaleway_object_bucket_server_side_encryption_configuration": object.ResourceBucketServerSideEncryptionConfiguration(),
 				"scaleway_object_bucket_website_configuration":                object.ResourceBucketWebsiteConfiguration(),
 				"scaleway_rdb_acl":                                            rdb.ResourceACL(),
