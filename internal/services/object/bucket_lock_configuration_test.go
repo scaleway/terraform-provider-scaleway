@@ -68,7 +68,7 @@ func TestAccObjectBucketLockConfiguration_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.test", true),
-					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "id"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.mode", "GOVERNANCE"),
@@ -105,7 +105,7 @@ func TestAccObjectBucketLockConfiguration_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.test", true),
-					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "id"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.mode", "GOVERNANCE"),
@@ -198,7 +198,7 @@ func TestAccObjectBucketLockConfiguration_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.test", true),
-					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "id"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.mode", "COMPLIANCE"),
@@ -256,7 +256,7 @@ func TestAccObjectBucketLockConfiguration_WithBucketName(t *testing.T) {
 						}
 					}
 				`, rName, objectTestsMainRegion),
-				ExpectError: regexp.MustCompile("NoSuchBucket: The specified bucket does not exist"),
+				ExpectError: regexp.MustCompile(`NoSuchBucket:\s+The\s+specified\s+bucket\s+does\s+not\s+exist`),
 			},
 			{
 				Config: fmt.Sprintf(`

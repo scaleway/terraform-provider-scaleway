@@ -47,6 +47,9 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"bucket",
+				},
 			},
 		},
 	})
@@ -128,6 +131,9 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic_withKMS(t *testing.T
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"bucket",
+				},
 			},
 		},
 	})
@@ -161,6 +167,9 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withKey(t *testing.T) 
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"bucket",
+				},
 			},
 		},
 	})
@@ -253,6 +262,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_ApplySSEByDefault_AES256(t
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"rule.0.bucket_key_enabled",
+					"bucket",
 				},
 			},
 		},

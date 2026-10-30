@@ -8,287 +8,473 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-func ResourceLockConfiguration() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceObjectLockConfigurationCreate,
-		ReadContext:   resourceObjectLockConfigurationRead,
-		UpdateContext: resourceObjectLockConfigurationUpdate,
-		DeleteContext: resourceObjectLockConfigurationDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+var (
+	_ resource.Resource                = (*BucketLockConfigurationResource)(nil)
+	_ resource.ResourceWithConfigure   = (*BucketLockConfigurationResource)(nil)
+	_ resource.ResourceWithImportState = (*BucketLockConfigurationResource)(nil)
+)
 
-		SchemaFunc: lockConfigurationSchema,
-	}
+func NewBucketLockConfigurationResource() resource.Resource {
+	return &BucketLockConfigurationResource{}
 }
 
-func lockConfigurationSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"bucket": {
-			Type:             schema.TypeString,
-			Required:         true,
-			ForceNew:         true,
-			ValidateFunc:     validation.StringLenBetween(1, 63),
-			Description:      "The bucket's name or regional ID.",
-			DiffSuppressFunc: dsf.Locality,
+type BucketLockConfigurationResource struct {
+	meta *meta.Meta
+}
+
+type bucketLockConfigurationModel struct {
+	ID        types.String `tfsdk:"id"`
+	Bucket    types.String `tfsdk:"bucket"`
+	Rule      types.List   `tfsdk:"rule"`
+	Region    types.String `tfsdk:"region"`
+	ProjectID types.String `tfsdk:"project_id"`
+}
+
+type lockRuleModel struct {
+	DefaultRetention types.List `tfsdk:"default_retention"`
+}
+
+type lockDefaultRetentionModel struct {
+	Mode  types.String `tfsdk:"mode"`
+	Days  types.Int64  `tfsdk:"days"`
+	Years types.Int64  `tfsdk:"years"`
+}
+
+func (r *BucketLockConfigurationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_object_bucket_lock_configuration"
+}
+
+func (r *BucketLockConfigurationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: "Manages an Object Lock configuration for a Scaleway Object Storage bucket.",
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The regional ID of the bucket (region/name).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"bucket": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "The bucket's name or regional ID.",
+				PlanModifiers: []planmodifier.String{
+					regional.LocalityPlanModifier(),
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, 63),
+				},
+			},
+			"region":     regional.SchemaAttributeComputed("The region you want to attach the resource to"),
+			"project_id": projectIDFrameworkAttribute(),
 		},
-		"rule": {
-			Type:     schema.TypeList,
-			Required: true,
-			MinItems: 1,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"default_retention": {
-						Type:        schema.TypeList,
-						Description: "Default retention.",
-						Required:    true,
-						MinItems:    1,
-						MaxItems:    1,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"mode": {
-									Type:         schema.TypeString,
-									Required:     true,
-									ValidateFunc: validation.StringInSlice([]string{"GOVERNANCE", "COMPLIANCE"}, false),
-									Description:  "The default Object Lock retention mode you want to apply to new objects placed in the specified bucket.",
-								},
-								"days": {
-									Type:          schema.TypeInt,
-									Optional:      true,
-									Description:   "The number of days that you want to specify for the default retention period.",
-									ConflictsWith: []string{"rule.0.default_retention.0.years"},
-								},
-								"years": {
-									Type:          schema.TypeInt,
-									Optional:      true,
-									Description:   "The number of years that you want to specify for the default retention period.",
-									ConflictsWith: []string{"rule.0.default_retention.0.days"},
+		Blocks: map[string]schema.Block{
+			"rule": schema.ListNestedBlock{
+				MarkdownDescription: "Specifies the Object Lock rule for the specified object.",
+				Validators: []validator.List{
+					listvalidator.SizeAtLeast(1),
+					listvalidator.SizeAtMost(1),
+				},
+				NestedObject: schema.NestedBlockObject{
+					Blocks: map[string]schema.Block{
+						"default_retention": schema.ListNestedBlock{
+							MarkdownDescription: "Default retention.",
+							Validators: []validator.List{
+								listvalidator.SizeAtLeast(1),
+								listvalidator.SizeAtMost(1),
+							},
+							NestedObject: schema.NestedBlockObject{
+								Attributes: map[string]schema.Attribute{
+									"mode": schema.StringAttribute{
+										Required:            true,
+										MarkdownDescription: "The default Object Lock retention mode you want to apply to new objects placed in the specified bucket.",
+										Validators: []validator.String{
+											stringvalidator.OneOf("GOVERNANCE", "COMPLIANCE"),
+										},
+									},
+									"days": schema.Int64Attribute{
+										Optional:            true,
+										MarkdownDescription: "The number of days that you want to specify for the default retention period.",
+										Validators: []validator.Int64{
+											int64validator.ConflictsWith(path.MatchRoot("rule").AtListIndex(0).AtName("default_retention").AtListIndex(0).AtName("years")),
+										},
+									},
+									"years": schema.Int64Attribute{
+										Optional:            true,
+										MarkdownDescription: "The number of years that you want to specify for the default retention period.",
+										Validators: []validator.Int64{
+											int64validator.ConflictsWith(path.MatchRoot("rule").AtListIndex(0).AtName("default_retention").AtListIndex(0).AtName("days")),
+										},
+									},
 								},
 							},
 						},
 					},
 				},
 			},
-			Description: "Specifies the Object Lock rule for the specified object.",
 		},
-		"region":     regional.Schema(),
-		"project_id": account.ProjectIDSchema(),
 	}
 }
 
-func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, region, err := s3ClientWithRegion(ctx, d, m)
+func (r *BucketLockConfigurationResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.meta = m
+}
+
+func (r *BucketLockConfigurationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan bucketLockConfigurationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, bucket, s3Client, err := r.resolveBucketAndClient(ctx, plan.Bucket, plan.Region, plan.ProjectID)
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to resolve S3 client", err.Error())
+
+		return
 	}
 
-	regionalID := regional.ExpandID(d.Get("bucket"))
-	bucket := regionalID.ID
-	bucketRegion := regionalID.Region
+	rule, err := expandBucketLockRule(ctx, plan.Rule, &resp.Diagnostics)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to expand lock configuration rule", err.Error())
 
-	if bucketRegion != "" && bucketRegion != region {
-		conn, err = s3ClientForceRegion(ctx, d, m, bucketRegion.String())
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		region = bucketRegion
+		return
 	}
 
-	input := &s3.PutObjectLockConfigurationInput{
+	_, err = s3Client.PutObjectLockConfiguration(ctx, &s3.PutObjectLockConfigurationInput{
 		Bucket: aws.String(bucket),
 		ObjectLockConfiguration: &s3Types.ObjectLockConfiguration{
 			ObjectLockEnabled: "Enabled",
-			Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]any)),
+			Rule:              rule,
 		},
-	}
-
-	_, err = conn.PutObjectLockConfiguration(ctx, input)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) lock configuration: %w", bucket, err))
-	}
-
-	d.SetId(regional.NewIDString(region, bucket))
-
-	return resourceObjectLockConfigurationRead(ctx, d, m)
-}
-
-func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	input := &s3.GetObjectLockConfigurationInput{
-		Bucket: aws.String(bucket),
-	}
-
-	output, err := conn.GetObjectLockConfiguration(ctx, input)
-	if !d.IsNewResource() && errors.As(err, new(*s3Types.NoSuchBucket)) {
-		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
-		d.SetId("")
-
-		return nil
-	}
-
-	if output == nil {
-		if d.IsNewResource() {
-			return diag.FromErr(fmt.Errorf("error reading object bucket lock configuration (%s): empty output", d.Id()))
-		}
-
-		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
-		d.SetId("")
-
-		return nil
-	}
-
-	acl, err := conn.GetBucketAcl(ctx, &s3.GetBucketAclInput{
-		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %w", err))
+		resp.Diagnostics.AddError("Error creating object bucket lock configuration", fmt.Errorf("error creating object bucket (%s) lock configuration: %w", bucket, err).Error())
+
+		return
 	}
 
-	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
+	plan.ID = types.StringValue(regional.NewIDString(region, bucket))
 
-	_ = d.Set("bucket", bucket)
-	if output.ObjectLockConfiguration != nil {
-		_ = d.Set("rule", flattenBucketLockConfigurationRule(output.ObjectLockConfiguration.Rule))
-	} else {
-		_ = d.Set("rule", flattenBucketLockConfigurationRule(nil))
-	}
-
-	return nil
+	r.readInto(ctx, &plan, s3Client, region, bucket, &resp.Diagnostics, true)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
+func (r *BucketLockConfigurationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state bucketLockConfigurationModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, bucket, s3Client, err := r.clientFromState(ctx, state.ID, state.ProjectID)
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to resolve S3 client", err.Error())
+
+		return
 	}
 
-	lockConfig := &s3Types.ObjectLockConfiguration{
-		ObjectLockEnabled: s3Types.ObjectLockEnabledEnabled,
-		Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]any)),
-	}
-
-	input := &s3.PutObjectLockConfigurationInput{
-		Bucket:                  aws.String(bucket),
-		ObjectLockConfiguration: lockConfig,
-	}
-
-	_, err = conn.PutObjectLockConfiguration(ctx, input)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error updating Object bucket lock configuration (%s): %w", d.Id(), err))
-	}
-
-	return resourceObjectLockConfigurationRead(ctx, d, m)
+	r.readInto(ctx, &state, s3Client, region, bucket, &resp.Diagnostics, false)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func (r *BucketLockConfigurationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan bucketLockConfigurationModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	input := &s3.PutObjectLockConfigurationInput{
+	region, bucket, s3Client, err := r.clientFromState(ctx, plan.ID, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve S3 client", err.Error())
+
+		return
+	}
+
+	rule, err := expandBucketLockRule(ctx, plan.Rule, &resp.Diagnostics)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to expand lock configuration rule", err.Error())
+
+		return
+	}
+
+	_, err = s3Client.PutObjectLockConfiguration(ctx, &s3.PutObjectLockConfigurationInput{
+		Bucket: aws.String(bucket),
+		ObjectLockConfiguration: &s3Types.ObjectLockConfiguration{
+			ObjectLockEnabled: s3Types.ObjectLockEnabledEnabled,
+			Rule:              rule,
+		},
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error updating object bucket lock configuration", fmt.Errorf("error updating Object bucket lock configuration (%s): %w", plan.ID.ValueString(), err).Error())
+
+		return
+	}
+
+	r.readInto(ctx, &plan, s3Client, region, bucket, &resp.Diagnostics, true)
+
+	// preserve resolved region from plan/state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+func (r *BucketLockConfigurationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state bucketLockConfigurationModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, bucket, s3Client, err := r.clientFromState(ctx, state.ID, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve S3 client", err.Error())
+
+		return
+	}
+
+	_, err = s3Client.PutObjectLockConfiguration(ctx, &s3.PutObjectLockConfigurationInput{
 		Bucket: aws.String(bucket),
 		ObjectLockConfiguration: &s3Types.ObjectLockConfiguration{
 			ObjectLockEnabled: s3Types.ObjectLockEnabledEnabled,
 		},
-	}
-
-	_, err = conn.PutObjectLockConfiguration(ctx, input)
+	})
 
 	if errors.As(err, new(*s3Types.NoSuchBucket)) {
-		return nil
+		return
 	}
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error deleting Object bucket lock configuration (%s): %w", d.Id(), err))
-	}
+		resp.Diagnostics.AddError("Error deleting object bucket lock configuration", fmt.Errorf("error deleting Object bucket lock configuration (%s): %w", state.ID.ValueString(), err).Error())
 
-	return nil
-}
-
-func expandBucketLockConfigurationRule(l []any) *s3Types.ObjectLockRule {
-	if len(l) == 0 || l[0] == nil {
-		return nil
-	}
-
-	tfMap, ok := l[0].(map[string]any)
-	if !ok {
-		return nil
-	}
-
-	return &s3Types.ObjectLockRule{
-		DefaultRetention: expandBucketLockConfigurationRuleDefaultRetention(tfMap["default_retention"].([]any)),
+		return
 	}
 }
 
-func expandBucketLockConfigurationRuleDefaultRetention(l []any) *s3Types.DefaultRetention {
-	if len(l) == 0 || l[0] == nil {
-		return nil
+func (r *BucketLockConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func (r *BucketLockConfigurationResource) resolveBucketAndClient(ctx context.Context, bucketAttr, regionAttr, projectIDAttr types.String) (scw.Region, string, *s3.Client, error) {
+	region, err := meta.ExtractFrameworkRegion(regionAttr, r.meta.ScwClient())
+	if err != nil {
+		return "", "", nil, err
 	}
 
-	tfMap, ok := l[0].(map[string]any)
-	if !ok {
-		return nil
+	regionalID := regional.ExpandID(bucketAttr.ValueString())
+	bucket := regionalID.ID
+
+	if regionalID.Region != "" && regionalID.Region != region {
+		region = regionalID.Region
 	}
 
+	projectID, err := meta.ExtractFrameworkProjectID(projectIDAttr, r.meta.ScwClient())
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	s3Client, err := NewS3ClientFromMetaWithProjectID(ctx, r.meta, region.String(), projectID)
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	return region, bucket, s3Client, nil
+}
+
+func (r *BucketLockConfigurationResource) clientFromState(ctx context.Context, idAttr, projectIDAttr types.String) (scw.Region, string, *s3.Client, error) {
+	region, bucket, err := regional.ParseID(idAttr.ValueString())
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(projectIDAttr, r.meta.ScwClient())
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	s3Client, err := NewS3ClientFromMetaWithProjectID(ctx, r.meta, region.String(), projectID)
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	return region, bucket, s3Client, nil
+}
+
+func (r *BucketLockConfigurationResource) readInto(
+	ctx context.Context,
+	model *bucketLockConfigurationModel,
+	s3Client *s3.Client,
+	region scw.Region,
+	bucket string,
+	diags *diag.Diagnostics,
+	isNewResource bool,
+) {
+	if region != "" {
+		model.Region = types.StringValue(region.String())
+	}
+
+	output, err := s3Client.GetObjectLockConfiguration(ctx, &s3.GetObjectLockConfigurationInput{
+		Bucket: aws.String(bucket),
+	})
+	if !isNewResource && errors.As(err, new(*s3Types.NoSuchBucket)) {
+		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", model.ID.ValueString()))
+		diags.AddWarning("Bucket Lock Configuration not found", "Object Bucket Lock Configuration was not found, removing from state")
+
+		return
+	}
+
+	if output == nil {
+		if isNewResource {
+			diags.AddError("Error reading object bucket lock configuration", fmt.Errorf("error reading object bucket lock configuration (%s): empty output", model.ID.ValueString()).Error())
+
+			return
+		}
+
+		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", model.ID.ValueString()))
+		diags.AddWarning("Bucket Lock Configuration not found", "Object Bucket Lock Configuration was not found, removing from state")
+
+		return
+	}
+
+	if model.Bucket.IsNull() {
+		model.Bucket = types.StringValue(regional.NewIDString(region, bucket))
+	}
+
+	if output.ObjectLockConfiguration != nil {
+		ruleList, ruleDiags := flattenBucketLockRule(ctx, output.ObjectLockConfiguration.Rule)
+		diags.Append(ruleDiags...)
+		model.Rule = ruleList
+	} else {
+		empty, _ := flattenBucketLockRule(ctx, nil)
+		model.Rule = empty
+	}
+
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucket),
+	})
+	if err != nil {
+		diags.AddError("Couldn't read bucket acl", err.Error())
+
+		return
+	}
+
+	if acl != nil && acl.Owner != nil {
+		model.ProjectID = types.StringValue(aws.ToString(NormalizeOwnerID(acl.Owner.ID)))
+	}
+}
+
+func expandBucketLockRule(ctx context.Context, ruleList types.List, diags *diag.Diagnostics) (*s3Types.ObjectLockRule, error) {
+	if ruleList.IsNull() || ruleList.IsUnknown() {
+		return nil, nil
+	}
+
+	var rules []lockRuleModel
+	ddiags := ruleList.ElementsAs(ctx, &rules, false)
+	diags.Append(ddiags...)
+	if diags.HasError() {
+		return nil, nil
+	}
+
+	if len(rules) == 0 {
+		return nil, nil
+	}
+
+	var retentionModels []lockDefaultRetentionModel
+	rddiags := rules[0].DefaultRetention.ElementsAs(ctx, &retentionModels, false)
+	diags.Append(rddiags...)
+	if diags.HasError() {
+		return nil, nil
+	}
+
+	if len(retentionModels) == 0 {
+		return &s3Types.ObjectLockRule{}, nil
+	}
+
+	r := retentionModels[0]
 	result := &s3Types.DefaultRetention{
-		Mode: s3Types.ObjectLockRetentionMode(tfMap["mode"].(string)),
+		Mode: s3Types.ObjectLockRetentionMode(r.Mode.ValueString()),
 	}
 
-	if v, ok := tfMap["days"].(int); ok && v > 0 {
-		result.Days = aws.Int32(int32(v))
+	if !r.Days.IsNull() && !r.Days.IsUnknown() && r.Days.ValueInt64() > 0 {
+		result.Days = aws.Int32(int32(r.Days.ValueInt64()))
 	}
 
-	if v, ok := tfMap["years"].(int); ok && v > 0 {
-		result.Years = aws.Int32(int32(v))
+	if !r.Years.IsNull() && !r.Years.IsUnknown() && r.Years.ValueInt64() > 0 {
+		result.Years = aws.Int32(int32(r.Years.ValueInt64()))
 	}
 
-	return result
+	return &s3Types.ObjectLockRule{DefaultRetention: result}, nil
 }
 
-func flattenBucketLockConfigurationRule(i *s3Types.ObjectLockRule) []any {
-	if i == nil {
-		return []any{}
+func flattenBucketLockRule(ctx context.Context, rule *s3Types.ObjectLockRule) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	retentionModel := lockDefaultRetentionModel{}
+
+	if rule != nil && rule.DefaultRetention != nil {
+		retentionModel.Mode = types.StringValue(string(rule.DefaultRetention.Mode))
+
+		if rule.DefaultRetention.Days != nil {
+			retentionModel.Days = types.Int64Value(int64(aws.ToInt32(rule.DefaultRetention.Days)))
+		}
+
+		if rule.DefaultRetention.Years != nil {
+			retentionModel.Years = types.Int64Value(int64(aws.ToInt32(rule.DefaultRetention.Years)))
+		}
 	}
 
-	m := make(map[string]any)
+	retentionList, d := types.ListValueFrom(ctx, types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"mode":  types.StringType,
+			"days":  types.Int64Type,
+			"years": types.Int64Type,
+		},
+	}, []lockDefaultRetentionModel{retentionModel})
+	diags.Append(d...)
 
-	m["default_retention"] = flattenBucketLockConfigurationRuleDefaultRetention(i.DefaultRetention)
+	ruleModel := lockRuleModel{DefaultRetention: retentionList}
+	ruleList, d := types.ListValueFrom(ctx, types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"default_retention": retentionList.Type(ctx),
+		},
+	}, []lockRuleModel{ruleModel})
+	diags.Append(d...)
 
-	return []any{m}
-}
-
-func flattenBucketLockConfigurationRuleDefaultRetention(i *s3Types.DefaultRetention) []any {
-	if i == nil {
-		return []any{}
-	}
-
-	m := make(map[string]any)
-
-	m["mode"] = i.Mode
-
-	if i.Days != nil {
-		m["days"] = i.Days
-	}
-
-	if i.Years != nil {
-		m["years"] = i.Years
-	}
-
-	return []any{m}
+	return ruleList, diags
 }

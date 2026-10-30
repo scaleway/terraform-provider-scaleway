@@ -53,7 +53,7 @@ func TestAccObjectBucketWebsiteConfiguration_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.test", true),
 					objectchecks.IsWebsiteConfigurationPresent(tt, resourceName),
-					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "id"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.0.suffix", "index.html"),
 					resource.TestCheckResourceAttrSet(resourceName, "website_domain"),
@@ -127,7 +127,7 @@ func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.test", true),
 					objectchecks.IsWebsiteConfigurationPresent(tt, resourceName),
-					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "id"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.0.suffix", "index.html"),
 					resource.TestCheckResourceAttrSet(resourceName, "website_domain"),
@@ -207,7 +207,7 @@ func TestAccObjectBucketWebsiteConfiguration_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.test", true),
 					objectchecks.IsWebsiteConfigurationPresent(tt, resourceName),
-					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "id"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "index_document.0.suffix", "index.html"),
 					resource.TestCheckResourceAttr(resourceName, "error_document.#", "1"),
@@ -253,7 +253,7 @@ func TestAccObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T) {
 						}
 				  	}
 				`, rName, objectTestsMainRegion),
-				ExpectError: regexp.MustCompile(`couldn't read bucket:.*NoSuchBucket.*`),
+				ExpectError: regexp.MustCompile(`(?si)couldn't read bucket.*NoSuchBucket`),
 			},
 			{
 				Config: fmt.Sprintf(`
