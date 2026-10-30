@@ -414,6 +414,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 func (p *ScalewayProvider) Functions(_ context.Context) []func() function.Function {
 	return []func() function.Function{
 		functions.NewRegionFromID,
+		functions.NewZoneFromID,
 		functions.NewIDFromRegionalID,
 	}
 }
