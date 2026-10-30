@@ -53,6 +53,7 @@ type snapshotResourceModel struct {
 	Import    types.List     `tfsdk:"import"`
 	Export    types.List     `tfsdk:"export"`
 	Srn       types.String   `tfsdk:"srn"`
+	Status    types.String   `tfsdk:"status"`
 	Zone      types.String   `tfsdk:"zone"`
 	ProjectID types.String   `tfsdk:"project_id"`
 	Timeouts  timeouts.Value `tfsdk:"timeouts"`
@@ -140,6 +141,10 @@ func (r *SnapshotResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"srn": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The Scaleway Resource Name (SRN) of the snapshot",
+			},
+			"status": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The current status of the snapshot (available, in_use, error, ...)",
 			},
 			"zone": schema.StringAttribute{
 				Optional:            true,
@@ -613,6 +618,7 @@ func flattenBlockSnapshot(ctx context.Context, snapshot *block.Snapshot, referen
 		ProjectID: types.StringValue(snapshot.ProjectID),
 		Zone:      types.StringValue(snapshot.Zone.String()),
 		Srn:       types.StringValue(snapshot.Srn),
+		Status:    types.StringValue(snapshot.Status.String()),
 		Timeouts: timeouts.Value{Object: types.ObjectNull(map[string]attr.Type{
 			"create": types.StringType,
 			"delete": types.StringType,
