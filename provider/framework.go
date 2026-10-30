@@ -356,6 +356,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		partner.NewPartnerOrganizationLockAction,
 		partner.NewPartnerOrganizationUnlockAction,
 		partner.NewPartnerOrganizationRequestAdminRoleAction,
+    redis.NewClusterRenewCertificateAction,
 		rdb.NewDatabaseBackupExportAction,
 		rdb.NewDatabaseBackupRestoreAction,
 		rdb.NewInstanceCertificateRenewAction,
