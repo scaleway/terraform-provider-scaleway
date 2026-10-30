@@ -19,6 +19,10 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 
 {{ tffile "examples/resources/scaleway_instance_template/resource-with-volumes.tf" }}
 
+### With cloud-init
+
+{{ tffile "examples/resources/scaleway_instance_template/resource-with-cloud-init.tf" }}
+
 ### With scratch storage
 
 {{ tffile "examples/resources/scaleway_instance_template/resource-with-scratch-storage.tf" }}
@@ -77,6 +81,8 @@ The following arguments are supported:
 - `filesystem_ids` - (Optional) - The IDs of the filesystems to attach to the servers created using the template.
 
 - `windows_rdp_ssh_key_id` - (Optional) The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server. This will be repeated on all servers created using the template.
+
+- `cloud_init` - (Optional) The cloud-init configuration of the servers created using the template. Changing it updates the template in place; servers that already exist keep their configuration.
 
 - `zone` - (Defaults to provider `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the template should be created.
 

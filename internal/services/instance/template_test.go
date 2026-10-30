@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 	filetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file/testfuncs"
@@ -859,6 +860,118 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccInstanceTemplateResource_CloudInit(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !projectIDExists {
+		projectID = "105bdce1-64c0-48ab-899d-868455867ecf"
+	}
+
+	const (
+		cloudInit        = "#cloud-config\nruncmd:\n  - echo created\n"
+		updatedCloudInit = "#!/bin/bash\nset -e\necho updated\n"
+	)
+
+	var templateID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancetestfuncs.IsTemplateDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_template" "main" {
+						project_id  = %q
+						name        = "tf-test-acc-instance-tmpl-cloud-init"
+						server_type = "PRO2-M"
+						cloud_init  = %q
+					}`, projectID, cloudInit),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isTemplatePresent(tt, "scaleway_instance_template.main"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "cloud_init", cloudInit),
+					isTemplateCloudInitStored(tt, "scaleway_instance_template.main", cloudInit),
+				),
+			},
+			{
+				ResourceName:      "scaleway_instance_template.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_template" "main" {
+						project_id  = %q
+						name        = "tf-test-acc-instance-tmpl-cloud-init"
+						server_type = "PRO2-M"
+						cloud_init  = %q
+					}`, projectID, updatedCloudInit),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "cloud_init", updatedCloudInit),
+					isTemplateCloudInitStored(tt, "scaleway_instance_template.main", updatedCloudInit),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_template" "main" {
+						project_id  = %q
+						name        = "tf-test-acc-instance-tmpl-cloud-init"
+						server_type = "PRO2-M"
+					}`, projectID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
+					resource.TestCheckNoResourceAttr("scaleway_instance_template.main", "cloud_init"),
+					isTemplateCloudInitStored(tt, "scaleway_instance_template.main", ""),
+				),
+			},
+			{
+				ResourceName:      "scaleway_instance_template.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// isTemplateCloudInitStored checks the cloud-init configuration that the API returns for a template.
+// An empty want means that the template must have no cloud-init configuration.
+func isTemplateCloudInitStored(tt *acctest.TestTools, n string, want string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		api := instanceV2.NewAPI(tt.Meta.ScwClient())
+
+		zone, id, err := zonal.ParseID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		userData, err := api.GetTemplateCloudInit(&instanceV2.GetTemplateCloudInitRequest{
+			Zone:       zone,
+			TemplateID: id,
+		})
+		if err != nil {
+			if want == "" && httperrors.Is404(err) {
+				return nil
+			}
+
+			return err
+		}
+
+		if got := string(userData.Content); got != want {
+			return fmt.Errorf("template %s has cloud-init %q, want %q", rs.Primary.ID, got, want)
+		}
+
+		return nil
+	}
 }
 
 func isTemplatePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
