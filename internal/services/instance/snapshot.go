@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -113,6 +114,11 @@ func snapshotSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the creation of the snapshot",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the snapshot",
+		},
 		"zone":            zonal.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -176,10 +182,10 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	return setSnapshotState(d, snapshot)
+	return setSnapshotState(d, snapshot, m)
 }
 
-func setSnapshotState(d *schema.ResourceData, snapshot *instanceSDK.Snapshot) diag.Diagnostics {
+func setSnapshotState(d *schema.ResourceData, snapshot *instanceSDK.Snapshot, m any) diag.Diagnostics {
 	diags := handleDeprecatedSnapshotVolumeType(d)
 	if diags.HasError() {
 		return diags
@@ -189,6 +195,13 @@ func setSnapshotState(d *schema.ResourceData, snapshot *instanceSDK.Snapshot) di
 	_ = d.Set("created_at", snapshot.CreationDate.Format(time.RFC3339))
 	_ = d.Set("type", snapshot.VolumeType.String())
 	_ = d.Set("tags", snapshot.Tags)
+
+	srn, err := buildSRN(meta.ExtractScwClient(m), "instance", "snapshots", snapshot.Zone, snapshot.ID, snapshot.Srn)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("srn", srn)
 
 	if snapshot.BaseVolume != nil {
 		_ = d.Set("volume_id", zonal.NewIDString(snapshot.Zone, snapshot.BaseVolume.ID))
@@ -222,7 +235,7 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return setSnapshotState(d, snapshot.Snapshot)
+	return setSnapshotState(d, snapshot.Snapshot, m)
 }
 
 func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

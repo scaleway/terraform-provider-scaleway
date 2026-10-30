@@ -410,6 +410,11 @@ func serverSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: verify.IsUUIDOrEmpty(),
 			Description:      "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the server",
+		},
 		"zone":            zonal.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -694,6 +699,13 @@ func setServerState(ctx context.Context, d *schema.ResourceData, m any, api *ins
 	_ = d.Set("organization_id", server.Organization)
 	_ = d.Set("project_id", server.Project)
 	_ = d.Set("protected", server.Protected)
+
+	srn, err := buildSRN(meta.ExtractScwClient(m), "instance", "servers", zone, id, server.Srn)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("srn", srn)
 
 	// Image could be empty in an import context.
 	image := regional.ExpandID(d.Get("image").(string))
