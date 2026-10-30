@@ -2,6 +2,7 @@ package instance_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -44,8 +45,11 @@ func TestAccDataSourceVolume_Basic(t *testing.T) {
 				`, volumeName),
 				Check: resource.ComposeTestCheckFunc(
 					instancetestfuncs.IsVolumePresent(tt, "data.scaleway_instance_volume.test"),
+					resource.TestMatchResourceAttr("data.scaleway_instance_volume.test", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
 					resource.TestCheckResourceAttr("data.scaleway_instance_volume.test", "size_in_gb", "2"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_volume.test", "type", "l_ssd"),
+					instancetestfuncs.IsVolumePresent(tt, "data.scaleway_instance_volume.test2"),
+					resource.TestMatchResourceAttr("data.scaleway_instance_volume.test2", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
 				),
 			},
 		},

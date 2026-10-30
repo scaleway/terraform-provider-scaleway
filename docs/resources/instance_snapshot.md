@@ -94,6 +94,7 @@ In addition to all arguments above, the following attributes are exported:
 - `organization_id` - The organization ID the snapshot is associated with.
 - `project_id` - The project ID the snapshot is associated with.
 - `created_at` - The snapshot creation time.
+- `srn` - The Scaleway Resource Name (SRN) of the snapshot.
 
 ## Import
 

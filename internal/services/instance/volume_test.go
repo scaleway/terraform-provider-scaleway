@@ -27,6 +27,7 @@ func TestAccVolume_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					instancetestfuncs.IsVolumePresent(tt, "scaleway_instance_volume.test"),
+					resource.TestMatchResourceAttr("scaleway_instance_volume.test", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "size_in_gb", "20"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "tags.0", "test-terraform"),
 				),

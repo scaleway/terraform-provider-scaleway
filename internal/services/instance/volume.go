@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -96,6 +97,11 @@ func volumeSchema() map[string]*schema.Schema {
 			Default:     false,
 			Description: "If true, consider that this volume may have been migrated and no longer exists.",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the volume",
+		},
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
 		"zone":            zonal.Schema(),
@@ -148,16 +154,23 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return setVolumeState(d, volume)
+	return setVolumeState(d, volume, m)
 }
 
-func setVolumeState(d *schema.ResourceData, volume *instanceSDK.Volume) diag.Diagnostics {
+func setVolumeState(d *schema.ResourceData, volume *instanceSDK.Volume, m any) diag.Diagnostics {
 	_ = d.Set("name", volume.Name)
 	_ = d.Set("organization_id", volume.Organization)
 	_ = d.Set("project_id", volume.Project)
 	_ = d.Set("zone", volume.Zone)
 	_ = d.Set("type", volume.VolumeType.String())
 	_ = d.Set("tags", volume.Tags)
+
+	srn, err := buildSRN(meta.ExtractScwClient(m), "block", "volumes", volume.Zone, volume.ID, "")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("srn", srn)
 
 	_, fromSnapshot := d.GetOk("from_snapshot_id")
 	if !fromSnapshot {
@@ -213,7 +226,7 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	return setVolumeState(d, res.Volume)
+	return setVolumeState(d, res.Volume, m)
 }
 
 func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

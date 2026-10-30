@@ -2,6 +2,7 @@ package instance_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -47,8 +48,10 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 					}`, serverName),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "data.scaleway_instance_server.prod"),
+					resource.TestMatchResourceAttr("data.scaleway_instance_server.prod", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/servers/.+$`)),
 					resource.TestCheckResourceAttr("data.scaleway_instance_server.prod", "name", serverName),
 					instancechecks.IsServerPresent(tt, "data.scaleway_instance_server.stg"),
+					resource.TestMatchResourceAttr("data.scaleway_instance_server.stg", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/servers/.+$`)),
 					resource.TestCheckResourceAttr("data.scaleway_instance_server.stg", "name", serverName),
 				),
 			},

@@ -2,6 +2,7 @@ package instance_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -35,6 +36,7 @@ func TestAccServer_Minimal(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestMatchResourceAttr("scaleway_instance_server.base", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/servers/.+$`)),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-minimal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
