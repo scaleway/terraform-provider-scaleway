@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -21,8 +22,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/function_resource.md
+var functionResourceDescription string
+
 func ResourceFunction() *schema.Resource {
 	return &schema.Resource{
+		Description:   functionResourceDescription,
 		CreateContext: ResourceFunctionCreate,
 		ReadContext:   ResourceFunctionRead,
 		UpdateContext: ResourceFunctionUpdate,

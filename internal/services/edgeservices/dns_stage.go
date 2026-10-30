@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	_ "embed"
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/edge_services_dns_stage_resource.md
+var dnsstageResourceDescription string
+
 func ResourceDNSStage() *schema.Resource {
 	return &schema.Resource{
+		Description:   dnsstageResourceDescription,
 		CreateContext: ResourceDNSStageCreate,
 		ReadContext:   ResourceDNSStageRead,
 		UpdateContext: ResourceDNSStageUpdate,

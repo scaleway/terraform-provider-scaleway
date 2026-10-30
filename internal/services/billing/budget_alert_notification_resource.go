@@ -69,6 +69,7 @@ var budgetAlertNotificationTypeValidator = setvalidator.ExactlyOneOf(
 func (r *BudgetAlertNotificationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: budgetAlertNotificationResourceDescription,
+		Description:         budgetAlertNotificationResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"budget_alert_id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the budget alert to create notification for.",

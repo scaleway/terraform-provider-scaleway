@@ -2,6 +2,7 @@ package s2svpn
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/s2s_vpn_gateway_resource.md
+var vpngatewayResourceDescription string
+
 func ResourceVPNGateway() *schema.Resource {
 	return &schema.Resource{
+		Description:   vpngatewayResourceDescription,
 		CreateContext: ResourceVPNGatewayCreate,
 		ReadContext:   ResourceVPNGatewayRead,
 		UpdateContext: ResourceVPNGatewayUpdate,

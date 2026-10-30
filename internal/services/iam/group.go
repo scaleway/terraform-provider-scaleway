@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/iam_group_resource.md
+var groupResourceDescription string
+
 func ResourceGroup() *schema.Resource {
 	return &schema.Resource{
+		Description:   groupResourceDescription,
 		CreateContext: resourceIamGroupCreate,
 		ReadContext:   resourceIamGroupRead,
 		UpdateContext: resourceIamGroupUpdate,

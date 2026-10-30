@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/cockpit_source_resource.md
+var cockpitSourceResourceDescription string
+
 func ResourceCockpitSource() *schema.Resource {
 	return &schema.Resource{
+		Description:   cockpitSourceResourceDescription,
 		CreateContext: ResourceCockpitSourceCreate,
 		ReadContext:   ResourceCockpitSourceRead,
 		UpdateContext: ResourceCockpitSourceUpdate,
@@ -88,6 +93,11 @@ func sourceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The URL endpoint used for pushing data to the cockpit data source.",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the data source",
 		},
 		"project_id": account.ProjectIDSchema(),
 		"region":     regional.Schema(),
@@ -161,6 +171,7 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("push_url", pushURL)
+	_ = d.Set("srn", res.Srn)
 	_ = d.Set("retention_days", int(res.RetentionDays))
 
 	return nil

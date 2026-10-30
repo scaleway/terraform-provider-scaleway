@@ -3,6 +3,7 @@ package rdb
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"fmt"
 	"net"
 	"sort"
@@ -21,8 +22,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/rdb_acl_resource.md
+var aclResourceDescription string
+
 func ResourceACL() *schema.Resource {
 	return &schema.Resource{
+		Description:   aclResourceDescription,
 		CreateContext: ResourceACLCreate,
 		ReadContext:   ResourceRdbACLRead,
 		UpdateContext: ResourceACLUpdate,

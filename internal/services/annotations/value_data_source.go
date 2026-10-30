@@ -48,6 +48,7 @@ var annotationsValueDataSourceDescription string
 func (d *AnnotationsValueDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: annotationsValueDataSourceDescription,
+		Description:         annotationsValueDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"value_id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the annotation value to retrieve.",

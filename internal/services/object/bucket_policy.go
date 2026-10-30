@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+//go:embed descriptions/object_bucket_policy_resource.md
+var bucketPolicyResourceDescription string
+
 func ResourceBucketPolicy() *schema.Resource {
 	return &schema.Resource{
+		Description:   bucketPolicyResourceDescription,
 		CreateContext: resourceObjectBucketPolicyCreate,
 		ReadContext:   resourceObjectBucketPolicyRead,
 		UpdateContext: resourceObjectBucketPolicyCreate,

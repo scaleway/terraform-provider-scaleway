@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/cockpit_exporter_resource.md
+var cockpitExporterResourceDescription string
+
 func ResourceCockpitExporter() *schema.Resource {
 	return &schema.Resource{
+		Description:   cockpitExporterResourceDescription,
 		CreateContext: ResourceCockpitExporterCreate,
 		ReadContext:   ResourceCockpitExporterRead,
 		UpdateContext: ResourceCockpitExporterUpdate,
@@ -186,6 +191,11 @@ func exporterSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Date and time of the last update of the data export (RFC 3339 format)",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the data export",
+		},
 		"project_id": account.ProjectIDSchema(),
 		"region":     regional.Schema(),
 	}
@@ -291,6 +301,7 @@ func ResourceCockpitExporterRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("region", string(region))
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
+	_ = d.Set("srn", res.Srn)
 	_ = d.Set("exported_products", types.FlattenSliceString(res.ExportedProducts))
 
 	ds, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {

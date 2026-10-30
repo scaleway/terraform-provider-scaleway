@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
+
+//go:embed descriptions/cockpit_exporter_data_source.md
+var cockpitExporterDataSourceDescription string
 
 func DataSourceCockpitExporter() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(exporterSchema())
@@ -27,6 +31,7 @@ func DataSourceCockpitExporter() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region")
 
 	return &schema.Resource{
+		Description: cockpitExporterDataSourceDescription,
 		ReadContext: dataSourceCockpitExporterRead,
 		Schema:      dsSchema,
 	}
@@ -114,6 +119,7 @@ func flattenExporterWithProjectID(ctx context.Context, d *schema.ResourceData, a
 	_ = d.Set("region", region.String())
 	_ = d.Set("created_at", types.FlattenTime(exp.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(exp.UpdatedAt))
+	_ = d.Set("srn", exp.Srn)
 	_ = d.Set("exported_products", types.FlattenSliceString(exp.ExportedProducts))
 
 	ds, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {

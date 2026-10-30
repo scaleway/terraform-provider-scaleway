@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/edge_services_tls_stage_resource.md
+var tlsstageResourceDescription string
+
 func ResourceTLSStage() *schema.Resource {
 	return &schema.Resource{
+		Description:   tlsstageResourceDescription,
 		CreateContext: ResourceTLSStageCreate,
 		ReadContext:   ResourceTLSStageRead,
 		UpdateContext: ResourceTLSStageUpdate,

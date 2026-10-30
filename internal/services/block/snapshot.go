@@ -107,6 +107,7 @@ func (r *SnapshotResource) Metadata(_ context.Context, req resource.MetadataRequ
 func (r *SnapshotResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Scaleway Block Snapshot",
+		Description:         "Manages a Scaleway Block Snapshot",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

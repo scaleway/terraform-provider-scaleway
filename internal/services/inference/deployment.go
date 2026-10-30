@@ -2,6 +2,7 @@ package inference
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/inference_deployment_resource.md
+var deploymentResourceDescription string
+
 func ResourceDeployment() *schema.Resource {
 	return &schema.Resource{
+		Description:   deploymentResourceDescription,
 		CreateContext: ResourceDeploymentCreate,
 		ReadContext:   ResourceDeploymentRead,
 		UpdateContext: ResourceDeploymentUpdate,

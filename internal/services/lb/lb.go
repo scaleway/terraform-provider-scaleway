@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"net"
 	"strings"
@@ -25,12 +26,16 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/lb_resource.md
+var lbResourceDescription string
+
 const (
 	DefaultWaitLBRetryInterval = 30 * time.Second
 )
 
 func ResourceLb() *schema.Resource {
 	return &schema.Resource{
+		Description:   lbResourceDescription,
 		CreateContext: resourceLbCreate,
 		ReadContext:   resourceLbRead,
 		UpdateContext: resourceLbUpdate,

@@ -2,6 +2,7 @@ package opensearch
 
 import (
 	"context"
+	_ "embed"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/opensearch_deployment_resource.md
+var deploymentResourceDescription string
+
 func ResourceDeployment() *schema.Resource {
 	return &schema.Resource{
+		Description:   deploymentResourceDescription,
 		CreateContext: resourceDeploymentCreate,
 		ReadContext:   resourceDeploymentRead,
 		UpdateContext: resourceDeploymentUpdate,

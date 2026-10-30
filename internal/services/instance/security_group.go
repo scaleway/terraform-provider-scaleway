@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"sort"
 
@@ -19,8 +20,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance_security_group_resource.md
+var securityGroupResourceDescription string
+
 func ResourceSecurityGroup() *schema.Resource {
 	return &schema.Resource{
+		Description:   securityGroupResourceDescription,
 		CreateContext: ResourceInstanceSecurityGroupCreate,
 		ReadContext:   ResourceInstanceSecurityGroupRead,
 		UpdateContext: ResourceInstanceSecurityGroupUpdate,

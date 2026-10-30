@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,6 +10,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
+
+//go:embed descriptions/vpc_public_gateway_dhcp_resource.md
+var dhcpResourceDescription string
 
 const dhcpDeprecationMessage = "The 'dhcp' resource is deprecated and no longer functional. " +
 	"DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed. " +
@@ -18,6 +22,7 @@ const dhcpDeprecationMessage = "The 'dhcp' resource is deprecated and no longer 
 
 func ResourceDHCP() *schema.Resource {
 	return &schema.Resource{
+		Description:   dhcpResourceDescription,
 		CreateContext: resourceVPCPublicGatewayDHCPCreate,
 		ReadContext:   resourceVPCPublicGatewayDHCPRead,
 		UpdateContext: resourceVPCPublicGatewayDHCPUpdate,

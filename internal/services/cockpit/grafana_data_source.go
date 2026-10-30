@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/cockpit_grafana_data_source.md
+var cockpitGrafanaDataSourceDescription string
+
 func DataSourceCockpitGrafana() *schema.Resource {
 	return &schema.Resource{
+		Description: cockpitGrafanaDataSourceDescription,
 		ReadContext: dataSourceCockpitGrafanaRead,
 		SchemaFunc:  grafanaSchema,
 	}
@@ -33,6 +38,11 @@ func grafanaSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The URL to access the Grafana dashboard",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the Grafana instance",
 		},
 	}
 }
@@ -64,6 +74,7 @@ func dataSourceCockpitGrafanaRead(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(projectID)
 	_ = d.Set("project_id", projectID)
 	_ = d.Set("grafana_url", grafana.GrafanaURL)
+	_ = d.Set("srn", grafana.Srn)
 
 	return nil
 }

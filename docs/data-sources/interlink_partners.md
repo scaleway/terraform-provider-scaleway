@@ -42,3 +42,4 @@ data "scaleway_interlink_partners" "at_pops" {
     - `portal_url` - URL of the partner's portal.
     - `created_at` - Creation date.
     - `updated_at` - Last update date.
+    - `srn` - The Scaleway Resource Name (SRN) of the partner.
