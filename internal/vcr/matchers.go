@@ -105,7 +105,7 @@ func customS3BodyMatcher(r *http.Request, i cassette.Request) bool {
 		requestValues.Del(key)
 	}
 
-	return CompareFormBodies(requestValues, i.Form)
+	return CompareFormBodies(requestValues, i.Body)
 }
 
 // cassetteBodyMatcher is a custom matcher that checks equivalence of request bodies
@@ -161,7 +161,7 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 			requestValues.Del(key)
 		}
 
-		return CompareFormBodies(requestValues, cassette.Form)
+		return CompareFormBodies(requestValues, cassette.Body)
 	}
 
 	err = json.Unmarshal(requestBody, &requestJSON)

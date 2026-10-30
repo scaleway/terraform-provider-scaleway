@@ -99,10 +99,19 @@ func CompareJSONBodies(request, cassette map[string]any, strict bool) bool {
 	return true
 }
 
-// CompareFormBodies compare two given url.Values.
-// Returns true if both url.Values are equivalent. Callers must strip ignored
-// keys before calling.
-func CompareFormBodies(request, cassette url.Values) bool {
+// CompareFormBodies compares the request form values against the raw cassette
+// body. The cassette body is parsed as url.Values internally so that only body
+// parameters are compared — never URL query parameters (which go-vcr v4 merges
+// into cassette.Form, unlike v3's PostForm-only field). Callers must strip
+// ignored keys from the request values before calling.
+// ponytail: parsing cassette.Body instead of using cassette.Form insulates us
+// from recorder-side Form population changes; revisit if body needs non-form parsing.
+func CompareFormBodies(request url.Values, cassetteBody string) bool {
+	cassetteValues, err := url.ParseQuery(cassetteBody)
+	if err != nil {
+		return false
+	}
+
 	for key := range request {
 		requestValue, exists := request[key]
 		if !exists {
@@ -112,12 +121,12 @@ func CompareFormBodies(request, cassette url.Values) bool {
 			continue
 		}
 
-		if !CompareStringSlices(requestValue, cassette[key]) {
+		if !CompareStringSlices(requestValue, cassetteValues[key]) {
 			return false
 		}
 	}
 
-	for key, cassetteValue := range cassette {
+	for key, cassetteValue := range cassetteValues {
 		if _, exists := request[key]; !exists && cassetteValue != nil {
 			// Fails match if cassettes contains a field not in actual requests
 			// Fields should not disappear from requests unless a sdk breaking change

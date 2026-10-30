@@ -144,7 +144,7 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 			requestValues.Del(key)
 		}
 
-		return vcr.CompareFormBodies(requestValues, cassette.Form)
+		return vcr.CompareFormBodies(requestValues, cassette.Body)
 	}
 
 	err = json.Unmarshal(requestBody, &requestJSON)
