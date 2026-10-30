@@ -237,7 +237,7 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
 							}
 						)
 					}`, bucketName, objectTestsSecondaryRegion),
-				ExpectError: regexp.MustCompile(`error putting SCW bucket policy:.*NoSuchBucket.*The specified bucket does not exist`),
+				ExpectError: regexp.MustCompile(`error putting SCW bucket policy[\s\S]*NoSuchBucket[\s\S]*The specified[\s\S]*bucket does not exist`),
 			},
 		},
 	})

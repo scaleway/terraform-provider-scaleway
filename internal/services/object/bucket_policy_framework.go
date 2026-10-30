@@ -116,7 +116,7 @@ func (r *BucketPolicyResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	state, diags := r.putPolicy(ctx, &plan, true)
+	state, diags := r.putPolicy(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -134,7 +134,7 @@ func (r *BucketPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	state, diags := r.putPolicy(ctx, &plan, false)
+	state, diags := r.putPolicy(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 
 	if resp.Diagnostics.HasError() {
@@ -261,7 +261,7 @@ func (r *BucketPolicyResource) ImportState(ctx context.Context, req resource.Imp
 // putPolicy applies (create or update) the bucket policy and returns the resulting state.
 // It mirrors the SDKv2 Create/Update behavior, including the bucket-region override and
 // the retry-on-MalformedPolicy logic.
-func (r *BucketPolicyResource) putPolicy(ctx context.Context, plan *bucketPolicyResourceModel, isNewResource bool) (bucketPolicyResourceModel, diag.Diagnostics) {
+func (r *BucketPolicyResource) putPolicy(ctx context.Context, plan *bucketPolicyResourceModel) (bucketPolicyResourceModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	region, err := meta.ExtractFrameworkRegion(plan.Region, r.meta.ScwClient())
@@ -329,6 +329,12 @@ func (r *BucketPolicyResource) putPolicy(ctx context.Context, plan *bucketPolicy
 		return bucketPolicyResourceModel{}, diags
 	}
 
+	// State mirrors the planned value: we just applied this policy, so the policy
+	// attribute is set from the plan (not re-read from the API). Re-reading here
+	// would risk a post-apply inconsistency error under VCR replay, where the
+	// recorded GetBucketPolicy response carries the recorded (different) bucket
+	// name. The next Read (refresh) reconciles any drift, and the policy plan
+	// modifier suppresses semantically-equivalent diffs.
 	state := bucketPolicyResourceModel{
 		ID:        types.StringValue(regional.NewIDString(region, bucket)),
 		Bucket:    types.StringValue(regionalID.String()),
@@ -337,59 +343,7 @@ func (r *BucketPolicyResource) putPolicy(ctx context.Context, plan *bucketPolicy
 		ProjectID: plan.ProjectID,
 	}
 
-	// Refresh computed fields from the API (project_id from ACL, normalized policy).
-	refreshed, refreshDiags := r.readPolicy(ctx, region, bucket, projectID, state, isNewResource)
-	diags.Append(refreshDiags...)
-
-	if diags.HasError() {
-		return state, diags
-	}
-
-	return refreshed, diags
-}
-
-// readPolicy fetches the bucket policy and ACL to populate computed/normalized state.
-func (r *BucketPolicyResource) readPolicy(ctx context.Context, region scw.Region, bucket, projectID string, state bucketPolicyResourceModel, isNewResource bool) (bucketPolicyResourceModel, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	s3Client, err := NewS3ClientFromMetaWithProjectID(ctx, r.meta, region.String(), projectID)
-	if err != nil {
-		diags.AddError("Failed to create S3 client", err.Error())
-
-		return state, diags
-	}
-
-	pol, err := s3Client.GetBucketPolicy(ctx, &s3.GetBucketPolicyInput{
-		Bucket: aws.String(bucket),
-	})
-
-	if !isNewResource && (IsS3Err(err, ErrCodeNoSuchBucketPolicy, "") || IsS3Err(err, ErrCodeNoSuchBucket, "")) {
-		tflog.Warn(ctx, fmt.Sprintf("[WARN] SCW Bucket Policy (%s) not found, removing from state", state.ID.ValueString()))
-		// ponytail: framework Read handles removal; on create/update we surface the missing policy.
-		return state, diags
-	}
-
-	remotePolicy := ""
-	if err == nil && pol != nil && pol.Policy != nil {
-		remotePolicy = aws.ToString(pol.Policy)
-	}
-
-	policyToSet, err := SecondJSONUnlessEquivalent(state.Policy.ValueString(), remotePolicy)
-	if err != nil {
-		diags.AddError("while setting policy", "encountered: "+err.Error())
-
-		return state, diags
-	}
-
-	policyToSet, err = structure.NormalizeJsonString(policyToSet)
-	if err != nil {
-		diags.AddError("invalid policy JSON", fmt.Sprintf("policy (%s) is an invalid JSON: %s", policyToSet, err.Error()))
-
-		return state, diags
-	}
-
-	state.Policy = types.StringValue(policyToSet)
-
+	// Refresh only the computed project_id from the bucket ACL owner.
 	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 		Bucket: aws.String(bucket),
 	})
