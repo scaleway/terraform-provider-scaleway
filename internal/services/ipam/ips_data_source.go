@@ -183,10 +183,7 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m any) d
 		OrganizationID:   types.ExpandStringPtr(d.Get("organization_id")),
 	}
 
-	attached, attachedExists := d.GetOk("attached")
-	if attachedExists {
-		req.Attached = types.ExpandBoolPtr(attached)
-	}
+	req.Attached = types.ExpandBoolPtr(types.GetBool(d, "attached"))
 
 	ipType, ipTypeExist := d.GetOk("type")
 	if ipTypeExist {
