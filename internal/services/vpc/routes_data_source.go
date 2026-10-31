@@ -149,10 +149,7 @@ func DataSourceRoutesRead(ctx context.Context, d *schema.ResourceData, m any) di
 		NexthopResourceType:     vpc.RouteWithNexthopResourceType(d.Get("nexthop_resource_type").(string)),
 	}
 
-	isipv6, isipv6Exists := d.GetOk("is_ipv6")
-	if isipv6Exists {
-		req.IsIPv6 = types.ExpandBoolPtr(isipv6)
-	}
+	req.IsIPv6 = types.ExpandBoolPtr(types.GetBool(d, "is_ipv6"))
 
 	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListRoutesWithNexthopResponse, error) {
 		return routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx))
