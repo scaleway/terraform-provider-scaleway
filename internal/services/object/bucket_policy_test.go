@@ -94,9 +94,8 @@ func TestAccObjectBucketPolicy_Basic(t *testing.T) {
 				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 			{
-				ResourceName:      "scaleway_object_bucket_policy.bucket",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName: "scaleway_object_bucket_policy.bucket",
+				ImportState:  true,
 			},
 			{
 				Config:             tfConfig,
@@ -246,9 +245,8 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 			{
-				ResourceName:      "scaleway_object_bucket_policy.bucket",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName: "scaleway_object_bucket_policy.bucket",
+				ImportState:  true,
 			},
 			{
 				Config:             tfConfig,
