@@ -66,6 +66,7 @@ func (r *VolumeResource) Metadata(_ context.Context, req resource.MetadataReques
 
 func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description:         volumeResourceDescription,
 		MarkdownDescription: volumeResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

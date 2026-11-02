@@ -56,6 +56,7 @@ func (d *VolumeDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 
 func (d *VolumeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description:         volumeDataSourceDescription,
 		MarkdownDescription: volumeDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
