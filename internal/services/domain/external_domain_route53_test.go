@@ -130,8 +130,8 @@ func testAccPublishExternalDomainChallengeTXT(t *testing.T, resourceName, subdom
 			return fmt.Errorf("upsert route53 challenge TXT: %w", err)
 		}
 
-		// Give Route53 a short propagation window before the validation waiter starts.
-		time.Sleep(15 * time.Second)
+		// Fixed DNS propagation window before the validation waiter starts (record-only).
+		time.Sleep(15 * time.Second) // lintignore:R018
 
 		t.Cleanup(func() {
 			cleanupCtx := context.Background()

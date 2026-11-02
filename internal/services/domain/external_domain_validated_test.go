@@ -151,7 +151,7 @@ func testAccCheckExternalDomainDestroy(tt *acctest.TestTools) resource.TestCheck
 				}
 
 				lastErr = fmt.Errorf("external domain %s still exists", rs.Primary.ID)
-				time.Sleep(3 * time.Second)
+				time.Sleep(3 * time.Second) // lintignore:R018
 			}
 
 			if lastErr != nil {
