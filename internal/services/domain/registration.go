@@ -464,11 +464,22 @@ func contactSchema() map[string]*schema.Schema {
 			Type:     schema.TypeList,
 			Optional: true,
 			Computed: true,
-			Elem: &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Additional extension field specific to Dutch domains.",
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"legal_form": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Legal form of the contact (specific to Dutch domains).",
+					},
+					"legal_form_registration_number": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Registration number for the legal form (specific to Dutch domains).",
+					},
+				},
 			},
-			Description: "Extension details specific to Dutch domain registrations.",
+			Description: "Details specific to Dutch domain extensions.",
 		},
 	}
 }
@@ -645,14 +656,45 @@ func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m an
 		computedDSRecord = []any{}
 	}
 
-	_ = d.Set("domain_names", domainNames)
-	_ = d.Set("owner_contact_id", computedOwnerContactID)
-	_ = d.Set("owner_contact", computedOwnerContact)
-	_ = d.Set("administrative_contact", computedAdministrativeContact)
-	_ = d.Set("technical_contact", computedTechnicalContact)
-	_ = d.Set("auto_renew", computedAutoRenew)
-	_ = d.Set("dnssec", computedDnssec)
-	_ = d.Set("ds_record", computedDSRecord)
+	err = d.Set("domain_names", domainNames)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("owner_contact_id", computedOwnerContactID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("owner_contact", computedOwnerContact)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("administrative_contact", computedAdministrativeContact)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("technical_contact", computedTechnicalContact)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("auto_renew", computedAutoRenew)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("dnssec", computedDnssec)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("ds_record", computedDSRecord)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	// project_id is resolved from the API response; the import ID no longer carries it.
 	// A legacy "projectID/..." prefix is still tolerated as a fallback.
 	projectID := firstResp.ProjectID
@@ -662,7 +704,10 @@ func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m an
 		}
 	}
 
-	_ = d.Set("project_id", projectID)
+	err = d.Set("project_id", projectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	// When the ID segment is a task UUID (no dot), preserve it as task_id.
 	// In domain format, look up the task when task_id is missing so import by
@@ -674,7 +719,10 @@ func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m an
 
 	switch {
 	case idSegment != "" && !strings.Contains(idSegment, "."):
-		_ = d.Set("task_id", idSegment)
+		err = d.Set("task_id", idSegment)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	case d.Get("task_id").(string) == "":
 		// Do not filter by project_id: domain names are globally unique and a
 		// project filter would change the ListTasks query shape (breaks VCR and
@@ -685,7 +733,10 @@ func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m an
 		}
 
 		if task.ID != "" {
-			_ = d.Set("task_id", task.ID)
+			err = d.Set("task_id", task.ID)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
