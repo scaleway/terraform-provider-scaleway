@@ -68,6 +68,9 @@ func (r *BucketPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 			"bucket": schema.StringAttribute{
 				Required:    true,
 				Description: "The bucket's name or regional ID.",
+				PlanModifiers: []planmodifier.String{
+					regional.LocalityPlanModifier{},
+				},
 			},
 			"policy": schema.StringAttribute{
 				Required:    true,
@@ -172,7 +175,7 @@ func (r *BucketPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 		Bucket: aws.String(bucketName),
 	})
 
-	if IsS3Err(err, ErrCodeNoSuchBucket, "") || err == nil {
+	if err == nil || IsS3Err(err, ErrCodeNoSuchBucket, "") {
 		return
 	}
 
@@ -337,7 +340,7 @@ func (r *BucketPolicyResource) putPolicy(ctx context.Context, plan *bucketPolicy
 	// modifier suppresses semantically-equivalent diffs.
 	state := bucketPolicyResourceModel{
 		ID:        types.StringValue(regional.NewIDString(region, bucket)),
-		Bucket:    types.StringValue(regionalID.String()),
+		Bucket:    types.StringValue(regional.NewIDString(region, bucket)),
 		Policy:    types.StringValue(policy),
 		Region:    types.StringValue(region.String()),
 		ProjectID: plan.ProjectID,

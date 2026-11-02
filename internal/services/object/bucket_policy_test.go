@@ -106,6 +106,69 @@ func TestAccObjectBucketPolicy_Basic(t *testing.T) {
 	})
 }
 
+func TestAccObjectBucketPolicy_WithBucketName(t *testing.T) {
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-obp-with-bucket-name")
+
+	tfConfig := fmt.Sprintf(`
+		resource "scaleway_object_bucket" "bucket" {
+			name = %[1]q
+			region = %[2]q
+			tags = {
+				TestName = "TestAccScalewayObjectBucketPolicy_WithBucketName"
+			}
+		}
+
+		resource "scaleway_object_bucket_policy" "bucket" {
+			bucket = scaleway_object_bucket.bucket.name
+			policy = jsonencode(
+				{
+					Id = "MyPolicy"
+					Statement = [
+						{
+							Action = [
+								"s3:ListBucket",
+								"s3:GetObject",
+							]
+							Effect = "Allow"
+							Principal = {
+								SCW = "*"
+							}
+							Resource  = [
+								"%[1]s",
+								"%[1]s/*",
+							]
+							Sid = "GrantToEveryone"
+						},
+					]
+					Version = "2012-10-17"
+				}
+			)
+		}`, bucketName, objectTestsMainRegion)
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: tfConfig,
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.bucket", true),
+					resource.TestCheckResourceAttrPair("scaleway_object_bucket_policy.bucket", "region", "scaleway_object_bucket.bucket", "region"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_policy.bucket", "bucket", bucketName),
+				),
+			},
+			{
+				Config:   tfConfig,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-obp-with-bucket-id")
 
