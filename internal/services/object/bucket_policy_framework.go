@@ -259,6 +259,8 @@ func (r *BucketPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	state.Policy = types.StringValue(policyToSet)
+	state.Bucket = types.StringValue(regional.NewIDString(region, bucketName))
+	state.Region = types.StringValue(region.String())
 
 	state.ProjectID, resp.Diagnostics = appendProjectIDFromACL(ctx, s3Client, bucketName, resp.Diagnostics)
 
