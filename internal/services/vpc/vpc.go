@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/vpc_resource.md
+var vpcResourceDescription string
+
 func ResourceVPC() *schema.Resource {
 	return &schema.Resource{
+		Description:   vpcResourceDescription,
 		CreateContext: ResourceVPCCreate,
 		ReadContext:   ResourceVPCRead,
 		UpdateContext: ResourceVPCUpdate,

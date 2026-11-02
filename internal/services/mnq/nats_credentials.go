@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/mnq_nats_credentials_resource.md
+var natsCredentialsResourceDescription string
+
 func ResourceNatsCredentials() *schema.Resource {
 	return &schema.Resource{
+		Description:   natsCredentialsResourceDescription,
 		CreateContext: ResourceMNQNatsCredentialsCreate,
 		ReadContext:   ResourceMNQNatsCredentialsRead,
 		DeleteContext: ResourceMNQNatsCredentialsDelete,

@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/edge_services_pipeline_resource.md
+var pipelineResourceDescription string
+
 func ResourcePipeline() *schema.Resource {
 	return &schema.Resource{
+		Description:   pipelineResourceDescription,
 		CreateContext: ResourcePipelineCreate,
 		ReadContext:   ResourcePipelineRead,
 		UpdateContext: ResourcePipelineUpdate,

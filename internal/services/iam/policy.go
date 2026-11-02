@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"sync"
 
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/iam_policy_resource.md
+var policyResourceDescription string
+
 func ResourcePolicy() *schema.Resource {
 	return &schema.Resource{
+		Description:   policyResourceDescription,
 		CreateContext: resourceIamPolicyCreate,
 		ReadContext:   resourceIamPolicyRead,
 		UpdateContext: resourceIamPolicyUpdate,

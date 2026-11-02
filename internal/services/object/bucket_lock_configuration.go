@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+//go:embed descriptions/object_bucket_lock_configuration_resource.md
+var lockConfigurationResourceDescription string
+
 func ResourceLockConfiguration() *schema.Resource {
 	return &schema.Resource{
+		Description:   lockConfigurationResourceDescription,
 		CreateContext: resourceObjectLockConfigurationCreate,
 		ReadContext:   resourceObjectLockConfigurationRead,
 		UpdateContext: resourceObjectLockConfigurationUpdate,

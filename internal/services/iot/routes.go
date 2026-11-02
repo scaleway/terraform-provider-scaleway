@@ -2,6 +2,7 @@ package iot
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/iot_route_resource.md
+var routeResourceDescription string
+
 func ResourceRoute() *schema.Resource {
 	return &schema.Resource{
+		Description:   routeResourceDescription,
 		CreateContext: ResourceIotRouteCreate,
 		ReadContext:   ResourceIotRouteRead,
 		DeleteContext: ResourceIotRouteDelete,

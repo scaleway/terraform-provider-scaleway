@@ -47,3 +47,4 @@ In addition to all arguments above, the following attributes are exported:
 - `logo_url` - URL of the PoP's logo.
 - `available_link_bandwidths_mbps` - List of available bandwidth options in Mbps for hosted links.
 - `display_name` - Human-readable display name including location information.
+- `srn` - The Scaleway Resource Name (SRN) of the PoP.

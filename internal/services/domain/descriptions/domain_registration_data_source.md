@@ -1,0 +1,1 @@
+The `scaleway_domain_registration` data source retrieves information about an existing domain registration by domain name. Use it to get the `task_id` and `project_id` needed for importing a domain registration into Terraform state.

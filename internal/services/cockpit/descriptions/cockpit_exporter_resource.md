@@ -1,0 +1,1 @@
+The `scaleway_cockpit_exporter` resource allows you to create and manage [data exports](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#data-exports) in Scaleway's Cockpit. Data exports send metrics and logs from Scaleway products to external destinations like Datadog or OTLP-compatible endpoints.

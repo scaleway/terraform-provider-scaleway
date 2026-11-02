@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/function_trigger_resource.md
+var triggerResourceDescription string
+
 func ResourceTrigger() *schema.Resource {
 	return &schema.Resource{
+		Description:   triggerResourceDescription,
 		CreateContext: ResourceFunctionTriggerCreate,
 		ReadContext:   ResourceFunctionTriggerRead,
 		UpdateContext: ResourceFunctionTriggerUpdate,

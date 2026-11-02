@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/mnq_sqs_queue_resource.md
+var sqsqueueResourceDescription string
+
 func ResourceSQSQueue() *schema.Resource {
 	return &schema.Resource{
+		Description:   sqsqueueResourceDescription,
 		CreateContext: ResourceMNQSQSQueueCreate,
 		ReadContext:   ResourceMNQSQSQueueRead,
 		UpdateContext: ResourceMNQSQSQueueUpdate,

@@ -50,6 +50,7 @@ var budgetDataSourceDescription string
 func (d *BudgetDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: budgetDataSourceDescription,
+		Description:         budgetDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"budget_id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the budget to retrieve.",

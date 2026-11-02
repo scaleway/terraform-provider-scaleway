@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"regexp"
 	"time"
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/job_definition_resource.md
+var definitionResourceDescription string
+
 func ResourceDefinition() *schema.Resource {
 	return &schema.Resource{
+		Description:   definitionResourceDescription,
 		CreateContext: ResourceJobDefinitionCreate,
 		ReadContext:   ResourceJobDefinitionRead,
 		UpdateContext: ResourceJobDefinitionUpdate,

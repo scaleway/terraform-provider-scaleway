@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/edge_services_waf_stage_resource.md
+var wafstageResourceDescription string
+
 func ResourceWAFStage() *schema.Resource {
 	return &schema.Resource{
+		Description:   wafstageResourceDescription,
 		CreateContext: ResourceWAFStageCreate,
 		ReadContext:   ResourceWAFStageRead,
 		UpdateContext: ResourceWAFStageUpdate,

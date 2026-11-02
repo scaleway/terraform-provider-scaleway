@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 	"math"
 	"time"
 
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/lb_backend_resource.md
+var backendResourceDescription string
+
 func ResourceBackend() *schema.Resource {
 	return &schema.Resource{
+		Description:   backendResourceDescription,
 		CreateContext: resourceLbBackendCreate,
 		ReadContext:   resourceLbBackendRead,
 		UpdateContext: resourceLbBackendUpdate,

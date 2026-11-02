@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/rdb_read_replica_resource.md
+var readReplicaResourceDescription string
+
 func ResourceReadReplica() *schema.Resource {
 	return &schema.Resource{
+		Description:   readReplicaResourceDescription,
 		CreateContext: ResourceRdbReadReplicaCreate,
 		ReadContext:   ResourceRdbReadReplicaRead,
 		UpdateContext: ResourceRdbReadReplicaUpdate,

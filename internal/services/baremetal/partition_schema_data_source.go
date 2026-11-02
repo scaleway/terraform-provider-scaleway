@@ -2,6 +2,7 @@ package baremetal
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json/v2"
 	"errors"
 	"fmt"
@@ -16,6 +17,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/baremetal_partition_schema_data_source.md
+var partitionSchemaDataSourceDescription string
 
 const (
 	partitionSize     = 20000000000
@@ -36,6 +40,7 @@ const (
 
 func DataPartitionSchema() *schema.Resource {
 	return &schema.Resource{
+		Description: partitionSchemaDataSourceDescription,
 		ReadContext: dataPartitionSchemaRead,
 		SchemaFunc:  partitionSchema,
 	}

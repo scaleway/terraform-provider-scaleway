@@ -2,6 +2,7 @@ package iot
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/iot_device_data_source.md
+var deviceDataSourceDescription string
 
 func DataSourceDevice() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceDevice().SchemaFunc())
@@ -28,6 +32,7 @@ func DataSourceDevice() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: deviceDataSourceDescription,
 		ReadContext: DataSourceIotDeviceRead,
 		Schema:      dsSchema,
 	}

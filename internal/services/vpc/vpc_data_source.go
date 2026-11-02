@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,6 +15,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/vpc_data_source.md
+var vpcDataSourceDescription string
 
 func DataSourceVPC() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceVPC().SchemaFunc())
@@ -37,6 +41,7 @@ func DataSourceVPC() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: vpcDataSourceDescription,
 		Schema:      dsSchema,
 		ReadContext: DataSourceVPCRead,
 	}

@@ -58,6 +58,7 @@ var samlCertificateResourceDescription string
 func (r *SamlCertificateResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: samlCertificateResourceDescription,
+		Description:         samlCertificateResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"saml_id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the SAML configuration",

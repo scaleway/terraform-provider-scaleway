@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	_ "embed"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -9,6 +10,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
+
+//go:embed descriptions/domain_registration_data_source.md
+var registrationDataSourceDescription string
 
 func DataSourceRegistration() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(registrationSchema())
@@ -30,6 +34,7 @@ func DataSourceRegistration() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: registrationDataSourceDescription,
 		ReadContext: dataSourceRegistrationRead,
 		Schema:      dsSchema,
 	}
