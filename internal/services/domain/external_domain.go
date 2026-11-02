@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	_ "embed"
 	"log"
 	"strings"
 
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+//go:embed descriptions/domain_external_resource.md
+var externalDomainResourceDescription string
+
 func ResourceExternalDomain() *schema.Resource {
 	return &schema.Resource{
+		Description:   externalDomainResourceDescription,
 		CreateContext: resourceExternalDomainCreate,
 		ReadContext:   resourceExternalDomainRead,
 		DeleteContext: resourceExternalDomainDelete,
