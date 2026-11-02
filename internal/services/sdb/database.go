@@ -45,17 +45,17 @@ type DatabaseResource struct {
 }
 
 type databaseResourceModel struct {
+	Timeouts           timeouts.Value `tfsdk:"timeouts"`
 	ID                 types.String   `tfsdk:"id"`
 	Name               types.String   `tfsdk:"name"`
-	MaxCPU             types.Int64    `tfsdk:"max_cpu"`
-	MinCPU             types.Int64    `tfsdk:"min_cpu"`
 	Endpoint           types.String   `tfsdk:"endpoint"`
 	Version            types.String   `tfsdk:"version"`
 	VersionEndOfLifeAt types.String   `tfsdk:"version_end_of_life_at"`
 	SRN                types.String   `tfsdk:"srn"`
 	Region             types.String   `tfsdk:"region"`
 	ProjectID          types.String   `tfsdk:"project_id"`
-	Timeouts           timeouts.Value `tfsdk:"timeouts"`
+	MaxCPU             types.Int64    `tfsdk:"max_cpu"`
+	MinCPU             types.Int64    `tfsdk:"min_cpu"`
 }
 
 type databaseResourceIdentityModel = identityfw.RegionalIdentity
