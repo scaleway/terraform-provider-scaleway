@@ -14,11 +14,12 @@ var SensitiveFields = map[string]any{
 	"api_key":       "00000000000000000000000000000000",
 	"secret_key":    "00000000-0000-0000-0000-000000000000",
 	"secret":        "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-	"token":         "xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx",
-	"password":      "xxxxxxxx",
-	"new_password":  "xxxxxxxx",
-	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-	"email":         "tf_test@example.com",
+	"token":            "xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx",
+	"validation_token": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+	"password":         "xxxxxxxx",
+	"new_password":     "xxxxxxxx",
+	"authorization":    "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+	"email":            "tf_test@example.com",
 }
 
 // LeakCheckFields: fields checked on request body only (responses ignored).

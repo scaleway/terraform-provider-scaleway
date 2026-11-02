@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -77,7 +78,7 @@ func resourceExternalDomainValidatedRead(ctx context.Context, d *schema.Resource
 
 	resp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{Domain: d.Id()}, scw.WithContext(ctx))
 	if err != nil {
-		if httperrors.Is404(err) {
+		if httperrors.Is404(err) || (httperrors.Is403(err) && strings.Contains(err.Error(), "not found")) {
 			log.Printf("[WARN] domain external domain (%s) not found, removing from state", d.Id())
 			d.SetId("")
 
@@ -95,10 +96,13 @@ func resourceExternalDomainValidatedRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("project_id", resp.ProjectID)
 	_ = d.Set("organization_id", resp.OrganizationID)
 
+	nsServers := []string{}
 	if len(resp.DNSZones) > 0 {
-		if err := d.Set("ns_servers", resp.DNSZones[0].NsDefault); err != nil {
-			return diag.FromErr(err)
-		}
+		nsServers = resp.DNSZones[0].NsDefault
+	}
+
+	if err := d.Set("ns_servers", nsServers); err != nil {
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("validated", resp.Status == domain.DomainStatusActive)

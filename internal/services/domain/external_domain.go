@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -53,6 +54,7 @@ func externalDomainSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Description: "The validation token for the domain.",
 			Computed:    true,
+			Sensitive:   true,
 		},
 	}
 }
@@ -133,10 +135,13 @@ func readExternalDomainIntoState(ctx context.Context, d *schema.ResourceData, re
 	_ = d.Set("project_id", resp.ProjectID)
 	_ = d.Set("organization_id", resp.OrganizationID)
 
+	nsServers := []string{}
 	if len(resp.DNSZones) > 0 {
-		if err := d.Set("ns_servers", resp.DNSZones[0].NsDefault); err != nil {
-			return resp, diag.FromErr(err)
-		}
+		nsServers = resp.DNSZones[0].NsDefault
+	}
+
+	if err := d.Set("ns_servers", nsServers); err != nil {
+		return resp, diag.FromErr(err)
 	}
 
 	_ = d.Set("status", resp.Status.String())
@@ -145,10 +150,6 @@ func readExternalDomainIntoState(ctx context.Context, d *schema.ResourceData, re
 }
 
 func resourceExternalDomainDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	if d.Get("status") != "active" {
-		return diag.Errorf("cannot delete domain with status %s", d.Get("status"))
-	}
-
 	registrarAPI := NewRegistrarDomainAPI(m)
 
 	_, err := registrarAPI.DeleteExternalDomain(&domain.RegistrarAPIDeleteExternalDomainRequest{
@@ -160,6 +161,20 @@ func resourceExternalDomainDelete(ctx context.Context, d *schema.ResourceData, m
 			d.SetId("")
 
 			return nil
+		}
+
+		// DELETE can return 403 "domain not found" both when the domain is gone and
+		// when it is still checking (API refuses delete). Confirm with Get.
+		if httperrors.Is403(err) && strings.Contains(err.Error(), "not found") {
+			_, getErr := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+				Domain: d.Id(),
+			}, scw.WithContext(ctx))
+			if getErr != nil && (httperrors.Is404(getErr) || (httperrors.Is403(getErr) && strings.Contains(getErr.Error(), "not found"))) {
+				log.Printf("[WARN] domain external domain (%s) not found, removing from state", d.Id())
+				d.SetId("")
+
+				return nil
+			}
 		}
 
 		return diag.FromErr(err)
