@@ -340,7 +340,7 @@ func (r *BucketPolicyResource) putPolicy(ctx context.Context, plan *bucketPolicy
 	// modifier suppresses semantically-equivalent diffs.
 	state := bucketPolicyResourceModel{
 		ID:        types.StringValue(regional.NewIDString(region, bucket)),
-		Bucket:    types.StringValue(regional.NewIDString(region, bucket)),
+		Bucket:    plan.Bucket,
 		Policy:    types.StringValue(policy),
 		Region:    types.StringValue(region.String()),
 		ProjectID: plan.ProjectID,

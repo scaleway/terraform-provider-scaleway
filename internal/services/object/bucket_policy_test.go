@@ -120,6 +120,7 @@ func TestAccObjectBucketPolicy_WithBucketName(t *testing.T) {
 
 		resource "scaleway_object_bucket_policy" "bucket" {
 			bucket = scaleway_object_bucket.bucket.name
+			region = %[2]q
 			policy = jsonencode(
 				{
 					Id = "MyPolicy"
