@@ -161,10 +161,12 @@ func TestAccObjectBucketPolicy_WithBucketName(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_object_bucket_policy.bucket", "region", "scaleway_object_bucket.bucket", "region"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_policy.bucket", "bucket", bucketName),
 				),
+				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 			{
-				Config:   tfConfig,
-				PlanOnly: true,
+				Config:             tfConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: !*acctest.UpdateCassettes,
 			},
 		},
 	})
