@@ -35,6 +35,7 @@ func TestAccDomainExternalDomainValidated_Basic(t *testing.T) {
 
 	if *acctest.UpdateCassettes {
 		recordedDomain := domainName
+
 		t.Cleanup(func() {
 			_ = acctest.AnonymizeCassetteForTest(t, "")
 			scrubExternalDomainInCassette(t, recordedDomain, testExternalDomainDefault)
