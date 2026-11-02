@@ -112,16 +112,15 @@ func CompareFormBodies(request url.Values, cassetteBody string) bool {
 		return false
 	}
 
-	for key := range request {
-		requestValue, exists := request[key]
-		if !exists {
-			// Actual request may contain a field that does not exist in the cassette
-			// New fields can appear in requests with new API features
-			// We do not want to generate new cassettes for each new feature
+	for key, requestValue := range request {
+		cassetteValue, ok := cassetteValues[key]
+		if !ok {
+			// New fields can appear because of new features from the API, don't
+			// generate new cassettes in these cases
 			continue
 		}
 
-		if !CompareStringSlices(requestValue, cassetteValues[key]) {
+		if !CompareStringSlices(requestValue, cassetteValue) {
 			return false
 		}
 	}

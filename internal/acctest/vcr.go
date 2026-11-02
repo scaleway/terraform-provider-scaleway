@@ -9,14 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -66,28 +63,17 @@ var BodyMatcherIgnore = []string{
 	"new_password",
 }
 
+// BuildCassetteName returns a valid filename path based on the test name and suffix.
+// Delegates to internal/vcr to keep a single implementation.
 func BuildCassetteName(testName string, pkgFolder string, suffix string) string {
-	specialChars := regexp.MustCompile(`[\\?%*:|"<>. ]`)
-
-	// Replace nested tests separators.
-	fileName := strings.ReplaceAll(testName, "/", "-")
-
-	fileName = strcase.ToBashArg(fileName)
-
-	// Replace special characters.
-	fileName = specialChars.ReplaceAllLiteralString(fileName, "") + suffix
-
-	// Remove prefix to simplify
-	fileName = strings.TrimPrefix(fileName, "test-acc-")
-
-	return filepath.Join(pkgFolder, "testdata", fileName)
+	return vcr.BuildCassetteName(testName, pkgFolder, suffix)
 }
 
 // getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
 func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
 	t.Helper()
 
-	return BuildCassetteName(t.Name(), pkgFolder, suffix)
+	return vcr.BuildCassetteName(t.Name(), pkgFolder, suffix)
 }
 
 // cassetteMatcher is a custom matcher that will juste check equivalence of request bodies
