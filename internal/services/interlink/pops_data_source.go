@@ -102,6 +102,11 @@ func DataSourcePops() *schema.Resource {
 							Computed:    true,
 							Description: "Region of the PoP",
 						},
+						"srn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Scaleway Resource Name (SRN) of the PoP",
+						},
 					},
 				},
 			},

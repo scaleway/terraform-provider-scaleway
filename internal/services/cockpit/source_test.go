@@ -3,6 +3,7 @@ package cockpit_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -41,6 +42,7 @@ func TestAccCockpitSource_Basic_metrics(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isSourcePresent(tt, "scaleway_cockpit_source.main"),
+					resource.TestMatchResourceAttr("scaleway_cockpit_source.main", "srn", regexp.MustCompile(`^srn://cockpit\..+/regions/.+/data-sources/.+$`)),
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "name", "my-source"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "type", "metrics"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_source.main", "region", "fr-par"),

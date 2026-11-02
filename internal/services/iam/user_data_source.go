@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/iam_user_data_source.md
+var userDataSourceDescription string
+
 func DataSourceUser() *schema.Resource {
 	return &schema.Resource{
+		Description: userDataSourceDescription,
 		ReadContext: DataSourceIamUserRead,
 		SchemaFunc:  dataSourceUserSchema,
 	}

@@ -63,6 +63,7 @@ func (d *SnapshotsDataSource) Metadata(_ context.Context, req datasource.Metadat
 func (d *SnapshotsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Lists Scaleway Block Storage snapshots.",
+		Description:         "Lists Scaleway Block Storage snapshots.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Optional:            true,

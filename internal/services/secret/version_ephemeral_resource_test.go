@@ -38,89 +38,115 @@ func TestAccEphemeralResourceSecretVersion_Basic(t *testing.T) {
 			{
 				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
 				Config: fmt.Sprintf(`
-				resource "scaleway_secret" "main" {
-				  name        = "%[1]s"
-				  description = "%[2]s"
-				  tags        = ["devtools", "provider", "terraform"]
-				}
+					resource "scaleway_secret" "main" {
+					  name        = "%[1]s"
+					  description = "%[2]s"
+					  tags        = ["devtools", "provider", "terraform"]
+					}
 
-				resource "scaleway_secret_version" "v1" {
-				  description = "version1"
-				  secret_id   = scaleway_secret.main.id
-				  data_wo        = "%[3]s"
-				  data_wo_version = 1
-				  depends_on = [scaleway_secret.main]
-				}
+					resource "scaleway_secret_version" "latest" {
+					  description = "version1"
+					  secret_id   = scaleway_secret.main.id
+					  data_wo        = "%[3]s"
+					  data_wo_version = 1
+					}
 
-				resource "scaleway_secret_version" "v2" {
-				  description = "version2"
-				  secret_id   = scaleway_secret.main.id
-				  data_wo        = "%[4]s"
-				  data_wo_version = 2
-				  depends_on = [scaleway_secret_version.v1]
-				}
+					ephemeral "scaleway_secret_version" "data" {
+					  secret_id = scaleway_secret.main.id
+					  revision  = scaleway_secret_version.latest.revision
+					}
 
-				ephemeral "scaleway_secret_version" "data_v1" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "1"
-				  depends_on = [scaleway_secret_version.v1]
-				}
+					provider "echo" {
+					  data  = ephemeral.scaleway_secret_version.data
+					}
 
-				ephemeral "scaleway_secret_version" "data_v2" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "2"
-				  depends_on = [scaleway_secret_version.v2]
-				}
-
-				ephemeral "scaleway_secret_version" "data_latest" {
-				  secret_id = scaleway_secret.main.id
-				  revision  = "latest"
-				  depends_on = [scaleway_secret_version.v2]
-				}
-
-				provider "echo" {
-				  alias = "v1"
-				  data  = ephemeral.scaleway_secret_version.data_v1
-				}
-
-				provider "echo" {
-				  alias = "v2"
-				  data  = ephemeral.scaleway_secret_version.data_v2
-				}
-
-				provider "echo" {
-				  alias  = "latest"
-				  data   = ephemeral.scaleway_secret_version.data_latest
-				}
-
-				resource "echo" "test_v1" {
-				  provider = echo.v1
-				}
-
-				resource "echo" "test_v2" {
-				  provider = echo.v2
-				}
-
-				resource "echo" "test_latest" {
-				  provider = echo.latest
-				}
-				`, secretName, secretDescription, secretVersionData, secretVersionDataV2),
+					resource "echo" "v1" {}
+				`, secretName, secretDescription, secretVersionData),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("echo.test_v1", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionData)))),
-					statecheck.ExpectKnownValue("echo.test_v2", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionDataV2)))),
-					statecheck.ExpectKnownValue("echo.test_latest", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionDataV2)))),
+					statecheck.ExpectKnownValue("echo.v1", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionData)))),
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
-					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v2"),
+					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.latest"),
 					// Ensure data_wo (and data) and ephemeral secret_version are not in state
-					acctest.CheckAttributeNotInState("scaleway_secret_version.v1", "data_wo"),
-					acctest.CheckAttributeNotInState("scaleway_secret_version.v1", "data"),
-					acctest.CheckAttributeNotInState("scaleway_secret_version.v2", "data_wo"),
-					acctest.CheckAttributeNotInState("scaleway_secret_version.v2", "data"),
-					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_v1"),
-					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_v2"),
-					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_latest"),
+					acctest.CheckAttributeNotInState("scaleway_secret_version.latest", "data_wo"),
+					acctest.CheckAttributeNotInState("scaleway_secret_version.latest", "data"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data"),
+				),
+			},
+			{
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
+				Config: fmt.Sprintf(`
+					resource "scaleway_secret" "main" {
+					  name        = "%[1]s"
+					  description = "%[2]s"
+					  tags        = ["devtools", "provider", "terraform"]
+					}
+
+					resource "scaleway_secret_version" "latest" {
+					  description = "version2"
+					  secret_id   = scaleway_secret.main.id
+					  data_wo        = "%[3]s"
+					  data_wo_version = 2
+					}
+
+					ephemeral "scaleway_secret_version" "data" {
+					  secret_id = scaleway_secret.main.id
+					  revision  = scaleway_secret_version.latest.revision
+					}
+
+					provider "echo" {
+					  data  = ephemeral.scaleway_secret_version.data
+					}
+
+					resource "echo" "v2" {}
+				`, secretName, secretDescription, secretVersionDataV2),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.v2", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionDataV2)))),
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.latest"),
+					// Ensure data_wo (and data) and ephemeral secret_version are not in state
+					acctest.CheckAttributeNotInState("scaleway_secret_version.latest", "data_wo"),
+					acctest.CheckAttributeNotInState("scaleway_secret_version.latest", "data"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data"),
+				),
+			},
+			{
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
+				Config: fmt.Sprintf(`
+					resource "scaleway_secret" "main" {
+					  name        = "%[1]s"
+					  description = "%[2]s"
+					  tags        = ["devtools", "provider", "terraform"]
+					}
+
+					resource "scaleway_secret_version" "latest" {
+					  description = "version2"
+					  secret_id   = scaleway_secret.main.id
+					  data_wo        = "%[3]s"
+					  data_wo_version = 2
+					}
+
+					ephemeral "scaleway_secret_version" "data" {
+					  secret_id = scaleway_secret.main.id
+					  revision  = scaleway_secret_version.latest.revision
+					}
+
+					provider "echo" {
+					  data  = ephemeral.scaleway_secret_version.data
+					}
+
+					resource "echo" "latest" {}
+				`, secretName, secretDescription, secretVersionDataV2),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.latest", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionDataV2)))),
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.latest"),
+					// Ensure data_wo (and data) and ephemeral secret_version are not in state
+					acctest.CheckAttributeNotInState("scaleway_secret_version.latest", "data_wo"),
+					acctest.CheckAttributeNotInState("scaleway_secret_version.latest", "data"),
+					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data"),
 				),
 			},
 		},

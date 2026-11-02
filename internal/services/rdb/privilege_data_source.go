@@ -2,12 +2,16 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
+
+//go:embed descriptions/rdb_privilege_data_source.md
+var privilegeDataSourceDescription string
 
 func DataSourcePrivilege() *schema.Resource {
 	// Generate datasource schema from resource
@@ -19,6 +23,7 @@ func DataSourcePrivilege() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region")
 
 	return &schema.Resource{
+		Description: privilegeDataSourceDescription,
 		ReadContext: DataSourceRDBPrivilegeRead,
 		Schema:      dsSchema,
 	}

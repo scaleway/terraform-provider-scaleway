@@ -114,6 +114,11 @@ func DataSourceDedicatedConnection() *schema.Resource {
 				Computed:    true,
 				Description: "Last modification date of the dedicated connection",
 			},
+			"srn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Scaleway Resource Name (SRN) of the dedicated connection",
+			},
 		},
 	}
 }
@@ -204,6 +209,7 @@ func setDedicatedConnectionState(d *schema.ResourceData, conn *interlink.Dedicat
 	_ = d.Set("demarcation_info", types.FlattenStringPtr(conn.DemarcationInfo))
 	_ = d.Set("created_at", types.FlattenTime(conn.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(conn.UpdatedAt))
+	_ = d.Set("srn", conn.Srn)
 	_ = d.Set("region", conn.Region.String())
 
 	bandwidths := make([]int, len(conn.AvailableLinkBandwidths))

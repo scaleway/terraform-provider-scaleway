@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/instance_placement_group_data_source.md
+var placementGroupDataSourceDescription string
 
 func DataSourcePlacementGroup() *schema.Resource {
 	// Generate datasource schema from resource
@@ -29,6 +33,7 @@ func DataSourcePlacementGroup() *schema.Resource {
 	dsSchema["project_id"].Optional = true
 
 	return &schema.Resource{
+		Description: placementGroupDataSourceDescription,
 		ReadContext: DataSourcePlacementGroupRead,
 		Schema:      dsSchema,
 	}

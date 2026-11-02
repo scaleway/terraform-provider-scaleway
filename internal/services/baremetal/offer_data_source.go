@@ -2,6 +2,7 @@ package baremetal
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"strings"
 
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/baremetal_offer_data_source.md
+var offerDataSourceDescription string
+
 func DataSourceOffer() *schema.Resource {
 	return &schema.Resource{
+		Description: offerDataSourceDescription,
 		ReadContext: dataSourceOfferRead,
 		SchemaFunc:  offerSchema,
 	}

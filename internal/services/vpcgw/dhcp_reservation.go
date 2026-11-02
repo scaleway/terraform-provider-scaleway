@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,8 +11,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
+//go:embed descriptions/vpc_public_gateway_dhcp_reservation_resource.md
+var dhcpreservationResourceDescription string
+
 func ResourceDHCPReservation() *schema.Resource {
 	return &schema.Resource{
+		Description:   dhcpreservationResourceDescription,
 		CreateContext: resourceVPCPublicGatewayDHCPReservationCreate,
 		ReadContext:   resourceVPCPublicGatewayDHCPReservationRead,
 		UpdateContext: resourceVPCPublicGatewayDHCPReservationUpdate,

@@ -49,6 +49,7 @@ var samlCertificateDataSourceDescription string
 func (d *SamlCertificateDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: samlCertificateDataSourceDescription,
+		Description:         samlCertificateDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"certificate_id": schema.StringAttribute{
 				Required:            true,

@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/edge_services_plan_resource.md
+var planResourceDescription string
+
 func ResourcePlan() *schema.Resource {
 	return &schema.Resource{
+		Description:   planResourceDescription,
 		CreateContext: ResourcePlanCreate,
 		ReadContext:   ResourcePlanRead,
 		UpdateContext: ResourcePlanUpdate,

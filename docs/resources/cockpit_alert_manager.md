@@ -94,6 +94,7 @@ This section lists the arguments that are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `alert_manager_url` - The URL of the alert manager.
+- `srn` - The Scaleway Resource Name (SRN) of the alert manager.
 
 ## Import
 

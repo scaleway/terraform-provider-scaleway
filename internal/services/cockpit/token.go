@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/cockpit_token_resource.md
+var tokenResourceDescription string
+
 func ResourceToken() *schema.Resource {
 	return &schema.Resource{
+		Description:   tokenResourceDescription,
 		CreateContext: ResourceCockpitTokenCreate,
 		ReadContext:   ResourceCockpitTokenRead,
 		DeleteContext: ResourceCockpitTokenDelete,
@@ -160,14 +165,7 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m a
 	var scopes []cockpit.TokenScope
 
 	if !scopesSet || len(rawScopes.([]any)) == 0 {
-		schema := resourceCockpitTokenScopes().Schema
-		for key, val := range schema {
-			if defaultVal, ok := val.Default.(bool); ok && defaultVal {
-				if scopeConst, found := scopeMapping[key]; found {
-					scopes = append(scopes, scopeConst)
-				}
-			}
-		}
+		scopes = defaultCockpitTokenScopes()
 	} else {
 		scopes = expandCockpitTokenScopes(rawScopes)
 	}

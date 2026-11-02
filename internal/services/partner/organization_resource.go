@@ -52,6 +52,7 @@ type partnerOrganizationResourceModel struct {
 	LockReason     types.String `tfsdk:"lock_reason_message"`
 	CreatedAt      types.String `tfsdk:"created_at"`
 	LockedAt       types.String `tfsdk:"locked_at"`
+	Srn            types.String `tfsdk:"srn"`
 }
 
 type partnerOrganizationResourceIdentityModel = framework.GlobalIdentity
@@ -66,6 +67,7 @@ var partnerOrganizationResourceDescription string
 func (r *PartnerOrganizationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: partnerOrganizationResourceDescription,
+		Description:         partnerOrganizationResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -133,6 +135,10 @@ func (r *PartnerOrganizationResource) Schema(ctx context.Context, req resource.S
 			"locked_at": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "Date of lock.",
+			},
+			"srn": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the organization.",
 			},
 		},
 	}
@@ -387,6 +393,7 @@ func convertOrganizationToState(organization *partner.Organization, partnerOrgan
 	data.Status = types.StringValue(string(organization.Status))
 	data.LockedBy = types.StringValue(string(organization.LockedBy))
 	data.LockReason = types.StringValue(organization.LockReasonMessage)
+	data.Srn = types.StringValue(organization.Srn)
 
 	if organization.PhoneNumber != nil {
 		data.PhoneNumber = types.StringValue(*organization.PhoneNumber)

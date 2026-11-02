@@ -2,6 +2,7 @@ package registry
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/registry_namespace_data_source.md
+var namespaceDataSourceDescription string
 
 func DataSourceNamespace() *schema.Resource {
 	// Generate datasource schema from resource
@@ -28,6 +32,7 @@ func DataSourceNamespace() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: namespaceDataSourceDescription,
 		ReadContext: DataSourceNamespaceRead,
 		Schema:      dsSchema,
 	}

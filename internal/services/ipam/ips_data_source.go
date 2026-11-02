@@ -2,6 +2,7 @@ package ipam
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/ipam_ips_data_source.md
+var ipsDataSourceDescription string
+
 func DataSourceIPs() *schema.Resource {
 	return &schema.Resource{
+		Description: ipsDataSourceDescription,
 		ReadContext: DataSourceIPAMIPsRead,
 		SchemaFunc:  ipsDataSourceSchema,
 	}

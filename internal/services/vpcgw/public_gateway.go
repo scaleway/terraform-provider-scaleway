@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/vpc_public_gateway_resource.md
+var publicGatewayResourceDescription string
+
 func ResourcePublicGateway() *schema.Resource {
 	return &schema.Resource{
+		Description:   publicGatewayResourceDescription,
 		CreateContext: ResourceVPCPublicGatewayCreate,
 		ReadContext:   ResourceVPCPublicGatewayRead,
 		UpdateContext: ResourceVPCPublicGatewayUpdate,

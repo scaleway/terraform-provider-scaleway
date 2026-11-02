@@ -582,6 +582,35 @@ func TestAccPolicy_ChangeRulePrincipal(t *testing.T) {
 	})
 }
 
+func TestAccPolicy_MixedScopeTypes(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+	if !orgIDExists {
+		t.Skip("No default organization ID found, skipping test")
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_mixed_scope_types"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["AllProductsFullAccess", "OrganizationReadOnly"]
+					  }
+					}
+					`, orgID),
+				ExpectError: regexp.MustCompile(`permission sets must be of the same scope type`),
+			},
+		},
+	})
+}
+
 func testAccCheckIamPolicyExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
