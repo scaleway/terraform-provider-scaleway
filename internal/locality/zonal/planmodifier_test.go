@@ -88,7 +88,7 @@ func TestLocalityPlanModifier_PlanModifyString(t *testing.T) {
 			}
 
 			switch {
-			case tc.wantPlanValue.Equal(types.StringNull()) && !tc.wantPlanValue.IsNull():
+			case !tc.wantPlanValue.IsNull():
 				// wantPlanValue set (non-null) → assert exact match.
 				if resp.PlanValue != tc.wantPlanValue {
 					t.Errorf("PlanValue = %q, want %q", resp.PlanValue, tc.wantPlanValue)
