@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -109,7 +110,7 @@ func testAccCheckExternalDomainExists(tt *acctest.TestTools, n string) resource.
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("no ID is set")
+			return errors.New("no ID is set")
 		}
 
 		registrarAPI := domain.NewRegistrarDomainAPI(tt.Meta)
@@ -136,6 +137,7 @@ func testAccCheckExternalDomainDestroy(tt *acctest.TestTools) resource.TestCheck
 
 			// DeleteExternalDomain can be eventually consistent.
 			var lastErr error
+
 			for range 30 {
 				_, err := registrarAPI.GetDomain(&domainSDK.RegistrarAPIGetDomainRequest{
 					Domain: rs.Primary.ID,
@@ -151,6 +153,7 @@ func testAccCheckExternalDomainDestroy(tt *acctest.TestTools) resource.TestCheck
 				}
 
 				lastErr = fmt.Errorf("external domain %s still exists", rs.Primary.ID)
+
 				time.Sleep(3 * time.Second) // lintignore:R018
 			}
 
