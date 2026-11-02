@@ -833,23 +833,11 @@ func TransitionSCWStorageClassValues() []string {
 	}
 }
 
-func SuppressEquivalentPolicyDiffs(k, old, newP string, _ *schema.ResourceData) bool {
-	tflog.Debug(context.Background(),
-		fmt.Sprintf("[DEBUG] suppress policy on key: %s, old: %s new: %s", k, old, newP))
+func policiesEquivalent(old, newP string) bool {
+	old = strings.TrimSpace(old)
+	newP = strings.TrimSpace(newP)
 
-	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "" {
-		return true
-	}
-
-	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(newP) == "" {
-		return true
-	}
-
-	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "{}" {
-		return true
-	}
-
-	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(newP) == "{}" {
+	if (old == "" || old == "{}") && (newP == "" || newP == "{}") {
 		return true
 	}
 
@@ -859,6 +847,13 @@ func SuppressEquivalentPolicyDiffs(k, old, newP string, _ *schema.ResourceData) 
 	}
 
 	return equivalent
+}
+
+func SuppressEquivalentPolicyDiffs(k, old, newP string, _ *schema.ResourceData) bool {
+	tflog.Debug(context.Background(),
+		fmt.Sprintf("[DEBUG] suppress policy on key: %s, old: %s new: %s", k, old, newP))
+
+	return policiesEquivalent(old, newP)
 }
 
 func SecondJSONUnlessEquivalent(old, newP string) (string, error) {

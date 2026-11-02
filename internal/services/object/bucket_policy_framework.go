@@ -4,12 +4,10 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -24,6 +22,24 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
+
+// appendProjectIDFromACL refreshes projectID from the bucket ACL owner.
+func appendProjectIDFromACL(ctx context.Context, s3Client *s3.Client, bucket string, diags diag.Diagnostics) (types.String, diag.Diagnostics) {
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucket),
+	})
+	if err != nil {
+		diags.AddWarning("Failed to read bucket ACL", err.Error())
+
+		return types.StringNull(), diags
+	}
+
+	if acl != nil && acl.Owner != nil && acl.Owner.ID != nil {
+		return types.StringValue(aws.ToString(NormalizeOwnerID(acl.Owner.ID))), diags
+	}
+
+	return types.StringNull(), diags
+}
 
 // Reuses the embedded description from bucket_policy.go (bucketPolicyResourceDescription).
 
@@ -244,15 +260,7 @@ func (r *BucketPolicyResource) Read(ctx context.Context, req resource.ReadReques
 
 	state.Policy = types.StringValue(policyToSet)
 
-	// Refresh project_id from the bucket ACL owner.
-	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
-		Bucket: aws.String(bucketName),
-	})
-	if err != nil {
-		resp.Diagnostics.AddWarning("Failed to read bucket ACL", err.Error())
-	} else if acl != nil && acl.Owner != nil && acl.Owner.ID != nil {
-		state.ProjectID = types.StringValue(aws.ToString(NormalizeOwnerID(acl.Owner.ID)))
-	}
+	state.ProjectID, resp.Diagnostics = appendProjectIDFromACL(ctx, s3Client, bucketName, resp.Diagnostics)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -332,12 +340,8 @@ func (r *BucketPolicyResource) putPolicy(ctx context.Context, plan *bucketPolicy
 		return bucketPolicyResourceModel{}, diags
 	}
 
-	// State mirrors the planned value: we just applied this policy, so the policy
-	// attribute is set from the plan (not re-read from the API). Re-reading here
-	// would risk a post-apply inconsistency error under VCR replay, where the
-	// recorded GetBucketPolicy response carries the recorded (different) bucket
-	// name. The next Read (refresh) reconciles any drift, and the policy plan
-	// modifier suppresses semantically-equivalent diffs.
+	// State mirrors plan rather than re-reading; the plan modifier
+	// suppresses equivalent-policy diffs and the next Read reconciles drift.
 	state := bucketPolicyResourceModel{
 		ID:        types.StringValue(regional.NewIDString(region, bucket)),
 		Bucket:    plan.Bucket,
@@ -346,15 +350,7 @@ func (r *BucketPolicyResource) putPolicy(ctx context.Context, plan *bucketPolicy
 		ProjectID: plan.ProjectID,
 	}
 
-	// Refresh only the computed project_id from the bucket ACL owner.
-	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
-		Bucket: aws.String(bucket),
-	})
-	if err != nil {
-		diags.AddWarning("Failed to read bucket ACL", err.Error())
-	} else if acl != nil && acl.Owner != nil && acl.Owner.ID != nil {
-		state.ProjectID = types.StringValue(aws.ToString(NormalizeOwnerID(acl.Owner.ID)))
-	}
+	state.ProjectID, diags = appendProjectIDFromACL(ctx, s3Client, bucket, diags)
 
 	return state, diags
 }
@@ -402,24 +398,7 @@ func (policyEquivalentPlanModifier) PlanModifyString(_ context.Context, req plan
 		return
 	}
 
-	old := req.StateValue.ValueString()
-	newP := req.PlanValue.ValueString()
-
-	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "" ||
-		strings.TrimSpace(old) == "{}" && strings.TrimSpace(newP) == "" ||
-		strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "{}" ||
-		strings.TrimSpace(old) == "{}" && strings.TrimSpace(newP) == "{}" {
-		resp.PlanValue = req.StateValue
-
-		return
-	}
-
-	equivalent, err := awspolicy.PoliciesAreEquivalent(old, newP)
-	if err != nil {
-		return
-	}
-
-	if equivalent {
+	if policiesEquivalent(req.StateValue.ValueString(), req.PlanValue.ValueString()) {
 		resp.PlanValue = req.StateValue
 	}
 }
