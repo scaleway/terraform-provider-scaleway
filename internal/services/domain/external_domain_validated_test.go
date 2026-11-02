@@ -17,12 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 )
 
-// TF_TEST_EXTERNAL_DOMAIN overrides the FQDN used when recording. Parent zone
-// must be on Route53 and not registered at Scaleway. Must match the cassette
-// FQDN on replay (default below matches the committed cassette).
+// TF_TEST_EXTERNAL_DOMAIN is the real FQDN used when recording (parent zone on
+// Route53, not registered at Scaleway). Replay uses the placeholder default,
+// which must match the committed cassette after scrub.
 const (
 	testExternalDomainEnv     = "TF_TEST_EXTERNAL_DOMAIN"
-	testExternalDomainDefault = "tf-tests-ext.devops.business"
+	testExternalDomainDefault = "tf-tests-ext.example.com"
 )
 
 func TestAccDomainExternalDomainValidated_Basic(t *testing.T) {
@@ -34,7 +34,11 @@ func TestAccDomainExternalDomainValidated_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	if *acctest.UpdateCassettes {
-		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+		recordedDomain := domainName
+		t.Cleanup(func() {
+			_ = acctest.AnonymizeCassetteForTest(t, "")
+			scrubExternalDomainInCassette(t, recordedDomain, testExternalDomainDefault)
+		})
 	}
 
 	log.Printf("Testing external domain validation for domain: %s", domainName)
@@ -100,6 +104,37 @@ func externalDomainTestParts(t *testing.T) (domainName, subdomain, dnsZone strin
 	}
 
 	return domainName, parts[0], parts[1]
+}
+
+// scrubExternalDomainInCassette replaces the recorded FQDN with the cassette
+// placeholder so real zones are not committed.
+func scrubExternalDomainInCassette(t *testing.T, from, to string) {
+	t.Helper()
+
+	if from == "" || from == to {
+		return
+	}
+
+	pkgFolder, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("scrub cassette: getwd: %v", err)
+	}
+
+	path := acctest.BuildCassetteName(t.Name(), pkgFolder, ".cassette") + ".yaml"
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("scrub cassette: read %s: %v", path, err)
+	}
+
+	updated := strings.ReplaceAll(string(data), from, to)
+	if updated == string(data) {
+		t.Fatalf("scrub cassette: %q not found in %s", from, path)
+	}
+
+	if err := os.WriteFile(path, []byte(updated), 0o600); err != nil {
+		t.Fatalf("scrub cassette: write %s: %v", path, err)
+	}
 }
 
 func testAccCheckExternalDomainExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
