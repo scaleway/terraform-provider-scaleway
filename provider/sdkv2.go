@@ -388,7 +388,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_opensearch_deployment":                              opensearch.DataSourceDeployment(),
 				"scaleway_object_bucket":                                      object.DataSourceBucket(),
 				"scaleway_object":                                             object.DataSourceObject(),
-				"scaleway_object_bucket_policy":                               object.DataSourceBucketPolicy(),
 				"scaleway_object_bucket_server_side_encryption_configuration": object.DataSourceBucketServerSideEncryptionConfiguration(),
 				"scaleway_rdb_acl":                                            rdb.DataSourceACL(),
 				"scaleway_rdb_database":                                       rdb.DataSourceDatabase(),
