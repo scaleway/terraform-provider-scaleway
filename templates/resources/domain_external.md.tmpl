@@ -7,7 +7,7 @@ page_title: "Scaleway: scaleway_domain_external"
 # Resource: scaleway_domain_external
 
 
-The `scaleway_domain_external_domain` resource allows you to register an external domain name to be managed by Scaleway.
+The `scaleway_domain_external` resource allows you to register an external domain name to be managed by Scaleway.
 This is useful when you want to use Scaleway DNS for a domain registered with another registrar.
 
 Once registered, you will receive a `validation_token` that you must add as a TXT record to your domain's current DNS configuration to prove ownership.
@@ -25,18 +25,21 @@ The following example registers an external domain and retrieves its validation 
 
 ## Argument Reference
 The following arguments are supported:
-- `domain` (Required, String): The domain name to be registered.
-- `organization_id` - (Optional) The organization ID. If not provided, the default organization configured in the provider is used.
-- `project_id` (Optional, String): The Scaleway project ID. If not provided, the default project id configured in the provider is used.
+- `domain` - (Required) The domain name to be registered.
+- `project_id` - (Defaults to Project ID specified in the [provider configuration](../index.md#arguments-reference) `project_id`) The ID of the Project associated with the domain.
+
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
-- `id`: The domain name.
-- `ns_servers`: List of NS servers for the domain once it is validated.
+- `id` - The domain name.
+- `organization_id` - The organization ID the domain is associated with.
+- `ns_servers` - List of NS servers for the domain once it is validated.
+- `status` - The status of the domain.
+- `validation_token` - (Sensitive) The TXT challenge token used to prove ownership of the domain.
 
 ## Import
 
 To import an existing external domain, use:
 
 ```bash
-terraform import scaleway_domain_external_domain.example example.com
+terraform import scaleway_domain_external.example example.com
 ```

@@ -57,7 +57,6 @@ resource "scaleway_domain_record" "ns" {
 The following arguments are supported:
 
 - `domain` - (Required) The domain name to be validated.
-- `organization_id` - (Optional) The organization ID. If not provided, the default organization configured in the provider is used.
 - `project_id` - (Defaults to Project ID specified in the [provider configuration](../index.md#arguments-reference) `project_id`) The ID of the Project associated with the domain.
 
 ## Attributes Reference
@@ -65,6 +64,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The domain name.
+- `organization_id` - The organization ID the domain is associated with.
 - `ns_servers` - The list of NS servers for the domain.
 - `validated` - Indicates if the domain has been validated by Scaleway.
 
@@ -74,8 +74,6 @@ The `timeouts` block allows you to specify a custom duration for the validation 
 The default timeout is 30 minutes.
 
 - `create` - (Defaults to 30 minutes) Limits how long Terraform waits for the domain to be validated.
-
-- `delete` - (Defaults to 30 minutes) Limits how long Terraform waits for the resource to be removed.
 
 ## Import
 

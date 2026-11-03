@@ -31,8 +31,6 @@ The following arguments are supported:
 
 - `domain` - (Required) The domain name to look up.
 
-- `organization_id` - (Optional) The organization ID the external domain belongs to. If not provided, the default organization configured in the provider is used.
-
 - `project_id` - (Defaults to Project ID specified in [the provider configuration](../index.md#arguments-reference)). The ID of the Scaleway Project the external domain belongs to. If not provided, the default project id configured in the provider is used.
 
 ## Attributes Reference
@@ -40,6 +38,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The domain name.
+
+- `organization_id` - The organization ID the external domain belongs to.
 
 - `ns_servers` - List of NS servers for the domain once it is validated.
 

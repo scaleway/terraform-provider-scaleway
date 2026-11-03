@@ -26,7 +26,6 @@ func ResourceExternalDomainValidated() *schema.Resource {
 		DeleteContext: resourceExternalDomainValidatedDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultDomainRegistrationTimeout),
-			Delete:  schema.DefaultTimeout(defaultDomainRegistrationTimeout),
 			Default: schema.DefaultTimeout(defaultDomainRegistrationTimeout),
 		},
 		Importer: &schema.ResourceImporter{

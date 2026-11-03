@@ -139,9 +139,19 @@ func waitForExternalDomainValidation(ctx context.Context, api *domain.RegistrarA
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForValidatedExternalDomain(&domain.WaitForValidatedExternalDomainRequest{
-		Domain:        domainName,
-		Timeout:       new(timeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	var validatedDomain *domain.Domain
+
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		var err error
+
+		validatedDomain, err = api.WaitForValidatedExternalDomain(&domain.WaitForValidatedExternalDomainRequest{
+			Domain:        domainName,
+			Timeout:       new(timeout),
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return validatedDomain, err
 }
