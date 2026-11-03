@@ -849,13 +849,6 @@ func policiesEquivalent(old, newP string) bool {
 	return equivalent
 }
 
-func SuppressEquivalentPolicyDiffs(k, old, newP string, _ *schema.ResourceData) bool {
-	tflog.Debug(context.Background(),
-		fmt.Sprintf("[DEBUG] suppress policy on key: %s, old: %s new: %s", k, old, newP))
-
-	return policiesEquivalent(old, newP)
-}
-
 func SecondJSONUnlessEquivalent(old, newP string) (string, error) {
 	// valid empty JSON is "{}" not "" so handle special case to avoid
 	// Error unmarshalling policy: unexpected end of JSON input
