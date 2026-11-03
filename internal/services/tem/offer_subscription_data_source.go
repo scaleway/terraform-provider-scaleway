@@ -169,8 +169,8 @@ func (d *OfferSubscriptionDataSource) Read(ctx context.Context, req datasource.R
 		Region: region,
 	}
 
-	if !config.OrganizationID.IsNull() && !config.OrganizationID.IsUnknown() && config.OrganizationID.ValueString() != "" {
-		listReq.OrganizationID = scwtypes.ExpandStringPtr(config.OrganizationID.ValueString())
+	if organizationID := config.OrganizationID.ValueString(); organizationID != "" {
+		listReq.OrganizationID = scwtypes.ExpandStringPtr(organizationID)
 	} else {
 		projectID, projectErr := meta.ExtractFrameworkProjectID(config.ProjectID, d.meta.ScwClient())
 		if projectErr != nil {
@@ -185,6 +185,8 @@ func (d *OfferSubscriptionDataSource) Read(ctx context.Context, req datasource.R
 	offer, err := d.api.ListOfferSubscriptions(listReq, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
+			resp.Diagnostics.AddError("TEM offer subscription not found", err.Error())
+
 			return
 		}
 
@@ -194,6 +196,11 @@ func (d *OfferSubscriptionDataSource) Read(ctx context.Context, req datasource.R
 	}
 
 	if len(offer.OfferSubscriptions) == 0 {
+		resp.Diagnostics.AddError(
+			"TEM offer subscription not found",
+			"no offer subscription found for the given project/organization",
+		)
+
 		return
 	}
 

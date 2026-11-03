@@ -21,7 +21,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -130,15 +129,12 @@ func (r *DomainValidationResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	region, err := meta.ExtractFrameworkRegion(plan.Region, r.meta.ScwClient())
+	region, domainUUID, err := regional.ResolveID(plan.DomainID.ValueString(), plan.Region.ValueString(), r.meta.ScwClient())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
+		resp.Diagnostics.AddError("Failed to resolve domain ID", err.Error())
 
 		return
 	}
-
-	domainIDStr := plan.DomainID.ValueString()
-	domainUUID := locality.ExpandID(domainIDStr)
 
 	domain, err := r.api.GetDomain(&tem.GetDomainRequest{
 		Region:   region,
@@ -154,10 +150,14 @@ func (r *DomainValidationResource) Create(ctx context.Context, req resource.Crea
 	timeout := time.Duration(duration) * time.Second
 
 	_ = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		domainCheck, _ := r.api.CheckDomain(&tem.CheckDomainRequest{
+		domainCheck, checkErr := r.api.CheckDomain(&tem.CheckDomainRequest{
 			Region:   region,
 			DomainID: domain.ID,
 		})
+		if checkErr != nil {
+			return retry.RetryableError(checkErr)
+		}
+
 		if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
 			return retry.RetryableError(errors.New("retry"))
 		}
@@ -165,11 +165,11 @@ func (r *DomainValidationResource) Create(ctx context.Context, req resource.Crea
 		return nil
 	})
 
-	domainCheck, _ := r.api.CheckDomain(&tem.CheckDomainRequest{
+	domainCheck, err := r.api.CheckDomain(&tem.CheckDomainRequest{
 		Region:   region,
 		DomainID: domain.ID,
 	})
-	if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
+	if err != nil || domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
 		resp.Diagnostics.AddError(
 			"Domain validation timed out",
 			fmt.Sprintf("domain validation did not complete in %d seconds", duration),
@@ -178,16 +178,9 @@ func (r *DomainValidationResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	identityRegion, _, err := regional.ResolveID(domainIDStr, plan.Region.ValueString(), r.meta.ScwClient())
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to resolve domain identity", err.Error())
-
-		return
-	}
-
 	// Refresh validated from GetDomain like SDKv2 Read
 	domain, err = r.api.GetDomain(&tem.GetDomainRequest{
-		Region:   identityRegion,
+		Region:   region,
 		DomainID: domainUUID,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -197,15 +190,15 @@ func (r *DomainValidationResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	state := domainValidationResourceModel{
-		ID:        types.StringValue(regional.NewIDString(identityRegion, domainUUID)),
-		DomainID:  types.StringValue(regional.NewIDString(identityRegion, domainUUID)),
-		Region:    types.StringValue(identityRegion.String()),
+		ID:        types.StringValue(regional.NewIDString(region, domainUUID)),
+		DomainID:  types.StringValue(regional.NewIDString(region, domainUUID)),
+		Region:    types.StringValue(region.String()),
 		Timeout:   plan.Timeout,
 		Validated: types.BoolValue(domain.Status == "checked"),
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(identityRegion, domainUUID))...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(region, domainUUID))...)
 }
 
 func (r *DomainValidationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {

@@ -281,19 +281,17 @@ func (d *DomainDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	var domainID string
 
-	if !config.DomainID.IsNull() && !config.DomainID.IsUnknown() && config.DomainID.ValueString() != "" {
-		domainID = config.DomainID.ValueString()
-	} else {
+	if domainID = config.DomainID.ValueString(); domainID == "" {
 		listReq := &tem.ListDomainsRequest{
 			Region: region,
 		}
 
-		if !config.Name.IsNull() && !config.Name.IsUnknown() {
-			listReq.Name = scwtypes.ExpandStringPtr(config.Name.ValueString())
+		if name := config.Name.ValueString(); name != "" {
+			listReq.Name = scwtypes.ExpandStringPtr(name)
 		}
 
-		if !config.ProjectID.IsNull() && !config.ProjectID.IsUnknown() && config.ProjectID.ValueString() != "" {
-			listReq.ProjectID = scwtypes.ExpandStringPtr(config.ProjectID.ValueString())
+		if projectID := config.ProjectID.ValueString(); projectID != "" {
+			listReq.ProjectID = scwtypes.ExpandStringPtr(projectID)
 		}
 
 		res, listErr := d.api.ListDomains(listReq, scw.WithContext(ctx))

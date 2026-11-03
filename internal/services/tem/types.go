@@ -54,15 +54,8 @@ func flattenDomainReputation(ctx context.Context, reputation *tem.DomainReputati
 }
 
 func expandWebhookEventTypes(ctx context.Context, list types.List, diags *diag.Diagnostics) []tem.WebhookEventType {
-	if list.IsNull() || list.IsUnknown() {
-		return nil
-	}
-
-	var values []string
-
-	diags.Append(list.ElementsAs(ctx, &values, false)...)
-
-	if diags.HasError() {
+	values := scwtypes.ExpandStringList(ctx, list, diags)
+	if diags.HasError() || values == nil {
 		return nil
 	}
 
@@ -72,16 +65,4 @@ func expandWebhookEventTypes(ctx context.Context, list types.List, diags *diag.D
 	}
 
 	return eventTypes
-}
-
-func flattenWebhookEventTypes(ctx context.Context, eventTypes []tem.WebhookEventType, diags *diag.Diagnostics) types.List {
-	values := make([]string, len(eventTypes))
-	for i, v := range eventTypes {
-		values[i] = string(v)
-	}
-
-	list, d := types.ListValueFrom(ctx, types.StringType, values)
-	diags.Append(d...)
-
-	return list
 }

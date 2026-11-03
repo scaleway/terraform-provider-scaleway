@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -90,7 +89,7 @@ func (r *BlockedListResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Required:            true,
 				MarkdownDescription: "Type of the blocked list. (mailbox_full or mailbox_not_found)",
 				Validators: []validator.String{
-					stringvalidator.OneOf("mailbox_full", "mailbox_not_found"),
+					verify.FrameworkValidateEnum[tem.BlocklistType](),
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -153,16 +152,16 @@ func (r *BlockedListResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	region, err := meta.ExtractFrameworkRegion(plan.Region, r.meta.ScwClient())
+	region, domainID, err := regional.ResolveID(plan.DomainID.ValueString(), plan.Region.ValueString(), r.meta.ScwClient())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
+		resp.Diagnostics.AddError("Failed to resolve domain ID", err.Error())
 
 		return
 	}
 
-	_, domainID, err := regional.ParseID(plan.DomainID.ValueString())
+	projectID, err := meta.ExtractFrameworkProjectID(plan.ProjectID, r.meta.ScwClient())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse domain ID", err.Error())
+		resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
 
 		return
 	}
@@ -209,19 +208,12 @@ func (r *BlockedListResource) Create(ctx context.Context, req resource.CreateReq
 
 	state := blockedListResourceModel{
 		ID:        types.StringValue(regional.NewIDString(region, blocklist.ID)),
-		DomainID:  types.StringValue(fmt.Sprintf("%s/%s", region, blocklist.DomainID)),
+		DomainID:  types.StringValue(regional.NewIDString(region, blocklist.DomainID)),
 		Email:     types.StringValue(blocklist.Email),
 		Type:      types.StringValue(string(blocklist.Type)),
 		Reason:    types.StringValue(blocklist.Reason),
 		Region:    types.StringValue(region.String()),
-		ProjectID: plan.ProjectID,
-	}
-
-	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
-		projectID, projectErr := meta.ExtractFrameworkProjectID(plan.ProjectID, r.meta.ScwClient())
-		if projectErr == nil {
-			state.ProjectID = types.StringValue(projectID)
-		}
+		ProjectID: types.StringValue(projectID),
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -229,27 +221,16 @@ func (r *BlockedListResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 func (r *BlockedListResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var (
-		state    blockedListResourceModel
-		identity blockedListResourceIdentityModel
-	)
-
-	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
-	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
-
-	if !identityAvailable && resp.Diagnostics.HasError() {
-		resp.Diagnostics = nil
-	}
-
+	var state blockedListResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	region, domainID, err := regional.ParseID(state.DomainID.ValueString())
+	region, domainID, err := regional.ResolveID(state.DomainID.ValueString(), state.Region.ValueString(), r.meta.ScwClient())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse domain ID", err.Error())
+		resp.Diagnostics.AddError("Failed to resolve domain ID", err.Error())
 
 		return
 	}
@@ -283,7 +264,7 @@ func (r *BlockedListResource) Read(ctx context.Context, req resource.ReadRequest
 
 	newState := blockedListResourceModel{
 		ID:        types.StringValue(regional.NewIDString(region, blocklist.ID)),
-		DomainID:  types.StringValue(fmt.Sprintf("%s/%s", region, blocklist.DomainID)),
+		DomainID:  types.StringValue(regional.NewIDString(region, blocklist.DomainID)),
 		Email:     types.StringValue(blocklist.Email),
 		Type:      types.StringValue(string(blocklist.Type)),
 		Reason:    types.StringValue(blocklist.Reason),

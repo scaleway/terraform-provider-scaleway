@@ -305,10 +305,12 @@ func (r *WebhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		Region:    region,
 		WebhookID: id,
 	}
+	hasChanged := false
 
 	if !plan.Name.Equal(state.Name) {
 		name := plan.Name.ValueString()
 		updateReq.Name = &name
+		hasChanged = true
 	}
 
 	if !plan.EventTypes.Equal(state.EventTypes) {
@@ -316,18 +318,23 @@ func (r *WebhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		if resp.Diagnostics.HasError() {
 			return
 		}
+
+		hasChanged = true
 	}
 
 	if !plan.SnsArn.Equal(state.SnsArn) {
 		snsArn := plan.SnsArn.ValueString()
 		updateReq.SnsArn = &snsArn
+		hasChanged = true
 	}
 
-	_, err = r.api.UpdateWebhook(updateReq, scw.WithContext(ctx))
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to update TEM webhook", err.Error())
+	if hasChanged {
+		_, err = r.api.UpdateWebhook(updateReq, scw.WithContext(ctx))
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to update TEM webhook", err.Error())
 
-		return
+			return
+		}
 	}
 
 	webhook, err := r.api.GetWebhook(&tem.GetWebhookRequest{
@@ -374,13 +381,21 @@ func (r *WebhookResource) ImportState(ctx context.Context, req resource.ImportSt
 }
 
 func flattenWebhook(ctx context.Context, webhook *tem.Webhook, region scw.Region, diags *diag.Diagnostics) webhookResourceModel {
+	eventTypes := make([]string, len(webhook.EventTypes))
+	for i, v := range webhook.EventTypes {
+		eventTypes[i] = string(v)
+	}
+
+	eventTypesList, d := types.ListValueFrom(ctx, types.StringType, eventTypes)
+	diags.Append(d...)
+
 	return webhookResourceModel{
 		ID:             types.StringValue(regional.NewIDString(region, webhook.ID)),
 		Name:           types.StringValue(webhook.Name),
 		DomainID:       types.StringValue(regional.NewIDString(region, webhook.DomainID)),
 		OrganizationID: types.StringValue(webhook.OrganizationID),
 		ProjectID:      types.StringValue(webhook.ProjectID),
-		EventTypes:     flattenWebhookEventTypes(ctx, webhook.EventTypes, diags),
+		EventTypes:     eventTypesList,
 		SnsArn:         types.StringValue(webhook.SnsArn),
 		CreatedAt:      types.StringValue(scwtypes.FlattenTime(webhook.CreatedAt).(string)),
 		UpdatedAt:      types.StringValue(scwtypes.FlattenTime(webhook.UpdatedAt).(string)),

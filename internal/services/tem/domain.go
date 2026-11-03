@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -112,7 +113,7 @@ func domainSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 			Required:            true,
 			MarkdownDescription: "Accept the Scaleway Terms of Service",
 			Validators: []validator.Bool{
-				acceptTosValidator{},
+				boolvalidator.Equals(true),
 			},
 			PlanModifiers: []planmodifier.Bool{
 				boolplanmodifier.RequiresReplace(),
@@ -262,30 +263,6 @@ func domainSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 	}
 }
 
-type acceptTosValidator struct{}
-
-func (v acceptTosValidator) Description(_ context.Context) string {
-	return "you must accept the Scaleway Terms of Service to use this service"
-}
-
-func (v acceptTosValidator) MarkdownDescription(ctx context.Context) string {
-	return v.Description(ctx)
-}
-
-func (v acceptTosValidator) ValidateBool(_ context.Context, req validator.BoolRequest, resp *validator.BoolResponse) {
-	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
-		return
-	}
-
-	if !req.ConfigValue.ValueBool() {
-		resp.Diagnostics.AddAttributeError(
-			req.Path,
-			"Invalid Attribute Value",
-			"you must accept the Scaleway Terms of Service to use this service",
-		)
-	}
-}
-
 func (r *DomainResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
 	resp.IdentitySchema = identityfw.DefaultRegional()
 }
@@ -365,7 +342,6 @@ func (r *DomainResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	state := flattenDomain(ctx, domain, region, &resp.Diagnostics)
 	state.Timeouts = plan.Timeouts
-	state.AcceptTos = types.BoolValue(true)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(domain.Region, domain.ID))...)
@@ -425,7 +401,6 @@ func (r *DomainResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	newState := flattenDomain(ctx, domain, region, &resp.Diagnostics)
 	newState.Timeouts = state.Timeouts
-	newState.AcceptTos = types.BoolValue(true)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(domain.Region, domain.ID))...)
@@ -492,7 +467,6 @@ func (r *DomainResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	newState := flattenDomain(ctx, domain, region, &resp.Diagnostics)
 	newState.Timeouts = plan.Timeouts
-	newState.AcceptTos = types.BoolValue(true)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(domain.Region, domain.ID))...)
