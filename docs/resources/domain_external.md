@@ -31,12 +31,16 @@ output "validation_token" {
 ```
 
 ## Argument Reference
+
 The following arguments are supported:
+
 - `domain` - (Required) The domain name to be registered.
 - `project_id` - (Defaults to Project ID specified in the [provider configuration](../index.md#arguments-reference) `project_id`) The ID of the Project associated with the domain.
 
 ## Attributes Reference
+
 In addition to all arguments above, the following attributes are exported:
+
 - `id` - The domain name.
 - `organization_id` - The organization ID the domain is associated with.
 - `ns_servers` - List of NS servers for the domain once it is validated.
