@@ -15,6 +15,9 @@ func TestAccActionTEMUpdateOfferSubscription_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	// Scale has a commitment period, so we cannot flip essential ↔ scale on the shared
+	// cassette project. Upgrading to scale (from essential in the cassette) exercises
+	// UpdateOfferSubscription once.
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
@@ -31,7 +34,7 @@ func TestAccActionTEMUpdateOfferSubscription_Basic(t *testing.T) {
 
 					action "scaleway_tem_update_offer_subscription" "main" {
 						config {
-							offer_name = "essential"
+							offer_name = "scale"
 						}
 					}
 
@@ -40,7 +43,7 @@ func TestAccActionTEMUpdateOfferSubscription_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_tem_offer_subscription.main", "offer_name", "essential"),
+					resource.TestCheckResourceAttr("data.scaleway_tem_offer_subscription.main", "offer_name", "scale"),
 					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.main", "project_id"),
 				),
 			},
