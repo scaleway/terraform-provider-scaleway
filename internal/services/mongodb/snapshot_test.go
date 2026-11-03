@@ -2,6 +2,7 @@ package mongodb_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -45,6 +46,7 @@ func TestAccMongoDBSnapshot_Basic(t *testing.T) {
 					}
 				`, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_mongodb_snapshot.main", "srn", regexp.MustCompile(`^srn://mongodb\..+/regions/.+/snapshots/.+$`)),
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "name", "test-snapshot"),
 				),
 			},

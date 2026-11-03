@@ -305,6 +305,11 @@ func instanceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the MongoDB instance",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the MongoDB instance",
+		},
 		// Common
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
@@ -451,6 +456,7 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, mongod
 	_ = d.Set("tags", instance.Tags)
 	_ = d.Set("created_at", instance.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("region", instance.Region.String())
+	_ = d.Set("srn", instance.Srn)
 
 	if instance.SnapshotSchedule != nil {
 		_ = d.Set("snapshot_schedule_frequency_hours", int(instance.SnapshotSchedule.FrequencyHours))

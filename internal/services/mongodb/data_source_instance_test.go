@@ -1,6 +1,7 @@
 package mongodb_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -31,6 +32,7 @@ func TestAccDataSourceMongoDBInstance_ByName(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("data.scaleway_mongodb_instance.test_by_name", "srn", regexp.MustCompile(`^srn://mongodb\..+/regions/.+/instances/.+$`)),
 					resource.TestCheckResourceAttr("data.scaleway_mongodb_instance.test_by_name", "name", "test-mongodb-instance-by-name"),
 					resource.TestCheckResourceAttr("data.scaleway_mongodb_instance.test_by_name", "version", "7.0"),
 					resource.TestCheckResourceAttr("data.scaleway_mongodb_instance.test_by_name", "node_type", "mgdb-play2-nano"),
