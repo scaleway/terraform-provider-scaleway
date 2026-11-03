@@ -45,37 +45,6 @@ var HeaderMatcherIgnore = []string{
 	"X-Auth-Token",          // scw auth token
 }
 
-// BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes
-var BodyMatcherIgnore = []string{
-	"organization", // like organization_id but deprecated
-	"organization_id",
-	"project_id",
-	"project", // like project_id but should be deprecated
-	// function related fields
-	"mnq_project_id",
-	"mnq_region",
-	"mnq_nats_account_id",
-	"mnq_nats_subject",
-	// cockpit exporter datadog destination
-	"api_key",
-	// secrets that must never be compared literally (anonymized in cassettes)
-	"password",
-	"new_password",
-}
-
-// BuildCassetteName returns a valid filename path based on the test name and suffix.
-// Delegates to internal/vcr to keep a single implementation.
-func BuildCassetteName(testName string, pkgFolder string, suffix string) string {
-	return vcr.BuildCassetteName(testName, pkgFolder, suffix)
-}
-
-// getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
-func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
-	t.Helper()
-
-	return vcr.BuildCassetteName(t.Name(), pkgFolder, suffix)
-}
-
 // cassetteMatcher is a custom matcher that will juste check equivalence of request bodies
 func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool {
 	if request.Body == nil || request.ContentLength == 0 {
@@ -126,11 +95,6 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 			return false
 		}
 
-		// Remove keys that should be ignored during comparison
-		for _, key := range BodyMatcherIgnore {
-			requestValues.Del(key)
-		}
-
 		return vcr.CompareFormBodies(requestValues, cassette.Body)
 	}
 
@@ -145,11 +109,6 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 	if err != nil {
 		// actualRequest contains JSON but cassette may not contain JSON, this doesn't match in this case
 		return false
-	}
-	// remove keys that should be ignored during comparison
-	for _, key := range BodyMatcherIgnore {
-		vcr.RemoveKeyRecursive(requestJSON, key)
-		vcr.RemoveKeyRecursive(cassetteJSON, key)
 	}
 
 	return vcr.CompareJSONBodies(requestJSON, cassetteJSON, false)
@@ -314,7 +273,7 @@ func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.C
 		recorderMode = recorder.ModeRecordOnly
 	}
 
-	cassetteFilePath := getTestFilePath(t, pkgFolder, ".cassette")
+	cassetteFilePath := vcr.BuildCassetteName(t.Name(), pkgFolder, ".cassette")
 	_, errorCassette := os.Stat(cassetteFilePath + ".yaml")
 	logging.L.Debugf("using %s.yaml", cassetteFilePath)
 

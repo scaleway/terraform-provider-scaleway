@@ -100,11 +100,6 @@ func customS3BodyMatcher(r *http.Request, i cassette.Request) bool {
 		panic(fmt.Errorf("cassette body matcher: failed to parse body as url values: %w", err)) // lintignore: R009
 	}
 
-	// Remove keys that should be ignored during comparison
-	for _, key := range BodyMatcherIgnore {
-		requestValues.Del(key)
-	}
-
 	return CompareFormBodies(requestValues, i.Body)
 }
 
@@ -156,11 +151,6 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 			panic(fmt.Errorf("cassette body matcher: failed to parse body as url values: %w", err)) // lintignore: R009
 		}
 
-		// Remove keys that should be ignored during comparison
-		for _, key := range BodyMatcherIgnore {
-			requestValues.Del(key)
-		}
-
 		return CompareFormBodies(requestValues, cassette.Body)
 	}
 
@@ -173,12 +163,6 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 	if err != nil {
 		// actualRequest contains JSON but cassette may not contain JSON, this doesn't match in this case
 		return false
-	}
-
-	// Remove keys that should be ignored during comparison
-	for _, key := range BodyMatcherIgnore {
-		RemoveKeyRecursive(requestJSON, key)
-		RemoveKeyRecursive(cassetteJSON, key)
 	}
 
 	return CompareJSONBodies(requestJSON, cassetteJSON, false)
