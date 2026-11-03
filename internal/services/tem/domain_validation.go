@@ -4,108 +4,157 @@ import (
 	"context"
 	_ "embed"
 	"errors"
-	"strings"
+	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 //go:embed descriptions/tem_domain_validation_resource.md
 var domainValidationResourceDescription string
 
-func ResourceDomainValidation() *schema.Resource {
-	return &schema.Resource{
-		Description:   domainValidationResourceDescription,
-		CreateContext: ResourceDomainValidationCreate,
-		ReadContext:   ResourceDomainValidationRead,
-		DeleteContext: ResourceDomainValidationDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+var (
+	_ resource.Resource                = (*DomainValidationResource)(nil)
+	_ resource.ResourceWithConfigure   = (*DomainValidationResource)(nil)
+	_ resource.ResourceWithImportState = (*DomainValidationResource)(nil)
+	_ resource.ResourceWithIdentity    = (*DomainValidationResource)(nil)
+)
+
+func NewDomainValidationResource() resource.Resource {
+	return &DomainValidationResource{}
+}
+
+type DomainValidationResource struct {
+	api  *tem.API
+	meta *meta.Meta
+}
+
+type domainValidationResourceModel struct {
+	ID        types.String `tfsdk:"id"`
+	DomainID  types.String `tfsdk:"domain_id"`
+	Region    types.String `tfsdk:"region"`
+	Timeout   types.Int64  `tfsdk:"timeout"`
+	Validated types.Bool   `tfsdk:"validated"`
+}
+
+type domainValidationResourceIdentityModel = identityfw.RegionalIdentity
+
+func (r *DomainValidationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_tem_domain_validation"
+}
+
+func (r *DomainValidationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: domainValidationResourceDescription,
+		Description:         domainValidationResourceDescription,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"domain_id": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "The id of domain name used when sending emails.",
+				Validators: []validator.String{
+					verify.IsStringUUIDOrUUIDWithRegion(),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"region": regional.SchemaAttributeComputed(),
+			"timeout": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             int64default.StaticInt64(300),
+				MarkdownDescription: "Maximum wait time in second before returning an error.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
+			},
+			"validated": schema.BoolAttribute{
+				Computed:            true,
+				MarkdownDescription: "Indicates if the domain is verified for email sending",
+			},
 		},
-		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultDomainValidationTimeout),
-			Delete:  schema.DefaultTimeout(defaultDomainValidationTimeout),
-			Default: schema.DefaultTimeout(defaultDomainValidationTimeout),
-		},
-		SchemaVersion: 0,
-		SchemaFunc:    domainValidationSchema,
-		Identity:      identity.DefaultRegional(),
 	}
 }
 
-func domainValidationSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"domain_id": {
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
-			Description: "The id of domain name used when sending emails.",
-		},
-		"region": regional.Schema(),
-		"timeout": {
-			Type:        schema.TypeInt,
-			Optional:    true,
-			ForceNew:    true,
-			Default:     300,
-			Description: "Maximum wait time in second before returning an error.",
-		},
-		"validated": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Indicates if the domain is verified for email sending",
-		},
-	}
+func (r *DomainValidationResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityfw.DefaultRegional()
 }
 
-func parseDomainIDForIdentity(domainIDStr string, d *schema.ResourceData, m any) (scw.Region, string, error) {
-	region, id, err := regional.ParseID(domainIDStr)
-	if err == nil {
-		return region, id, nil
+func (r *DomainValidationResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
 	}
 
-	region, err = meta.ExtractRegion(d, m)
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.meta = m
+	r.api = tem.NewAPI(r.meta.ScwClient())
+}
+
+func (r *DomainValidationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan domainValidationResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, err := meta.ExtractFrameworkRegion(plan.Region, r.meta.ScwClient())
 	if err != nil {
-		return "", "", err
+		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
+
+		return
 	}
 
-	return region, domainIDStr, nil
-}
+	domainIDStr := plan.DomainID.ValueString()
+	domainUUID := locality.ExpandID(domainIDStr)
 
-func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, err := temAPIWithRegion(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	domainIDStr := d.Get("domain_id").(string)
-	domainUUID := extractAfterSlash(domainIDStr)
-
-	domain, err := api.GetDomain(&tem.GetDomainRequest{
+	domain, err := r.api.GetDomain(&tem.GetDomainRequest{
 		Region:   region,
 		DomainID: domainUUID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
+		resp.Diagnostics.AddError("Failed to get TEM domain", err.Error())
 
-			return nil
-		}
-
-		return diag.FromErr(err)
+		return
 	}
 
-	duration := d.Get("timeout").(int)
+	duration := int(plan.Timeout.ValueInt64())
 	timeout := time.Duration(duration) * time.Second
+
 	_ = retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		domainCheck, _ := api.CheckDomain(&tem.CheckDomainRequest{
+		domainCheck, _ := r.api.CheckDomain(&tem.CheckDomainRequest{
 			Region:   region,
 			DomainID: domain.ID,
 		})
@@ -116,75 +165,127 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 		return nil
 	})
 
-	domainCheck, _ := api.CheckDomain(&tem.CheckDomainRequest{
+	domainCheck, _ := r.api.CheckDomain(&tem.CheckDomainRequest{
 		Region:   region,
 		DomainID: domain.ID,
 	})
 	if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
-		d.SetId("")
+		resp.Diagnostics.AddError(
+			"Domain validation timed out",
+			fmt.Sprintf("domain validation did not complete in %d seconds", duration),
+		)
 
-		return diag.Errorf("domain validation did not complete in %d seconds", duration)
+		return
 	}
 
-	identityRegion, _, err := parseDomainIDForIdentity(domainIDStr, d, m)
+	identityRegion, _, err := regional.ResolveID(domainIDStr, plan.Region.ValueString(), r.meta.ScwClient())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to resolve domain identity", err.Error())
+
+		return
 	}
 
-	if err := identity.SetRegionalIdentity(d, identityRegion, domainUUID); err != nil {
-		return diag.FromErr(err)
+	// Refresh validated from GetDomain like SDKv2 Read
+	domain, err = r.api.GetDomain(&tem.GetDomainRequest{
+		Region:   identityRegion,
+		DomainID: domainUUID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read TEM domain after validation", err.Error())
+
+		return
 	}
 
-	return ResourceDomainValidationRead(ctx, d, m)
+	state := domainValidationResourceModel{
+		ID:        types.StringValue(regional.NewIDString(identityRegion, domainUUID)),
+		DomainID:  types.StringValue(regional.NewIDString(identityRegion, domainUUID)),
+		Region:    types.StringValue(identityRegion.String()),
+		Timeout:   plan.Timeout,
+		Validated: types.BoolValue(domain.Status == "checked"),
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(identityRegion, domainUUID))...)
 }
 
-func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	region, domainUUID, err := parseDomainIDForIdentity(d.Id(), d, m)
-	if err != nil {
-		return diag.FromErr(err)
+func (r *DomainValidationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var (
+		state    domainValidationResourceModel
+		identity domainValidationResourceIdentityModel
+	)
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
 	}
 
-	api, _, err := temAPIWithRegion(d, m)
-	if err != nil {
-		return diag.FromErr(err)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	domain, err := api.GetDomain(&tem.GetDomainRequest{
+	var (
+		domainUUID string
+		region     scw.Region
+		err        error
+	)
+
+	if identityAvailable {
+		region, domainUUID = identityfw.ResolveRegionalIdentity(identity)
+	} else {
+		region, domainUUID, err = regional.ResolveID(state.ID.ValueString(), state.Region.ValueString(), r.meta.ScwClient())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse domain validation ID", err.Error())
+
+			return
+		}
+	}
+
+	domain, err := r.api.GetDomain(&tem.GetDomainRequest{
 		Region:   region,
 		DomainID: domainUUID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
-			d.SetId("")
+			resp.State.RemoveResource(ctx)
 
-			return nil
+			return
 		}
 
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to read TEM domain validation", err.Error())
+
+		return
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, domainUUID); err != nil {
-		return diag.FromErr(err)
+	newState := domainValidationResourceModel{
+		ID:        types.StringValue(regional.NewIDString(region, domainUUID)),
+		DomainID:  types.StringValue(regional.NewIDString(region, domainUUID)),
+		Region:    types.StringValue(region.String()),
+		Timeout:   state.Timeout,
+		Validated: types.BoolValue(domain.Status == "checked"),
 	}
 
-	_ = d.Set("domain_id", regional.NewIDString(region, domainUUID))
-	_ = d.Set("region", string(region))
-	_ = d.Set("validated", domain.Status == "checked")
-
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(region, domainUUID))...)
 }
 
-func ResourceDomainValidationDelete(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
-	d.SetId("")
+func (r *DomainValidationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan domainValidationResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
-	return nil
-}
-
-func extractAfterSlash(s string) string {
-	_, after, ok := strings.CutLast(s, "/")
-	if !ok {
-		return s
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	return after
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+func (r *DomainValidationResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
+}
+
+func (r *DomainValidationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }
