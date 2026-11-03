@@ -48,11 +48,11 @@ type DomainResource struct {
 }
 
 type domainModel struct {
-	Timeouts             timeouts.Value `tfsdk:"timeouts"`
-	ID                   types.String   `tfsdk:"id"`
-	Name                 types.String   `tfsdk:"name"`
-	AcceptTos            types.Bool     `tfsdk:"accept_tos"`
-	Autoconfig           types.Bool     `tfsdk:"autoconfig"`
+	Reputation           types.List     `tfsdk:"reputation"`
+	DmarcConfig          types.String   `tfsdk:"dmarc_config"`
+	DkimConfig           types.String   `tfsdk:"dkim_config"`
+	ProjectID            types.String   `tfsdk:"project_id"`
+	Region               types.String   `tfsdk:"region"`
 	Status               types.String   `tfsdk:"status"`
 	CreatedAt            types.String   `tfsdk:"created_at"`
 	NextCheckAt          types.String   `tfsdk:"next_check_at"`
@@ -60,24 +60,24 @@ type domainModel struct {
 	RevokedAt            types.String   `tfsdk:"revoked_at"`
 	LastError            types.String   `tfsdk:"last_error"`
 	SpfConfig            types.String   `tfsdk:"spf_config"`
-	DkimConfig           types.String   `tfsdk:"dkim_config"`
-	DmarcName            types.String   `tfsdk:"dmarc_name"`
-	DmarcConfig          types.String   `tfsdk:"dmarc_config"`
-	DkimName             types.String   `tfsdk:"dkim_name"`
-	SpfValue             types.String   `tfsdk:"spf_value"`
-	MxConfig             types.String   `tfsdk:"mx_config"`
-	MxPriority           types.Int64    `tfsdk:"mx_priority"`
-	SmtpHost             types.String   `tfsdk:"smtp_host"`
-	SmtpPortUnsecure     types.Int64    `tfsdk:"smtp_port_unsecure"`
-	SmtpPort             types.Int64    `tfsdk:"smtp_port"`
-	SmtpPortAlternative  types.Int64    `tfsdk:"smtp_port_alternative"`
-	SmtpsPort            types.Int64    `tfsdk:"smtps_port"`
 	SmtpsAuthUser        types.String   `tfsdk:"smtps_auth_user"`
-	SmtpsPortAlternative types.Int64    `tfsdk:"smtps_port_alternative"`
+	DmarcName            types.String   `tfsdk:"dmarc_name"`
+	Timeouts             timeouts.Value `tfsdk:"timeouts"`
+	Name                 types.String   `tfsdk:"name"`
+	MxConfig             types.String   `tfsdk:"mx_config"`
+	DkimName             types.String   `tfsdk:"dkim_name"`
+	ID                   types.String   `tfsdk:"id"`
+	SmtpHost             types.String   `tfsdk:"smtp_host"`
+	SpfValue             types.String   `tfsdk:"spf_value"`
 	MxBlackhole          types.String   `tfsdk:"mx_blackhole"`
-	Reputation           types.List     `tfsdk:"reputation"`
-	Region               types.String   `tfsdk:"region"`
-	ProjectID            types.String   `tfsdk:"project_id"`
+	SmtpPortUnsecure     types.Int64    `tfsdk:"smtp_port_unsecure"`
+	SmtpsPort            types.Int64    `tfsdk:"smtps_port"`
+	SmtpPortAlternative  types.Int64    `tfsdk:"smtp_port_alternative"`
+	SmtpsPortAlternative types.Int64    `tfsdk:"smtps_port_alternative"`
+	SmtpPort             types.Int64    `tfsdk:"smtp_port"`
+	MxPriority           types.Int64    `tfsdk:"mx_priority"`
+	Autoconfig           types.Bool     `tfsdk:"autoconfig"`
+	AcceptTos            types.Bool     `tfsdk:"accept_tos"`
 }
 
 type domainResourceIdentityModel = identityfw.RegionalIdentity

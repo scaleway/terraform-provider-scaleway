@@ -38,14 +38,14 @@ type OfferSubscriptionDataSource struct {
 }
 
 type offerSubscriptionDataSourceModel struct {
-	ID                           types.String  `tfsdk:"id"`
-	Region                       types.String  `tfsdk:"region"`
+	SLA                          types.Float64 `tfsdk:"sla"`
+	CancellationAvailableAt      types.String  `tfsdk:"cancellation_available_at"`
 	ProjectID                    types.String  `tfsdk:"project_id"`
 	OrganizationID               types.String  `tfsdk:"organization_id"`
 	OfferName                    types.String  `tfsdk:"offer_name"`
 	SubscribedAt                 types.String  `tfsdk:"subscribed_at"`
-	CancellationAvailableAt      types.String  `tfsdk:"cancellation_available_at"`
-	SLA                          types.Float64 `tfsdk:"sla"`
+	ID                           types.String  `tfsdk:"id"`
+	Region                       types.String  `tfsdk:"region"`
 	MaxDomains                   types.Int64   `tfsdk:"max_domains"`
 	MaxDedicatedIPs              types.Int64   `tfsdk:"max_dedicated_ips"`
 	MaxWebhooksPerDomain         types.Int64   `tfsdk:"max_webhooks_per_domain"`

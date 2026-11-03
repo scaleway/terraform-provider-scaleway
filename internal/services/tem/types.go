@@ -12,10 +12,10 @@ import (
 
 type domainReputationModel struct {
 	Status           types.String `tfsdk:"status"`
-	Score            types.Int64  `tfsdk:"score"`
 	ScoredAt         types.String `tfsdk:"scored_at"`
-	PreviousScore    types.Int64  `tfsdk:"previous_score"`
 	PreviousScoredAt types.String `tfsdk:"previous_scored_at"`
+	Score            types.Int64  `tfsdk:"score"`
+	PreviousScore    types.Int64  `tfsdk:"previous_score"`
 }
 
 func domainReputationAttrTypes() map[string]attr.Type {
