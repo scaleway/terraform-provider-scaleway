@@ -3,6 +3,7 @@ package lb_test
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"slices"
 	"testing"
 
@@ -47,6 +48,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_lb_frontend.frt01", "srn", regexp.MustCompile(`^srn://lb\..+/zones/.+/frontends/.+$`)),
 					isFrontendPresent(tt, "scaleway_lb_frontend.frt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "inbound_port", "80"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", ""),

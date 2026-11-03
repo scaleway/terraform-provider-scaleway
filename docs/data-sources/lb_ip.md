@@ -52,3 +52,5 @@ In addition to all above arguments, the following attributes are exported:
 - `tags` - The tags associated with this IP.
 
 - `organization_id` - (Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the Organization the Load Balancer IP is associated with.
+
+- `srn` - The Scaleway Resource Name (SRN) of the Load Balancer IP.

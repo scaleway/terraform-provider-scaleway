@@ -2,6 +2,7 @@ package lb_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -43,6 +44,7 @@ func TestAccBackend_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_lb_backend.bkd01", "srn", regexp.MustCompile(`^srn://lb\..+/zones/.+/backends/.+$`)),
 					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port_algorithm", "roundrobin"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "sticky_sessions", "none"),

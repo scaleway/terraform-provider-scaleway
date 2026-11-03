@@ -47,6 +47,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `lb_id` - The associated Load Balancer ID if any
 - `ip_address` - The IP address
+- `srn` - The Scaleway Resource Name (SRN) of the Load Balancer IP.
 
 ## Import
 

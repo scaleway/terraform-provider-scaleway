@@ -89,6 +89,11 @@ func routeSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date at which the route was last updated (RFC 3339 format)",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the route",
+		},
 	}
 }
 
@@ -210,6 +215,7 @@ func setRouteState(d *schema.ResourceData, route *lbSDK.Route, zone scw.Zone) di
 	_ = d.Set("match_subdomains", route.Match.MatchSubdomains)
 	_ = d.Set("created_at", types.FlattenTime(route.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(route.UpdatedAt))
+	_ = d.Set("srn", route.Srn)
 
 	return nil
 }

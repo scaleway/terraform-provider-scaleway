@@ -78,6 +78,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Load-Balancer ACL IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
+- `srn` - The Scaleway Resource Name (SRN) of the Load Balancer ACL.
+
 ## Import
 
 Load Balancer ACLs can be imported using `{zone}/{id}`, e.g.

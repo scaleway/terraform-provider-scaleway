@@ -1,6 +1,7 @@
 package lb_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -36,6 +37,7 @@ func TestAccDataSourceLb_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("data.scaleway_lb.testByID", "srn", regexp.MustCompile(`^srn://lb\..+/zones/.+/lbs/.+$`)),
 					isLbPresent(tt, "data.scaleway_lb.testByID"),
 					isLbPresent(tt, "data.scaleway_lb.testByName"),
 					resource.TestCheckResourceAttrPair(

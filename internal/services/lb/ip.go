@@ -83,6 +83,11 @@ func ipSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the flexible IP",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the IP",
+		},
 		"region": regional.ComputedSchema(),
 	}
 }
@@ -173,6 +178,7 @@ func setIPState(d *schema.ResourceData, ip *lbSDK.IP, zone scw.Zone) diag.Diagno
 	_ = d.Set("reverse", ip.Reverse)
 	_ = d.Set("lb_id", types.FlattenStringPtr(ip.LBID))
 	_ = d.Set("tags", ip.Tags)
+	_ = d.Set("srn", ip.Srn)
 
 	isIPv6 := false
 

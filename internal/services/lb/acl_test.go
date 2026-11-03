@@ -2,6 +2,7 @@ package lb_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -59,6 +60,7 @@ func TestAccAcl_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_lb_acl.acl01", "srn", regexp.MustCompile(`^srn://lb\..+/zones/.+/acls/.+$`)),
 					isACLPresent(tt, "scaleway_lb_acl.acl01"),
 					resource.TestCheckResourceAttrPair(
 						"scaleway_lb_acl.acl01", "frontend_id",
