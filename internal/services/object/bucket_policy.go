@@ -73,7 +73,6 @@ func (r *BucketPolicyResource) Metadata(_ context.Context, req resource.Metadata
 func (r *BucketPolicyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: bucketPolicyResourceDescription,
-		Description:         bucketPolicyResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,

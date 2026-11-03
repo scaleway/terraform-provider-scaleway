@@ -47,7 +47,6 @@ func (d *BucketPolicyDataSource) Metadata(_ context.Context, req datasource.Meta
 func (d *BucketPolicyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: bucketPolicyDataSourceDescription,
-		Description:         bucketPolicyDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
