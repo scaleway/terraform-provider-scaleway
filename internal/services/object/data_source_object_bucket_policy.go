@@ -132,6 +132,15 @@ func (d *BucketPolicyDataSource) Read(ctx context.Context, req datasource.ReadRe
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
+		if IsS3Err(err, ErrCodeNoSuchBucketPolicy, "") || IsS3Err(err, ErrCodeNoSuchBucket, "") {
+			resp.Diagnostics.AddError(
+				"couldn't read bucket policy",
+				fmt.Sprintf("bucket %s doesn't exist or has no policy", bucket),
+			)
+
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"couldn't read bucket policy",
 			fmt.Errorf("couldn't read bucket %s policy: %w", bucket, err).Error(),
