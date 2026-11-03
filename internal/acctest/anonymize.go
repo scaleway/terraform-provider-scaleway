@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/vcr"
 	"gopkg.in/yaml.v3"
 )
 
@@ -59,7 +58,7 @@ func AnonymizeCassetteForTest(t *testing.T, pkgFolder string) error {
 		}
 	}
 
-	path := vcr.BuildCassetteName(t.Name(), pkgFolder, ".cassette") + ".yaml"
+	path := BuildCassetteName(t.Name(), pkgFolder, ".cassette") + ".yaml"
 
 	return AnonymizeCassetteFile(path)
 }

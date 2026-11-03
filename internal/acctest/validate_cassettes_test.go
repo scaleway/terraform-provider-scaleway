@@ -15,8 +15,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/vcr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
@@ -155,7 +155,7 @@ func listAccTestFunctions() (map[string]string, error) {
 			for _, decl := range node.Decls {
 				if fn, ok := decl.(*ast.FuncDecl); ok {
 					if strings.HasPrefix(fn.Name.Name, "Test") && fn.Name.Name != "TestMain" && fn.Recv == nil {
-						expectedCassettePath := fmt.Sprintf("%s/%s", servicesDir, vcr.BuildCassetteName(fn.Name.Name, pkgFolder, ".cassette"))
+						expectedCassettePath := fmt.Sprintf("%s/%s", servicesDir, acctest.BuildCassetteName(fn.Name.Name, pkgFolder, ".cassette"))
 						testFuncs[expectedCassettePath] = fmt.Sprintf("%s/%s", pkgFolder, fn.Name.Name)
 					}
 				}

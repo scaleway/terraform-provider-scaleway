@@ -59,7 +59,7 @@ func init() {
 	// derived from anonymized responses (e.g. a secret version whose data is
 	// an IAM API key secret key); ignore these fields when matching VCRv4
 	// requests.
-	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "data")
+	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password", "data")
 }
 
 func FolderUsesVCRv4(fullFolderPath string) bool {

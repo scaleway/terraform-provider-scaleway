@@ -20,17 +20,14 @@ var BodyMatcherIgnore = []string{
 	"project_id",
 	"project", // like project_id but should be deprecated
 	// Request related fields
-	"name",         // generated names will change every time
-	"expires_at",   // is relative to the moment the cassette is replayed
-	"password",     // generated passwords will change every time
-	"new_password", // secrets that must never be compared literally (anonymized in cassettes)
+	"name",       // generated names will change every time
+	"expires_at", // is relative to the moment the cassette is replayed
+	"password",   // generated passwords will change every time
 	// MNQ related fields
 	"mnq_project_id",
 	"mnq_region",
 	"mnq_nats_account_id",
 	"mnq_nats_subject",
-	// cockpit exporter datadog destination
-	"api_key",
 }
 
 // RemoveKeyRecursive removes a key from a map and all its nested maps/slices.
@@ -68,14 +65,9 @@ func CompareJSONFields(requestValue, cassetteValue any, strict bool) bool {
 }
 
 // CompareJSONBodies compare two given maps that represent json bodies.
-// Returns true if both json are equivalent. Ignored keys (BodyMatcherIgnore)
-// are stripped from both maps before comparison.
+// Returns true if both json are equivalent. Callers must strip ignored keys
+// (e.g. via RemoveKeyRecursive) before calling.
 func CompareJSONBodies(request, cassette map[string]any, strict bool) bool {
-	for _, key := range BodyMatcherIgnore {
-		RemoveKeyRecursive(request, key)
-		RemoveKeyRecursive(cassette, key)
-	}
-
 	for key, requestValue := range request {
 		cassetteValue, ok := cassette[key]
 		if !ok {
@@ -110,19 +102,14 @@ func CompareJSONBodies(request, cassette map[string]any, strict bool) bool {
 // CompareFormBodies compares the request form values against the raw cassette
 // body. The cassette body is parsed as url.Values internally so that only body
 // parameters are compared — never URL query parameters (which go-vcr v4 merges
-// into cassette.Form, unlike v3's PostForm-only field). Ignored keys
-// (BodyMatcherIgnore) are stripped from both sides before comparison.
+// into cassette.Form, unlike v3's PostForm-only field). Callers must strip
+// ignored keys from the request values before calling.
 // ponytail: parsing cassette.Body instead of using cassette.Form insulates us
 // from recorder-side Form population changes; revisit if body needs non-form parsing.
 func CompareFormBodies(request url.Values, cassetteBody string) bool {
 	cassetteValues, err := url.ParseQuery(cassetteBody)
 	if err != nil {
 		return false
-	}
-
-	for _, key := range BodyMatcherIgnore {
-		request.Del(key)
-		cassetteValues.Del(key)
 	}
 
 	for key, requestValue := range request {
