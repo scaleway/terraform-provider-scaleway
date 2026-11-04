@@ -2,7 +2,7 @@ package object_test
 
 import (
 	"context"
-	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -43,13 +43,17 @@ func TestSetBucketState_ListObjects500DoesNotFailRead(t *testing.T) {
 
 	bucketName := "test-bucket-list-objects-500"
 
+	writeBody := func(w http.ResponseWriter, body string) {
+		_, _ = io.WriteString(w, body)
+	}
+
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 
 		switch {
 		case q.Has("acl"):
 			w.Header().Set("Content-Type", "text/xml; charset=utf-8")
-			fmt.Fprint(w, `<?xml version="1.0" encoding="UTF-8"?>
+			writeBody(w, `<?xml version="1.0" encoding="UTF-8"?>
 <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
   <Owner><DisplayName>project-id:owner</DisplayName><ID>project-id:owner</ID></Owner>
   <AccessControlList>
@@ -65,32 +69,32 @@ func TestSetBucketState_ListObjects500DoesNotFailRead(t *testing.T) {
 		case q.Has("object-lock"):
 			w.Header().Set("Content-Type", "application/xml")
 			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, `<Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message></Error>`)
+			writeBody(w, `<Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message></Error>`)
 
 		case q.Has("tagging"):
 			w.Header().Set("Content-Type", "application/xml")
 			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, `<Error><Code>NoSuchTagSet</Code><Message>The TagSet does not exist</Message></Error>`)
+			writeBody(w, `<Error><Code>NoSuchTagSet</Code><Message>The TagSet does not exist</Message></Error>`)
 
 		case q.Has("cors"):
 			w.Header().Set("Content-Type", "application/xml")
 			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, `<Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message></Error>`)
+			writeBody(w, `<Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message></Error>`)
 
 		case q.Has("versioning"):
 			w.Header().Set("Content-Type", "text/xml; charset=utf-8")
-			fmt.Fprint(w, `<?xml version="1.0" encoding="UTF-8"?><VersioningConfiguration><Status></Status></VersioningConfiguration>`)
+			writeBody(w, `<?xml version="1.0" encoding="UTF-8"?><VersioningConfiguration><Status></Status></VersioningConfiguration>`)
 
 		case q.Has("lifecycle"):
 			w.Header().Set("Content-Type", "application/xml")
 			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, `<Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist</Message></Error>`)
+			writeBody(w, `<Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist</Message></Error>`)
 
 		default:
 			// ListObjects — returns 500 InternalError, the bug trigger.
 			w.Header().Set("Content-Type", "application/xml")
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, `<Error><Code>InternalError</Code><Message>We encountered an internal error. Please try again.</Message><RequestId>test-req-id</RequestId><HostId>test-host-id</HostId></Error>`)
+			writeBody(w, `<Error><Code>InternalError</Code><Message>We encountered an internal error. Please try again.</Message><RequestId>test-req-id</RequestId><HostId>test-host-id</HostId></Error>`)
 		}
 	}))
 	defer srv.Close()
@@ -101,17 +105,17 @@ func TestSetBucketState_ListObjects500DoesNotFailRead(t *testing.T) {
 	require.NoError(t, err)
 
 	m, err := meta.NewMetaFromProfile(t.Context(), &scw.Profile{
-		AccessKey:     scw.StringPtr("SCWXXXXXXXXXXXXXXXXX"),
-		SecretKey:     scw.StringPtr("866f4a9a-d058-4d3c-a39f-86930849ccc0"),
-		DefaultRegion: scw.StringPtr(scw.RegionFrPar.String()),
-		DefaultZone:   scw.StringPtr(scw.ZoneFrPar1.String()),
+		AccessKey:     new("SCWXXXXXXXXXXXXXXXXX"),
+		SecretKey:     new("866f4a9a-d058-4d3c-a39f-86930849ccc0"),
+		DefaultRegion: new(scw.RegionFrPar.String()),
+		DefaultZone:   new(scw.ZoneFrPar1.String()),
 	}, nil, nil, nil, "test", &http.Client{})
 	require.NoError(t, err)
 
 	d := schema.TestResourceDataRaw(t, object.BucketSchema(), map[string]any{
 		"name": bucketName,
 	})
-	d.SetId(fmt.Sprintf("fr-par/%s", bucketName))
+	d.SetId("fr-par/" + bucketName)
 
 	diags := object.SetBucketState(ctx, d, m, bucketName, scw.RegionFrPar, s3Client)
 
@@ -125,5 +129,5 @@ func TestSetBucketState_ListObjects500DoesNotFailRead(t *testing.T) {
 	}
 
 	// The bucket must remain in state.
-	assert.Equal(t, fmt.Sprintf("fr-par/%s", bucketName), d.Id())
+	assert.Equal(t, "fr-par/"+bucketName, d.Id())
 }
