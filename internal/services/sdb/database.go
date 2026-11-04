@@ -275,7 +275,8 @@ func (r *DatabaseResource) Read(ctx context.Context, req resource.ReadRequest, r
 
 	database, err := waitForDatabase(ctx, r.api, region, id, timeout)
 	if err != nil {
-		if httperrors.Is404(err) {
+		// SDB returns 403 (not 404) for a database that no longer exists.
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			resp.State.RemoveResource(ctx)
 
 			return
@@ -322,7 +323,8 @@ func (r *DatabaseResource) Update(ctx context.Context, req resource.UpdateReques
 
 	database, err := waitForDatabase(ctx, r.api, region, id, timeout)
 	if err != nil {
-		if httperrors.Is404(err) {
+		// SDB returns 403 (not 404) for a database that no longer exists.
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			resp.State.RemoveResource(ctx)
 
 			return
@@ -369,7 +371,8 @@ func (r *DatabaseResource) Update(ctx context.Context, req resource.UpdateReques
 
 	database, err = waitForDatabase(ctx, r.api, region, id, readTimeout)
 	if err != nil {
-		if httperrors.Is404(err) {
+		// SDB returns 403 (not 404) for a database that no longer exists.
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			resp.State.RemoveResource(ctx)
 
 			return
@@ -411,7 +414,7 @@ func (r *DatabaseResource) Delete(ctx context.Context, req resource.DeleteReques
 
 	_, err = waitForDatabase(ctx, r.api, region, id, timeout)
 	if err != nil {
-		if httperrors.Is404(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return
 		}
 
@@ -425,7 +428,7 @@ func (r *DatabaseResource) Delete(ctx context.Context, req resource.DeleteReques
 		DatabaseID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if httperrors.Is404(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			return
 		}
 
