@@ -1,7 +1,6 @@
 package object_test
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -99,9 +98,7 @@ func TestSetBucketState_ListObjects500DoesNotFailRead(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.Background()
-
-	s3Client, err := object.NewS3Client(ctx, "fr-par", "SCWXXXXXXXXXXXXXXXXX", "secret-key", srv.URL, true, &http.Client{})
+	s3Client, err := object.NewS3Client(t.Context(), "fr-par", "SCWXXXXXXXXXXXXXXXXX", "secret-key", srv.URL, true, &http.Client{})
 	require.NoError(t, err)
 
 	m, err := meta.NewMetaFromProfile(t.Context(), &scw.Profile{
@@ -117,7 +114,7 @@ func TestSetBucketState_ListObjects500DoesNotFailRead(t *testing.T) {
 	})
 	d.SetId("fr-par/" + bucketName)
 
-	diags := object.SetBucketState(ctx, d, m, bucketName, scw.RegionFrPar, s3Client)
+	diags := object.SetBucketState(t.Context(), d, m, bucketName, scw.RegionFrPar, s3Client)
 
 	// The ListObjects 500 must not produce an Error diagnostic.
 	// No attribute of scaleway_object_bucket is derived from the object listing;
