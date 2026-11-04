@@ -23,6 +23,7 @@ import (
 	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -242,19 +243,8 @@ func domainSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 				},
 			},
 		},
-		"region": regional.SchemaAttributeComputed(),
-		"project_id": schema.StringAttribute{
-			Optional:            true,
-			Computed:            true,
-			MarkdownDescription: "The project_id you want to attach the resource to",
-			Validators: []validator.String{
-				verify.IsStringUUID(),
-			},
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
-				stringplanmodifier.UseStateForUnknown(),
-			},
-		},
+		"region":     regional.SchemaAttributeComputed(),
+		"project_id": account.ProjectIDSchemaAttribute(),
 		"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 			Create: true,
 			Update: true,
