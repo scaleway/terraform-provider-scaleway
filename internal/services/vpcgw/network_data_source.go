@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 
@@ -14,6 +15,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/vpc_gateway_network_data_source.md
+var networkDataSourceDescription string
 
 func DataSourceNetwork() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceNetwork().SchemaFunc())
@@ -35,6 +39,7 @@ func DataSourceNetwork() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: networkDataSourceDescription,
 		Schema:      dsSchema,
 		ReadContext: DataSourceVPCGatewayNetworkRead,
 	}

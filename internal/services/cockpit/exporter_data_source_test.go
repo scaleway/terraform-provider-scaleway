@@ -2,6 +2,7 @@ package cockpit_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -62,6 +63,7 @@ func TestAccCockpitExporter_DataSource_ByID(t *testing.T) {
 					}
 				`, orgID, exporterName),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("data.scaleway_cockpit_exporter.by_id", "srn", regexp.MustCompile(`^srn://cockpit\..+/regions/.+/exporters/.+$`)),
 					resource.TestCheckResourceAttrPair("data.scaleway_cockpit_exporter.by_id", "id", "scaleway_cockpit_exporter.main", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_cockpit_exporter.by_id", "name", exporterName),
 					resource.TestCheckResourceAttr("data.scaleway_cockpit_exporter.by_id", "region", "fr-par"),

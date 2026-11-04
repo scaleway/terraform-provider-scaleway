@@ -50,6 +50,7 @@ var scimTokenDataSourceDescription string
 func (d *ScimTokenDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: scimTokenDataSourceDescription,
+		Description:         scimTokenDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"token_id": schema.StringAttribute{
 				MarkdownDescription: "The ID of the SCIM token to retrieve.",

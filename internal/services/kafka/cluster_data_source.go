@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,6 +14,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/kafka_cluster_data_source.md
+var clusterDataSourceDescription string
 
 func DataSourceCluster() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceCluster().SchemaFunc())
@@ -28,6 +32,7 @@ func DataSourceCluster() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: clusterDataSourceDescription,
 		ReadContext: DataSourceClusterRead,
 		Schema:      dsSchema,
 	}

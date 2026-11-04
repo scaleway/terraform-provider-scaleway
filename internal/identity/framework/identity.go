@@ -78,14 +78,14 @@ func CompositeRegional(partKeys ...string) identityschema.Schema {
 
 func SetRegionalIdentity(region scw.Region, id string) RegionalIdentity {
 	return RegionalIdentity{
-		ID:     types.StringValue(regional.NewIDString(region, id)),
+		ID:     types.StringValue(id),
 		Region: types.StringValue(region.String()),
 	}
 }
 
 func SetZonalIdentity(zone scw.Zone, id string) ZonalIdentity {
 	return ZonalIdentity{
-		ID:   types.StringValue(zonal.NewIDString(zone, id)),
+		ID:   types.StringValue(id),
 		Zone: types.StringValue(zone.String()),
 	}
 }
@@ -94,4 +94,32 @@ func SetGlobalIdentity(id string) GlobalIdentity {
 	return GlobalIdentity{
 		ID: types.StringValue(id),
 	}
+}
+
+// ResolveZonalIdentity returns the zone and bare UUID from a zonal identity,
+// tolerating identity state written by older provider versions where id was
+// stored as "zone/uuid" instead of a bare UUID. State self-heals on the next
+// Identity.Set, which writes the bare-uuid format.
+func ResolveZonalIdentity(identity ZonalIdentity) (scw.Zone, string) {
+	id := identity.ID.ValueString()
+
+	if zone, parsedID, err := zonal.ParseID(id); err == nil {
+		return zone, parsedID
+	}
+
+	return scw.Zone(identity.Zone.ValueString()), id
+}
+
+// ResolveRegionalIdentity returns the region and bare UUID from a regional
+// identity, tolerating identity state written by older provider versions where
+// id was stored as "region/uuid" instead of a bare UUID. State self-heals on
+// the next Identity.Set, which writes the bare-uuid format.
+func ResolveRegionalIdentity(identity RegionalIdentity) (scw.Region, string) {
+	id := identity.ID.ValueString()
+
+	if region, parsedID, err := regional.ParseID(id); err == nil {
+		return region, parsedID
+	}
+
+	return scw.Region(identity.Region.ValueString()), id
 }

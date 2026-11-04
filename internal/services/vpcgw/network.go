@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -19,8 +20,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/vpc_gateway_network_resource.md
+var networkResourceDescription string
+
 func ResourceNetwork() *schema.Resource {
 	return &schema.Resource{
+		Description:   networkResourceDescription,
 		CreateContext: ResourceVPCGatewayNetworkCreate,
 		ReadContext:   ResourceVPCGatewayNetworkRead,
 		UpdateContext: ResourceVPCGatewayNetworkUpdate,

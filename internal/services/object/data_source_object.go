@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -13,6 +14,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
+//go:embed descriptions/object_data_source.md
+var objectDataSourceDescription string
+
 func DataSourceObject() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceObject().SchemaFunc())
 
@@ -21,6 +25,7 @@ func DataSourceObject() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 
 	return &schema.Resource{
+		Description: objectDataSourceDescription,
 		ReadContext: DataSourceObjectRead,
 		Schema:      dsSchema,
 	}

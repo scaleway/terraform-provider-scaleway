@@ -107,6 +107,7 @@ func (r *SnapshotResource) Metadata(_ context.Context, req resource.MetadataRequ
 func (r *SnapshotResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Scaleway Block Snapshot",
+		Description:         "Manages a Scaleway Block Snapshot",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -339,6 +340,13 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 
 			return
 		}
+
+		snapshot, err = waitForBlockSnapshot(ctx, r.api, zone, snapshot.ID, timeout)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed waiting for block snapshot export", err.Error())
+
+			return
+		}
 	}
 
 	state := flattenBlockSnapshot(ctx, snapshot, &plan, &resp.Diagnostics)
@@ -376,16 +384,21 @@ func (r *SnapshotResource) Read(
 		return
 	}
 
-	resourceID := state.ID.ValueString()
+	var (
+		id   string
+		zone scw.Zone
+		err  error
+	)
+
 	if identityAvailable {
-		resourceID = identity.ID.ValueString()
-	}
+		zone, id = identityfw.ResolveZonalIdentity(identity)
+	} else {
+		zone, id, err = zonal.ParseID(state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse block snapshot ID during READ", err.Error())
 
-	zone, id, err := zonal.ParseID(resourceID)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
-
-		return
+			return
+		}
 	}
 
 	timeout, diags := state.Timeouts.Read(ctx, defaultBlockTimeout)
@@ -444,7 +457,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 
 	zone, id, err := zonal.ParseID(state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+		resp.Diagnostics.AddError("Failed to parse block snapshot ID during UPDATE", err.Error())
 
 		return
 	}
@@ -547,7 +560,7 @@ func (r *SnapshotResource) Delete(ctx context.Context, req resource.DeleteReques
 
 	zone, id, err := zonal.ParseID(state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
+		resp.Diagnostics.AddError("Failed to parse block snapshot ID during DELETE", err.Error())
 
 		return
 	}

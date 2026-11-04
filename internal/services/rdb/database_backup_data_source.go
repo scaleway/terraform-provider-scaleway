@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/rdb_database_backup_data_source.md
+var databaseBackupDataSourceDescription string
 
 func DataSourceDatabaseBackup() *schema.Resource {
 	// Generate datasource schema from resource
@@ -34,6 +38,7 @@ func DataSourceDatabaseBackup() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: databaseBackupDataSourceDescription,
 		ReadContext: DataSourceRDBDatabaseBackupRead,
 		Schema:      dsSchema,
 	}

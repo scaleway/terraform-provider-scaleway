@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/cockpit_preconfigured_alert_data_source.md
+var cockpitPreconfiguredAlertDataSourceDescription string
+
 func DataSourceCockpitPreconfiguredAlert() *schema.Resource {
 	return &schema.Resource{
+		Description: cockpitPreconfiguredAlertDataSourceDescription,
 		ReadContext: dataSourceCockpitPreconfiguredAlertRead,
 		Schema: map[string]*schema.Schema{
 			"project_id": account.ProjectIDSchema(),

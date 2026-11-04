@@ -2,6 +2,7 @@ package s2svpn
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/s2s_vpn_connection_data_source.md
+var connectionDataSourceDescription string
 
 func DataSourceConnection() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceConnection().SchemaFunc())
@@ -28,6 +32,7 @@ func DataSourceConnection() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: connectionDataSourceDescription,
 		Schema:      dsSchema,
 		ReadContext: DataSourceS2SConnectionRead,
 	}

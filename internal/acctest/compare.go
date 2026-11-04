@@ -1,6 +1,7 @@
 package acctest
 
 import (
+	"net/http"
 	"net/url"
 	"reflect"
 	"slices"
@@ -50,6 +51,28 @@ func compareJSONBodies(request, cassette map[string]any, strict bool) bool {
 			// Fails match if cassettes contains a field not in actual requests
 			// Fields should not disappear from requests unless a sdk breaking change
 			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
+			return false
+		}
+	}
+
+	return true
+}
+
+// compareHeaders checks that every non-ignored header of the played request is present in the
+// cassette request with the same value. Extra headers in the cassette are allowed, mirroring the
+// body matcher: a request may add new headers without invalidating old cassettes.
+func compareHeaders(requestHeaders, cassetteHeaders http.Header) bool {
+	for key, requestValues := range requestHeaders {
+		if slices.Contains(HeaderMatcherIgnore, key) {
+			continue
+		}
+
+		cassetteValues, ok := cassetteHeaders[key]
+		if !ok {
+			return false
+		}
+
+		if !compareStringSlices(requestValues, cassetteValues) {
 			return false
 		}
 	}

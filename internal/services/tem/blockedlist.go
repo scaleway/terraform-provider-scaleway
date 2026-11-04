@@ -2,6 +2,7 @@ package tem
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+//go:embed descriptions/tem_blocked_list_resource.md
+var blockedListResourceDescription string
+
 func ResourceBlockedList() *schema.Resource {
 	return &schema.Resource{
+		Description:   blockedListResourceDescription,
 		CreateContext: ResourceBlockedListCreate,
 		ReadContext:   ResourceBlockedListRead,
 		DeleteContext: ResourceBlockedListDelete,

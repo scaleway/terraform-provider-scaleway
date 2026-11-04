@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+//go:embed descriptions/instance_server_type_data_source.md
+var serverTypeDataSourceDescription string
+
 func DataSourceServerType() *schema.Resource {
 	return &schema.Resource{
+		Description: serverTypeDataSourceDescription,
 		ReadContext: DataSourceInstanceServerTypeRead,
 		SchemaFunc:  serverTypeSchema,
 	}

@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,8 +12,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 )
 
+//go:embed descriptions/edge_services_head_stage_resource.md
+var headStageResourceDescription string
+
 func ResourceHeadStage() *schema.Resource {
 	return &schema.Resource{
+		Description:   headStageResourceDescription,
 		CreateContext: ResourceHeadStageCreate,
 		ReadContext:   ResourceHeadStageRead,
 		UpdateContext: ResourceHeadStageUpdate,

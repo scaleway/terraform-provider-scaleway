@@ -2,6 +2,7 @@ package tem
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"strings"
 	"time"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+//go:embed descriptions/tem_domain_validation_resource.md
+var domainValidationResourceDescription string
+
 func ResourceDomainValidation() *schema.Resource {
 	return &schema.Resource{
+		Description:   domainValidationResourceDescription,
 		CreateContext: ResourceDomainValidationCreate,
 		ReadContext:   ResourceDomainValidationRead,
 		DeleteContext: ResourceDomainValidationDelete,

@@ -2,6 +2,7 @@ package cockpit_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -49,6 +50,8 @@ func TestAccCockpitSources_DataSource_All(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit_sources.all", "sources.1.url"),
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit_sources.all", "sources.0.push_url"),
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit_sources.all", "sources.1.push_url"),
+					resource.TestMatchResourceAttr("data.scaleway_cockpit_sources.all", "sources.0.srn", regexp.MustCompile(`^srn://cockpit\..+/regions/.+/data-sources/.+$`)),
+					resource.TestMatchResourceAttr("data.scaleway_cockpit_sources.all", "sources.1.srn", regexp.MustCompile(`^srn://cockpit\..+/regions/.+/data-sources/.+$`)),
 				),
 			},
 		},

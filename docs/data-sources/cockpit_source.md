@@ -70,6 +70,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `retention_days` - The number of days the data is retained in the data source.
 
+- `srn` - The Scaleway Resource Name (SRN) of the data source.
+
 ## Import
 
 You can import a Cockpit data source using its unique ID in the `{region}/{id}` format.
