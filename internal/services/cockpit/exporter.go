@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/cockpit_exporter_resource.md
+var cockpitExporterResourceDescription string
+
 func ResourceCockpitExporter() *schema.Resource {
 	return &schema.Resource{
+		Description:   cockpitExporterResourceDescription,
 		CreateContext: ResourceCockpitExporterCreate,
 		ReadContext:   ResourceCockpitExporterRead,
 		UpdateContext: ResourceCockpitExporterUpdate,

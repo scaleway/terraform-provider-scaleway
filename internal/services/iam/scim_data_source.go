@@ -37,6 +37,7 @@ var scimDataSourceDescription string
 func (d *ScimDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: scimDataSourceDescription,
+		Description:         scimDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"organization_id": schema.StringAttribute{
 				MarkdownDescription: "The organization ID. If not provided, the default organization configured in the provider is used.",

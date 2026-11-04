@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"sort"
 
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/instance_image_data_source.md
+var imageDataSourceDescription string
+
 func DataSourceImage() *schema.Resource {
 	return &schema.Resource{
+		Description: imageDataSourceDescription,
 		ReadContext: DataSourceInstanceImageRead,
 		SchemaFunc:  dataSourceImageSchema,
 	}

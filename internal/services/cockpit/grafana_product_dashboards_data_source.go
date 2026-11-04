@@ -50,6 +50,7 @@ var grafanaProductDashboardsDataSourceDescription string
 func (d *GrafanaProductDashboardsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: grafanaProductDashboardsDataSourceDescription,
+		Description:         grafanaProductDashboardsDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"project_id": schema.StringAttribute{
 				Optional:            true,

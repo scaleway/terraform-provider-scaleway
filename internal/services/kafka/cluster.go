@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	_ "embed"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/kafka_cluster_resource.md
+var clusterResourceDescription string
+
 func ResourceCluster() *schema.Resource {
 	return &schema.Resource{
+		Description:   clusterResourceDescription,
 		CreateContext: resourceClusterCreate,
 		ReadContext:   resourceClusterRead,
 		UpdateContext: resourceClusterUpdate,

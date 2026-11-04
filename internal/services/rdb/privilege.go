@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"strings"
 
@@ -19,8 +20,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/rdb_privilege_resource.md
+var privilegeResourceDescription string
+
 func ResourcePrivilege() *schema.Resource {
 	return &schema.Resource{
+		Description:   privilegeResourceDescription,
 		CreateContext: ResourceRdbPrivilegeCreate,
 		ReadContext:   ResourceRdbPrivilegeRead,
 		DeleteContext: ResourceRdbPrivilegeDelete,

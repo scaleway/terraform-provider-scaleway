@@ -2,6 +2,7 @@ package ipam
 
 import (
 	"context"
+	_ "embed"
 	"net"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/ipam_ip_reverse_dns_resource.md
+var ipreverseDNSResourceDescription string
+
 func ResourceIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
+		Description:   ipreverseDNSResourceDescription,
 		CreateContext: ResourceIPAMIPReverseDNSCreate,
 		ReadContext:   ResourceIPAMIPReverseDNSRead,
 		UpdateContext: ResourceIPAMIPReverseDNSUpdate,

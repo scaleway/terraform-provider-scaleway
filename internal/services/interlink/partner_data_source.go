@@ -64,6 +64,11 @@ func DataSourcePartner() *schema.Resource {
 				Computed:    true,
 				Description: "Last update date of the partner",
 			},
+			"srn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Scaleway Resource Name (SRN) of the partner",
+			},
 		},
 	}
 }
@@ -149,6 +154,7 @@ func setPartnerState(d *schema.ResourceData, partner *interlink.Partner) diag.Di
 	_ = d.Set("portal_url", partner.PortalURL)
 	_ = d.Set("created_at", types.FlattenTime(partner.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(partner.UpdatedAt))
+	_ = d.Set("srn", partner.Srn)
 
 	return nil
 }

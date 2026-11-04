@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5" //nolint:gosec
+	_ "embed"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -22,8 +23,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/object_resource.md
+var objectResourceDescription string
+
 func ResourceObject() *schema.Resource {
 	return &schema.Resource{
+		Description:   objectResourceDescription,
 		CreateContext: resourceObjectCreate,
 		ReadContext:   resourceObjectRead,
 		UpdateContext: resourceObjectUpdate,

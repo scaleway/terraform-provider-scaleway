@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,6 +10,9 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 )
+
+//go:embed descriptions/iam_api_key_data_source.md
+var apikeyDataSourceDescription string
 
 func DataSourceAPIKey() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceAPIKey().SchemaFunc())
@@ -18,6 +22,7 @@ func DataSourceAPIKey() *schema.Resource {
 	delete(dsSchema, "secret_key")
 
 	return &schema.Resource{
+		Description: apikeyDataSourceDescription,
 		ReadContext: DataSourceIamAPIKeyRead,
 		Schema:      dsSchema,
 	}

@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,8 +13,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+//go:embed descriptions/mnq_sns_resource.md
+var snsResourceDescription string
+
 func ResourceSNS() *schema.Resource {
 	return &schema.Resource{
+		Description:   snsResourceDescription,
 		CreateContext: ResourceMNQSNSCreate,
 		ReadContext:   ResourceMNQSNSRead,
 		DeleteContext: ResourceMNQSNSDelete,

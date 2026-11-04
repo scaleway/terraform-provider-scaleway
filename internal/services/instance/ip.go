@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance_ip_resource.md
+var ipResourceDescription string
+
 func ResourceIP() *schema.Resource {
 	return &schema.Resource{
+		Description:   ipResourceDescription,
 		CreateContext: ResourceInstanceIPCreate,
 		ReadContext:   ResourceInstanceIPRead,
 		UpdateContext: ResourceInstanceIPUpdate,

@@ -2,6 +2,7 @@ package container
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/container_domain_resource.md
+var domainResourceDescription string
+
 func ResourceDomain() *schema.Resource {
 	return &schema.Resource{
+		Description:   domainResourceDescription,
 		CreateContext: ResourceContainerDomainCreate,
 		ReadContext:   ResourceContainerDomainRead,
 		DeleteContext: ResourceContainerDomainDelete,

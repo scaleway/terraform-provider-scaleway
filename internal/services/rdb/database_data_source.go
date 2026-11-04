@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -9,6 +10,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
+
+//go:embed descriptions/rdb_database_data_source.md
+var databaseDataSourceDescription string
 
 func DataSourceDatabase() *schema.Resource {
 	// Generate datasource schema from resource
@@ -20,6 +24,7 @@ func DataSourceDatabase() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region")
 
 	return &schema.Resource{
+		Description: databaseDataSourceDescription,
 		ReadContext: DataSourceDatabaseRead,
 		Schema:      dsSchema,
 	}
