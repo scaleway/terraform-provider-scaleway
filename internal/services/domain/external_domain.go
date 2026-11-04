@@ -3,189 +3,338 @@ package domain
 import (
 	"context"
 	_ "embed"
+	"fmt"
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	domainsdk "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+var (
+	_ resource.Resource                = (*ExternalDomainResource)(nil)
+	_ resource.ResourceWithConfigure   = (*ExternalDomainResource)(nil)
+	_ resource.ResourceWithImportState = (*ExternalDomainResource)(nil)
+	_ resource.ResourceWithIdentity    = (*ExternalDomainResource)(nil)
+)
+
+func NewExternalDomainResource() resource.Resource {
+	return &ExternalDomainResource{}
+}
+
+type ExternalDomainResource struct {
+	api  *domainsdk.RegistrarAPI
+	meta *meta.Meta
+}
+
+type externalDomainModel struct {
+	ID              types.String `tfsdk:"id"`
+	Domain          types.String `tfsdk:"domain"`
+	ProjectID       types.String `tfsdk:"project_id"`
+	OrganizationID  types.String `tfsdk:"organization_id"`
+	NSServers       types.List   `tfsdk:"ns_servers"`
+	Status          types.String `tfsdk:"status"`
+	ValidationToken types.String `tfsdk:"validation_token"`
+}
+
+type externalDomainIdentityModel = identityfw.GlobalIdentity
 
 //go:embed descriptions/domain_external_resource.md
 var externalDomainResourceDescription string
 
-func ResourceExternalDomain() *schema.Resource {
-	return &schema.Resource{
-		Description:   externalDomainResourceDescription,
-		CreateContext: resourceExternalDomainCreate,
-		ReadContext:   resourceExternalDomainRead,
-		DeleteContext: resourceExternalDomainDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+func (r *ExternalDomainResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_domain_external"
+}
+
+func (r *ExternalDomainResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: externalDomainResourceDescription,
+		Description:         externalDomainResourceDescription,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The domain name",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"domain": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "The domain name to be managed",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"project_id": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "The project ID the domain belongs to",
+				Validators: []validator.String{
+					verify.IsStringUUID(),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"organization_id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The organization ID the domain is associated with",
+			},
+			"ns_servers": schema.ListAttribute{
+				ElementType:         types.StringType,
+				Computed:            true,
+				MarkdownDescription: "List of NS servers for the domain",
+			},
+			"status": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The status of the domain",
+			},
+			"validation_token": schema.StringAttribute{
+				Computed:            true,
+				Sensitive:           true,
+				MarkdownDescription: "The validation token for the domain",
+			},
 		},
-		SchemaVersion: 0,
-		SchemaFunc:    externalDomainSchema,
-		Identity:      identity.DefaultGlobal(),
 	}
 }
 
-func externalDomainSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"domain": {
-			Type:        schema.TypeString,
-			Description: "The domain name to be managed.",
-			Required:    true,
-			ForceNew:    true,
-		},
-		"project_id":      account.ProjectIDSchema(),
-		"organization_id": account.OrganizationIDSchema(),
-		"ns_servers": {
-			Type:        schema.TypeList,
-			Elem:        &schema.Schema{Type: schema.TypeString},
-			Description: "List of NS servers for the domain.",
-			Computed:    true,
-		},
-		"status": {
-			Type:        schema.TypeString,
-			Description: "The status of the domain.",
-			Computed:    true,
-		},
-		"validation_token": {
-			Type:        schema.TypeString,
-			Description: "The validation token for the domain.",
-			Computed:    true,
-			Sensitive:   true,
-		},
-	}
+func (r *ExternalDomainResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityfw.DefaultGlobal()
 }
 
-func resourceExternalDomainCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	registrarAPI := NewRegistrarDomainAPI(m)
+func (r *ExternalDomainResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
 
-	projectID, _, err := meta.ExtractProjectID(d, m)
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.meta = m
+	r.api = domainsdk.NewRegistrarAPI(m.ScwClient())
+}
+
+func (r *ExternalDomainResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan externalDomainModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(plan.ProjectID, r.meta.ScwClient())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Missing project ID", err.Error())
+
+		return
 	}
 
-	domainName := d.Get("domain").(string)
+	domainName := plan.Domain.ValueString()
 
-	resp, err := registrarAPI.RegisterExternalDomain(&domain.RegistrarAPIRegisterExternalDomainRequest{
+	registerResp, err := r.api.RegisterExternalDomain(&domainsdk.RegistrarAPIRegisterExternalDomainRequest{
 		Domain:    domainName,
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to register external domain", err.Error())
+
+		return
 	}
 
-	if err := identity.SetGlobalIdentity(d, resp.Domain); err != nil {
-		return diag.FromErr(err)
+	state, diags := r.readExternalDomain(ctx, registerResp.Domain)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	_ = d.Set("validation_token", resp.ValidationToken)
-	_ = d.Set("organization_id", resp.OrganizationID)
+	if state == nil {
+		resp.Diagnostics.AddError(
+			"Failed to read external domain after create",
+			"Register succeeded but GetDomain returned not found",
+		)
 
-	return resourceExternalDomainRead(ctx, d, m)
+		return
+	}
+
+	// Seed token from create response when Get still has an empty one.
+	if state.ValidationToken.ValueString() == "" {
+		state.ValidationToken = types.StringValue(registerResp.ValidationToken)
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetGlobalIdentity(registerResp.Domain))...)
 }
 
-func resourceExternalDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	registrarAPI := NewRegistrarDomainAPI(m)
+func (r *ExternalDomainResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var (
+		state    externalDomainModel
+		identity externalDomainIdentityModel
+	)
 
-	resp, diags := readExternalDomainIntoState(ctx, d, registrarAPI)
-	if diags.HasError() {
-		return diags
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
 	}
 
-	if resp == nil {
-		return nil
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	if err := identity.SetGlobalIdentity(d, resp.Domain); err != nil {
-		return diag.FromErr(err)
+	domainName := state.ID.ValueString()
+	if identityAvailable {
+		domainName = identity.ID.ValueString()
+	}
+
+	if domainName == "" {
+		domainName = state.Domain.ValueString()
+	}
+
+	if domainName == "" {
+		resp.Diagnostics.AddError("External domain ID not set", "Cannot refresh domain without an ID")
+
+		return
+	}
+
+	readState, diags := r.readExternalDomain(ctx, domainName)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if readState == nil {
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, readState)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetGlobalIdentity(readState.ID.ValueString()))...)
+}
+
+func (r *ExternalDomainResource) Update(_ context.Context, _ resource.UpdateRequest, resp *resource.UpdateResponse) {
+	resp.Diagnostics.AddError(
+		"Update not supported",
+		"External domains cannot be updated. Changes to domain or project_id require resource replacement.",
+	)
+}
+
+func (r *ExternalDomainResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state externalDomainModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	domainName := state.ID.ValueString()
+	if domainName == "" {
+		domainName = state.Domain.ValueString()
+	}
+
+	_, err := r.api.DeleteExternalDomain(&domainsdk.RegistrarAPIDeleteExternalDomainRequest{
+		Domain: domainName,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			log.Printf("[WARN] domain external domain (%s) not found, removing from state", domainName)
+
+			return
+		}
+
+		// DELETE can return 403 "domain not found" both when the domain is gone and
+		// when it is still checking (API refuses delete). Confirm with Get.
+		if httperrors.Is403(err) && strings.Contains(err.Error(), "not found") {
+			_, getErr := r.api.GetDomain(&domainsdk.RegistrarAPIGetDomainRequest{
+				Domain: domainName,
+			}, scw.WithContext(ctx))
+			if getErr != nil && (httperrors.Is404(getErr) || (httperrors.Is403(getErr) && strings.Contains(getErr.Error(), "not found"))) {
+				log.Printf("[WARN] domain external domain (%s) not found, removing from state", domainName)
+
+				return
+			}
+		}
+
+		resp.Diagnostics.AddError("Failed to delete external domain", err.Error())
+	}
+}
+
+func (r *ExternalDomainResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
+}
+
+func (r *ExternalDomainResource) readExternalDomain(ctx context.Context, domainName string) (*externalDomainModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	resp, err := r.api.GetDomain(&domainsdk.RegistrarAPIGetDomainRequest{Domain: domainName}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			log.Printf("[WARN] domain external domain (%s) not found, removing from state", domainName)
+
+			return nil, diags
+		}
+
+		diags.AddError("Failed to get external domain", err.Error())
+
+		return nil, diags
 	}
 
 	validationToken := ""
-	if resp.ExternalDomainRegistrationStatus != nil && resp.ExternalDomainRegistrationStatus.ValidationToken != "" {
+	if resp.ExternalDomainRegistrationStatus != nil {
 		validationToken = resp.ExternalDomainRegistrationStatus.ValidationToken
 	}
-
-	_ = d.Set("validation_token", validationToken)
-
-	return nil
-}
-
-// readExternalDomainIntoState fetches external domain data and sets schema
-// attributes without Identity (works for both the resource and the data source).
-// It does not set attributes that are not part of the data source schema
-// (validation_token), which the resource read handles itself.
-func readExternalDomainIntoState(ctx context.Context, d *schema.ResourceData, registrarAPI *domain.RegistrarAPI) (*domain.Domain, diag.Diagnostics) {
-	resp, err := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{Domain: d.Id()}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			log.Printf("[WARN] domain external domain (%s) not found, removing from state", d.Id())
-			d.SetId("")
-
-			return nil, nil
-		}
-
-		return nil, diag.FromErr(err)
-	}
-
-	d.SetId(resp.Domain)
-	_ = d.Set("domain", resp.Domain)
-	_ = d.Set("project_id", resp.ProjectID)
-	_ = d.Set("organization_id", resp.OrganizationID)
 
 	nsServers := []string{}
 	if len(resp.DNSZones) > 0 {
 		nsServers = resp.DNSZones[0].NsDefault
 	}
 
-	if err := d.Set("ns_servers", nsServers); err != nil {
-		return resp, diag.FromErr(err)
-	}
+	state, flattenDiags := flattenExternalDomain(ctx, resp.Domain, resp.OrganizationID, resp.ProjectID, resp.Status.String(), validationToken, nsServers)
+	diags.Append(flattenDiags...)
 
-	_ = d.Set("status", resp.Status.String())
-
-	return resp, nil
+	return &state, diags
 }
 
-func resourceExternalDomainDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	registrarAPI := NewRegistrarDomainAPI(m)
-
-	_, err := registrarAPI.DeleteExternalDomain(&domain.RegistrarAPIDeleteExternalDomainRequest{
-		Domain: d.Id(),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			log.Printf("[WARN] domain external domain (%s) not found, removing from state", d.Id())
-			d.SetId("")
-
-			return nil
-		}
-
-		// DELETE can return 403 "domain not found" both when the domain is gone and
-		// when it is still checking (API refuses delete). Confirm with Get.
-		if httperrors.Is403(err) && strings.Contains(err.Error(), "not found") {
-			_, getErr := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
-				Domain: d.Id(),
-			}, scw.WithContext(ctx))
-			if getErr != nil && (httperrors.Is404(getErr) || (httperrors.Is403(getErr) && strings.Contains(getErr.Error(), "not found"))) {
-				log.Printf("[WARN] domain external domain (%s) not found, removing from state", d.Id())
-				d.SetId("")
-
-				return nil
-			}
-		}
-
-		return diag.FromErr(err)
+func flattenExternalDomain(
+	ctx context.Context,
+	domainName, organizationID, projectID, status, validationToken string,
+	nsServers []string,
+) (externalDomainModel, diag.Diagnostics) {
+	if nsServers == nil {
+		nsServers = []string{}
 	}
 
-	d.SetId("")
+	nsList, diags := types.ListValueFrom(ctx, types.StringType, nsServers)
 
-	return nil
+	return externalDomainModel{
+		ID:              types.StringValue(domainName),
+		Domain:          types.StringValue(domainName),
+		OrganizationID:  types.StringValue(organizationID),
+		ProjectID:       types.StringValue(projectID),
+		Status:          types.StringValue(status),
+		ValidationToken: types.StringValue(validationToken),
+		NSServers:       nsList,
+	}, diags
 }
