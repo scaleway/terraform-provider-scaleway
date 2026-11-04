@@ -808,7 +808,7 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, m any, bucketNa
 	// Note: the "ListObjects" call was removed from here to fix
 	// https://github.com/scaleway/terraform-provider-scaleway/issues/4530.
 	// The result was never used, and bucket existence is already established by
-	// GetObjectLockConfiguration, which return 404 on a missing bucket.
+	// GetBucketACL and GetObjectLockConfiguration, which both return 404 on a missing bucket.
 
 	var tagsSet []s3Types.Tag
 
