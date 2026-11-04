@@ -1,4 +1,4 @@
-package object
+package object_test
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -41,14 +42,6 @@ func TestSetBucketState_ListObjects500DoesNotFailRead(t *testing.T) {
 	}
 
 	bucketName := "test-bucket-list-objects-500"
-
-	m, err := meta.NewMetaFromProfile(t.Context(), &scw.Profile{
-		AccessKey:     scw.StringPtr("SCWXXXXXXXXXXXXXXXXX"),
-		SecretKey:     scw.StringPtr("866f4a9a-d058-4d3c-a39f-86930849ccc0"),
-		DefaultRegion: scw.StringPtr(scw.RegionFrPar.String()),
-		DefaultZone:   scw.StringPtr(scw.ZoneFrPar1.String()),
-	}, nil, nil, nil, "test", &http.Client{})
-	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
@@ -104,15 +97,23 @@ func TestSetBucketState_ListObjects500DoesNotFailRead(t *testing.T) {
 
 	ctx := context.Background()
 
-	s3Client, err := newS3Client(ctx, "fr-par", "SCWXXXXXXXXXXXXXXXXX", "secret-key", srv.URL, true, &http.Client{})
+	s3Client, err := object.NewS3Client(ctx, "fr-par", "SCWXXXXXXXXXXXXXXXXX", "secret-key", srv.URL, true, &http.Client{})
 	require.NoError(t, err)
 
-	d := schema.TestResourceDataRaw(t, bucketSchema(), map[string]any{
+	m, err := meta.NewMetaFromProfile(t.Context(), &scw.Profile{
+		AccessKey:     scw.StringPtr("SCWXXXXXXXXXXXXXXXXX"),
+		SecretKey:     scw.StringPtr("866f4a9a-d058-4d3c-a39f-86930849ccc0"),
+		DefaultRegion: scw.StringPtr(scw.RegionFrPar.String()),
+		DefaultZone:   scw.StringPtr(scw.ZoneFrPar1.String()),
+	}, nil, nil, nil, "test", &http.Client{})
+	require.NoError(t, err)
+
+	d := schema.TestResourceDataRaw(t, object.BucketSchema(), map[string]any{
 		"name": bucketName,
 	})
 	d.SetId(fmt.Sprintf("fr-par/%s", bucketName))
 
-	diags := setBucketState(ctx, d, m, bucketName, scw.RegionFrPar, s3Client)
+	diags := object.SetBucketState(ctx, d, m, bucketName, scw.RegionFrPar, s3Client)
 
 	// The ListObjects 500 must not produce an Error diagnostic.
 	// No attribute of scaleway_object_bucket is derived from the object listing;
