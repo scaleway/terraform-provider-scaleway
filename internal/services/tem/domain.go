@@ -26,7 +26,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 //go:embed descriptions/tem_domain_resource.md
