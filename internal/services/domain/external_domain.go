@@ -138,6 +138,7 @@ func (r *ExternalDomainResource) Create(ctx context.Context, req resource.Create
 	var plan externalDomainModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -163,6 +164,7 @@ func (r *ExternalDomainResource) Create(ctx context.Context, req resource.Create
 
 	state, diags := r.readExternalDomain(ctx, registerResp.Domain)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -192,6 +194,7 @@ func (r *ExternalDomainResource) Read(ctx context.Context, req resource.ReadRequ
 	)
 
 	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+
 	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
 
 	if !identityAvailable && resp.Diagnostics.HasError() {
@@ -199,6 +202,7 @@ func (r *ExternalDomainResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -220,6 +224,7 @@ func (r *ExternalDomainResource) Read(ctx context.Context, req resource.ReadRequ
 
 	readState, diags := r.readExternalDomain(ctx, domainName)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -245,6 +250,7 @@ func (r *ExternalDomainResource) Delete(ctx context.Context, req resource.Delete
 	var state externalDomainModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -290,7 +296,7 @@ func (r *ExternalDomainResource) readExternalDomain(ctx context.Context, domainN
 
 	resp, err := r.api.GetDomain(&domainsdk.RegistrarAPIGetDomainRequest{Domain: domainName}, scw.WithContext(ctx))
 	if err != nil {
-		if httperrors.Is404(err) {
+		if httperrors.Is404(err) || (httperrors.Is403(err) && strings.Contains(err.Error(), "not found")) {
 			log.Printf("[WARN] domain external domain (%s) not found, removing from state", domainName)
 
 			return nil, diags

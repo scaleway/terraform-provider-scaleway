@@ -102,6 +102,7 @@ func (d *ExternalDomainDataSource) Read(ctx context.Context, req datasource.Read
 	var config externalDomainDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -133,6 +134,7 @@ func (d *ExternalDomainDataSource) Read(ctx context.Context, req datasource.Read
 
 	nsList, diags := types.ListValueFrom(ctx, types.StringType, nsServers)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}

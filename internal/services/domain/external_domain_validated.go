@@ -45,8 +45,8 @@ type externalDomainValidatedModel struct {
 	Domain         types.String   `tfsdk:"domain"`
 	ProjectID      types.String   `tfsdk:"project_id"`
 	OrganizationID types.String   `tfsdk:"organization_id"`
-	NSServers      types.List     `tfsdk:"ns_servers"`
 	Validated      types.Bool     `tfsdk:"validated"`
+	NSServers      types.List     `tfsdk:"ns_servers"`
 	Timeouts       timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -137,12 +137,14 @@ func (r *ExternalDomainValidatedResource) Create(ctx context.Context, req resour
 	var plan externalDomainValidatedModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	createTimeout, diags := plan.Timeouts.Create(ctx, defaultDomainRegistrationTimeout)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -158,6 +160,7 @@ func (r *ExternalDomainValidatedResource) Create(ctx context.Context, req resour
 
 	state, diags := r.readExternalDomainValidated(ctx, domainName, plan.Timeouts)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -182,6 +185,7 @@ func (r *ExternalDomainValidatedResource) Read(ctx context.Context, req resource
 	)
 
 	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+
 	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
 
 	if !identityAvailable && resp.Diagnostics.HasError() {
@@ -189,6 +193,7 @@ func (r *ExternalDomainValidatedResource) Read(ctx context.Context, req resource
 	}
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -210,6 +215,7 @@ func (r *ExternalDomainValidatedResource) Read(ctx context.Context, req resource
 
 	readState, diags := r.readExternalDomainValidated(ctx, domainName, state.Timeouts)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -272,8 +278,8 @@ func (r *ExternalDomainValidatedResource) readExternalDomainValidated(
 		Domain:         types.StringValue(resp.Domain),
 		ProjectID:      types.StringValue(resp.ProjectID),
 		OrganizationID: types.StringValue(resp.OrganizationID),
-		NSServers:      nsList,
 		Validated:      types.BoolValue(resp.Status == domainsdk.DomainStatusActive),
+		NSServers:      nsList,
 		Timeouts:       timeoutsValue,
 	}, diags
 }
