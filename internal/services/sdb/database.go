@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sdbSDK "github.com/scaleway/scaleway-sdk-go/api/serverless_sqldb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -21,8 +20,8 @@ import (
 	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 //go:embed descriptions/sdb_sql_database_resource.md
@@ -116,20 +115,9 @@ func (r *DatabaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Computed:            true,
 				MarkdownDescription: "The Scaleway Resource Name (SRN) of the database.",
 			},
-			"region": regional.SchemaAttributeComputed(),
-			"project_id": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "The project_id you want to attach the resource to",
-				Validators: []validator.String{
-					verify.IsStringUUID(),
-				},
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"timeouts": timeouts.AttributesAll(ctx),
+			"region":     regional.SchemaAttributeComputed(),
+			"project_id": account.ProjectIDSchemaAttribute(),
+			"timeouts":   timeouts.AttributesAll(ctx),
 		},
 	}
 }
