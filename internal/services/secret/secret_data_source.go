@@ -2,6 +2,7 @@ package secret
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,6 +15,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/secret_data_source.md
+var secretDataSourceDescription string
 
 func DataSourceSecret() *schema.Resource {
 	// Generate datasource schema from resource
@@ -40,6 +44,7 @@ func DataSourceSecret() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: secretDataSourceDescription,
 		ReadContext: DataSourceSecretRead,
 		Schema:      dsSchema,
 	}

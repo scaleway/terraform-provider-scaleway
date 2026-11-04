@@ -102,6 +102,11 @@ func DataSourcePops() *schema.Resource {
 							Computed:    true,
 							Description: "Region of the PoP",
 						},
+						"srn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Scaleway Resource Name (SRN) of the PoP",
+						},
 					},
 				},
 			},
@@ -129,9 +134,7 @@ func DataSourcePopsRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		req.LinkBandwidthMbps = new(uint64(bandwidth.(int)))
 	}
 
-	if dedicated, ok := d.GetOk("dedicated_available"); ok {
-		req.DedicatedAvailable = new(dedicated.(bool))
-	}
+	req.DedicatedAvailable = types.ExpandBoolPtr(types.GetBool(d, "dedicated_available"))
 
 	res, err := api.ListPops(req, scw.WithContext(ctx))
 	if err != nil {

@@ -2,6 +2,7 @@ package az
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -12,8 +13,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 )
 
+//go:embed descriptions/availability_zones_data_source.md
+var availabilityZonesDataSourceDescription string
+
 func DataSourceAvailabilityZones() *schema.Resource {
 	return &schema.Resource{
+		Description:        availabilityZonesDataSourceDescription,
 		ReadWithoutTimeout: dataSourceAvailabilityZonesRead,
 
 		Timeouts: &schema.ResourceTimeout{

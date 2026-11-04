@@ -2,6 +2,7 @@ package container
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/container_cron_resource.md
+var cronResourceDescription string
+
 func ResourceCron() *schema.Resource {
 	return &schema.Resource{
+		Description:        cronResourceDescription,
 		CreateContext:      ResourceContainerCronCreate,
 		ReadContext:        ResourceContainerCronRead,
 		UpdateContext:      ResourceContainerCronUpdate,

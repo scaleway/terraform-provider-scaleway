@@ -2,6 +2,7 @@ package applesilicon
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/apple_silicon_os_data_source.md
+var osDataSourceDescription string
+
 func DataSourceOS() *schema.Resource {
 	return &schema.Resource{
+		Description: osDataSourceDescription,
 		ReadContext: DataSourceOSRead,
 		SchemaFunc:  osSchema,
 	}

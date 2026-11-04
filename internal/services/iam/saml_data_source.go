@@ -38,6 +38,7 @@ var samlDataSourceDescription string
 func (d *SamlDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: samlDataSourceDescription,
+		Description:         samlDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"organization_id": schema.StringAttribute{
 				MarkdownDescription: "The organization ID",

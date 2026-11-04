@@ -68,6 +68,7 @@ func (r *UserResource) Metadata(_ context.Context, req resource.MetadataRequest,
 func (r *UserResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: userDescription,
+		Description:         userDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

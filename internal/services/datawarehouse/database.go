@@ -2,6 +2,7 @@ package datawarehouse
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"strings"
 
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
+//go:embed descriptions/datawarehouse_database_resource.md
+var databaseResourceDescription string
+
 func ResourceDatabase() *schema.Resource {
 	return &schema.Resource{
+		Description:   databaseResourceDescription,
 		CreateContext: resourceDatabaseCreate,
 		ReadContext:   resourceDatabaseRead,
 		DeleteContext: resourceDatabaseDelete,

@@ -2,6 +2,7 @@ package container
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/container_trigger_resource.md
+var triggerResourceDescription string
+
 func ResourceTrigger() *schema.Resource {
 	return &schema.Resource{
+		Description:   triggerResourceDescription,
 		CreateContext: ResourceContainerTriggerCreate,
 		ReadContext:   ResourceContainerTriggerRead,
 		UpdateContext: ResourceContainerTriggerUpdate,

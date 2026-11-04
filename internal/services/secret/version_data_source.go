@@ -2,6 +2,7 @@ package secret
 
 import (
 	"context"
+	_ "embed"
 	"encoding/base64"
 	"fmt"
 	"strconv"
@@ -18,6 +19,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/secret_version_data_source.md
+var versionDataSourceDescription string
 
 func DataSourceVersion() *schema.Resource {
 	// Generate datasource schema from resource
@@ -53,6 +57,7 @@ func DataSourceVersion() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: versionDataSourceDescription,
 		ReadContext: datasourceSchemaFromResourceVersionSchema,
 		Schema:      dsSchema,
 	}

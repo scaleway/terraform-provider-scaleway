@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/lbs_data_source.md
+var lbsDataSourceDescription string
+
 func DataSourceLbs() *schema.Resource {
 	return &schema.Resource{
+		Description: lbsDataSourceDescription,
 		ReadContext: DataSourceLbsRead,
 		SchemaFunc:  lbsSchema,
 	}
