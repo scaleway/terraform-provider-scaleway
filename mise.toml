@@ -219,7 +219,8 @@ typos
 [tasks.'lint:provider']
 description = "lint the provider for terraform-specific issues"
 run = '''
-tfsproutx -S013=false -XR001=false -XS002=false -R019=false ./...
+# tfsproutx (x/tools v0.49) cannot read export data V5 written by go >= 1.27.2
+mise exec go@1.27.1 -- tfsproutx -S013=false -XR001=false -XS002=false -R019=false ./...
 '''
 
 [tasks.'test:provider']
