@@ -19,17 +19,31 @@ data "scaleway_instance_image" "my_image" {
 data "scaleway_instance_image" "my_image" {
   image_id = "11111111-1111-1111-1111-111111111111"
 }
+
+# Get info by tags (select the most recently modified matching image)
+data "scaleway_instance_image" "by_tags" {
+  tags = [
+    "env=production",
+    "version=v1.2.3",
+  ]
+
+  latest = true
+}
 ```
 
 ## Argument Reference
 
-- `name` - (Optional) The image name. Only one of `name` and `image_id` should be specified.
+~> **Important:** At least one of `image_id`, `name` or `tags` must be set to a non-empty value.
 
-- `image_id` - (Optional) The image id. Only one of `name` and `image_id` should be specified.
+- `name` - (Optional) The exact image name. Conflicts with `image_id`.
+
+- `image_id` - (Optional) The image id. Conflicts with `name`, `architecture`, `latest` and `tags`.
 
 - `architecture` - (Optional, default `x86_64`) The architecture the image is compatible with. Possible values are: `x86_64` or `arm`.
 
-- `latest` - (Optional, default `true`) Use the latest image ID.
+- `latest` - (Optional, default `true`) Select the most recently modified image when multiple images match. When `false`, multiple matches are an error.
+
+- `tags` - (Optional) List of tags the image must have. Can be combined with `name` and `architecture`. Only one of `image_id` and the (`name`, `tags`) filters should be specified.
 
 - `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
 
