@@ -8,6 +8,7 @@ lockfile = true
 shell = "bash -c"
 
 [tools]
+editorconfig-checker = "4.0.2"
 "github:bflad/tfproviderdocs" = "0.12.1"
 "github:hashicorp/terraform-plugin-docs" = "0.25.0"
 "github:owenlamont/ryl" = "0.24.0"
@@ -181,6 +182,12 @@ ryl check .github .golangci.yml .goreleaser.yml
 description = "lint the markdown files (documentation)"
 run = '''
 rumdl check .
+'''
+
+[tasks.'lint:examples']
+description = "Ensure all examples got a new line ending"
+run = '''
+editorconfig-checker
 '''
 
 [tasks.'lint:tfproviderdocs']
