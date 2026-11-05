@@ -23,9 +23,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -144,18 +144,9 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			"zone": zonal.SchemaAttributeComputed(
 				"The zone you want to attach the resource to",
 			),
-			"project_id": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "The project ID the volume belongs to. Defaults to the provider's project ID.",
-				Validators: []validator.String{
-					verify.IsStringUUID(),
-				},
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
+			"project_id": account.ProjectIDSchemaFw(
+				"The project ID the volume belongs to. Defaults to the provider's project ID.",
+			),
 		},
 	}
 }
