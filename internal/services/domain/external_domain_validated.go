@@ -45,9 +45,9 @@ type externalDomainValidatedModel struct {
 	Domain         types.String   `tfsdk:"domain"`
 	ProjectID      types.String   `tfsdk:"project_id"`
 	OrganizationID types.String   `tfsdk:"organization_id"`
-	Validated      types.Bool     `tfsdk:"validated"`
 	NSServers      types.List     `tfsdk:"ns_servers"`
 	Timeouts       timeouts.Value `tfsdk:"timeouts"`
+	Validated      types.Bool     `tfsdk:"validated"`
 }
 
 type externalDomainValidatedIdentityModel = identityfw.GlobalIdentity
@@ -278,8 +278,8 @@ func (r *ExternalDomainValidatedResource) readExternalDomainValidated(
 		Domain:         types.StringValue(resp.Domain),
 		ProjectID:      types.StringValue(resp.ProjectID),
 		OrganizationID: types.StringValue(resp.OrganizationID),
-		Validated:      types.BoolValue(resp.Status == domainsdk.DomainStatusActive),
 		NSServers:      nsList,
 		Timeouts:       timeoutsValue,
+		Validated:      types.BoolValue(resp.Status == domainsdk.DomainStatusActive),
 	}, diags
 }
