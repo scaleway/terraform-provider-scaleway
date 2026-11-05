@@ -35,7 +35,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/scaleway/scaleway-sdk-go v1.39.1-0.20261105135310-bf711fb634a4
 	github.com/stretchr/testify v1.12.1
-	go.yaml.in/yaml/v4 v4.0.0-rc.6
+	go.yaml.in/yaml/v4 v4.0.0
 	golang.org/x/crypto v0.58.0
 	golang.org/x/sync v0.24.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.2
