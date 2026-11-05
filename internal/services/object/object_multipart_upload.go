@@ -97,8 +97,6 @@ func uploadObjectMultipart(
 	defer cancel()
 
 	worker := func() {
-		defer wg.Done()
-
 		for j := range jobs {
 			if ctx.Err() != nil {
 				return
@@ -106,6 +104,11 @@ func uploadObjectMultipart(
 
 			section := io.NewSectionReader(file, j.offset, multipartUploadPartSize)
 			partNum := j.number
+			partLen := section.Size()
+
+			if j.offset+partLen > size {
+				partLen = size - j.offset
+			}
 
 			resp, err := s3Client.UploadPart(ctx, &s3.UploadPartInput{
 				Bucket:               req.Bucket,
@@ -113,6 +116,7 @@ func uploadObjectMultipart(
 				UploadId:             uploadID,
 				PartNumber:           &partNum,
 				Body:                 section,
+				ContentLength:        &partLen,
 				SSECustomerAlgorithm: req.SSECustomerAlgorithm,
 				SSECustomerKey:       req.SSECustomerKey,
 				SSECustomerKeyMD5:    req.SSECustomerKeyMD5,
