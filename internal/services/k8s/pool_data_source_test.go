@@ -2,7 +2,6 @@ package k8s_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -93,8 +92,8 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 					testAccCheckK8SPoolExists(tt, "data.scaleway_k8s_pool.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.stg", "name", poolName),
 					resource.TestCheckResourceAttrSet("data.scaleway_k8s_pool.stg", "nodes.0.public_ip"), // Deprecated attributes
-					resource.TestMatchResourceAttr("data.scaleway_k8s_pool.prod", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/pools/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_k8s_pool.stg", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/pools/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_k8s_pool.prod", "srn", acctest.CheckSRN("k8s", "pools")),
+					resource.TestCheckResourceAttrWith("data.scaleway_k8s_pool.stg", "srn", acctest.CheckSRN("k8s", "pools")),
 				),
 			},
 		},
@@ -200,8 +199,8 @@ func TestAccDataSourcePool_UserData(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.stg", "user_data.foo", "bar"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_pool.stg", "user_data.hello", "world"),
 					resource.TestCheckResourceAttrSet("data.scaleway_k8s_pool.stg", "nodes.0.public_ip"), // Deprecated attributes
-					resource.TestMatchResourceAttr("data.scaleway_k8s_pool.prod", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/pools/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_k8s_pool.stg", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/pools/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_k8s_pool.prod", "srn", acctest.CheckSRN("k8s", "pools")),
+					resource.TestCheckResourceAttrWith("data.scaleway_k8s_pool.stg", "srn", acctest.CheckSRN("k8s", "pools")),
 				),
 			},
 		},

@@ -3,7 +3,6 @@ package instance_test
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -51,7 +50,7 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("scaleway_instance_private_nic.nic", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/private-network-interfaces/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_instance_private_nic.nic", "srn", acctest.CheckSRN("instance", "private-network-interfaces")),
 					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic", "mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic", "private_network_id"),
@@ -309,8 +308,7 @@ func TestAccPrivateNIC_SecurityGroup(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("scaleway_instance_private_nic.nic", "srn",
-						regexp.MustCompile(`^srn://instance\..+/zones/.+/private-network-interfaces/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_instance_private_nic.nic", "srn", acctest.CheckSRN("instance", "private-network-interfaces")),
 					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic", "security_group_id",
 						"scaleway_instance_security_group.sg01", "id"),
@@ -340,8 +338,7 @@ func TestAccPrivateNIC_SecurityGroup(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("scaleway_instance_private_nic.nic", "srn",
-						regexp.MustCompile(`^srn://instance\..+/zones/.+/private-network-interfaces/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_instance_private_nic.nic", "srn", acctest.CheckSRN("instance", "private-network-interfaces")),
 					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic", "security_group_id",
 						"scaleway_instance_security_group.sg02", "id"),
@@ -360,8 +357,7 @@ func TestAccPrivateNIC_SecurityGroup(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("scaleway_instance_private_nic.nic", "srn",
-						regexp.MustCompile(`^srn://instance\..+/zones/.+/private-network-interfaces/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_instance_private_nic.nic", "srn", acctest.CheckSRN("instance", "private-network-interfaces")),
 					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic"),
 					resource.TestCheckResourceAttr("scaleway_instance_private_nic.nic", "security_group_id", ""),
 				),
@@ -401,8 +397,7 @@ func TestAccPrivateNIC_WithoutServer(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("scaleway_instance_private_nic.nic", "srn",
-						regexp.MustCompile(`^srn://instance\..+/zones/.+/private-network-interfaces/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_instance_private_nic.nic", "srn", acctest.CheckSRN("instance", "private-network-interfaces")),
 					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic", "private_network_id",
 						"scaleway_vpc_private_network.pn", "id"),
@@ -425,8 +420,7 @@ func TestAccPrivateNIC_WithoutServer(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("scaleway_instance_private_nic.nic", "srn",
-						regexp.MustCompile(`^srn://instance\..+/zones/.+/private-network-interfaces/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_instance_private_nic.nic", "srn", acctest.CheckSRN("instance", "private-network-interfaces")),
 					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic", "private_network_id",
 						"scaleway_vpc_private_network.pn", "id"),
@@ -443,8 +437,7 @@ func TestAccPrivateNIC_WithoutServer(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("scaleway_instance_private_nic.nic", "srn",
-						regexp.MustCompile(`^srn://instance\..+/zones/.+/private-network-interfaces/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_instance_private_nic.nic", "srn", acctest.CheckSRN("instance", "private-network-interfaces")),
 					isPrivateNICPresent(tt, "scaleway_instance_private_nic.nic"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic", "private_network_id",
 						"scaleway_vpc_private_network.pn", "id"),

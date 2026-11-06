@@ -2,7 +2,6 @@ package redis_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -37,7 +36,7 @@ func TestAccDataSourceCluster_Basic(t *testing.T) {
 					}
 				`, latestRedisVersion),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("data.scaleway_redis_cluster.test", "srn", regexp.MustCompile(`^srn://redis\..+/zones/.+/clusters/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_redis_cluster.test", "srn", acctest.CheckSRN("redis", "clusters")),
 					isClusterPresent(tt, "scaleway_redis_cluster.test"),
 
 					resource.TestCheckResourceAttr("data.scaleway_redis_cluster.test", "name", "test_redis_datasource_terraform"),

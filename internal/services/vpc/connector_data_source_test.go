@@ -1,7 +1,6 @@
 package vpc_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -48,7 +47,7 @@ func TestAccDataSourceVPCConnector_ByID(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_connector.by_id", "target_vpc_id",
 						"scaleway_vpc_connector.main", "target_vpc_id"),
-					resource.TestMatchResourceAttr("data.scaleway_vpc_connector.by_id", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/vpc-connectors/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_connector.by_id", "srn", acctest.CheckSRN("vpc", "vpc-connectors")),
 				),
 			},
 		},
@@ -91,7 +90,7 @@ func TestAccDataSourceVPCConnector_ByFilters(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_connector.by_name", "vpc_id",
 						"scaleway_vpc_connector.main", "vpc_id"),
-					resource.TestMatchResourceAttr("data.scaleway_vpc_connector.by_name", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/vpc-connectors/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_connector.by_name", "srn", acctest.CheckSRN("vpc", "vpc-connectors")),
 				),
 			},
 		},

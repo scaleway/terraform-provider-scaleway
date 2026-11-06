@@ -1,7 +1,6 @@
 package keymanager_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -41,7 +40,7 @@ func TestAccDataSourceKey_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "tags.0", "tf"),
 					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "tags.1", "test"),
 					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "protection_level", "software"),
-					resource.TestMatchResourceAttr("data.scaleway_key_manager_key.by_id", "srn", regexp.MustCompile(`^srn://key-manager\..+/regions/.+/keys/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_key_manager_key.by_id", "srn", acctest.CheckSRN("key-manager", "keys")),
 				),
 			},
 		},

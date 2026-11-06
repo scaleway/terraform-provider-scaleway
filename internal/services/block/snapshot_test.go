@@ -36,7 +36,7 @@ func TestAccSnapshot_Basic(t *testing.T) {
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_block_snapshot.main", "name", "test-block-snapshot-basic"),
-					resource.TestMatchResourceAttr("scaleway_block_snapshot.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_block_snapshot.main", "srn", acctest.CheckSRN("block", "snapshots")),
 				),
 			},
 		},

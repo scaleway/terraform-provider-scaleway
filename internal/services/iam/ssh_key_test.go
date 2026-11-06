@@ -2,7 +2,6 @@ package iam_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -36,7 +35,7 @@ func TestAccSSHKey_basic(t *testing.T) {
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
-					resource.TestMatchResourceAttr("scaleway_iam_ssh_key.main", "srn", regexp.MustCompile(`^srn://iam\..+/ssh-keys/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_iam_ssh_key.main", "srn", acctest.CheckSRN("iam", "ssh-keys")),
 				),
 			},
 			{
@@ -50,7 +49,7 @@ func TestAccSSHKey_basic(t *testing.T) {
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name+"-updated"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
-					resource.TestMatchResourceAttr("scaleway_iam_ssh_key.main", "srn", regexp.MustCompile(`^srn://iam\..+/ssh-keys/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_iam_ssh_key.main", "srn", acctest.CheckSRN("iam", "ssh-keys")),
 				),
 			},
 			{
@@ -83,7 +82,7 @@ func TestAccSSHKey_WithNewLine(t *testing.T) {
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
-					resource.TestMatchResourceAttr("scaleway_iam_ssh_key.main", "srn", regexp.MustCompile(`^srn://iam\..+/ssh-keys/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_iam_ssh_key.main", "srn", acctest.CheckSRN("iam", "ssh-keys")),
 				),
 			},
 		},
@@ -151,7 +150,7 @@ func TestAccSSHKey_Disabled(t *testing.T) {
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
-					resource.TestMatchResourceAttr("scaleway_iam_ssh_key.main", "srn", regexp.MustCompile(`^srn://iam\..+/ssh-keys/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_iam_ssh_key.main", "srn", acctest.CheckSRN("iam", "ssh-keys")),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "false"),
 				),
 			},
@@ -167,7 +166,7 @@ func TestAccSSHKey_Disabled(t *testing.T) {
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
-					resource.TestMatchResourceAttr("scaleway_iam_ssh_key.main", "srn", regexp.MustCompile(`^srn://iam\..+/ssh-keys/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_iam_ssh_key.main", "srn", acctest.CheckSRN("iam", "ssh-keys")),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "true"),
 				),
 			},
@@ -183,7 +182,7 @@ func TestAccSSHKey_Disabled(t *testing.T) {
 					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
-					resource.TestMatchResourceAttr("scaleway_iam_ssh_key.main", "srn", regexp.MustCompile(`^srn://iam\..+/ssh-keys/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_iam_ssh_key.main", "srn", acctest.CheckSRN("iam", "ssh-keys")),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "false"),
 				),
 			},
