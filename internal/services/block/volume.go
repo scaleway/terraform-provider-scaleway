@@ -21,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -56,6 +57,7 @@ type volumeResourceModel struct {
 	SRN              types.String `tfsdk:"srn"`
 	SnapshotID       types.String `tfsdk:"snapshot_id"`
 	Zone             types.String `tfsdk:"zone"`
+	KmsKeyID         types.String `tfsdk:"kms_key_id"`
 	Iops             types.Int64  `tfsdk:"iops"`
 	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
 }
@@ -119,6 +121,9 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				PlanModifiers: []planmodifier.String{
 					zonal.LocalityPlanModifier(),
 				},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("instance_volume_id")),
+				},
 			},
 			"instance_volume_id": schema.StringAttribute{
 				Optional:    true,
@@ -130,6 +135,21 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				},
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("snapshot_id")),
+					stringvalidator.ConflictsWith(path.MatchRoot("kms_key_id")),
+				},
+			},
+			"kms_key_id": schema.StringAttribute{
+				Optional: true,
+				Description: "UUID of the KMS key used to protect the volume's encryption. " +
+					"Using this field will encrypt the new volume. " +
+					"Only available to the Private Beta's users. The KMS key must use " +
+					"symmetric encryption with the \"AES-256-GCM\" algorithm",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("instance_volume_id")),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 			"tags": schema.ListAttribute{
@@ -233,9 +253,40 @@ func (r *VolumeResource) Create(
 			return
 		}
 
+		var snapshot *block.Snapshot
+
 		if !data.SnapshotID.IsNull() && data.SnapshotID.ValueString() != "" {
 			createReq.FromSnapshot = &block.CreateVolumeRequestFromSnapshot{
 				SnapshotID: locality.ExpandID(data.SnapshotID.ValueString()),
+			}
+
+			snapshot, err = r.api.WaitForSnapshot(&block.WaitForSnapshotRequest{
+				SnapshotID: createReq.FromSnapshot.SnapshotID,
+				Zone:       createReq.Zone,
+			})
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to wait for snapshot", err.Error())
+
+				return
+			}
+		}
+
+		if !data.KmsKeyID.IsNull() && data.KmsKeyID.ValueString() != "" {
+			kmsKeyId := locality.ExpandID(data.KmsKeyID.ValueString())
+			createReq.KmsKeyID = new(kmsKeyId)
+
+			if snapshot != nil {
+				if snapshot.KmsKeyID == nil {
+					resp.Diagnostics.AddError("Cannot use kms_key_id if the snapshot is not crypted", "")
+
+					return
+				}
+
+				if kmsKeyId != *snapshot.KmsKeyID {
+					resp.Diagnostics.AddError("The kms_key_id cannot be different from the snapshot's", "")
+
+					return
+				}
 			}
 		}
 
@@ -492,6 +543,17 @@ func flattenVolume(ctx context.Context, api *block.API, volume *block.Volume, re
 		model.Iops = types.Int64Value(int64(*volume.Specs.PerfIops))
 	} else {
 		model.Iops = types.Int64Value(0)
+	}
+
+	if volume.KmsKeyID != nil && *volume.KmsKeyID != "" {
+		// KMS keys are regional resources, but the API returns a bare UUID.
+		// Localize it so state matches the regional ID the user configured.
+		region, err := volume.Zone.Region()
+		if err != nil {
+			*diags = append(*diags, diag.NewErrorDiagnostic("failed to parse zone region", err.Error()))
+		} else {
+			model.KmsKeyID = types.StringValue(regional.NewIDString(region, *volume.KmsKeyID))
+		}
 	}
 
 	if volume.ParentSnapshotID != nil {
