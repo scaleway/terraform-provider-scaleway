@@ -186,7 +186,8 @@ func (r *FileSystemResource) Create(ctx context.Context, req resource.CreateRequ
 		Region:    region,
 		ProjectID: projectID,
 		Name:      scwtypes.ExpandOrGenerateString(data.Name.ValueString(), "file"),
-		Size:      uint64(data.SizeInGB.ValueInt64() * int64(scw.GB)), // Translate from GB to Bytes
+		//nolint:staticcheck
+		Size: uint64(data.SizeInGB.ValueInt64() * int64(scw.GB)), // Translate from GB to Bytes
 	}
 
 	createReq.Tags = scwtypes.ExpandStringList(ctx, data.Tags, &resp.Diagnostics)
