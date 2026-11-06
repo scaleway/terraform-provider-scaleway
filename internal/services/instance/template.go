@@ -44,6 +44,7 @@ type templateResourceModel struct {
 	PrivateNetworks    types.Set    `tfsdk:"private_networks"`
 	Tags               types.List   `tfsdk:"tags"`
 	ServerTags         types.List   `tfsdk:"server_tags"`
+	CloudInit          types.String `tfsdk:"cloud_init"`
 	CreatedAt          types.String `tfsdk:"created_at"`
 	SecurityGroupID    types.String `tfsdk:"security_group_id"`
 	PlacementGroupID   types.String `tfsdk:"placement_group_id"`
@@ -191,6 +192,14 @@ func (r *TemplateResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 					verify.SetElemIsStringUUIDOrUUIDWithRegion(),
 				},
 			},
+			"cloud_init": schema.StringAttribute{
+				Optional:            true,
+				Sensitive:           true,
+				MarkdownDescription: "The cloud-init configuration of the servers created using the Instance Template.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
+			},
 			"created_at": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The creation timestamp of the Instance Template.",
@@ -328,11 +337,32 @@ func (r *TemplateResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	// Save the template before setting its cloud-init, so that a failure leaves a tainted resource instead of an untracked one.
 	state := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() || data.CloudInit.IsNull() {
+		return
+	}
+
+	err = r.writeTemplateCloudInit(ctx, tmpl.Zone, tmpl.ID, data.CloudInit)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to set the cloud-init configuration of the Instance Template", err.Error())
+
+		return
+	}
+
+	state.CloudInit, err = r.readTemplateCloudInit(ctx, tmpl.Zone, tmpl.ID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read the cloud-init configuration of the Instance Template", err.Error())
+
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func flattenTemplate(ctx context.Context, tmpl *instanceV2.Template, reference any, diags *diag.Diagnostics) any {
+func flattenTemplate(ctx context.Context, tmpl *instanceV2.Template, reference any, diags *diag.Diagnostics) templateResourceModel {
 	model := templateResourceModel{
 		ProjectID:       types.StringValue(tmpl.ProjectID),
 		ID:              types.StringValue(zonal.NewIDString(tmpl.Zone, tmpl.ID)),
@@ -451,6 +481,14 @@ func (r *TemplateResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	newState := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
+
+	newState.CloudInit, err = r.readTemplateCloudInit(ctx, zone, id)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read the cloud-init configuration of the Instance Template", err.Error())
+
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
@@ -591,18 +629,54 @@ func (r *TemplateResource) Update(ctx context.Context, req resource.UpdateReques
 		hasChanges = true
 	}
 
-	if !hasChanges {
+	cloudInitChanged := !plan.CloudInit.Equal(state.CloudInit)
+	if !hasChanges && !cloudInitChanged {
 		return
 	}
 
-	tmpl, err := r.api.UpdateTemplate(updateReq, scw.WithContext(ctx))
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to update Instance Template", err.Error())
+	if cloudInitChanged {
+		err = r.writeTemplateCloudInit(ctx, zone, id, plan.CloudInit)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to update the cloud-init configuration of the Instance Template", err.Error())
 
-		return
+			return
+		}
+	}
+
+	var tmpl *instanceV2.Template
+
+	// The template is fetched even when only its cloud-init changed, to refresh its computed attributes.
+	if hasChanges {
+		tmpl, err = r.api.UpdateTemplate(updateReq, scw.WithContext(ctx))
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to update Instance Template", err.Error())
+
+			return
+		}
+	} else {
+		tmpl, err = r.api.GetTemplate(&instanceV2.GetTemplateRequest{
+			Zone:       zone,
+			TemplateID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to read Instance Template", err.Error())
+
+			return
+		}
 	}
 
 	newState := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
+	newState.CloudInit = plan.CloudInit
+
+	if cloudInitChanged {
+		newState.CloudInit, err = r.readTemplateCloudInit(ctx, zone, id)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to read the cloud-init configuration of the Instance Template", err.Error())
+
+			return
+		}
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
@@ -645,4 +719,47 @@ func (r *TemplateResource) ImportState(ctx context.Context, req resource.ImportS
 	}
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), zonal.NewIDString(zone, id))...)
+}
+
+// templateCloudInitKey is the user data key under which the Instance API stores the cloud-init configuration of a template.
+const templateCloudInitKey = "cloud-init"
+
+// readTemplateCloudInit returns the cloud-init configuration of a template, or null when the template has none.
+// The configuration is a sub-resource of the template: the template itself does not return it.
+func (r *TemplateResource) readTemplateCloudInit(ctx context.Context, zone scw.Zone, id string) (types.String, error) {
+	userData, err := r.api.GetTemplateCloudInit(&instanceV2.GetTemplateCloudInitRequest{
+		Zone:       zone,
+		TemplateID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			return types.StringNull(), nil
+		}
+
+		return types.StringNull(), err
+	}
+
+	return types.StringValue(string(userData.Content)), nil
+}
+
+// writeTemplateCloudInit sets the cloud-init configuration of a template, or deletes it when cloudInit is null.
+func (r *TemplateResource) writeTemplateCloudInit(ctx context.Context, zone scw.Zone, id string, cloudInit types.String) error {
+	if cloudInit.IsNull() {
+		err := r.api.DeleteTemplateUserData(&instanceV2.DeleteTemplateUserDataRequest{
+			Zone:       zone,
+			TemplateID: id,
+			Key:        templateCloudInitKey,
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			return err
+		}
+
+		return nil
+	}
+
+	return r.api.SetTemplateCloudInit(&instanceV2.SetTemplateCloudInitRequest{
+		Zone:       zone,
+		TemplateID: id,
+		Content:    []byte(cloudInit.ValueString()),
+	}, scw.WithContext(ctx))
 }
