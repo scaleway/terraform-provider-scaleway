@@ -191,6 +191,10 @@ func TestExpandNewContact(t *testing.T) {
 						"whois_opt_in": true,
 					},
 				},
+				"extension_nl": map[string]any{
+					"legal_form":                     "non_dutch_eu_company",
+					"legal_form_registration_number": "12345678",
+				},
 			},
 			expected: &domainSDK.NewContact{
 				PhoneNumber:  "654987321",
@@ -205,6 +209,10 @@ func TestExpandNewContact(t *testing.T) {
 				ExtensionFr: &domainSDK.ContactExtensionFR{
 					Mode:           domainSDK.ContactExtensionFRModeIndividual,
 					IndividualInfo: &domainSDK.ContactExtensionFRIndividualInfo{WhoisOptIn: true},
+				},
+				ExtensionNl: &domainSDK.ContactExtensionNL{
+					LegalForm:                   domainSDK.ContactExtensionNLLegalFormNonDutchEuCompany,
+					LegalFormRegistrationNumber: "12345678",
 				},
 			},
 		},
