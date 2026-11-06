@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json/jsontext"
 	"encoding/xml"
+	"flag"
 	"net/http"
 	"os"
 	"slices"
@@ -23,6 +24,9 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
+
+// UpdateCassettes will update all cassettes of a given test
+var UpdateCassettes = flag.Bool("cassettes", os.Getenv(env.UpdateCassettes) == "true", "Record Cassettes")
 
 type TestTools struct {
 	T                 *testing.T
@@ -137,11 +141,7 @@ func NewTestTools(t *testing.T) *TestTools {
 		cleanup    func()
 	)
 
-	if FolderUsesVCRv4(folder) {
-		httpClient, cleanup, err = NewRecordedClient(t, folder, *UpdateCassettes)
-	} else {
-		httpClient, cleanup, err = getHTTPRecoder(t, folder, *UpdateCassettes)
-	}
+	httpClient, cleanup, err = NewRecordedClient(t, folder, *UpdateCassettes)
 
 	require.NoError(t, err)
 

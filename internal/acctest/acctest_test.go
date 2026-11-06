@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/vcr"
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
 )
 
@@ -490,7 +490,7 @@ var testBodyMatcherCases = []struct {
 
 func TestCassetteMatcher(t *testing.T) {
 	for i, test := range testBodyMatcherCases {
-		shouldMatch := acctest.CassetteMatcher(test.requestBody, *test.cassetteBody)
+		shouldMatch := vcr.CassetteMatcher(test.requestBody, *test.cassetteBody)
 		if shouldMatch != test.shouldMatch {
 			t.Errorf("test %d: expected %v, got %v", i, test.shouldMatch, shouldMatch)
 			t.Errorf("requestBody: %s", test.requestBody.Body)

@@ -20,7 +20,7 @@ var BodyMatcherIgnore = []string{
 	"project_id",
 	"project", // like project_id but should be deprecated
 	// Request related fields
-	"name",       // generated names will change every time
+	// "name" is intentionally NOT ignored: see cassetteBodyMatcher fallback.
 	"expires_at", // is relative to the moment the cassette is replayed
 	"password",   // generated passwords will change every time
 	// MNQ related fields
@@ -169,10 +169,18 @@ func CompareFieldsStrings(expected, actual string) bool {
 		actualHandled = ExtractTestGeneratedNamePrefix(actual)
 	}
 
-	// Try provider generated name
+	// Try provider generated name (tf-{prefix}-{adj}-{noun})
 	if actualHandled == actual && strings.HasPrefix(actual, "tf-") {
 		expectedHandled = ExtractGeneratedNamePrefix(expected)
 		actualHandled = ExtractGeneratedNamePrefix(actual)
+	}
+
+	// Try SDK-generated name without tf- prefix (e.g. snp-jovial-chaum).
+	// The SDK namegenerator produces {prefix}-{adjective}-{noun} (exactly 2 dashes).
+	// Must not match tf-prefixed names (handled above) or they'd be double-normalized.
+	if actualHandled == actual && strings.Count(actual, "-") == 2 && !strings.HasPrefix(actual, "tf-") {
+		expectedHandled = ExtractSDKGeneratedNamePrefix(expected)
+		actualHandled = ExtractSDKGeneratedNamePrefix(actual)
 	}
 
 	return expectedHandled == actualHandled
@@ -333,6 +341,30 @@ func ExtractGeneratedNamePrefix(name string) string {
 	name = name[:dashIndex]
 
 	return name
+}
+
+// ExtractSDKGeneratedNamePrefix extracts the prefix from an SDK-generated name
+// without the tf- prefix. Format: "{prefix}-{adjective}-{noun}" (exactly 2 dashes).
+// example: snp-jovial-chaum -> snp
+// ponytail: requires exactly 2 dashes so multi-segment hardcoded names like
+// "test-acc-function-pn-00" (4 dashes) are compared literally, not normalized.
+func ExtractSDKGeneratedNamePrefix(name string) string {
+	if strings.Count(name, "-") != 2 {
+		return name
+	}
+
+	dashIndex := strings.LastIndex(name, "-")
+	if dashIndex == -1 {
+		return name
+	}
+	name = name[:dashIndex]
+
+	dashIndex = strings.LastIndex(name, "-")
+	if dashIndex == -1 {
+		return name
+	}
+
+	return name[:dashIndex]
 }
 
 func extractGenericBucketNames(request *http.Request, cassette cassette.Request) (requestBucket, cassetteBucket string) {

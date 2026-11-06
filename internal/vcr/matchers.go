@@ -25,6 +25,7 @@ const (
 var QueryMatcherIgnore = []string{
 	"organization_id",
 	"project_id",
+	"access_keys",
 	"start",
 	"end",
 }
@@ -122,10 +123,6 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 		return false
 	}
 
-	if strings.HasSuffix(request.URL.Host, "scw.cloud") {
-		return customS3BodyMatcher(request, cassette)
-	}
-
 	r, err := request.GetBody()
 	if err != nil {
 		panic(fmt.Errorf("cassette body matcher: failed to copy request body: %w", err)) // lintignore: R009
@@ -136,9 +133,16 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 		panic(fmt.Errorf("cassette body matcher: failed to read actualRequest body: %w", err)) // lintignore: R009
 	}
 
-	// Try to match raw bodies if they are not JSON (ex: cloud-init config)
+	// Try to match raw bodies first (ex: cloud-init config, binary uploads).
+	// This must run before the S3 host check: legacy cassettes store binary
+	// S3 upload bodies as raw bytes (YAML !!binary), not base64-encoded like
+	// v4 cassettes (which run the s3Encoder AfterCaptureHook at record time).
 	if string(requestBody) == cassette.Body {
 		return true
+	}
+
+	if strings.HasSuffix(request.URL.Host, "scw.cloud") {
+		return customS3BodyMatcher(request, cassette)
 	}
 
 	requestJSON := make(map[string]any)
@@ -201,11 +205,11 @@ func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
 	requestURL.RawQuery = requestURLValues.Encode()
 	cassetteURL.RawQuery = cassetteURLValues.Encode()
 
-	// Make API key generic for URL comparison
-	request.URL.Path = regexp.MustCompile(`(.+)?SCW[0-9A-Z]{17}(.+)?`).
-		ReplaceAllString(
-			request.URL.Path,
-			"${1}SCWXXXXXXXXXXXXXXXXX${2}")
+	// Make API key generic for URL comparison — mask both sides so legacy
+	// cassettes (real key in path) and v4 cassettes (already masked) both match.
+	scwKeyRegex := regexp.MustCompile(`(.+)?SCW[0-9A-Z]{17}(.+)?`)
+	request.URL.Path = scwKeyRegex.ReplaceAllString(request.URL.Path, "${1}SCWXXXXXXXXXXXXXXXXX${2}")
+	cassetteURL.Path = scwKeyRegex.ReplaceAllString(cassetteURL.Path, "${1}SCWXXXXXXXXXXXXXXXXX${2}")
 
 	// Specific handling of s3 URLs
 	// URL format is https://test-acc-scaleway-object-bucket-lifecycle-8445817190507446251.s3.fr-par.scw.cloud/?lifecycle=
