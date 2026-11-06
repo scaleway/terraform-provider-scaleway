@@ -41,6 +41,14 @@ func ProjectIDSchemaAttribute(description ...string) schema.StringAttribute {
 	}
 }
 
+// ProjectIDSchemaFw is kept for callers that dereference a pointer (block volume).
+// Prefer ProjectIDSchemaAttribute.
+func ProjectIDSchemaFw(description string) *schema.StringAttribute {
+	attr := ProjectIDSchemaAttribute(description)
+
+	return &attr
+}
+
 // ProjectIDSchemaAttributeOptional returns Framework project_id without RequiresReplace
 // (Optional + Computed). Use for data sources / filters. Optional description overrides the default.
 func ProjectIDSchemaAttributeOptional(description ...string) schema.StringAttribute {
