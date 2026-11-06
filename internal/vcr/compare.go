@@ -357,6 +357,7 @@ func ExtractSDKGeneratedNamePrefix(name string) string {
 	if dashIndex == -1 {
 		return name
 	}
+
 	name = name[:dashIndex]
 
 	dashIndex = strings.LastIndex(name, "-")
