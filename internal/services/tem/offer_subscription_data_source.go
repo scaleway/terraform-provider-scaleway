@@ -9,15 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 //go:embed descriptions/tem_offer_subscription_data_source.md
@@ -58,6 +57,12 @@ func (d *OfferSubscriptionDataSource) Metadata(_ context.Context, req datasource
 }
 
 func (d *OfferSubscriptionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	projectID := account.ProjectIDSchemaAttributeOptional()
+	projectID.Validators = append(projectID.Validators, stringvalidator.ConflictsWith(path.MatchRoot("organization_id")))
+
+	organizationID := account.OrganizationIDSchemaAttributeOptional("The organization_id the offer subscription is associated to")
+	organizationID.Validators = append(organizationID.Validators, stringvalidator.ConflictsWith(path.MatchRoot("project_id")))
+
 	resp.Schema = schema.Schema{
 		MarkdownDescription: offerSubscriptionDataSourceDescription,
 		Description:         offerSubscriptionDataSourceDescription,
@@ -65,32 +70,9 @@ func (d *OfferSubscriptionDataSource) Schema(_ context.Context, _ datasource.Sch
 			"id": schema.StringAttribute{
 				Computed: true,
 			},
-			"region": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "The region you want to attach the resource to",
-				Validators: []validator.String{
-					verify.IsStringOneOfWithWarning(regional.AllRegions()),
-				},
-			},
-			"project_id": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "The project_id you want to attach the resource to",
-				Validators: []validator.String{
-					verify.IsStringUUID(),
-					stringvalidator.ConflictsWith(path.MatchRoot("organization_id")),
-				},
-			},
-			"organization_id": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "The organization_id the offer subscription is associated to",
-				Validators: []validator.String{
-					verify.IsStringUUID(),
-					stringvalidator.ConflictsWith(path.MatchRoot("project_id")),
-				},
-			},
+			"region":          regional.SchemaAttributeComputed(),
+			"project_id":      projectID,
+			"organization_id": organizationID,
 			"offer_name": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "Name of the offer",

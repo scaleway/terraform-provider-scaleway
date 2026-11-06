@@ -113,13 +113,7 @@ func (r *WebhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 					stringvalidator.LengthBetween(3, 127),
 				},
 			},
-			"organization_id": schema.StringAttribute{
-				Computed:            true,
-				MarkdownDescription: "The organization_id you want to attach the resource to",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
+			"organization_id": account.OrganizationIDSchemaAttribute(),
 			"created_at": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "Creation timestamp",

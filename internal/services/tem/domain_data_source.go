@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -225,22 +226,8 @@ func (d *DomainDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 					},
 				},
 			},
-			"region": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "The region you want to attach the resource to",
-				Validators: []validator.String{
-					verify.IsStringOneOfWithWarning(regional.AllRegions()),
-				},
-			},
-			"project_id": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "The project_id you want to attach the resource to",
-				Validators: []validator.String{
-					verify.IsStringUUID(),
-				},
-			},
+			"region":     regional.SchemaAttributeComputed(),
+			"project_id": account.ProjectIDSchemaAttributeOptional(),
 		},
 	}
 }
