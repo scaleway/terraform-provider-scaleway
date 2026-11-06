@@ -26,6 +26,7 @@ func isWorkflowRunCreated(tt *acctest.TestTools, resourceName string) resource.T
 		}
 
 		api := dataorchestratorSDK.NewAPI(meta.ExtractScwClient(tt.Meta))
+
 		runs, err := api.ListWorkflowRuns(&dataorchestratorSDK.ListWorkflowRunsRequest{
 			Region:               region,
 			WorkflowDefinitionID: &id,

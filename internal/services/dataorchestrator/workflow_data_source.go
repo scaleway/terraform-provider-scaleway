@@ -125,6 +125,7 @@ func (d *WorkflowDataSource) Read(ctx context.Context, req datasource.ReadReques
 	var data workflowDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}

@@ -120,6 +120,7 @@ func (a *StartWorkflowAction) Invoke(ctx context.Context, req action.InvokeReque
 	var data startWorkflowActionModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -145,6 +146,7 @@ func (a *StartWorkflowAction) Invoke(ctx context.Context, req action.InvokeReque
 	if !data.EnvironmentVariables.IsNull() && !data.EnvironmentVariables.IsUnknown() {
 		env := make(map[string]string)
 		resp.Diagnostics.Append(data.EnvironmentVariables.ElementsAs(ctx, &env, false)...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -350,6 +352,7 @@ func invokeWorkflowRunControl(
 	var data workflowRunActionModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}

@@ -26,6 +26,7 @@ func isWorkflowPresent(tt *acctest.TestTools, resourceName string) resource.Test
 		}
 
 		api := dataorchestratorSDK.NewAPI(meta.ExtractScwClient(tt.Meta))
+
 		_, err = api.GetWorkflowDefinition(&dataorchestratorSDK.GetWorkflowDefinitionRequest{
 			Region:               region,
 			WorkflowDefinitionID: id,
@@ -51,6 +52,7 @@ func isWorkflowDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			}
 
 			api := dataorchestratorSDK.NewAPI(meta.ExtractScwClient(tt.Meta))
+
 			_, err = api.GetWorkflowDefinition(&dataorchestratorSDK.GetWorkflowDefinitionRequest{
 				Region:               region,
 				WorkflowDefinitionID: id,

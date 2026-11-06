@@ -1,6 +1,7 @@
 package dataorchestrator
 
 import (
+	"errors"
 	"fmt"
 
 	dataorchestrator "github.com/scaleway/scaleway-sdk-go/api/dataorchestrator/v1alpha2"
@@ -8,7 +9,7 @@ import (
 
 func currentWorkflowVersion(def *dataorchestrator.WorkflowDefinition) (*dataorchestrator.WorkflowVersion, error) {
 	if def == nil {
-		return nil, fmt.Errorf("workflow definition is nil")
+		return nil, errors.New("workflow definition is nil")
 	}
 
 	var current *dataorchestrator.WorkflowVersion

@@ -224,6 +224,7 @@ func (r *WorkflowResource) Create(ctx context.Context, req resource.CreateReques
 	var data workflowResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -263,6 +264,7 @@ func (r *WorkflowResource) Create(ctx context.Context, req resource.CreateReques
 	if !data.EnvironmentVariables.IsNull() && !data.EnvironmentVariables.IsUnknown() {
 		env := make(map[string]string)
 		resp.Diagnostics.Append(data.EnvironmentVariables.ElementsAs(ctx, &env, false)...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -272,6 +274,7 @@ func (r *WorkflowResource) Create(ctx context.Context, req resource.CreateReques
 
 	timeout, diags := expandWorkflowTimeout(data.WorkflowTimeout)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -280,6 +283,7 @@ func (r *WorkflowResource) Create(ctx context.Context, req resource.CreateReques
 
 	cron, diags := expandCronScheduleCreate(ctx, data.CronSchedule)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -312,6 +316,7 @@ func (r *WorkflowResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -362,6 +367,7 @@ func (r *WorkflowResource) Update(ctx context.Context, req resource.UpdateReques
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -395,6 +401,7 @@ func (r *WorkflowResource) Update(ctx context.Context, req resource.UpdateReques
 		env := make(map[string]string)
 		if !plan.EnvironmentVariables.IsNull() && !plan.EnvironmentVariables.IsUnknown() {
 			resp.Diagnostics.Append(plan.EnvironmentVariables.ElementsAs(ctx, &env, false)...)
+
 			if resp.Diagnostics.HasError() {
 				return
 			}
@@ -407,6 +414,7 @@ func (r *WorkflowResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.WorkflowTimeout.Equal(state.WorkflowTimeout) {
 		timeout, diags := expandWorkflowTimeout(plan.WorkflowTimeout)
 		resp.Diagnostics.Append(diags...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -418,6 +426,7 @@ func (r *WorkflowResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.CronSchedule.Equal(state.CronSchedule) {
 		cron, diags := expandCronScheduleUpdate(ctx, plan.CronSchedule)
 		resp.Diagnostics.Append(diags...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -494,6 +503,7 @@ func (r *WorkflowResource) Delete(ctx context.Context, req resource.DeleteReques
 	var state workflowResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -548,6 +558,7 @@ func expandCronScheduleCreate(ctx context.Context, obj types.Object) (*dataorche
 
 	var cron cronScheduleModel
 	diags.Append(obj.As(ctx, &cron, basetypes.ObjectAsOptions{})...)
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -574,6 +585,7 @@ func expandCronScheduleUpdate(ctx context.Context, obj types.Object) (*dataorche
 
 	var cron cronScheduleModel
 	diags.Append(obj.As(ctx, &cron, basetypes.ObjectAsOptions{})...)
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -620,6 +632,7 @@ func flattenWorkflowDefinition(ctx context.Context, def *dataorchestratorSDK.Wor
 	} else {
 		m, mapDiags := types.MapValueFrom(ctx, types.StringType, def.EnvironmentVariables)
 		diags.Append(mapDiags...)
+
 		model.EnvironmentVariables = m
 	}
 
@@ -642,6 +655,7 @@ func flattenWorkflowDefinition(ctx context.Context, def *dataorchestratorSDK.Wor
 		}
 		obj, objDiags := types.ObjectValueFrom(ctx, cronScheduleAttrTypes(), cron)
 		diags.Append(objDiags...)
+
 		model.CronSchedule = obj
 	} else {
 		model.CronSchedule = types.ObjectNull(cronScheduleAttrTypes())
@@ -650,6 +664,7 @@ func flattenWorkflowDefinition(ctx context.Context, def *dataorchestratorSDK.Wor
 	version, err := currentWorkflowVersion(def)
 	if err != nil {
 		diags.AddError("Failed to resolve current workflow version", err.Error())
+
 		model.WorkflowDSL = types.StringNull()
 		model.VersionName = types.StringNull()
 		model.VersionDescription = types.StringNull()
