@@ -46,6 +46,7 @@ type volumeDataSourceModel struct {
 	SnapshotID       types.String `tfsdk:"snapshot_id"`
 	InstanceVolumeID types.String `tfsdk:"instance_volume_id"`
 	SRN              types.String `tfsdk:"srn"`
+	KmsKeyID         types.String `tfsdk:"kms_key_id"`
 	Iops             types.Int64  `tfsdk:"iops"`
 	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
 }
@@ -110,6 +111,10 @@ func (d *VolumeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 			"instance_volume_id": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The instance volume to create the block volume from",
+			},
+			"kms_key_id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "UUID of the KMS key used to protect the volume's encryption",
 			},
 			"tags": schema.ListAttribute{
 				Computed:            true,
@@ -241,6 +246,7 @@ func (d *VolumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		SizeInGB:         flat.SizeInGB,
 		SnapshotID:       flat.SnapshotID,
 		InstanceVolumeID: flat.InstanceVolumeID,
+		KmsKeyID:         flat.KmsKeyID,
 		Tags:             flat.Tags,
 		SRN:              flat.SRN,
 	}
