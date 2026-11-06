@@ -53,6 +53,7 @@ func ResourceInstance() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck("clone_from", "private_network.#.pn_id"),
 			customizeDiffCloneFromInherited,
+			customizeDiffEngineUpgrade,
 		),
 		Identity:         identity.DefaultRegional(),
 		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
@@ -77,12 +78,17 @@ func instanceSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
-			Description:      "Database's engine version name (e.g., 'PostgreSQL-16', 'MySQL-8'). Changing this value triggers a blue/green upgrade using MajorUpgradeWorkflow with automatic endpoint migration",
+			Description:      "Database's engine version name (e.g., 'PostgreSQL-16', 'MySQL-8'). Changing this on an existing instance requires `allow_major_version_upgrade = true`",
 			DiffSuppressFunc: dsf.IgnoreCase,
 			ConflictsWith: []string{
 				"snapshot_id",
 				"clone_from",
 			},
+		},
+		"allow_major_version_upgrade": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Set to `true` to allow changing `engine` on an existing instance (blue/green major upgrade)",
 		},
 		"snapshot_id": {
 			Type:        schema.TypeString,

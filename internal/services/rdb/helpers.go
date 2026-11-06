@@ -188,6 +188,22 @@ func isTimeoutErr(err error) bool {
 	return strings.Contains(msg, "timeout") || strings.Contains(msg, "deadline exceeded")
 }
 
+// customizeDiffEngineUpgrade fails the plan when `engine` changes on an existing instance
+// without `allow_major_version_upgrade = true`.
+func customizeDiffEngineUpgrade(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	if d.Id() == "" || !d.HasChange("engine") || d.Get("allow_major_version_upgrade").(bool) {
+		return nil
+	}
+
+	oldEngine, newEngine := d.GetChange("engine")
+
+	return fmt.Errorf(
+		"set allow_major_version_upgrade = true to change engine from %s to %s; "+
+			"see the scaleway_rdb_instance documentation",
+		oldEngine, newEngine,
+	)
+}
+
 // majorUpgradeTimeoutOrErr returns a clear diagnostic when a blue/green engine upgrade
 // wait times out. The Scaleway workflow may still continue after Terraform gives up.
 func majorUpgradeTimeoutOrErr(err error, region scw.Region, newInstanceID, oldInstanceID string) diag.Diagnostics {
