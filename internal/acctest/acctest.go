@@ -4,10 +4,10 @@ import (
 	"encoding/base64"
 	"encoding/json/jsontext"
 	"encoding/xml"
+	"flag"
 	"net/http"
 	"os"
 	"slices"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -24,6 +24,9 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
+
+// UpdateCassettes will update all cassettes of a given test
+var UpdateCassettes = flag.Bool("cassettes", os.Getenv(env.UpdateCassettes) == "true", "Record Cassettes")
 
 type TestTools struct {
 	T                 *testing.T
@@ -138,11 +141,7 @@ func NewTestTools(t *testing.T) *TestTools {
 		cleanup    func()
 	)
 
-	if FolderUsesVCRv4(folder) {
-		httpClient, cleanup, err = NewRecordedClient(t, folder, *UpdateCassettes)
-	} else {
-		httpClient, cleanup, err = getHTTPRecoder(t, folder, *UpdateCassettes)
-	}
+	httpClient, cleanup, err = NewRecordedClient(t, folder, *UpdateCassettes)
 
 	require.NoError(t, err)
 
@@ -189,54 +188,6 @@ func NewTestTools(t *testing.T) *TestTools {
 		},
 		Cleanup: cleanup,
 	}
-}
-
-// Test Generated name has format: "{prefix}-{generated_number}
-// example: test-acc-scaleway-project-3723338038624371236
-// Also supports FQDNs: tf-tests-mbx-basic-123.scaleway-terraform.com
-func extractTestGeneratedNamePrefix(name string) string {
-	suffix := ""
-	host := name
-
-	if dot := strings.Index(name, "."); dot >= 0 {
-		host = name[:dot]
-		suffix = name[dot:]
-	}
-
-	dashIndex := strings.LastIndex(host, "-")
-	if dashIndex == -1 {
-		return name
-	}
-
-	generated := host[dashIndex+1:]
-
-	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
-	if generatedToIntErr != nil {
-		return name
-	}
-
-	return host[:dashIndex] + suffix
-}
-
-// Generated names have format: "tf-{prefix}-{generated1}-{generated2}"
-// example: tf-sg-gifted-yonath
-func extractGeneratedNamePrefix(name string) string {
-	if strings.Count(name, "-") < 3 {
-		return name
-	}
-	// tf-{prefix}-gifted-yonath
-	name = strings.TrimPrefix(name, "tf-")
-
-	// {prefix}-gifted-yonath
-	//                ^
-	dashIndex := strings.LastIndex(name, "-")
-	name = name[:dashIndex]
-	// {prefix}-gifted
-	//         ^
-	dashIndex = strings.LastIndex(name, "-")
-	name = name[:dashIndex]
-
-	return name
 }
 
 // IsTestResource returns true if given resource identifier is from terraform test
