@@ -12,18 +12,18 @@ editorconfig-checker = "4.0.2"
 "github:bflad/tfproviderdocs" = "0.12.1"
 "github:hashicorp/terraform-plugin-docs" = "0.25.0"
 "github:owenlamont/ryl" = "0.24.0"
-go = "1.27.1"
+go = "1.27.3"
 "go:github.com/boumenot/gocover-cobertura" = "1.5"
 "go:github.com/go-delve/delve/cmd/dlv" = "1.27"
 "go:github.com/jfrappier/tfsprout/cmd/tfsproutx" = "0.2.0"
 "go:github.com/katbyte/terrafmt" = "1.0"
 "go:gotest.tools/gotestsum" = "1.13"
-golangci-lint = "2.13"
+golangci-lint = "2.15"
 goreleaser = "2.18"
 jq = "1.8.2"
-node = "24.11.1"
+node = "24.22.2"
 opentofu = "1.12"
-pnpm = "10.24.0"
+pnpm = "10.34.9"
 rumdl = "0.2"
 shellcheck = "0.11.0"
 shfmt = "3.14.1"
@@ -219,7 +219,8 @@ typos
 [tasks.'lint:provider']
 description = "lint the provider for terraform-specific issues"
 run = '''
-tfsproutx -S013=false -XR001=false -XS002=false -R019=false ./...
+# tfsproutx (x/tools v0.49) cannot read export data V5 written by go >= 1.27.2
+mise exec go@1.27.1 -- tfsproutx -S013=false -XR001=false -XS002=false -R019=false ./...
 '''
 
 [tasks.'test:provider']
