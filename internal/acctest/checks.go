@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -121,6 +123,45 @@ func CheckResourceAttrUUID(name string, key string) resource.TestCheckFunc {
 }
 
 var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}`)
+
+// CheckSRN returns a value-check function for resource.TestCheckResourceAttrWith
+// that parses a Scaleway Resource Name (SRN) and validates its structure.
+func CheckSRN(service, resourceType string) func(string) error {
+	return func(value string) error {
+		u, err := url.Parse(value)
+		if err != nil {
+			return fmt.Errorf("srn %q is not a valid URL: %w", value, err)
+		}
+		if u.Scheme != "srn" {
+			return fmt.Errorf("srn %q has scheme %q, want %q", value, u.Scheme, "srn")
+		}
+
+		host := u.Hostname()
+		srnService, _, ok := strings.Cut(host, ".")
+		if !ok {
+			return fmt.Errorf("srn %q host %q must be of the form <service>.<account>", value, host)
+		}
+		if service != "" && srnService != service {
+			return fmt.Errorf("srn %q service %q, want %q", value, srnService, service)
+		}
+
+		segments := strings.Split(strings.Trim(u.Path, "/"), "/")
+		if len(segments) == 0 || segments[0] == "" || segments[len(segments)-1] == "" {
+			return fmt.Errorf("srn %q has an empty path", value)
+		}
+		if resourceType != "" {
+			last := segments[len(segments)-1]
+			var secondLast string
+			if len(segments) >= 2 {
+				secondLast = segments[len(segments)-2]
+			}
+			if resourceType != last && resourceType != secondLast {
+				return fmt.Errorf("srn %q resource type %q, want %q", value, secondLast, resourceType)
+			}
+		}
+		return nil
+	}
+}
 
 // Returns the value of the given attribute of the given resource in the state.
 func GetResourceAttributeValue(s *terraform.State, name, attribute string) (string, error) {

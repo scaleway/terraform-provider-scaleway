@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -38,7 +37,7 @@ func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
 						{"email": "initial@example.com"},
 					}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "srn", regexp.MustCompile(`^srn://cockpit\..+/regions/.+/projects/.+/alert-manager$`)),
+					resource.TestCheckResourceAttrWith("scaleway_cockpit_alert_manager.alert_manager", "srn", acctest.CheckSRN("cockpit", "alert-manager")),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "initial@example.com"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),

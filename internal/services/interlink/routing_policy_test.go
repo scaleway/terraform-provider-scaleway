@@ -2,7 +2,6 @@ package interlink_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -44,7 +43,7 @@ func TestAccInterlinkRoutingPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "tags.0", "tf_tests"),
 					resource.TestCheckResourceAttrSet("scaleway_interlink_routing_policy.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_interlink_routing_policy.main", "updated_at"),
-					resource.TestMatchResourceAttr("scaleway_interlink_routing_policy.main", "srn", regexp.MustCompile(`^srn://interlink\..+/regions/.+/routing-policies/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_interlink_routing_policy.main", "srn", acctest.CheckSRN("interlink", "routing-policies")),
 				),
 			},
 			{
