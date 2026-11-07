@@ -292,6 +292,10 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		messageq.NewDeploymentResource,
 		messageq.NewUserResource,
 		partner.NewPartnerOrganizationResource,
+		tem.NewBlockedListResource,
+		tem.NewDomainResource,
+		tem.NewDomainValidationResource,
+		tem.NewWebhookResource,
 		webhosting.NewWebhostingResource,
 	}
 }
@@ -337,6 +341,8 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		rdb.NewInstanceLogDataSource,
 		rdb.NewInstanceLogsDataSource,
 		rdb.NewInstanceLogsDetailsDataSource,
+		tem.NewDomainDataSource,
+		tem.NewOfferSubscriptionDataSource,
 		webhosting.NewOfferDataSource,
 		webhosting.NewWebhostingDataSource,
 	}
