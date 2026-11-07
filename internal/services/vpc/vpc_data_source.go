@@ -71,6 +71,10 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 			return diag.FromErr(err)
 		}
 
+		if len(res.Vpcs) == 0 {
+			return diag.Errorf("no default VPC found in region %s", region)
+		}
+
 		vpcID = regional.NewIDString(region, res.Vpcs[0].ID)
 	} else {
 		vpcID, ok = d.GetOk("vpc_id")
