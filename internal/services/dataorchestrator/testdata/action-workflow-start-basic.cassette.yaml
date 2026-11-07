@@ -1,0 +1,555 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 365
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"name":"tf-tests-dataorchestrator-start","description":"start","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","environment_variables":null,"workflow_version":{"name":"v1-0-0","description":"","workflow_dsl":"document:\n  dsl: 1.0.3\n  namespace: tf-tests\n  name: tf-tests-workflow\n  version: 1.0.0\ndo:\n  - setColor:\n      set:\n        color: blue\n\n"}}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261105100257-fdaccf13aec7 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/data-orchestrator/v1alpha2/regions/fr-par/workflow-definitions
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 864
+        uncompressed: false
+        body: '{"environment_variables":{},"last_run":null,"region":"fr-par","name":"tf-tests-dataorchestrator-start","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","versions":[{"description":"","created_at":"2026-11-05T15:01:03.119505Z","updated_at":"2026-11-05T15:01:03.119505Z","deleted_at":null,"is_current":true,"workflow_dsl":"document:\n  dsl: 1.0.3\n  namespace: tf-tests\n  name: tf-tests-workflow\n  version: 1.0.0\ndo:\n  - setColor:\n      set:\n        color: blue\n\n","id":"2810ab7e-bcea-40cc-a2c3-26a1509896e8","name":"v1-0-0"}],"workflow_timeout":null,"cron_schedule":null,"srn":"srn://data-orchestrator.0x55.fr/regions/fr-par/workflow-definitions/44c48426-af4a-4783-b51f-f222b58fe5a6","id":"44c48426-af4a-4783-b51f-f222b58fe5a6","description":"start","created_at":"2026-11-05T15:01:03.119505Z","updated_at":"2026-11-05T15:01:03.085457Z"}'
+        headers:
+            Content-Length:
+                - "864"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Nov 2026 15:01:03 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - bc8fca83-5d6f-4116-a04d-6daab60e4a56
+        status: 200 OK
+        code: 200
+        duration: 887.981541ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261105100257-fdaccf13aec7 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/metadata
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 59
+        uncompressed: false
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
+        headers:
+            Content-Length:
+                - "59"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Nov 2026 15:01:03 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 6a5ade1e-9cdf-4e40-b339-d1a7667d1fb7
+        status: 200 OK
+        code: 200
+        duration: 66.339416ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 2
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261105100257-fdaccf13aec7 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/data-orchestrator/v1alpha2/regions/fr-par/workflow-definitions/44c48426-af4a-4783-b51f-f222b58fe5a6/start
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 864
+        uncompressed: false
+        body: '{"duration":null,"task_runs":[],"workflow_definition_name":"tf-tests-dataorchestrator-start","status":"queued","workflow_dsl":"document:\n  dsl: 1.0.3\n  namespace: tf-tests\n  name: tf-tests-workflow\n  version: 1.0.0\ndo:\n  - setColor:\n      metadata:\n        run_id: db84adf4-ad59-4191-85f9-28aa571bfb82\n      set:\n        color: blue\n","id":"d5bdb78a-86ee-4742-8318-30922a5d535c","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","trigger_type":"manual","environment_variables":{},"updated_at":"2026-11-05T15:01:03.475116Z","terminated_at":null,"workflow_definition_id":"44c48426-af4a-4783-b51f-f222b58fe5a6","created_at":"2026-11-05T15:01:03.475116Z","region":"fr-par","srn":"srn://data-orchestrator.0x55.fr/regions/fr-par/workflow-runs/d5bdb78a-86ee-4742-8318-30922a5d535c","workflow_version_id":"2810ab7e-bcea-40cc-a2c3-26a1509896e8"}'
+        headers:
+            Content-Length:
+                - "864"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Nov 2026 15:01:03 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 39133783-333b-42e1-b7c5-d325313f84ca
+        status: 200 OK
+        code: 200
+        duration: 257.061959ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261105100257-fdaccf13aec7 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/data-orchestrator/v1alpha2/regions/fr-par/workflow-runs/d5bdb78a-86ee-4742-8318-30922a5d535c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 864
+        uncompressed: false
+        body: '{"duration":null,"workflow_dsl":"document:\n  dsl: 1.0.3\n  namespace: tf-tests\n  name: tf-tests-workflow\n  version: 1.0.0\ndo:\n  - setColor:\n      metadata:\n        run_id: db84adf4-ad59-4191-85f9-28aa571bfb82\n      set:\n        color: blue\n","id":"d5bdb78a-86ee-4742-8318-30922a5d535c","workflow_definition_id":"44c48426-af4a-4783-b51f-f222b58fe5a6","srn":"srn://data-orchestrator.0x55.fr/regions/fr-par/workflow-runs/d5bdb78a-86ee-4742-8318-30922a5d535c","workflow_version_id":"2810ab7e-bcea-40cc-a2c3-26a1509896e8","environment_variables":{},"updated_at":"2026-11-05T15:01:03.475116Z","task_runs":[],"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","trigger_type":"manual","created_at":"2026-11-05T15:01:03.475116Z","status":"queued","workflow_definition_name":"tf-tests-dataorchestrator-start","region":"fr-par","terminated_at":null}'
+        headers:
+            Content-Length:
+                - "864"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Nov 2026 15:01:03 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 1be3461b-2ca5-4080-9fbd-cf129efde3e6
+        status: 200 OK
+        code: 200
+        duration: 239.373583ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261105100257-fdaccf13aec7 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/data-orchestrator/v1alpha2/regions/fr-par/workflow-runs/d5bdb78a-86ee-4742-8318-30922a5d535c
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1809
+        uncompressed: false
+        body: '{"workflow_dsl":"document:\n  dsl: 1.0.3\n  namespace: tf-tests\n  name: tf-tests-workflow\n  version: 1.0.0\n  metadata:\n    run_execution:\n      output: ''{\"color\":\"blue\"}''\n      started_at: 2026-11-05T15:01:03.475116Z\n      status: succeeded\n      terminated_at: 2026-11-05T15:01:03.748170197Z\n      updated_at: 2026-11-05T15:01:03.748170197Z\ndo:\n  - setColor:\n      metadata:\n        run_execution:\n          error_message: null\n          output: ''{\"color\": \"blue\"}''\n          reason: null\n          started_at: \"2026-11-05T15:01:03.668689Z\"\n          status: succeeded\n          terminated_at: \"2026-11-05T15:01:03.670764Z\"\n          updated_at: \"2026-11-05T15:01:03.670764Z\"\n        run_id: db84adf4-ad59-4191-85f9-28aa571bfb82\n      set:\n        color: blue\n","workflow_definition_name":"tf-tests-dataorchestrator-start","region":"fr-par","srn":"srn://data-orchestrator.0x55.fr/regions/fr-par/workflow-runs/d5bdb78a-86ee-4742-8318-30922a5d535c","workflow_version_id":"2810ab7e-bcea-40cc-a2c3-26a1509896e8","environment_variables":{},"duration":"0.273054s","output":"{\"color\": \"blue\"}","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","status":"succeeded","id":"d5bdb78a-86ee-4742-8318-30922a5d535c","workflow_definition_id":"44c48426-af4a-4783-b51f-f222b58fe5a6","trigger_type":"manual","created_at":"2026-11-05T15:01:03.475116Z","updated_at":"2026-11-05T15:01:03.748170Z","terminated_at":"2026-11-05T15:01:03.748170Z","task_runs":[{"id":"db84adf4-ad59-4191-85f9-28aa571bfb82","task_name":"setColor","created_at":"2026-11-05T15:01:03.668689Z","updated_at":"2026-11-05T15:01:03.670764Z","terminated_at":"2026-11-05T15:01:03.670764Z","duration":"0.002075s","status":"succeeded","output":"{\"color\": \"blue\"}","set_task_run_details":{}}]}'
+        headers:
+            Content-Length:
+                - "1809"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Nov 2026 15:01:19 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 202248b8-f2b0-4c22-a1d4-78c9963a8b3e
+        status: 200 OK
+        code: 200
+        duration: 403.674875ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261105100257-fdaccf13aec7 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/data-orchestrator/v1alpha2/regions/fr-par/workflow-definitions/44c48426-af4a-4783-b51f-f222b58fe5a6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 940
+        uncompressed: false
+        body: '{"created_at":"2026-11-05T15:01:03.119505Z","updated_at":"2026-11-05T15:01:03.085457Z","environment_variables":{},"workflow_timeout":null,"name":"tf-tests-dataorchestrator-start","versions":[{"id":"2810ab7e-bcea-40cc-a2c3-26a1509896e8","name":"v1-0-0","description":"","created_at":"2026-11-05T15:01:03.119505Z","updated_at":"2026-11-05T15:01:03.119505Z","deleted_at":null,"is_current":true,"workflow_dsl":"document:\n  dsl: 1.0.3\n  namespace: tf-tests\n  name: tf-tests-workflow\n  version: 1.0.0\ndo:\n  - setColor:\n      set:\n        color: blue\n\n"}],"cron_schedule":null,"last_run":{"workflow_run_id":"d5bdb78a-86ee-4742-8318-30922a5d535c","status":"succeeded"},"region":"fr-par","srn":"srn://data-orchestrator.0x55.fr/regions/fr-par/workflow-definitions/44c48426-af4a-4783-b51f-f222b58fe5a6","id":"44c48426-af4a-4783-b51f-f222b58fe5a6","description":"start","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}'
+        headers:
+            Content-Length:
+                - "940"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Nov 2026 15:01:19 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - c0ac359c-58af-481b-8be1-ea207341b538
+        status: 200 OK
+        code: 200
+        duration: 207.654ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261105100257-fdaccf13aec7 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/data-orchestrator/v1alpha2/regions/fr-par/workflow-runs?order_by=created_at_asc&project_id=105bdce1-64c0-48ab-899d-868455867ecf&workflow_definition_id=44c48426-af4a-4783-b51f-f222b58fe5a6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1535
+        uncompressed: false
+        body: '{"workflow_runs":[{"terminated_at":"2026-11-05T15:01:03.748170Z","workflow_definition_name":"tf-tests-dataorchestrator-start","id":"d5bdb78a-86ee-4742-8318-30922a5d535c","task_runs":[],"workflow_dsl":"document:\n  dsl: 1.0.3\n  namespace: tf-tests\n  name: tf-tests-workflow\n  version: 1.0.0\n  metadata:\n    run_execution:\n      output: ''{\"color\":\"blue\"}''\n      started_at: 2026-11-05T15:01:03.475116Z\n      status: succeeded\n      terminated_at: 2026-11-05T15:01:03.748170197Z\n      updated_at: 2026-11-05T15:01:03.748170197Z\ndo:\n  - setColor:\n      metadata:\n        run_execution:\n          error_message: null\n          output: ''{\"color\": \"blue\"}''\n          reason: null\n          started_at: \"2026-11-05T15:01:03.668689Z\"\n          status: succeeded\n          terminated_at: \"2026-11-05T15:01:03.670764Z\"\n          updated_at: \"2026-11-05T15:01:03.670764Z\"\n        run_id: db84adf4-ad59-4191-85f9-28aa571bfb82\n      set:\n        color: blue\n","status":"succeeded","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","trigger_type":"manual","environment_variables":{},"updated_at":"2026-11-05T15:01:03.748170Z","duration":"0.273054s","output":"{\"color\": \"blue\"}","srn":"srn://data-orchestrator.0x55.fr/regions/fr-par/workflow-runs/d5bdb78a-86ee-4742-8318-30922a5d535c","created_at":"2026-11-05T15:01:03.475116Z","region":"fr-par","workflow_definition_id":"44c48426-af4a-4783-b51f-f222b58fe5a6","workflow_version_id":"2810ab7e-bcea-40cc-a2c3-26a1509896e8"}],"total_count":1}'
+        headers:
+            Content-Length:
+                - "1535"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Nov 2026 15:01:19 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 7f066509-d28f-450d-89d2-110a4b9f5a83
+        status: 200 OK
+        code: 200
+        duration: 518.230834ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261105100257-fdaccf13aec7 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/data-orchestrator/v1alpha2/regions/fr-par/workflow-definitions/44c48426-af4a-4783-b51f-f222b58fe5a6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 940
+        uncompressed: false
+        body: '{"srn":"srn://data-orchestrator.0x55.fr/regions/fr-par/workflow-definitions/44c48426-af4a-4783-b51f-f222b58fe5a6","id":"44c48426-af4a-4783-b51f-f222b58fe5a6","description":"start","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","versions":[{"is_current":true,"workflow_dsl":"document:\n  dsl: 1.0.3\n  namespace: tf-tests\n  name: tf-tests-workflow\n  version: 1.0.0\ndo:\n  - setColor:\n      set:\n        color: blue\n\n","id":"2810ab7e-bcea-40cc-a2c3-26a1509896e8","name":"v1-0-0","description":"","created_at":"2026-11-05T15:01:03.119505Z","updated_at":"2026-11-05T15:01:03.119505Z","deleted_at":null}],"created_at":"2026-11-05T15:01:03.119505Z","environment_variables":{},"cron_schedule":null,"name":"tf-tests-dataorchestrator-start","updated_at":"2026-11-05T15:01:03.085457Z","workflow_timeout":null,"last_run":{"workflow_run_id":"d5bdb78a-86ee-4742-8318-30922a5d535c","status":"succeeded"},"region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "940"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Nov 2026 15:01:20 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - fe3f2f02-d249-45b1-8244-dcbcde587ed8
+        status: 200 OK
+        code: 200
+        duration: 124.687583ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261105100257-fdaccf13aec7 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/data-orchestrator/v1alpha2/regions/fr-par/workflow-definitions/44c48426-af4a-4783-b51f-f222b58fe5a6
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Nov 2026 15:01:20 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 4457833b-1994-41a3-b8bc-c19c2a12b43b
+        status: 204 No Content
+        code: 204
+        duration: 207.785042ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261105100257-fdaccf13aec7 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/data-orchestrator/v1alpha2/regions/fr-par/workflow-definitions/44c48426-af4a-4783-b51f-f222b58fe5a6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 140
+        uncompressed: false
+        body: '{"message":"resource is not found","resource":"workflow_definition","resource_id":"44c48426-af4a-4783-b51f-f222b58fe5a6","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "140"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Nov 2026 15:01:20 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - de8ffdb3-3bc1-462c-ab8a-9f4df288d1cd
+        status: 404 Not Found
+        code: 404
+        duration: 52.84125ms
