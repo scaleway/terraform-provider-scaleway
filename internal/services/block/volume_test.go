@@ -180,7 +180,7 @@ func TestAccVolume_KMS_NoKeys(t *testing.T) {
 					}
 				`,
 				ExpectError: regexp.MustCompile(
-					`Cannot use kms_key_id if the snapshot is not crypted`,
+					`Cannot use kms_key_id if the snapshot is not encrypted`,
 				),
 			},
 		},
