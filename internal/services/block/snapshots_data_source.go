@@ -261,7 +261,7 @@ func flattenSnapshotsList(ctx context.Context, snapshots []*block.Snapshot, diag
 			"name":       types.StringValue(snapshot.Name),
 			"volume_id":  volumeID,
 			"tags":       tags,
-			"kms_key_id": types.StringValue(""),
+			"kms_key_id": types.StringNull(),
 			"srn":        types.StringValue(snapshot.Srn),
 			"zone":       types.StringValue(string(snapshot.Zone)),
 			"project_id": types.StringValue(snapshot.ProjectID),
