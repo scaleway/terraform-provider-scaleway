@@ -53,7 +53,6 @@ The following arguments are supported:
 - `description` - (Optional) Description of the workflow definition. Omit the attribute to leave it empty; an empty string is not allowed.
 - `version_description` - (Optional) Description of the workflow version. Omit the attribute to leave it empty; an empty string is not allowed.
 - `environment_variables` - (Optional) Environment variables of the workflow.
-- `workflow_timeout` - (Optional) Workflow timeout as a Go duration string (e.g. `1h`).
 - `cron_schedule` - (Optional) Cron schedule of the workflow.
     - `schedule` - (Required) UNIX cron expression.
     - `timezone_identifier` - (Required) Canonical TZ identifier (e.g. `Europe/Paris`).

@@ -250,20 +250,6 @@ EOT
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_dataorchestrator_workflow" "main" {
-					  name             = "tf-tests-dataorchestrator-validation"
-					  region           = "fr-par"
-					  version_name     = "v1-0-0"
-					  workflow_timeout = "not-a-duration"
-					  workflow_dsl     = <<-EOT
-%s
-EOT
-					}
-				`, testAccWorkflowMinimalDSL),
-				ExpectError: regexp.MustCompile(`(?i)Invalid Duration|valid Go duration`),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_dataorchestrator_workflow" "main" {
 					  name         = "tf-tests-dataorchestrator-validation"
 					  region       = "fr-par"
 					  version_name = "bad name!"

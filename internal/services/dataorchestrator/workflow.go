@@ -59,7 +59,6 @@ type workflowResourceModel struct {
 	VersionDescription   types.String `tfsdk:"version_description"`
 	VersionID            types.String `tfsdk:"version_id"`
 	EnvironmentVariables types.Map    `tfsdk:"environment_variables"`
-	WorkflowTimeout      types.String `tfsdk:"workflow_timeout"`
 	CronSchedule         types.Object `tfsdk:"cron_schedule"`
 	ProjectID            types.String `tfsdk:"project_id"`
 	Region               types.String `tfsdk:"region"`
@@ -155,13 +154,6 @@ func (r *WorkflowResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:            true,
 				ElementType:         types.StringType,
 				MarkdownDescription: "Environment variables of the workflow definition.",
-			},
-			"workflow_timeout": schema.StringAttribute{
-				Optional:            true,
-				MarkdownDescription: "Timeout of the workflow as a Go duration (e.g. `1h`, `30m`).",
-				Validators: []validator.String{
-					verify.IsStringDuration(),
-				},
 			},
 			"cron_schedule": schema.SingleNestedAttribute{
 				Optional:            true,
@@ -311,15 +303,6 @@ func (r *WorkflowResource) Create(ctx context.Context, req resource.CreateReques
 		createReq.EnvironmentVariables = env
 	}
 
-	timeout, diags := expandWorkflowTimeout(data.WorkflowTimeout)
-	resp.Diagnostics.Append(diags...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	createReq.WorkflowTimeout = timeout
-
 	cron, diags := expandCronScheduleCreate(ctx, data.CronSchedule)
 	resp.Diagnostics.Append(diags...)
 
@@ -449,18 +432,6 @@ func (r *WorkflowResource) Update(ctx context.Context, req resource.UpdateReques
 		hasDefChanges = true
 	}
 
-	if !plan.WorkflowTimeout.Equal(state.WorkflowTimeout) {
-		timeout, diags := expandWorkflowTimeout(plan.WorkflowTimeout)
-		resp.Diagnostics.Append(diags...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		updateDef.WorkflowTimeout = timeout
-		hasDefChanges = true
-	}
-
 	if !plan.CronSchedule.Equal(state.CronSchedule) {
 		cron, diags := expandCronScheduleUpdate(ctx, plan.CronSchedule)
 		resp.Diagnostics.Append(diags...)
@@ -586,27 +557,6 @@ func flattenOptionalString(value string) types.String {
 	return types.StringValue(value)
 }
 
-func expandWorkflowTimeout(value types.String) (*scw.Duration, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	if value.IsNull() || value.IsUnknown() || value.ValueString() == "" {
-		return nil, diags
-	}
-
-	d, err := scwtypes.ExpandDuration(value.ValueString())
-	if err != nil {
-		diags.AddError("Invalid workflow_timeout", err.Error())
-
-		return nil, diags
-	}
-
-	if d == nil {
-		return nil, diags
-	}
-
-	return scw.NewDurationFromTimeDuration(*d), diags
-}
-
 func expandCronScheduleCreate(ctx context.Context, obj types.Object) (*dataorchestratorSDK.CreateWorkflowDefinitionRequestCronScheduleConfig, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -692,17 +642,6 @@ func flattenWorkflowDefinition(ctx context.Context, def *dataorchestratorSDK.Wor
 		diags.Append(mapDiags...)
 
 		model.EnvironmentVariables = m
-	}
-
-	if def.WorkflowTimeout != nil {
-		td := def.WorkflowTimeout.ToTimeDuration()
-		if td != nil {
-			model.WorkflowTimeout = types.StringValue(td.String())
-		} else {
-			model.WorkflowTimeout = types.StringNull()
-		}
-	} else {
-		model.WorkflowTimeout = types.StringNull()
 	}
 
 	if def.CronSchedule != nil {

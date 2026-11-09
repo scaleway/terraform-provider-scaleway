@@ -44,35 +44,6 @@ func IsStringEmail() validator.String {
 	)
 }
 
-// IsStringDuration validates a Go duration string (e.g. 1h, 30m).
-func IsStringDuration() validator.String {
-	return stringDurationValidator{}
-}
-
-type stringDurationValidator struct{}
-
-func (stringDurationValidator) Description(_ context.Context) string {
-	return "must be a valid Go duration (e.g. 1h, 30m)"
-}
-
-func (v stringDurationValidator) MarkdownDescription(ctx context.Context) string {
-	return v.Description(ctx)
-}
-
-func (stringDurationValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
-	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
-		return
-	}
-
-	if _, err := time.ParseDuration(req.ConfigValue.ValueString()); err != nil {
-		resp.Diagnostics.AddAttributeError(
-			req.Path,
-			"Invalid Duration",
-			fmt.Sprintf("expected a valid Go duration (e.g. 1h, 30m): %s", err),
-		)
-	}
-}
-
 // IsStringCronExpression validates a standard 5-field UNIX cron expression.
 func IsStringCronExpression() validator.String {
 	return stringCronValidator{}

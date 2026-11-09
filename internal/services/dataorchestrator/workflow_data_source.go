@@ -43,7 +43,6 @@ type workflowDataSourceModel struct {
 	VersionDescription   types.String `tfsdk:"version_description"`
 	VersionID            types.String `tfsdk:"version_id"`
 	EnvironmentVariables types.Map    `tfsdk:"environment_variables"`
-	WorkflowTimeout      types.String `tfsdk:"workflow_timeout"`
 	CronSchedule         types.Object `tfsdk:"cron_schedule"`
 	ProjectID            types.String `tfsdk:"project_id"`
 	Region               types.String `tfsdk:"region"`
@@ -79,7 +78,6 @@ func (d *WorkflowDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"version_description":   schema.StringAttribute{Computed: true, MarkdownDescription: "Description of the current workflow version."},
 			"version_id":            schema.StringAttribute{Computed: true, MarkdownDescription: "ID of the current workflow version."},
 			"environment_variables": schema.MapAttribute{Computed: true, ElementType: types.StringType, MarkdownDescription: "Environment variables of the workflow."},
-			"workflow_timeout":      schema.StringAttribute{Computed: true, MarkdownDescription: "Workflow timeout as a Go duration string."},
 			"cron_schedule": schema.SingleNestedAttribute{
 				Computed:            true,
 				MarkdownDescription: "Cron schedule of the workflow, if any.",
@@ -158,7 +156,6 @@ func (d *WorkflowDataSource) Read(ctx context.Context, req datasource.ReadReques
 		VersionDescription:   flat.VersionDescription,
 		VersionID:            flat.VersionID,
 		EnvironmentVariables: flat.EnvironmentVariables,
-		WorkflowTimeout:      flat.WorkflowTimeout,
 		CronSchedule:         flat.CronSchedule,
 		ProjectID:            flat.ProjectID,
 		Region:               flat.Region,
