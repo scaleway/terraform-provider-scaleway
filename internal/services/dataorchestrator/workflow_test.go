@@ -37,6 +37,9 @@ EOT
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "version_name", "v1-0-0"),
 					resource.TestCheckResourceAttrSet("scaleway_dataorchestrator_workflow.main", "version_id"),
 					resource.TestCheckResourceAttrSet("scaleway_dataorchestrator_workflow.main", "workflow_dsl"),
+					checkWorkflowDescription(tt, "scaleway_dataorchestrator_workflow.main", "basic"),
+					checkWorkflowCronAbsent(tt, "scaleway_dataorchestrator_workflow.main"),
+					checkWorkflowEnv(tt, "scaleway_dataorchestrator_workflow.main", nil),
 				),
 			},
 			{
@@ -62,7 +65,8 @@ EOT
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.schedule", "0 6 * * *"),
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.timezone_identifier", "Europe/Paris"),
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.overlap", "forbid"),
-					checkWorkflowCronPresent(tt, "scaleway_dataorchestrator_workflow.main", "0 6 * * *", "Europe/Paris"),
+					checkWorkflowDescription(tt, "scaleway_dataorchestrator_workflow.main", "updated"),
+					checkWorkflowCronPresent(tt, "scaleway_dataorchestrator_workflow.main", "0 6 * * *", "Europe/Paris", "forbid"),
 				),
 			},
 			{
@@ -80,6 +84,7 @@ EOT
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
 					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "description"),
 					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule"),
+					checkWorkflowDescription(tt, "scaleway_dataorchestrator_workflow.main", ""),
 					checkWorkflowCronAbsent(tt, "scaleway_dataorchestrator_workflow.main"),
 				),
 			},
@@ -92,7 +97,7 @@ EOT
 	})
 }
 
-func TestAccWorkflow_CreateWithCronThenRemove(t *testing.T) {
+func TestAccWorkflow_CreateWithCronReplaceRemove(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -118,8 +123,31 @@ EOT
 				`, testAccWorkflowMinimalDSL),
 				Check: resource.ComposeTestCheckFunc(
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
-					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.schedule", "0 6 * * *"),
-					checkWorkflowCronPresent(tt, "scaleway_dataorchestrator_workflow.main", "0 6 * * *", "Europe/Paris"),
+					checkWorkflowCronPresent(tt, "scaleway_dataorchestrator_workflow.main", "0 6 * * *", "Europe/Paris", "forbid"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_dataorchestrator_workflow" "main" {
+					  name         = "tf-tests-dataorchestrator-cron-create"
+					  region       = "fr-par"
+					  version_name = "v1-0-0"
+					  workflow_dsl = <<-EOT
+%s
+EOT
+					  cron_schedule = {
+					    schedule            = "30 18 * * 1-5"
+					    timezone_identifier = "UTC"
+					    overlap             = "allow_all"
+					  }
+					}
+				`, testAccWorkflowMinimalDSL),
+				Check: resource.ComposeTestCheckFunc(
+					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
+					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.schedule", "30 18 * * 1-5"),
+					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.timezone_identifier", "UTC"),
+					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.overlap", "allow_all"),
+					checkWorkflowCronPresent(tt, "scaleway_dataorchestrator_workflow.main", "30 18 * * 1-5", "UTC", "allow_all"),
 				),
 			},
 			{
@@ -160,14 +188,59 @@ func TestAccWorkflow_EnvVars(t *testing.T) {
 					  workflow_dsl = <<-EOT
 %s
 EOT
+					}
+				`, testAccWorkflowMinimalDSL),
+				Check: resource.ComposeTestCheckFunc(
+					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
+					checkWorkflowEnv(tt, "scaleway_dataorchestrator_workflow.main", nil),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_dataorchestrator_workflow" "main" {
+					  name         = "tf-tests-dataorchestrator-env"
+					  region       = "fr-par"
+					  version_name = "v1-0-0"
+					  workflow_dsl = <<-EOT
+%s
+EOT
 					  environment_variables = {
 					    FOO = "bar"
+					    BAZ = "qux"
 					  }
 					}
 				`, testAccWorkflowMinimalDSL),
 				Check: resource.ComposeTestCheckFunc(
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.FOO", "bar"),
+					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.BAZ", "qux"),
+					checkWorkflowEnv(tt, "scaleway_dataorchestrator_workflow.main", map[string]string{
+						"FOO": "bar",
+						"BAZ": "qux",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_dataorchestrator_workflow" "main" {
+					  name         = "tf-tests-dataorchestrator-env"
+					  region       = "fr-par"
+					  version_name = "v1-0-0"
+					  workflow_dsl = <<-EOT
+%s
+EOT
+					  environment_variables = {
+					    FOO = "updated"
+					  }
+					}
+				`, testAccWorkflowMinimalDSL),
+				Check: resource.ComposeTestCheckFunc(
+					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
+					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.FOO", "updated"),
+					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.BAZ"),
+					checkWorkflowEnv(tt, "scaleway_dataorchestrator_workflow.main", map[string]string{
+						"FOO": "updated",
+					}),
 				),
 			},
 			{
@@ -184,7 +257,7 @@ EOT
 				Check: resource.ComposeTestCheckFunc(
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
 					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.%"),
-					checkWorkflowEnvAbsent(tt, "scaleway_dataorchestrator_workflow.main"),
+					checkWorkflowEnv(tt, "scaleway_dataorchestrator_workflow.main", nil),
 				),
 			},
 		},
@@ -215,6 +288,20 @@ EOT
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_dataorchestrator_workflow" "main" {
+					  name                = "tf-tests-dataorchestrator-validation"
+					  version_description = ""
+					  region              = "fr-par"
+					  version_name        = "v1-0-0"
+					  workflow_dsl        = <<-EOT
+%s
+EOT
+					}
+				`, testAccWorkflowMinimalDSL),
+				ExpectError: regexp.MustCompile(`(?i)string length must be at least 1`),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_dataorchestrator_workflow" "main" {
 					  name         = "tf-tests-dataorchestrator-validation"
 					  region       = "fr-par"
 					  version_name = "v1-0-0"
@@ -228,6 +315,23 @@ EOT
 					}
 				`, testAccWorkflowMinimalDSL),
 				ExpectError: regexp.MustCompile(`(?i)Invalid Cron Expression|valid UNIX cron`),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_dataorchestrator_workflow" "main" {
+					  name         = "tf-tests-dataorchestrator-validation"
+					  region       = "fr-par"
+					  version_name = "v1-0-0"
+					  workflow_dsl = <<-EOT
+%s
+EOT
+					  cron_schedule = {
+					    schedule            = "0 6 * * *"
+					    timezone_identifier = "Not/AZone"
+					  }
+					}
+				`, testAccWorkflowMinimalDSL),
+				ExpectError: regexp.MustCompile(`(?i)Invalid Timezone|valid IANA timezone`),
 			},
 			{
 				Config: fmt.Sprintf(`
