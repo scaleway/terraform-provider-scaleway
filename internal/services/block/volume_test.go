@@ -187,6 +187,60 @@ func TestAccVolume_KMS_NoKeys(t *testing.T) {
 	})
 }
 
+func TestAccVolume_KMS_InheritedFromSnapshot(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				// Create an encrypted volume, snapshot it, then create a new
+				// volume from that snapshot WITHOUT specifying kms_key_id.
+				Config: `
+					resource "scaleway_key_manager_key" "my_key" {
+						name        = "tf-tests-volume-kms-inherited"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume encrypted {
+						name       = "test-block-volume-kms-inherited-src"
+						zone       = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops       = 5000
+						size_in_gb = 20
+						kms_key_id = scaleway_key_manager_key.my_key.id
+					}
+
+					resource scaleway_block_snapshot snapshot {
+						name      = "test-block-snapshot-kms-inherited"
+						zone      = "fr-par-3"
+						volume_id = scaleway_block_volume.encrypted.id
+					}
+
+					resource scaleway_block_volume inherited {
+						name        = "test-block-volume-kms-inherited-dst"
+						zone        = "fr-par-3"
+						iops        = 5000
+						snapshot_id = scaleway_block_snapshot.snapshot.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.inherited"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_volume.inherited", "kms_key_id",
+						"scaleway_key_manager_key.my_key", "id",
+					),
+				),
+			},
+		},
+	})
+}
+
 func TestAccVolume_BasicWithoutSizeInGB(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

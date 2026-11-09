@@ -140,6 +140,7 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			},
 			"kms_key_id": schema.StringAttribute{
 				Optional: true,
+				Computed: true,
 				Description: "UUID of the KMS key used to protect the volume's encryption. " +
 					"Using this field will encrypt the new volume. " +
 					"Only available to the Private Beta's users. The KMS key must use " +
