@@ -13,26 +13,80 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+func getWorkflowDefinition(tt *acctest.TestTools, resourceName string, state *terraform.State) (*dataorchestratorSDK.WorkflowDefinition, error) {
+	rs, ok := state.RootModule().Resources[resourceName]
+	if !ok {
+		return nil, fmt.Errorf("resource not found: %s", resourceName)
+	}
+
+	region, id, err := regional.ParseID(rs.Primary.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	api := dataorchestratorSDK.NewAPI(meta.ExtractScwClient(tt.Meta))
+
+	return api.GetWorkflowDefinition(&dataorchestratorSDK.GetWorkflowDefinitionRequest{
+		Region:               region,
+		WorkflowDefinitionID: id,
+	}, scw.WithContext(tt.T.Context()))
+}
+
 func isWorkflowPresent(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		rs, ok := state.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", resourceName)
-		}
+		_, err := getWorkflowDefinition(tt, resourceName, state)
 
-		region, id, err := regional.ParseID(rs.Primary.ID)
+		return err
+	}
+}
+
+func checkWorkflowCronAbsent(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		def, err := getWorkflowDefinition(tt, resourceName, state)
 		if err != nil {
 			return err
 		}
 
-		api := dataorchestratorSDK.NewAPI(meta.ExtractScwClient(tt.Meta))
+		if def.CronSchedule != nil {
+			return fmt.Errorf("expected cron_schedule to be cleared on API, got %#v", def.CronSchedule)
+		}
 
-		_, err = api.GetWorkflowDefinition(&dataorchestratorSDK.GetWorkflowDefinitionRequest{
-			Region:               region,
-			WorkflowDefinitionID: id,
-		}, scw.WithContext(tt.T.Context()))
+		return nil
+	}
+}
+
+func checkWorkflowCronPresent(tt *acctest.TestTools, resourceName, schedule, timezone string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		def, err := getWorkflowDefinition(tt, resourceName, state)
 		if err != nil {
 			return err
+		}
+
+		if def.CronSchedule == nil {
+			return fmt.Errorf("expected cron_schedule on API")
+		}
+
+		if def.CronSchedule.Schedule != schedule {
+			return fmt.Errorf("cron schedule: got %q want %q", def.CronSchedule.Schedule, schedule)
+		}
+
+		if def.CronSchedule.TimezoneIDentifier != timezone {
+			return fmt.Errorf("cron timezone: got %q want %q", def.CronSchedule.TimezoneIDentifier, timezone)
+		}
+
+		return nil
+	}
+}
+
+func checkWorkflowEnvAbsent(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		def, err := getWorkflowDefinition(tt, resourceName, state)
+		if err != nil {
+			return err
+		}
+
+		if len(def.EnvironmentVariables) != 0 {
+			return fmt.Errorf("expected environment_variables cleared on API, got %#v", def.EnvironmentVariables)
 		}
 
 		return nil
