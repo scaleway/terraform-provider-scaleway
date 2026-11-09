@@ -805,16 +805,10 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, m any, bucketNa
 	// we do not read it, and it has a "private" default value.
 	// AWS has the same issue: https://github.com/terraform-providers/terraform-provider-aws/issues/6193
 
-	_, err = s3Client.ListObjects(ctx, &s3.ListObjectsInput{
-		Bucket: new(bucketName),
-	})
-	if err != nil {
-		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "objects", ""); !bucketFound {
-			d.SetId("")
-
-			return diags
-		}
-	}
+	// Note: the "ListObjects" call was removed from here to fix
+	// https://github.com/scaleway/terraform-provider-scaleway/issues/4530.
+	// The result was never used, and bucket existence is already established by
+	// GetBucketACL and GetObjectLockConfiguration, which both return 404 on a missing bucket.
 
 	var tagsSet []s3Types.Tag
 
