@@ -11,7 +11,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -250,27 +249,8 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
-	if v, ok := d.GetOk("private_network"); ok {
-		pnList := v.([]any)
-		if len(pnList) > 0 {
-			pnMap := pnList[0].(map[string]any)
-			pnID := locality.ExpandID(pnMap["private_network_id"].(string))
-
-			req.Endpoints = []*searchdbapi.EndpointSpec{
-				{
-					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
-						PrivateNetworkID: pnID,
-					},
-				},
-			}
-		}
-	} else {
-		req.Endpoints = []*searchdbapi.EndpointSpec{
-			{
-				Public: &searchdbapi.EndpointSpecPublicDetails{},
-			},
-		}
-	}
+	desiredPrivate, pnID := privateNetworkDesireFromConfig(d)
+	req.Endpoints = []*searchdbapi.EndpointSpec{endpointSpec(desiredPrivate, pnID)}
 
 	deployment, err := api.CreateDeployment(req, scw.WithContext(ctx))
 	if err != nil {
@@ -278,6 +258,22 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	deployment, err = waitForDeployment(ctx, api, region, deployment.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Same endpoint reconciliation as Update so create-with-PN and create-without
+	// converge through one code path.
+	err = reconcileDeploymentEndpoints(
+		ctx,
+		api,
+		region,
+		deployment.ID,
+		deployment.Endpoints,
+		desiredPrivate,
+		pnID,
+		d.Timeout(schema.TimeoutCreate),
+	)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -409,99 +405,20 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 
-		// Determine the desired endpoint state from the Terraform config.
-		desiredPrivate := false
+		desiredPrivate, pnID := privateNetworkDesireFromConfig(d)
 
-		var pnID string
-
-		if v, ok := d.GetOk("private_network"); ok {
-			pnList := v.([]any)
-			if len(pnList) > 0 {
-				desiredPrivate = true
-				pnMap := pnList[0].(map[string]any)
-				pnID = locality.ExpandID(pnMap["private_network_id"].(string))
-			}
-		}
-
-		// SearchDB keeps a public dashboard endpoint alongside private API endpoints.
-		// Never delete public endpoints when managing private_network: the API ignores
-		// (or never completes) those deletes, which would hang waitForEndpointsDeleted.
-		// Only reconcile private endpoints relative to the desired private_network_id.
-		var deletedEndpointIDs []string
-
-		hasDesiredEndpoint := false
-
-		for _, endpoint := range deployment.Endpoints {
-			if endpoint == nil {
-				continue
-			}
-
-			if endpoint.Public != nil && endpoint.PrivateNetwork == nil {
-				if !desiredPrivate {
-					hasDesiredEndpoint = true
-				}
-
-				continue
-			}
-
-			if endpoint.PrivateNetwork == nil {
-				continue
-			}
-
-			if desiredPrivate && endpoint.PrivateNetwork.PrivateNetworkID == pnID {
-				hasDesiredEndpoint = true
-
-				continue
-			}
-
-			if err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
-				Region:     region,
-				EndpointID: endpoint.ID,
-			}, scw.WithContext(ctx)); err != nil {
-				return diag.FromErr(err)
-			}
-
-			deletedEndpointIDs = append(deletedEndpointIDs, endpoint.ID)
-		}
-
-		// DeleteEndpoint returns 204 immediately but the removal is asynchronous.
-		// waitForDeployment only checks the deployment's top-level status, which stays
-		// "ready" during endpoint operations, so we must poll GetDeployment until the
-		// deleted endpoints are actually gone before creating new ones.
-		if len(deletedEndpointIDs) > 0 {
-			if err := waitForEndpointsDeleted(ctx, api, region, id, deletedEndpointIDs, d.Timeout(schema.TimeoutUpdate)); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		// Create the desired endpoint only if it doesn't already exist.
-		if !hasDesiredEndpoint {
-			var spec *searchdbapi.EndpointSpec
-			if desiredPrivate {
-				spec = &searchdbapi.EndpointSpec{
-					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
-						PrivateNetworkID: pnID,
-					},
-				}
-			} else {
-				spec = &searchdbapi.EndpointSpec{
-					Public: &searchdbapi.EndpointSpecPublicDetails{},
-				}
-			}
-
-			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
-				Region:       region,
-				DeploymentID: id,
-				EndpointSpec: spec,
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(err)
-			}
+		err = reconcileDeploymentEndpoints(
+			ctx,
+			api,
+			region,
+			id,
+			deployment.Endpoints,
+			desiredPrivate,
+			pnID,
+			d.Timeout(schema.TimeoutUpdate),
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
