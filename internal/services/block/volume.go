@@ -149,6 +149,7 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 					stringvalidator.ConflictsWith(path.MatchRoot("instance_volume_id")),
 				},
 				PlanModifiers: []planmodifier.String{
+					regional.LocalityPlanModifier(),
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
