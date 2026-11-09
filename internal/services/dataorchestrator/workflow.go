@@ -25,6 +25,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -194,15 +195,9 @@ func (r *WorkflowResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 					},
 				},
 			},
-			"project_id": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "Project ID. Defaults to the provider project ID.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
+			"project_id": account.ProjectIDSchemaFw(
+				"Project ID. Defaults to the provider project ID.",
+			),
 			"region": regional.SchemaAttributeComputed("Region of the workflow. Only `fr-par` is currently supported."),
 			"srn": schema.StringAttribute{
 				Computed:            true,
