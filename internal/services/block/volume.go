@@ -25,6 +25,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -255,7 +256,11 @@ func (r *VolumeResource) Create(
 			}
 		}
 
-		volume, err = r.api.CreateVolume(createReq, scw.WithContext(ctx))
+		volume, err = transport.RetryOnStatusValue(
+			ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Volume, error) {
+				return r.api.CreateVolume(createReq, scw.WithContext(ctx))
+			},
+		)
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to create Block Volume", err.Error())
 
@@ -365,7 +370,11 @@ func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	volume, err := r.api.UpdateVolume(updateReq, scw.WithContext(ctx))
+	volume, err := transport.RetryOnStatusValue(
+		ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Volume, error) {
+			return r.api.UpdateVolume(updateReq, scw.WithContext(ctx))
+		},
+	)
 	if err != nil {
 		if httperrors.Is404(err) {
 			resp.State.RemoveResource(ctx)
@@ -419,10 +428,12 @@ func (r *VolumeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	err = r.api.DeleteVolume(&block.DeleteVolumeRequest{
-		Zone:     volume.Zone,
-		VolumeID: volume.ID,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return r.api.DeleteVolume(&block.DeleteVolumeRequest{
+			Zone:     volume.Zone,
+			VolumeID: volume.ID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			return
@@ -495,10 +506,14 @@ func flattenVolume(ctx context.Context, api *block.API, volume *block.Volume, re
 	}
 
 	if volume.ParentSnapshotID != nil {
-		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
-			SnapshotID: *volume.ParentSnapshotID,
-			Zone:       volume.Zone,
-		}, scw.WithContext(ctx))
+		_, err := transport.RetryOnStatusValue(
+			ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
+				return api.GetSnapshot(&block.GetSnapshotRequest{
+					SnapshotID: *volume.ParentSnapshotID,
+					Zone:       volume.Zone,
+				}, scw.WithContext(ctx))
+			},
+		)
 		if !httperrors.Is403(err) && !httperrors.Is404(err) {
 			model.SnapshotID = types.StringValue(zonal.NewIDString(volume.Zone, *volume.ParentSnapshotID))
 		} else {

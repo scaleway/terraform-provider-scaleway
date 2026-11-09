@@ -15,12 +15,16 @@ func waitForBlockVolume(ctx context.Context, blockAPI *block.API, zone scw.Zone,
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	volume, err := blockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeAndReferencesRequest{
-		Zone:          zone,
-		VolumeID:      id,
-		RetryInterval: &retryInterval,
-		Timeout:       new(timeout),
-	}, scw.WithContext(ctx))
+	volume, err := transport.RetryOnStatusValue(
+		ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Volume, error) {
+			return blockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeAndReferencesRequest{
+				Zone:          zone,
+				VolumeID:      id,
+				RetryInterval: &retryInterval,
+				Timeout:       &timeout,
+			}, scw.WithContext(ctx))
+		},
+	)
 
 	return volume, err
 }
@@ -31,14 +35,17 @@ func waitForBlockVolumeToBeAvailable(ctx context.Context, blockAPI *block.API, z
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	volume, err := blockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeAndReferencesRequest{
-		Zone:          zone,
-		VolumeID:      id,
-		RetryInterval: &retryInterval,
-		Timeout:       new(timeout),
-
-		VolumeTerminalStatus: new(block.VolumeStatusAvailable),
-	}, scw.WithContext(ctx))
+	volume, err := transport.RetryOnStatusValue(
+		ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Volume, error) {
+			return blockAPI.WaitForVolumeAndReferences(&block.WaitForVolumeAndReferencesRequest{
+				Zone:                 zone,
+				VolumeID:             id,
+				RetryInterval:        &retryInterval,
+				Timeout:              &timeout,
+				VolumeTerminalStatus: new(block.VolumeStatusAvailable),
+			}, scw.WithContext(ctx))
+		},
+	)
 
 	return volume, err
 }
@@ -49,12 +56,16 @@ func waitForBlockSnapshot(ctx context.Context, blockAPI *block.API, zone scw.Zon
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	snapshot, err := blockAPI.WaitForSnapshot(&block.WaitForSnapshotRequest{
-		Zone:          zone,
-		SnapshotID:    id,
-		RetryInterval: &retryInterval,
-		Timeout:       new(timeout),
-	}, scw.WithContext(ctx))
+	snapshot, err := transport.RetryOnStatusValue(
+		ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
+			return blockAPI.WaitForSnapshot(&block.WaitForSnapshotRequest{
+				Zone:          zone,
+				SnapshotID:    id,
+				RetryInterval: &retryInterval,
+				Timeout:       &timeout,
+			}, scw.WithContext(ctx))
+		},
+	)
 
 	return snapshot, err
 }
@@ -65,14 +76,17 @@ func waitForBlockSnapshotToBeAvailable(ctx context.Context, blockAPI *block.API,
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	snapshot, err := blockAPI.WaitForSnapshot(&block.WaitForSnapshotRequest{
-		Zone:          zone,
-		SnapshotID:    id,
-		RetryInterval: &retryInterval,
-		Timeout:       new(timeout),
-
-		TerminalStatus: new(block.SnapshotStatusAvailable),
-	}, scw.WithContext(ctx))
+	snapshot, err := transport.RetryOnStatusValue(
+		ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
+			return blockAPI.WaitForSnapshot(&block.WaitForSnapshotRequest{
+				Zone:           zone,
+				SnapshotID:     id,
+				RetryInterval:  &retryInterval,
+				Timeout:        &timeout,
+				TerminalStatus: new(block.SnapshotStatusAvailable),
+			}, scw.WithContext(ctx))
+		},
+	)
 
 	return snapshot, err
 }
