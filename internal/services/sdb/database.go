@@ -115,11 +115,11 @@ func (r *DatabaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Computed:            true,
 				MarkdownDescription: "The Scaleway Resource Name (SRN) of the database.",
 			},
-			"region":     regional.SchemaAttributeComputed(),
+			"region": regional.SchemaAttributeComputed(),
 			"project_id": account.ProjectIDSchemaFw(
 				"The project_id you want to attach the resource to",
 			),
-			"timeouts":   timeouts.AttributesAll(ctx),
+			"timeouts": timeouts.AttributesAll(ctx),
 		},
 	}
 }
