@@ -8,29 +8,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-const (
-	defaultProjectIDDescription      = "The project_id you want to attach the resource to"
-	defaultOrganizationIDDescription = "The organization_id you want to attach the resource to"
-)
-
-func schemaDescription(defaultDesc string, description ...string) string {
-	if len(description) > 0 && description[0] != "" {
-		return description[0]
-	}
-
-	return defaultDesc
-}
-
-// ProjectIDSchemaAttribute returns the Framework schema for project_id
-// (Optional + Computed + RequiresReplace). Optional description overrides the default.
-func ProjectIDSchemaAttribute(description ...string) schema.StringAttribute {
-	desc := schemaDescription(defaultProjectIDDescription, description...)
-
-	return schema.StringAttribute{
+// ProjectIDSchemaFw returns the Framework schema for project_id
+// (Optional + Computed + RequiresReplace). Description is required.
+func ProjectIDSchemaFw(description string) *schema.StringAttribute {
+	return &schema.StringAttribute{
 		Optional:            true,
 		Computed:            true,
-		MarkdownDescription: desc,
-		Description:         desc,
+		MarkdownDescription: description,
+		Description:         description,
 		Validators: []validator.String{
 			verify.IsStringUUID(),
 		},
@@ -41,24 +26,19 @@ func ProjectIDSchemaAttribute(description ...string) schema.StringAttribute {
 	}
 }
 
-// ProjectIDSchemaFw is kept for callers that dereference a pointer (block volume).
-// Prefer ProjectIDSchemaAttribute.
-func ProjectIDSchemaFw(description string) *schema.StringAttribute {
-	attr := ProjectIDSchemaAttribute(description)
-
-	return &attr
+// ProjectIDSchemaAttribute is ProjectIDSchemaFw as a value (for Attribute maps).
+func ProjectIDSchemaAttribute(description string) schema.StringAttribute {
+	return *ProjectIDSchemaFw(description)
 }
 
 // ProjectIDSchemaAttributeOptional returns Framework project_id without RequiresReplace
-// (Optional + Computed). Use for data sources / filters. Optional description overrides the default.
-func ProjectIDSchemaAttributeOptional(description ...string) schema.StringAttribute {
-	desc := schemaDescription(defaultProjectIDDescription, description...)
-
+// (Optional + Computed). Use for data sources / filters. Description is required.
+func ProjectIDSchemaAttributeOptional(description string) schema.StringAttribute {
 	return schema.StringAttribute{
 		Optional:            true,
 		Computed:            true,
-		MarkdownDescription: desc,
-		Description:         desc,
+		MarkdownDescription: description,
+		Description:         description,
 		Validators: []validator.String{
 			verify.IsStringUUID(),
 		},
@@ -66,14 +46,12 @@ func ProjectIDSchemaAttributeOptional(description ...string) schema.StringAttrib
 }
 
 // OrganizationIDSchemaAttribute returns Framework organization_id as Computed-only.
-// Optional description overrides the default.
-func OrganizationIDSchemaAttribute(description ...string) schema.StringAttribute {
-	desc := schemaDescription(defaultOrganizationIDDescription, description...)
-
+// Description is required.
+func OrganizationIDSchemaAttribute(description string) schema.StringAttribute {
 	return schema.StringAttribute{
 		Computed:            true,
-		MarkdownDescription: desc,
-		Description:         desc,
+		MarkdownDescription: description,
+		Description:         description,
 		PlanModifiers: []planmodifier.String{
 			stringplanmodifier.UseStateForUnknown(),
 		},
@@ -81,15 +59,13 @@ func OrganizationIDSchemaAttribute(description ...string) schema.StringAttribute
 }
 
 // OrganizationIDSchemaAttributeOptional returns Framework organization_id as Optional + Computed.
-// Optional description overrides the default.
-func OrganizationIDSchemaAttributeOptional(description ...string) schema.StringAttribute {
-	desc := schemaDescription(defaultOrganizationIDDescription, description...)
-
+// Description is required.
+func OrganizationIDSchemaAttributeOptional(description string) schema.StringAttribute {
 	return schema.StringAttribute{
 		Optional:            true,
 		Computed:            true,
-		MarkdownDescription: desc,
-		Description:         desc,
+		MarkdownDescription: description,
+		Description:         description,
 		Validators: []validator.String{
 			verify.IsStringUUID(),
 		},

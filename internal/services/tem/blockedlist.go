@@ -104,7 +104,7 @@ func (r *BlockedListResource) Schema(_ context.Context, _ resource.SchemaRequest
 				},
 			},
 			"region":     regional.SchemaAttributeComputed(),
-			"project_id": account.ProjectIDSchemaAttribute(),
+			"project_id": account.ProjectIDSchemaAttribute("The project_id you want to attach the resource to"),
 		},
 	}
 }

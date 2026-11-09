@@ -227,7 +227,7 @@ func (d *DomainDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				},
 			},
 			"region":     regional.SchemaAttributeComputed(),
-			"project_id": account.ProjectIDSchemaAttributeOptional(),
+			"project_id": account.ProjectIDSchemaAttributeOptional("The project_id you want to attach the resource to"),
 		},
 	}
 }

@@ -243,7 +243,7 @@ func domainSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
 			},
 		},
 		"region":     regional.SchemaAttributeComputed(),
-		"project_id": account.ProjectIDSchemaAttribute(),
+		"project_id": account.ProjectIDSchemaAttribute("The project_id you want to attach the resource to"),
 		"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 			Create: true,
 			Update: true,

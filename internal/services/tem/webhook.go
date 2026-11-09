@@ -113,7 +113,7 @@ func (r *WebhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 					stringvalidator.LengthBetween(3, 127),
 				},
 			},
-			"organization_id": account.OrganizationIDSchemaAttribute(),
+			"organization_id": account.OrganizationIDSchemaAttribute("The organization_id you want to attach the resource to"),
 			"created_at": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "Creation timestamp",
@@ -123,7 +123,7 @@ func (r *WebhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				MarkdownDescription: "Last update timestamp",
 			},
 			"region":     regional.SchemaAttributeComputed(),
-			"project_id": account.ProjectIDSchemaAttribute(),
+			"project_id": account.ProjectIDSchemaAttribute("The project_id you want to attach the resource to"),
 		},
 	}
 }

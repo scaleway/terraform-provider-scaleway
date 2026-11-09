@@ -57,7 +57,7 @@ func (d *OfferSubscriptionDataSource) Metadata(_ context.Context, req datasource
 }
 
 func (d *OfferSubscriptionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	projectID := account.ProjectIDSchemaAttributeOptional()
+	projectID := account.ProjectIDSchemaAttributeOptional("The project_id you want to attach the resource to")
 	projectID.Validators = append(projectID.Validators, stringvalidator.ConflictsWith(path.MatchRoot("organization_id")))
 
 	organizationID := account.OrganizationIDSchemaAttributeOptional("The organization_id the offer subscription is associated to")
