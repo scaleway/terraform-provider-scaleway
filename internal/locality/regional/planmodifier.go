@@ -43,4 +43,3 @@ func (m localityPlanModifier) PlanModifyString(
 		resp.PlanValue = req.StateValue
 	}
 }
-
