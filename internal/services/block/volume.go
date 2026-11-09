@@ -253,21 +253,9 @@ func (r *VolumeResource) Create(
 			return
 		}
 
-		var snapshot *block.Snapshot
-
 		if !data.SnapshotID.IsNull() && data.SnapshotID.ValueString() != "" {
 			createReq.FromSnapshot = &block.CreateVolumeRequestFromSnapshot{
 				SnapshotID: locality.ExpandID(data.SnapshotID.ValueString()),
-			}
-
-			snapshot, err = r.api.WaitForSnapshot(&block.WaitForSnapshotRequest{
-				SnapshotID: createReq.FromSnapshot.SnapshotID,
-				Zone:       createReq.Zone,
-			})
-			if err != nil {
-				resp.Diagnostics.AddError("Failed to wait for snapshot", err.Error())
-
-				return
 			}
 		}
 
@@ -275,7 +263,18 @@ func (r *VolumeResource) Create(
 			kmsKeyId := locality.ExpandID(data.KmsKeyID.ValueString())
 			createReq.KmsKeyID = new(kmsKeyId)
 
-			if snapshot != nil {
+			// Only fetch the snapshot when we need to validate its KMS key matches.
+			if createReq.FromSnapshot != nil {
+				snapshot, err := r.api.WaitForSnapshot(&block.WaitForSnapshotRequest{
+					SnapshotID: createReq.FromSnapshot.SnapshotID,
+					Zone:       createReq.Zone,
+				})
+				if err != nil {
+					resp.Diagnostics.AddError("Failed to wait for snapshot", err.Error())
+
+					return
+				}
+
 				if snapshot.KmsKeyID == nil {
 					resp.Diagnostics.AddError("Cannot use kms_key_id if the snapshot is not crypted", "")
 
