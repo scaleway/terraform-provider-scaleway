@@ -125,6 +125,7 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** The IDs of Block Storage volumes snapshots are [zoned](../guides/regions_and_zones.md#resource-ids), meaning that the zone is part of the ID, in the form `{zone}/{id}`. For example, a snapshot ID might be `fr-par-1/11111111-1111-1111-1111-111111111111`.
 
 - `srn` - The Scaleway Resource Name (SRN) of the snapshot.
+- `kms_key_id` - The UUID of the KMS key used to protect the parent volume's encryption. Empty if the parent volume is not encrypted.
 
 ## Import
 
