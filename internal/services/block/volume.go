@@ -539,6 +539,7 @@ func flattenVolume(ctx context.Context, api *block.API, volume *block.Volume, re
 		Zone:             types.StringValue(volume.Zone.String()),
 		SRN:              types.StringValue(volume.Srn),
 		InstanceVolumeID: types.StringNull(),
+		KmsKeyID:         types.StringNull(),
 	}
 
 	tagsList, d := scwtypes.FlattenStringList(ctx, "tags", volume.Tags, reference)

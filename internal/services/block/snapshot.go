@@ -621,6 +621,7 @@ func flattenBlockSnapshot(ctx context.Context, snapshot *block.Snapshot, referen
 		ProjectID: types.StringValue(snapshot.ProjectID),
 		Zone:      types.StringValue(snapshot.Zone.String()),
 		Srn:       types.StringValue(snapshot.Srn),
+		KmsKeyID:  types.StringNull(),
 		Timeouts: timeouts.Value{Object: types.ObjectNull(map[string]attr.Type{
 			"create": types.StringType,
 			"delete": types.StringType,
