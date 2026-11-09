@@ -52,6 +52,8 @@ type blockedListResourceModel struct {
 	ProjectID types.String `tfsdk:"project_id"`
 }
 
+type blockedListResourceIdentityModel = identityfw.RegionalIdentity
+
 func (r *BlockedListResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_tem_blocked_list"
 }
@@ -209,14 +211,42 @@ func (r *BlockedListResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 func (r *BlockedListResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state blockedListResourceModel
+	var (
+		state    blockedListResourceModel
+		identity blockedListResourceIdentityModel
+	)
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	region, domainID, err := regional.ResolveID(state.DomainID.ValueString(), state.Region.ValueString(), r.meta.ScwClient())
+	var (
+		id     string
+		region scw.Region
+		err    error
+	)
+
+	if identityAvailable {
+		region, id = identityfw.ResolveRegionalIdentity(identity)
+	} else {
+		region, id, err = regional.ParseID(state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse blocked list ID", err.Error())
+
+			return
+		}
+	}
+
+	_, domainID, err := regional.ResolveID(state.DomainID.ValueString(), region.String(), r.meta.ScwClient())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve domain ID", err.Error())
 
@@ -242,13 +272,21 @@ func (r *BlockedListResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	if len(blocklists.Blocklists) == 0 {
+	var blocklist *tem.Blocklist
+
+	for _, candidate := range blocklists.Blocklists {
+		if candidate.ID == id {
+			blocklist = candidate
+
+			break
+		}
+	}
+
+	if blocklist == nil {
 		resp.State.RemoveResource(ctx)
 
 		return
 	}
-
-	blocklist := blocklists.Blocklists[0]
 
 	newState := blockedListResourceModel{
 		ID:        types.StringValue(regional.NewIDString(region, blocklist.ID)),
@@ -276,18 +314,39 @@ func (r *BlockedListResource) Update(ctx context.Context, req resource.UpdateReq
 }
 
 func (r *BlockedListResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state blockedListResourceModel
+	var (
+		state    blockedListResourceModel
+		identity blockedListResourceIdentityModel
+	)
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	region, id, err := regional.ParseID(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse blocked list ID", err.Error())
+	var (
+		id     string
+		region scw.Region
+		err    error
+	)
 
-		return
+	if identityAvailable {
+		region, id = identityfw.ResolveRegionalIdentity(identity)
+	} else {
+		region, id, err = regional.ParseID(state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse blocked list ID", err.Error())
+
+			return
+		}
 	}
 
 	err = r.api.DeleteBlocklist(&tem.DeleteBlocklistRequest{
