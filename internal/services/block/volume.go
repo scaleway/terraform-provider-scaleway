@@ -277,13 +277,19 @@ func (r *VolumeResource) Create(
 				}
 
 				if snapshot.KmsKeyID == nil {
-					resp.Diagnostics.AddError("Cannot use kms_key_id if the snapshot is not crypted", "")
+					resp.Diagnostics.AddError(
+						"Cannot use kms_key_id if the snapshot is not encrypted",
+						"Snapshot ID: "+snapshot.ID,
+					)
 
 					return
 				}
 
 				if kmsKeyId != *snapshot.KmsKeyID {
-					resp.Diagnostics.AddError("The kms_key_id cannot be different from the snapshot's", "")
+					resp.Diagnostics.AddError(
+						"The kms_key_id cannot be different from the snapshot's",
+						"Snapshot ID: "+snapshot.ID,
+					)
 
 					return
 				}
