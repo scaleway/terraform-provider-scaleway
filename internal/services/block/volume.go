@@ -262,7 +262,7 @@ func (r *VolumeResource) Create(
 
 		if !data.KmsKeyID.IsNull() && data.KmsKeyID.ValueString() != "" {
 			kmsKeyId := locality.ExpandID(data.KmsKeyID.ValueString())
-			createReq.KmsKeyID = new(kmsKeyId)
+			createReq.KmsKeyID = &kmsKeyId
 
 			// Only fetch the snapshot when we need to validate its KMS key matches.
 			if createReq.FromSnapshot != nil {
