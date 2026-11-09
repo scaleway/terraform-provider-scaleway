@@ -47,11 +47,11 @@ resource "scaleway_dataorchestrator_workflow" "main" {
 
 The following arguments are supported:
 
-- `name` - (Required) Name of the workflow definition.
+- `name` - (Optional, Computed) Name of the workflow definition. If omitted, a random name is generated.
 - `workflow_dsl` - (Required) Open Workflow Specification YAML for the current version.
-- `version_name` - (Required) Name of the workflow version (minimum 3 characters).
-- `description` - (Optional) Description of the workflow definition.
-- `version_description` - (Optional) Description of the workflow version.
+- `version_name` - (Optional, Computed) Name of the workflow version (3-50 chars: letters, digits, `-`, `_`). Defaults to `v1-0-0` on create.
+- `description` - (Optional) Description of the workflow definition. Omit the attribute to leave it empty; an empty string is not allowed.
+- `version_description` - (Optional) Description of the workflow version. Omit the attribute to leave it empty; an empty string is not allowed.
 - `environment_variables` - (Optional) Environment variables of the workflow.
 - `workflow_timeout` - (Optional) Workflow timeout as a Go duration string (e.g. `1h`).
 - `cron_schedule` - (Optional) Cron schedule of the workflow.

@@ -64,9 +64,54 @@ EOT
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_dataorchestrator_workflow" "main" {
+					  name         = "tf-tests-dataorchestrator-basic"
+					  region       = "fr-par"
+					  version_name = "v1-0-0"
+					  workflow_dsl = <<-EOT
+%s
+EOT
+					}
+				`, testAccWorkflowUpdatedDSL),
+				Check: resource.ComposeTestCheckFunc(
+					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
+					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "description"),
+					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule"),
+				),
+			},
+			{
 				ResourceName:      "scaleway_dataorchestrator_workflow.main",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccWorkflow_OmitName(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isWorkflowDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_dataorchestrator_workflow" "main" {
+					  region       = "fr-par"
+					  version_name = "v1-0-0"
+					  workflow_dsl = <<-EOT
+%s
+EOT
+					}
+				`, testAccWorkflowMinimalDSL),
+				Check: resource.ComposeTestCheckFunc(
+					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
+					resource.TestCheckResourceAttrSet("scaleway_dataorchestrator_workflow.main", "name"),
+					acctest.CheckResourceAttrUUID("scaleway_dataorchestrator_workflow.main", "id"),
+				),
 			},
 		},
 	})

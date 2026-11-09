@@ -4,8 +4,10 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"regexp"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -14,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	dataorchestratorSDK "github.com/scaleway/scaleway-sdk-go/api/dataorchestrator/v1alpha2"
@@ -23,6 +26,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -34,6 +38,8 @@ var (
 
 //go:embed descriptions/workflow.md
 var workflowDescription string
+
+var workflowVersionNameRegexp = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 func NewWorkflowResource() resource.Resource {
 	return &WorkflowResource{}
@@ -98,14 +104,19 @@ func (r *WorkflowResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "Name of the workflow definition. If omitted, a random name is generated.",
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, 100),
+				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "Description of the workflow definition.",
+				MarkdownDescription: "Description of the workflow definition. Omit the attribute to leave it empty; an empty string is not allowed.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"workflow_dsl": schema.StringAttribute{
 				Required:            true,
@@ -115,14 +126,23 @@ func (r *WorkflowResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "Name of the current workflow version (3-50 chars: letters, digits, `-`, `_`). Defaults to `v1-0-0` on create.",
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(3, 50),
+					stringvalidator.RegexMatches(
+						workflowVersionNameRegexp,
+						"must contain only letters, digits, hyphens and underscores",
+					),
+				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"version_description": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "Description of the current workflow version.",
+				MarkdownDescription: "Description of the current workflow version. Omit the attribute to leave it empty; an empty string is not allowed.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"version_id": schema.StringAttribute{
 				Computed:            true,
@@ -139,6 +159,9 @@ func (r *WorkflowResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"workflow_timeout": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: "Timeout of the workflow as a Go duration (e.g. `1h`, `30m`).",
+				Validators: []validator.String{
+					verify.IsStringDuration(),
+				},
 			},
 			"cron_schedule": schema.SingleNestedAttribute{
 				Optional:            true,
@@ -150,15 +173,29 @@ func (r *WorkflowResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 					"schedule": schema.StringAttribute{
 						Required:            true,
 						MarkdownDescription: "UNIX cron expression (e.g. `0 6 * * *`).",
+						Validators: []validator.String{
+							verify.IsStringCronExpression(),
+						},
 					},
 					"timezone_identifier": schema.StringAttribute{
 						Required:            true,
 						MarkdownDescription: "Timezone in tz database format (e.g. `Europe/Paris`).",
+						Validators: []validator.String{
+							verify.IsStringTimezoneIdentifier(),
+						},
 					},
 					"overlap": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
 						MarkdownDescription: "Overlap policy: `forbid`, `buffer_one`, `buffer_all`, or `allow_all`.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								string(dataorchestratorSDK.ScheduleOverlapPolicyForbid),
+								string(dataorchestratorSDK.ScheduleOverlapPolicyBufferOne),
+								string(dataorchestratorSDK.ScheduleOverlapPolicyBufferAll),
+								string(dataorchestratorSDK.ScheduleOverlapPolicyAllowAll),
+							),
+						},
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
@@ -250,13 +287,15 @@ func (r *WorkflowResource) Create(ctx context.Context, req resource.CreateReques
 
 	dsl := data.WorkflowDSL.ValueString()
 	createReq := &dataorchestratorSDK.CreateWorkflowDefinitionRequest{
-		Region:      region,
-		ProjectID:   projectID,
-		Name:        data.Name.ValueString(),
-		Description: data.Description.ValueString(),
+		Region:    region,
+		ProjectID: projectID,
+		// Provider-side name when omitted (SDK also generates, but tf- prefix keeps VCR stable).
+		Name: scwtypes.ExpandOrGenerateString(optionalStringValue(data.Name), "workflow"),
+		// Description omitted as empty string when unset (API field is not a pointer).
+		Description: optionalStringValue(data.Description),
 		WorkflowVersion: &dataorchestratorSDK.CreateWorkflowDefinitionRequestWorkflowVersionConfig{
 			Name:        versionName,
-			Description: data.VersionDescription.ValueString(),
+			Description: optionalStringValue(data.VersionDescription),
 			WorkflowDsl: &dsl,
 		},
 	}
@@ -392,8 +431,7 @@ func (r *WorkflowResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	if !plan.Description.Equal(state.Description) {
-		desc := plan.Description.ValueString()
-		updateDef.Description = &desc
+		updateDef.Description = scwtypes.ExpandUpdatedStringPtr(plan.Description.ValueString())
 		hasDefChanges = true
 	}
 
@@ -429,6 +467,11 @@ func (r *WorkflowResource) Update(ctx context.Context, req resource.UpdateReques
 
 		if resp.Diagnostics.HasError() {
 			return
+		}
+
+		// Empty config clears the schedule when the block is removed from HCL.
+		if cron == nil {
+			cron = &dataorchestratorSDK.UpdateWorkflowDefinitionRequestCronScheduleConfig{}
 		}
 
 		updateDef.CronSchedule = cron
@@ -472,8 +515,7 @@ func (r *WorkflowResource) Update(ctx context.Context, req resource.UpdateReques
 		}
 
 		if !plan.VersionDescription.Equal(state.VersionDescription) {
-			desc := plan.VersionDescription.ValueString()
-			updateVersion.Description = &desc
+			updateVersion.Description = scwtypes.ExpandUpdatedStringPtr(plan.VersionDescription.ValueString())
 		}
 
 		_, err = r.api.UpdateWorkflowVersion(updateVersion, scw.WithContext(ctx))
@@ -526,6 +568,22 @@ func (r *WorkflowResource) Delete(ctx context.Context, req resource.DeleteReques
 
 func (r *WorkflowResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func optionalStringValue(value types.String) string {
+	if value.IsNull() || value.IsUnknown() {
+		return ""
+	}
+
+	return value.ValueString()
+}
+
+func flattenOptionalString(value string) types.String {
+	if value == "" {
+		return types.StringNull()
+	}
+
+	return types.StringValue(value)
 }
 
 func expandWorkflowTimeout(value types.String) (*scw.Duration, diag.Diagnostics) {
@@ -609,7 +667,7 @@ func flattenWorkflowDefinition(ctx context.Context, def *dataorchestratorSDK.Wor
 	model := workflowResourceModel{
 		ID:          types.StringValue(regional.NewIDString(def.Region, def.ID)),
 		Name:        types.StringValue(def.Name),
-		Description: types.StringValue(def.Description),
+		Description: flattenOptionalString(def.Description),
 		ProjectID:   types.StringValue(def.ProjectID),
 		Region:      types.StringValue(def.Region.String()),
 		Srn:         types.StringValue(def.Srn),
@@ -675,7 +733,7 @@ func flattenWorkflowDefinition(ctx context.Context, def *dataorchestratorSDK.Wor
 
 	model.WorkflowDSL = types.StringValue(version.WorkflowDsl)
 	model.VersionName = types.StringValue(version.Name)
-	model.VersionDescription = types.StringValue(version.Description)
+	model.VersionDescription = flattenOptionalString(version.Description)
 	model.VersionID = types.StringValue(version.ID)
 
 	return model

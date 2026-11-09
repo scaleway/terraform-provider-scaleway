@@ -13,6 +13,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+// Pause / resume / terminate actions are registered but not acceptance-tested here:
+// they need a long-lived non-terminal run ID, which the minimal setColor DSL never
+// produces (runs finish in milliseconds). Revisit when a durable wait step exists.
+
 func isWorkflowRunCreated(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]

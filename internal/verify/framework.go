@@ -2,13 +2,16 @@ package verify
 
 import (
 	"context"
+	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/robfig/cron/v3"
 )
 
 // Validators for schema.StringAttribute{}
@@ -39,6 +42,93 @@ func IsStringEmail() validator.String {
 		regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`),
 		"must be a valid email address",
 	)
+}
+
+// IsStringDuration validates a Go duration string (e.g. 1h, 30m).
+func IsStringDuration() validator.String {
+	return stringDurationValidator{}
+}
+
+type stringDurationValidator struct{}
+
+func (stringDurationValidator) Description(_ context.Context) string {
+	return "must be a valid Go duration (e.g. 1h, 30m)"
+}
+
+func (v stringDurationValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (stringDurationValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	if _, err := time.ParseDuration(req.ConfigValue.ValueString()); err != nil {
+		resp.Diagnostics.AddAttributeError(
+			req.Path,
+			"Invalid Duration",
+			fmt.Sprintf("expected a valid Go duration (e.g. 1h, 30m): %s", err),
+		)
+	}
+}
+
+// IsStringCronExpression validates a standard 5-field UNIX cron expression.
+func IsStringCronExpression() validator.String {
+	return stringCronValidator{}
+}
+
+type stringCronValidator struct{}
+
+func (stringCronValidator) Description(_ context.Context) string {
+	return "must be a valid UNIX cron expression"
+}
+
+func (v stringCronValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (stringCronValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	if _, err := cron.ParseStandard(req.ConfigValue.ValueString()); err != nil {
+		resp.Diagnostics.AddAttributeError(
+			req.Path,
+			"Invalid Cron Expression",
+			fmt.Sprintf("expected a valid UNIX cron expression: %s", err),
+		)
+	}
+}
+
+// IsStringTimezoneIdentifier validates an IANA timezone name (e.g. Europe/Paris).
+func IsStringTimezoneIdentifier() validator.String {
+	return stringTimezoneValidator{}
+}
+
+type stringTimezoneValidator struct{}
+
+func (stringTimezoneValidator) Description(_ context.Context) string {
+	return "must be a valid IANA timezone identifier (e.g. Europe/Paris)"
+}
+
+func (v stringTimezoneValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (stringTimezoneValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	if _, err := time.LoadLocation(req.ConfigValue.ValueString()); err != nil {
+		resp.Diagnostics.AddAttributeError(
+			req.Path,
+			"Invalid Timezone",
+			fmt.Sprintf("expected a valid IANA timezone identifier (e.g. Europe/Paris): %s", err),
+		)
+	}
 }
 
 // MutuallyExclusiveStringConflicts builds a ConflictsWith validator listing every attribute in the group except `self`
