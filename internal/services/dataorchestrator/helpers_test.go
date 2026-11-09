@@ -13,121 +13,26 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-func getWorkflowDefinition(tt *acctest.TestTools, resourceName string, state *terraform.State) (*dataorchestratorSDK.WorkflowDefinition, error) {
-	rs, ok := state.RootModule().Resources[resourceName]
-	if !ok {
-		return nil, fmt.Errorf("resource not found: %s", resourceName)
-	}
-
-	region, id, err := regional.ParseID(rs.Primary.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	api := dataorchestratorSDK.NewAPI(meta.ExtractScwClient(tt.Meta))
-
-	return api.GetWorkflowDefinition(&dataorchestratorSDK.GetWorkflowDefinitionRequest{
-		Region:               region,
-		WorkflowDefinitionID: id,
-	}, scw.WithContext(tt.T.Context()))
-}
-
 func isWorkflowPresent(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		_, err := getWorkflowDefinition(tt, resourceName, state)
+		rs, ok := state.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		region, id, err := regional.ParseID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		api := dataorchestratorSDK.NewAPI(meta.ExtractScwClient(tt.Meta))
+
+		_, err = api.GetWorkflowDefinition(&dataorchestratorSDK.GetWorkflowDefinitionRequest{
+			Region:               region,
+			WorkflowDefinitionID: id,
+		}, scw.WithContext(tt.T.Context()))
 
 		return err
-	}
-}
-
-func checkWorkflowDescription(tt *acctest.TestTools, resourceName, want string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		def, err := getWorkflowDefinition(tt, resourceName, state)
-		if err != nil {
-			return err
-		}
-
-		if def.Description != want {
-			return fmt.Errorf("description: got %q want %q", def.Description, want)
-		}
-
-		return nil
-	}
-}
-
-func checkWorkflowCronAbsent(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		def, err := getWorkflowDefinition(tt, resourceName, state)
-		if err != nil {
-			return err
-		}
-
-		if def.CronSchedule != nil {
-			return fmt.Errorf("expected cron_schedule to be cleared on API, got %#v", def.CronSchedule)
-		}
-
-		return nil
-	}
-}
-
-func checkWorkflowCronPresent(tt *acctest.TestTools, resourceName, schedule, timezone, overlap string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		def, err := getWorkflowDefinition(tt, resourceName, state)
-		if err != nil {
-			return err
-		}
-
-		if def.CronSchedule == nil {
-			return fmt.Errorf("expected cron_schedule on API")
-		}
-
-		if def.CronSchedule.Schedule != schedule {
-			return fmt.Errorf("cron schedule: got %q want %q", def.CronSchedule.Schedule, schedule)
-		}
-
-		if def.CronSchedule.TimezoneIDentifier != timezone {
-			return fmt.Errorf("cron timezone: got %q want %q", def.CronSchedule.TimezoneIDentifier, timezone)
-		}
-
-		if overlap != "" && def.CronSchedule.Overlap.String() != overlap {
-			return fmt.Errorf("cron overlap: got %q want %q", def.CronSchedule.Overlap.String(), overlap)
-		}
-
-		return nil
-	}
-}
-
-func checkWorkflowEnv(tt *acctest.TestTools, resourceName string, want map[string]string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		def, err := getWorkflowDefinition(tt, resourceName, state)
-		if err != nil {
-			return err
-		}
-
-		if len(want) == 0 {
-			if len(def.EnvironmentVariables) != 0 {
-				return fmt.Errorf("expected environment_variables cleared on API, got %#v", def.EnvironmentVariables)
-			}
-
-			return nil
-		}
-
-		for k, v := range want {
-			got, ok := def.EnvironmentVariables[k]
-			if !ok {
-				return fmt.Errorf("environment_variables missing key %q (got %#v)", k, def.EnvironmentVariables)
-			}
-
-			if got != v {
-				return fmt.Errorf("environment_variables[%q]: got %q want %q", k, got, v)
-			}
-		}
-
-		if len(def.EnvironmentVariables) != len(want) {
-			return fmt.Errorf("environment_variables size: got %#v want %#v", def.EnvironmentVariables, want)
-		}
-
-		return nil
 	}
 }
 

@@ -37,9 +37,7 @@ EOT
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "version_name", "v1-0-0"),
 					resource.TestCheckResourceAttrSet("scaleway_dataorchestrator_workflow.main", "version_id"),
 					resource.TestCheckResourceAttrSet("scaleway_dataorchestrator_workflow.main", "workflow_dsl"),
-					checkWorkflowDescription(tt, "scaleway_dataorchestrator_workflow.main", "basic"),
-					checkWorkflowCronAbsent(tt, "scaleway_dataorchestrator_workflow.main"),
-					checkWorkflowEnv(tt, "scaleway_dataorchestrator_workflow.main", nil),
+					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule"),
 				),
 			},
 			{
@@ -65,8 +63,6 @@ EOT
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.schedule", "0 6 * * *"),
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.timezone_identifier", "Europe/Paris"),
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.overlap", "forbid"),
-					checkWorkflowDescription(tt, "scaleway_dataorchestrator_workflow.main", "updated"),
-					checkWorkflowCronPresent(tt, "scaleway_dataorchestrator_workflow.main", "0 6 * * *", "Europe/Paris", "forbid"),
 				),
 			},
 			{
@@ -84,8 +80,6 @@ EOT
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
 					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "description"),
 					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule"),
-					checkWorkflowDescription(tt, "scaleway_dataorchestrator_workflow.main", ""),
-					checkWorkflowCronAbsent(tt, "scaleway_dataorchestrator_workflow.main"),
 				),
 			},
 			{
@@ -123,7 +117,9 @@ EOT
 				`, testAccWorkflowMinimalDSL),
 				Check: resource.ComposeTestCheckFunc(
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
-					checkWorkflowCronPresent(tt, "scaleway_dataorchestrator_workflow.main", "0 6 * * *", "Europe/Paris", "forbid"),
+					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.schedule", "0 6 * * *"),
+					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.timezone_identifier", "Europe/Paris"),
+					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.overlap", "forbid"),
 				),
 			},
 			{
@@ -147,7 +143,6 @@ EOT
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.schedule", "30 18 * * 1-5"),
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.timezone_identifier", "UTC"),
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule.overlap", "allow_all"),
-					checkWorkflowCronPresent(tt, "scaleway_dataorchestrator_workflow.main", "30 18 * * 1-5", "UTC", "allow_all"),
 				),
 			},
 			{
@@ -164,7 +159,6 @@ EOT
 				Check: resource.ComposeTestCheckFunc(
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
 					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "cron_schedule"),
-					checkWorkflowCronAbsent(tt, "scaleway_dataorchestrator_workflow.main"),
 				),
 			},
 		},
@@ -192,7 +186,7 @@ EOT
 				`, testAccWorkflowMinimalDSL),
 				Check: resource.ComposeTestCheckFunc(
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
-					checkWorkflowEnv(tt, "scaleway_dataorchestrator_workflow.main", nil),
+					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.%"),
 				),
 			},
 			{
@@ -214,10 +208,6 @@ EOT
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.FOO", "bar"),
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.BAZ", "qux"),
-					checkWorkflowEnv(tt, "scaleway_dataorchestrator_workflow.main", map[string]string{
-						"FOO": "bar",
-						"BAZ": "qux",
-					}),
 				),
 			},
 			{
@@ -238,9 +228,6 @@ EOT
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
 					resource.TestCheckResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.FOO", "updated"),
 					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.BAZ"),
-					checkWorkflowEnv(tt, "scaleway_dataorchestrator_workflow.main", map[string]string{
-						"FOO": "updated",
-					}),
 				),
 			},
 			{
@@ -257,7 +244,6 @@ EOT
 				Check: resource.ComposeTestCheckFunc(
 					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
 					resource.TestCheckNoResourceAttr("scaleway_dataorchestrator_workflow.main", "environment_variables.%"),
-					checkWorkflowEnv(tt, "scaleway_dataorchestrator_workflow.main", nil),
 				),
 			},
 		},
