@@ -3,6 +3,7 @@ package instance_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"sort"
 	"testing"
 
@@ -54,6 +55,7 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					isSecurityGroupPresent(tt, "scaleway_instance_security_group.base"),
+					resource.TestMatchResourceAttr("scaleway_instance_security_group.base", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/security-groups/.+$`)),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "name", "sg-name"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_default_policy", "drop"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "outbound_default_policy", "accept"),
