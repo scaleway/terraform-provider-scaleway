@@ -19,9 +19,9 @@ import (
 var cockpitSourcesDataSourceDescription string
 
 func DataSourceCockpitSources() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpitSource().SchemaFunc())
+	dsSchema := datasource.SchemaFromResourceSchema(SourceSchema())
 
-	sourceElementSchema := datasource.SchemaFromResourceSchema(ResourceCockpitSource().SchemaFunc())
+	sourceElementSchema := datasource.SchemaFromResourceSchema(SourceSchema())
 	delete(sourceElementSchema, "sources")
 
 	sourceElementSchema["id"] = &schema.Schema{

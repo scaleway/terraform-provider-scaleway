@@ -142,7 +142,7 @@ func TestAccCockpitSource_retention_days(t *testing.T) {
 }
 
 func TestCockpitSourceRetentionDaysBounds(t *testing.T) {
-	validate := cockpit.ResourceCockpitSource().SchemaMap()["retention_days"].ValidateFunc
+	validate := cockpit.SourceSchema()["retention_days"].ValidateFunc
 
 	for days, wantErr := range map[int]bool{0: true, 1: false, 1825: false, 1826: true} {
 		_, errs := validate(days, "retention_days")
