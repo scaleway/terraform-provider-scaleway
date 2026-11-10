@@ -116,27 +116,43 @@ func fileNameWithoutExtSuffix(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
-// isTransientStateError checks if the interaction response is a transient state error
-// Transient state error are expected when creating resource linked to each other
-// example:
-// creating a gateway_network will set its public gateway to a transient state
-// when creating 2 gateway_network, one will fail with a transient state error
-// but the transient state error will be caught, it will wait again for the resource to be ready
+// isTransientStateError checks if the interaction response is a transient error that
+// the provider retries and that succeeds later in the same cassette.
+//
+// Three shapes are treated as transient:
+//   - 409 transient_state: a resource is in a transient state during creation (e.g.
+//     creating a gateway_network puts its public gateway in a transient state, so a
+//     parallel creation fails and is retried).
+//   - 412 precondition_failed: project DELETE before the API finishes garbage-collecting
+//     the project's resources; the provider retries and the project is deleted once empty.
+//   - 409 BucketNotEmpty: S3 bucket DELETE while objects still exist; the provider clears
+//     them and retries the DELETE.
 func isTransientStateError(i *cassette.Interaction) bool {
-	if i.Response.Code != 409 {
-		return false
+	switch i.Response.Code {
+	case 409:
+		// S3 returns XML, not JSON: <Error><Code>BucketNotEmpty</Code>...</Error>
+		if strings.Contains(i.Response.Body, "<Code>BucketNotEmpty</Code>") {
+			return true
+		}
+
+		scwError := struct {
+			Type string `json:"type"`
+		}{}
+		if err := json.Unmarshal([]byte(i.Response.Body), &scwError); err == nil && scwError.Type == "transient_state" {
+			return true
+		}
+	case 412:
+		// ponytail: 412 precondition_failed today only comes from account/v3 project
+		// DELETE cleanup. If another endpoint starts returning it, narrow this check.
+		scwError := struct {
+			Type string `json:"type"`
+		}{}
+		if err := json.Unmarshal([]byte(i.Response.Body), &scwError); err == nil && scwError.Type == "precondition_failed" {
+			return true
+		}
 	}
 
-	scwError := struct {
-		Type string `json:"type"`
-	}{}
-
-	err := json.Unmarshal([]byte(i.Response.Body), &scwError)
-	if err != nil {
-		return false
-	}
-
-	return scwError.Type == "transient_state"
+	return false
 }
 
 func listAccTestFunctions() (map[string]string, error) {
