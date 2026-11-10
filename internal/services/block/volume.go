@@ -27,6 +27,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -147,6 +148,7 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 					"symmetric encryption with the \"AES-256-GCM\" algorithm",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("instance_volume_id")),
+					verify.IsStringUUIDOrUUIDWithZone(),
 				},
 				PlanModifiers: []planmodifier.String{
 					regional.LocalityPlanModifier(),
