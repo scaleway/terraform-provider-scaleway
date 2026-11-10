@@ -169,21 +169,6 @@ func compareOptions(slice1, slice2 []*baremetal.ServerOption) []*baremetal.Serve
 	return diff
 }
 
-// privateNetworkOptionIDs are the IDs of the options that enable private networks.
-// Some offers use a dedicated option, e.g. "Private Network 10Gbps" or "Private Network 25Gbps".
-var privateNetworkOptionIDs = []string{
-	"cd4158d7-2d65-49be-8803-c4b8ab6f760c", // Private Network
-	"0f467976-4c7b-4c8a-a26f-009a0196da49", // Private Network 10Gbps
-	"9b4a83cc-4624-49fc-906a-a55ab4baf322", // Private Network 25Gbps
-}
-
-const privateNetworkOptionNamePrefix = "Private Network"
-
-func isPrivateNetworkServerOption(option *baremetal.ServerOption) bool {
-	return slices.Contains(privateNetworkOptionIDs, option.ID) ||
-		strings.HasPrefix(option.Name, privateNetworkOptionNamePrefix)
-}
-
 // customDiffPrivateNetworkOption checks that the private_network option has been set if there is a private_network
 func customDiffPrivateNetworkOption() func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
@@ -198,7 +183,14 @@ func customDiffPrivateNetworkOption() func(ctx context.Context, diff *schema.Res
 				return err
 			}
 
-			isPrivateNetworkOption = slices.ContainsFunc(opSpecs, isPrivateNetworkServerOption)
+			for _, option := range opSpecs {
+				// Offers name their option "Private Network" or e.g. "Private Network 25Gbps".
+				// The name is computed and stays empty until the option is read back from the
+				// API, so an option added by this plan is left for the API to accept or reject.
+				if option.Name == "" || strings.HasPrefix(option.Name, "Private Network") {
+					isPrivateNetworkOption = true
+				}
+			}
 		}
 
 		if okPrivateNetwork && !isPrivateNetworkOption {
