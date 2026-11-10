@@ -462,18 +462,39 @@ func (r *DomainResource) Update(ctx context.Context, req resource.UpdateRequest,
 }
 
 func (r *DomainResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state domainModel
+	var (
+		state    domainModel
+		identity domainResourceIdentityModel
+	)
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	region, id, err := regional.ParseID(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse TEM domain ID", err.Error())
+	var (
+		id     string
+		region scw.Region
+		err    error
+	)
 
-		return
+	if identityAvailable {
+		region, id = identityfw.ResolveRegionalIdentity(identity)
+	} else {
+		region, id, err = regional.ParseID(state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse TEM domain ID", err.Error())
+
+			return
+		}
 	}
 
 	timeout, diags := state.Timeouts.Delete(ctx, DefaultDomainTimeout)
