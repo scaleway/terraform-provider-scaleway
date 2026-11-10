@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
@@ -35,17 +33,6 @@ func NewGlobalAPI(m any) (*cockpit.GlobalAPI, error) {
 	api := cockpit.NewGlobalAPI(meta.ExtractScwClient(m))
 
 	return api, nil
-}
-
-func cockpitAPIWithRegion(d *schema.ResourceData, m any) (*cockpit.RegionalAPI, scw.Region, error) {
-	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
-
-	region, err := meta.ExtractRegion(d, m)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return api, region, err
 }
 
 // dataSourceBase holds the provider meta shared by the cockpit Framework data sources.
@@ -153,12 +140,6 @@ func waitForExporter(
 			Timeout:       new(timeout),
 			RetryInterval: new(defaultCockpitRetryInterval),
 		}, scw.WithContext(ctx))
-	})
-}
-
-func cockpitTokenUpgradeV1SchemaType() cty.Type {
-	return cty.Object(map[string]cty.Type{
-		"id": cty.String,
 	})
 }
 

@@ -281,6 +281,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		cockpit.NewSourceResource,
 		cockpit.NewAlertManagerResource,
 		cockpit.NewExporterResource,
+		cockpit.NewTokenResource,
 		datalab.NewDatalabResource,
 		file.NewFileSystemResource,
 		iam.NewSamlCertificateResource,
