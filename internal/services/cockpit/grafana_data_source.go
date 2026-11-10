@@ -8,10 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -48,7 +50,7 @@ func (d *GrafanaDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 		Description:         cockpitGrafanaDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id":          schema.StringAttribute{Computed: true, MarkdownDescription: "The project ID"},
-			"project_id":  dataSourceProjectIDAttribute("The project ID associated with the Grafana instance"),
+			"project_id":  account.ProjectIDSchemaAttributeOptional("The project ID associated with the Grafana instance"),
 			"grafana_url": schema.StringAttribute{Computed: true, MarkdownDescription: "The URL to access the Grafana dashboard"},
 			"srn":         schema.StringAttribute{Computed: true, MarkdownDescription: "The Scaleway Resource Name (SRN) of the Grafana instance"},
 		},

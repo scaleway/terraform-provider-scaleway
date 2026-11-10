@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -505,7 +506,7 @@ func (r *ExporterResource) Update(ctx context.Context, req resource.UpdateReques
 		updateReq.Name = plan.Name.ValueStringPointer()
 	}
 
-	if !plan.Description.Equal(state.Description) && plan.Description.ValueString() != "" {
+	if !plan.Description.Equal(state.Description) {
 		updateReq.Description = plan.Description.ValueStringPointer()
 	}
 

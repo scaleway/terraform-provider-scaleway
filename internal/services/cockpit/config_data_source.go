@@ -7,8 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -54,7 +56,7 @@ func (d *ConfigDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 		Description:         cockpitConfigDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id":                        schema.StringAttribute{Computed: true, MarkdownDescription: "The region of the configuration."},
-			"region":                    dataSourceRegionAttribute(),
+			"region":                    regional.SchemaAttributeOptionalComputed(),
 			"custom_metrics_retention":  retentionAttribute("Retention limits and default for custom metrics data sources."),
 			"custom_logs_retention":     retentionAttribute("Retention limits and default for custom logs data sources."),
 			"custom_traces_retention":   retentionAttribute("Retention limits and default for custom traces data sources."),

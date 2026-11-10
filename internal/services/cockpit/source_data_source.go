@@ -10,9 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -72,8 +74,8 @@ func (d *SourceDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 	attributes["name"] = schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Name of the datasource"}
 	attributes["type"] = schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "The type of the datasource"}
 	attributes["origin"] = schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "The origin of the datasource"}
-	attributes["region"] = dataSourceRegionAttribute()
-	attributes["project_id"] = dataSourceProjectIDAttribute("The project_id you want to attach the resource to")
+	attributes["region"] = regional.SchemaAttributeOptionalComputed()
+	attributes["project_id"] = account.ProjectIDSchemaAttributeOptional("The project_id you want to attach the resource to")
 
 	resp.Schema = schema.Schema{
 		MarkdownDescription: cockpitSourceDataSourceDescription,
