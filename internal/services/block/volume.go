@@ -148,7 +148,7 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 					"symmetric encryption with the \"AES-256-GCM\" algorithm",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("instance_volume_id")),
-					verify.IsStringUUIDOrUUIDWithZone(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 				PlanModifiers: []planmodifier.String{
 					regional.LocalityPlanModifier(),
