@@ -3,60 +3,75 @@ package cockpit
 import (
 	"context"
 	_ "embed"
+	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 //go:embed descriptions/cockpit_grafana_data_source.md
 var cockpitGrafanaDataSourceDescription string
 
-func DataSourceCockpitGrafana() *schema.Resource {
-	return &schema.Resource{
-		Description: cockpitGrafanaDataSourceDescription,
-		ReadContext: dataSourceCockpitGrafanaRead,
-		SchemaFunc:  grafanaSchema,
+var (
+	_ datasource.DataSource              = (*GrafanaDataSource)(nil)
+	_ datasource.DataSourceWithConfigure = (*GrafanaDataSource)(nil)
+)
+
+func NewGrafanaDataSource() datasource.DataSource {
+	return &GrafanaDataSource{}
+}
+
+type GrafanaDataSource struct {
+	dataSourceBase
+}
+
+type grafanaDataSourceModel struct {
+	ID         types.String `tfsdk:"id"`
+	ProjectID  types.String `tfsdk:"project_id"`
+	GrafanaURL types.String `tfsdk:"grafana_url"`
+	SRN        types.String `tfsdk:"srn"`
+}
+
+func (d *GrafanaDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_cockpit_grafana"
+}
+
+func (d *GrafanaDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: cockpitGrafanaDataSourceDescription,
+		Description:         cockpitGrafanaDataSourceDescription,
+		Attributes: map[string]schema.Attribute{
+			"id":          schema.StringAttribute{Computed: true, MarkdownDescription: "The project ID"},
+			"project_id":  dataSourceProjectIDAttribute("The project ID associated with the Grafana instance"),
+			"grafana_url": schema.StringAttribute{Computed: true, MarkdownDescription: "The URL to access the Grafana dashboard"},
+			"srn":         schema.StringAttribute{Computed: true, MarkdownDescription: "The Scaleway Resource Name (SRN) of the Grafana instance"},
+		},
 	}
 }
 
-func grafanaSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"project_id": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Computed:         true,
-			Description:      "The project ID associated with the Grafana instance",
-			ValidateDiagFunc: verify.IsUUID(),
-		},
-		"grafana_url": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The URL to access the Grafana dashboard",
-		},
-		"srn": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The Scaleway Resource Name (SRN) of the Grafana instance",
-		},
-	}
-}
+func (d *GrafanaDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data grafanaDataSourceModel
 
-func dataSourceCockpitGrafanaRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, err := NewGlobalAPI(m)
-	if err != nil {
-		return diag.FromErr(err)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	projectID, _, err := meta.ExtractProjectID(d, m)
+	projectID, err := meta.ExtractFrameworkProjectID(data.ProjectID, d.meta.ScwClient())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to resolve project_id", err.Error())
+
+		return
 	}
+
+	api := cockpit.NewGlobalAPI(d.meta.ScwClient())
 
 	grafana, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Grafana, error) {
 		return api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
@@ -65,16 +80,23 @@ func dataSourceCockpitGrafanaRead(ctx context.Context, d *schema.ResourceData, m
 	})
 	if err != nil {
 		if httperrors.Is404(err) {
-			return diag.Errorf("Grafana instance not found for project %s. Ensure that Cockpit is activated for this project.", projectID)
+			resp.Diagnostics.AddError(
+				"Grafana instance not found",
+				fmt.Sprintf("Grafana instance not found for project %s. Ensure that Cockpit is activated for this project.", projectID),
+			)
+
+			return
 		}
 
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to read Grafana instance", err.Error())
+
+		return
 	}
 
-	d.SetId(projectID)
-	_ = d.Set("project_id", projectID)
-	_ = d.Set("grafana_url", grafana.GrafanaURL)
-	_ = d.Set("srn", grafana.Srn)
+	data.ID = types.StringValue(projectID)
+	data.ProjectID = types.StringValue(projectID)
+	data.GrafanaURL = types.StringValue(grafana.GrafanaURL)
+	data.SRN = types.StringValue(grafana.Srn)
 
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
