@@ -19,7 +19,7 @@ import (
 var cockpitSourceDataSourceDescription string
 
 func DataSourceCockpitSource() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpitSource().SchemaFunc())
+	dsSchema := datasource.SchemaFromResourceSchema(SourceSchema())
 
 	dsSchema["id"] = &schema.Schema{
 		Type:        schema.TypeString,
