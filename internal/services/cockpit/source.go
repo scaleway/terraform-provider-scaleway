@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -16,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -421,13 +421,8 @@ func flattenSource(res *cockpit.DataSource, timeoutsValue timeouts.Value) (sourc
 		RetentionDays:           types.Int64Value(int64(res.RetentionDays)),
 	}
 
-	if res.CreatedAt != nil {
-		model.CreatedAt = types.StringValue(res.CreatedAt.Format(time.RFC3339))
-	}
-
-	if res.UpdatedAt != nil {
-		model.UpdatedAt = types.StringValue(res.UpdatedAt.Format(time.RFC3339))
-	}
+	model.CreatedAt = flattenCockpitTime(res.CreatedAt)
+	model.UpdatedAt = flattenCockpitTime(res.UpdatedAt)
 
 	return model, diags
 }

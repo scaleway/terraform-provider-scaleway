@@ -7,8 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
@@ -51,7 +53,7 @@ func (d *ProductsDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 		Description:         cockpitProductsDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id":     schema.StringAttribute{Computed: true, MarkdownDescription: "The region of the products."},
-			"region": dataSourceRegionAttribute(),
+			"region": regional.SchemaAttributeOptionalComputed(),
 			"products": schema.ListNestedAttribute{
 				Computed:            true,
 				MarkdownDescription: "List of Cockpit products available for exported_products in scaleway_cockpit_exporter.",

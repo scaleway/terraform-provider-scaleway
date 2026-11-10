@@ -8,10 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -66,8 +68,8 @@ func (d *PreconfiguredAlertDataSource) Schema(_ context.Context, _ datasource.Sc
 		Description:         cockpitPreconfiguredAlertDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id":         schema.StringAttribute{Computed: true, MarkdownDescription: "The ID of the data source, in the `{region}/{project_id}` format."},
-			"project_id": dataSourceProjectIDAttribute("The project_id you want to attach the resource to"),
-			"region":     dataSourceRegionAttribute(),
+			"project_id": account.ProjectIDSchemaAttributeOptional("The project_id you want to attach the resource to"),
+			"region":     regional.SchemaAttributeOptionalComputed(),
 			"data_source_id": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: "Filter alerts by data source ID",

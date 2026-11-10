@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -19,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -286,12 +286,12 @@ func (r *TokenResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 // flattenToken builds the state from the API token; prior provides the secret key and timeouts.
 func flattenToken(res *cockpit.Token, prior tokenResourceModel) (tokenResourceModel, diag.Diagnostics) {
-	// An omitted scopes block stays empty; an imported state (only the ID is set) reads them from the API.
+	// An omitted scopes block stays empty; import / pre-identity upgrades (null scopes) refresh from the API.
 	scopes := prior.Scopes
 
 	var diags diag.Diagnostics
 
-	if prior.Name.IsNull() || len(scopes.Elements()) > 0 {
+	if prior.Name.IsNull() || prior.Scopes.IsNull() || len(scopes.Elements()) > 0 {
 		scopes, diags = flattenTokenScopes(res.Scopes)
 	}
 
@@ -301,18 +301,10 @@ func flattenToken(res *cockpit.Token, prior tokenResourceModel) (tokenResourceMo
 		ID:        types.StringValue(regional.NewIDString(res.Region, res.ID)),
 		Name:      types.StringValue(res.Name),
 		SecretKey: prior.SecretKey,
-		CreatedAt: types.StringNull(),
-		UpdatedAt: types.StringNull(),
+		CreatedAt: flattenCockpitTime(res.CreatedAt),
+		UpdatedAt: flattenCockpitTime(res.UpdatedAt),
 		ProjectID: types.StringValue(res.ProjectID),
 		Region:    types.StringValue(res.Region.String()),
-	}
-
-	if res.CreatedAt != nil {
-		model.CreatedAt = types.StringValue(res.CreatedAt.Format(time.RFC3339))
-	}
-
-	if res.UpdatedAt != nil {
-		model.UpdatedAt = types.StringValue(res.UpdatedAt.Format(time.RFC3339))
 	}
 
 	return model, diags
@@ -472,7 +464,7 @@ func upgradeTokenStateV0(ctx context.Context, req resource.UpgradeStateRequest, 
 		return
 	}
 
-	// scopes and timeouts stay null: the next Read refreshes the scopes from the API.
+	// scopes stay null so the next Read (prior.Scopes.IsNull) refreshes them from the API.
 	for _, key := range []string{"id", "region", "name", "project_id", "secret_key", "created_at", "updated_at"} {
 		value, ok := upgraded[key].(string)
 		if !ok {

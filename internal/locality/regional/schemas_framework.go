@@ -1,10 +1,12 @@
 package regional
 
 import (
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -53,6 +55,23 @@ func SchemaAttributeComputed(description ...string) schema.StringAttribute {
 		PlanModifiers: []planmodifier.String{
 			stringplanmodifier.RequiresReplace(),
 			stringplanmodifier.UseStateForUnknown(),
+		},
+	}
+}
+
+// SchemaAttributeOptionalComputed is the Optional+Computed region attribute for Framework data sources (no RequiresReplace).
+func SchemaAttributeOptionalComputed(description ...string) dsschema.StringAttribute {
+	desc := "The region you want to attach the resource to"
+	if len(description) > 0 {
+		desc = description[0]
+	}
+
+	return dsschema.StringAttribute{
+		Optional:            true,
+		Computed:            true,
+		MarkdownDescription: desc,
+		Validators: []validator.String{
+			verify.IsStringOneOfWithWarning(AllRegions()),
 		},
 	}
 }
