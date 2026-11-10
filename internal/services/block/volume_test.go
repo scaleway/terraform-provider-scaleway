@@ -49,7 +49,6 @@ func TestAccVolume_Basic_WithKMSKeyID(t *testing.T) {
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				// FIXME: add clearer error for wrongly made aes_256_gcm
 				Config: `
 					resource "scaleway_key_manager_key" "my_key" {
 						name        = "tf-tests-volume-basic-with-kms"
@@ -61,7 +60,7 @@ func TestAccVolume_Basic_WithKMSKeyID(t *testing.T) {
 					}
 
 					resource scaleway_block_volume main {
-						name = "test-block-volume-basic"
+						name = "tf-tests-block-volume-basic-with-kms"
 						zone = "fr-par-3" # kms_key_id is not available everywhere yet
 						iops = 5000
 						size_in_gb = 20
@@ -71,7 +70,7 @@ func TestAccVolume_Basic_WithKMSKeyID(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "test-block-volume-basic"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "tf-tests-block-volume-basic-with-kms"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "20"),
 					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "kms_key_id", "scaleway_key_manager_key.my_key", "id"),
 					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
