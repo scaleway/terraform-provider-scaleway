@@ -123,7 +123,7 @@ func TestAccDataSourceVolume_WithKMS(t *testing.T) {
 					}
 
 					resource scaleway_block_volume main {
-						name = "test-block-volume-basic"
+						name = "tf-test-block-volume-basic-with-kms"
 						zone = "fr-par-3" # kms_key_id is not available everywhere yet
 						iops = 5000
 						size_in_gb = 20
