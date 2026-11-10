@@ -7,6 +7,10 @@ import (
 	"testing"
 	"time"
 
+	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -142,12 +146,24 @@ func TestAccCockpitSource_retention_days(t *testing.T) {
 }
 
 func TestCockpitSourceRetentionDaysBounds(t *testing.T) {
-	validate := cockpit.SourceSchema()["retention_days"].ValidateFunc
+	var schemaResp fwresource.SchemaResponse
 
-	for days, wantErr := range map[int]bool{0: true, 1: false, 1825: false, 1826: true} {
-		_, errs := validate(days, "retention_days")
-		if (len(errs) > 0) != wantErr {
-			t.Errorf("retention_days = %d: got %v, want error %t", days, errs, wantErr)
+	cockpit.NewSourceResource().Schema(t.Context(), fwresource.SchemaRequest{}, &schemaResp)
+
+	retentionDays, ok := schemaResp.Schema.Attributes["retention_days"].(schema.Int64Attribute)
+	if !ok {
+		t.Fatal("retention_days is not an Int64Attribute")
+	}
+
+	for days, wantErr := range map[int64]bool{0: true, 1: false, 1825: false, 1826: true} {
+		resp := validator.Int64Response{}
+
+		for _, v := range retentionDays.Validators {
+			v.ValidateInt64(t.Context(), validator.Int64Request{ConfigValue: types.Int64Value(days)}, &resp)
+		}
+
+		if resp.Diagnostics.HasError() != wantErr {
+			t.Errorf("retention_days = %d: got %v, want error %t", days, resp.Diagnostics, wantErr)
 		}
 	}
 }

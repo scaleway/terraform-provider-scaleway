@@ -63,8 +63,6 @@ type sourceResourceModel struct {
 	SynchronizedWithGrafana types.Bool     `tfsdk:"synchronized_with_grafana"`
 }
 
-type sourceResourceIdentityModel = identityfw.RegionalIdentity
-
 func (r *SourceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_cockpit_source"
 }
@@ -227,17 +225,9 @@ func (r *SourceResource) Create(ctx context.Context, req resource.CreateRequest,
 }
 
 func (r *SourceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var (
-		state    sourceResourceModel
-		identity sourceResourceIdentityModel
-	)
+	identity, identityAvailable := getRegionalIdentity(ctx, req.Identity)
 
-	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
-	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
-
-	if !identityAvailable && resp.Diagnostics.HasError() {
-		resp.Diagnostics = nil
-	}
+	var state sourceResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
@@ -245,21 +235,11 @@ func (r *SourceResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	var (
-		id     string
-		region scw.Region
-		err    error
-	)
+	region, id, err := resolveRegionalID(identity, identityAvailable, state.ID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse Cockpit source ID", err.Error())
 
-	if identityAvailable {
-		region, id = identityfw.ResolveRegionalIdentity(identity)
-	} else {
-		region, id, err = regional.ParseID(state.ID.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to parse Cockpit source ID", err.Error())
-
-			return
-		}
+		return
 	}
 
 	timeout, diags := state.Timeouts.Read(ctx, DefaultCockpitTimeout)
@@ -374,17 +354,9 @@ func (r *SourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 }
 
 func (r *SourceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var (
-		state    sourceResourceModel
-		identity sourceResourceIdentityModel
-	)
+	identity, identityAvailable := getRegionalIdentity(ctx, req.Identity)
 
-	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
-	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
-
-	if !identityAvailable && resp.Diagnostics.HasError() {
-		resp.Diagnostics = nil
-	}
+	var state sourceResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
@@ -392,21 +364,11 @@ func (r *SourceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	var (
-		id     string
-		region scw.Region
-		err    error
-	)
+	region, id, err := resolveRegionalID(identity, identityAvailable, state.ID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse Cockpit source ID", err.Error())
 
-	if identityAvailable {
-		region, id = identityfw.ResolveRegionalIdentity(identity)
-	} else {
-		region, id, err = regional.ParseID(state.ID.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to parse Cockpit source ID", err.Error())
-
-			return
-		}
+		return
 	}
 
 	timeout, diags := state.Timeouts.Delete(ctx, DefaultCockpitTimeout)
