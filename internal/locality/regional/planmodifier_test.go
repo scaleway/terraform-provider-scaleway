@@ -70,12 +70,11 @@ func TestLocalityPlanModifier_PlanModifyString(t *testing.T) {
 		},
 		{
 			// Different regions, same UUID → suppressed. UUID is the real key
-			// identity; the region prefix is just locality context. Two distinct
-			// KMS keys always have distinct UUIDs, so this case is theoretical.
+			// identity; the region prefix is just locality context.
 			name:          "different region same UUID suppresses diff",
 			stateValue:    types.StringValue("fr-par/11111111-1111-1111-1111-111111111111"),
 			planValue:     types.StringValue("nl-ams/11111111-1111-1111-1111-111111111111"),
-			wantReplace:   false,
+			wantReplace:   true,
 			wantPlanValue: types.StringValue("fr-par/11111111-1111-1111-1111-111111111111"),
 		},
 	}
