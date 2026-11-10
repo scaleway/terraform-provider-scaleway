@@ -277,6 +277,17 @@ func (r *VolumeResource) Create(
 					return
 				}
 
+				if snapshot.Status != block.SnapshotStatusAvailable &&
+					snapshot.Status != block.SnapshotStatusInUse {
+					resp.Diagnostics.AddError(
+						"Snapshot is not in a usable state",
+						fmt.Sprintf("Snapshot %s is in status %s, cannot create volume from it",
+							snapshot.ID, snapshot.Status),
+					)
+
+					return
+				}
+
 				if snapshot.KmsKeyID == nil {
 					resp.Diagnostics.AddError(
 						"Cannot use kms_key_id if the snapshot is not encrypted",
