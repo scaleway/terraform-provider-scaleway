@@ -47,6 +47,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/webhosting"
@@ -276,6 +277,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		billing.NewBudgetAlertResource,
 		billing.NewBudgetResource,
 		block.NewSnapshotResource,
+		block.NewVolumeResource,
 		datalab.NewDatalabResource,
 		domain.NewExternalDomainResource,
 		domain.NewExternalDomainValidatedResource,
@@ -319,6 +321,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		billing.NewBudgetAlertNotificationDataSource,
 		block.NewSnapshotDataSource,
 		block.NewSnapshotsDataSource,
+		block.NewVolumeDataSource,
 		cockpit.NewGrafanaProductDashboardDataSource,
 		cockpit.NewGrafanaProductDashboardsDataSource,
 		datalab.NewDatalabDataSource,
@@ -371,6 +374,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		rdb.NewReadReplicaResetAction,
 		s2svpn.NewConnectionEnableRoutePropagationAction,
 		s2svpn.NewConnectionDisableRoutePropagationAction,
+		tem.NewOfferSubscriptionUpdateAction,
 		vpcgw.NewRefreshSSHKeysAction,
 	}
 }
