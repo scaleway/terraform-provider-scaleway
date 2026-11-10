@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 )
@@ -40,24 +41,8 @@ func defaultCockpitTokenScopes() []cockpit.TokenScope {
 	}
 }
 
-func expandCockpitTokenScopes(raw any) []cockpit.TokenScope {
-	var expandedScopes []cockpit.TokenScope
-
-	scopesList, ok := raw.([]any)
-	if !ok || len(scopesList) == 0 {
-		return expandedScopes
-	}
-
-	scopesMap, ok := scopesList[0].(map[string]any)
-	if !ok {
-		return expandedScopes
-	}
-
-	return expandCockpitTokenScopesFromFlags(scopesMap)
-}
-
 // expandCockpitTokenScopesFromFlags expands a name→enabled map using scopeMapping.
-// Shared by the managed resource (SDKv2) and the ephemeral resource (Framework).
+// Shared by the managed and the ephemeral token resources.
 func expandCockpitTokenScopesFromFlags(flags map[string]any) []cockpit.TokenScope {
 	var expandedScopes []cockpit.TokenScope
 
@@ -70,21 +55,12 @@ func expandCockpitTokenScopesFromFlags(flags map[string]any) []cockpit.TokenScop
 	return expandedScopes
 }
 
-func flattenCockpitTokenScopes(scopes []cockpit.TokenScope) []any {
-	result := map[string]any{}
-	for key := range scopeMapping {
-		result[key] = false
+// flattenCockpitTokenScopes returns the enabled state of every scope flag.
+func flattenCockpitTokenScopes(scopes []cockpit.TokenScope) map[string]bool {
+	result := make(map[string]bool, len(scopeMapping))
+	for key, mappedScope := range scopeMapping {
+		result[key] = slices.Contains(scopes, mappedScope)
 	}
 
-	for _, scope := range scopes {
-		for key, mappedScope := range scopeMapping {
-			if scope == mappedScope {
-				result[key] = true
-
-				break
-			}
-		}
-	}
-
-	return []any{result}
+	return result
 }

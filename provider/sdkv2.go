@@ -21,7 +21,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/az"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datawarehouse"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
@@ -160,7 +159,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_autoscaling_instance_policy":                        autoscaling.ResourceInstancePolicy(),
 				"scaleway_autoscaling_instance_template":                      autoscaling.ResourceInstanceTemplate(),
 				"scaleway_baremetal_server":                                   baremetal.ResourceServer(),
-				"scaleway_cockpit_token":                                      cockpit.ResourceToken(),
 				"scaleway_container":                                          container.ResourceContainer(),
 				"scaleway_container_cron":                                     container.ResourceCron(),
 				"scaleway_container_domain":                                   container.ResourceDomain(),

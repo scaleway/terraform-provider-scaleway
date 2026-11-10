@@ -3,6 +3,7 @@ package cockpit_test
 import (
 	"context"
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -86,14 +87,9 @@ func TestAccToken_NoScopes(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_cockpit_token.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_token.main", "secret_key"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "name", tokenName),
-					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.query_metrics", "false"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.write_metrics", "true"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.setup_metrics_rules", "false"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.query_logs", "false"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.write_logs", "true"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.setup_logs_rules", "false"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.query_traces", "false"),
-					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.write_traces", "false"),
+					// An omitted scopes block is not stored; the API applies the default scopes.
+					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.#", "0"),
+					isTokenWithDefaultScopes(tt, "scaleway_cockpit_token.main"),
 				),
 			},
 		},
@@ -197,6 +193,35 @@ func isTokenPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		})
 		if err != nil {
 			return err
+		}
+
+		return nil
+	}
+}
+
+func isTokenWithDefaultScopes(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource cockpit token not found: %s", n)
+		}
+
+		api, region, ID, err := cockpit.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		token, err := api.GetToken(&cockpitSDK.RegionalAPIGetTokenRequest{
+			TokenID: ID,
+			Region:  region,
+		})
+		if err != nil {
+			return err
+		}
+
+		want := []cockpitSDK.TokenScope{cockpitSDK.TokenScopeWriteOnlyMetrics, cockpitSDK.TokenScopeWriteOnlyLogs}
+		if len(token.Scopes) != len(want) || !slices.Contains(token.Scopes, want[0]) || !slices.Contains(token.Scopes, want[1]) {
+			return fmt.Errorf("unexpected token scopes %v, want %v", token.Scopes, want)
 		}
 
 		return nil
