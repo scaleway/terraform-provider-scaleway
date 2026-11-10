@@ -6,10 +6,9 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
@@ -17,7 +16,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 const (
@@ -66,30 +64,6 @@ func (b *dataSourceBase) regionalAPI(regionAttr types.String) (*cockpit.Regional
 	}
 
 	return cockpit.NewRegionalAPI(b.meta.ScwClient()), region, nil
-}
-
-// dataSourceRegionAttribute is the Optional+Computed region attribute of a data source.
-func dataSourceRegionAttribute() dsschema.StringAttribute {
-	return dsschema.StringAttribute{
-		Optional:            true,
-		Computed:            true,
-		MarkdownDescription: "The region you want to attach the resource to",
-		Validators: []validator.String{
-			verify.IsStringOneOfWithWarning(regional.AllRegions()),
-		},
-	}
-}
-
-// dataSourceProjectIDAttribute is the Optional+Computed project_id attribute of a data source.
-func dataSourceProjectIDAttribute(description string) dsschema.StringAttribute {
-	return dsschema.StringAttribute{
-		Optional:            true,
-		Computed:            true,
-		MarkdownDescription: description,
-		Validators: []validator.String{
-			verify.IsStringUUID(),
-		},
-	}
 }
 
 // getRegionalIdentity reads the resource identity; it must be called before reading the state.
