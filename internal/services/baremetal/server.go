@@ -24,6 +24,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -690,8 +691,9 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		}
 
 		_, err := api.WaitForServer(&baremetal.WaitForServerRequest{
-			Zone:     zonedID.Zone,
-			ServerID: ServerID.ID,
+			Zone:          zonedID.Zone,
+			ServerID:      ServerID.ID,
+			RetryInterval: transport.DefaultWaitRetryInterval,
 		})
 		if err != nil {
 			return diag.FromErr(err)
