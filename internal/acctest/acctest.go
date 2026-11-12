@@ -7,7 +7,6 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -41,36 +40,12 @@ func jsonValid(b []byte) bool {
 	)
 }
 
-var foldersUsingVCRv4 = []string{
-	"account",
-	"annotations",
-	"audittrail",
-	"container",
-	"datalab",
-	"iam",
-	"instance",
-	"jobs",
-	"k8s",
-	"keymanager",
-	"mailbox",
-	"marketplace",
-	"partner",
-	"secret",
-}
-
 func init() {
 	// Cassettes store redacted secrets, and request bodies may carry values
 	// derived from anonymized responses (e.g. a secret version whose data is
 	// an IAM API key secret key); ignore these fields when matching VCRv4
 	// requests.
 	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password", "data")
-}
-
-func FolderUsesVCRv4(fullFolderPath string) bool {
-	fullPathSplit := strings.Split(fullFolderPath, "/")
-	folder := fullPathSplit[len(fullPathSplit)-1]
-
-	return slices.Contains(foldersUsingVCRv4, folder)
 }
 
 // s3Encoder encodes binary payloads as base64 because serialization changed on go-vcr.v4
