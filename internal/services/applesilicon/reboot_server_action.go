@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -133,8 +134,9 @@ func (s *ServerAppleSiliconRebootAction) Invoke(ctx context.Context, request act
 
 	if data.Wait.ValueBool() {
 		_, err = s.appleSiliconAPI.WaitForServer(&applesilicon.WaitForServerRequest{
-			Zone:     scw.Zone(zone),
-			ServerID: serverID,
+			Zone:          scw.Zone(zone),
+			ServerID:      serverID,
+			RetryInterval: transport.DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			response.Diagnostics.AddError(

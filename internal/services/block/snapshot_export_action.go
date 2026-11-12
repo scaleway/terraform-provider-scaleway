@@ -152,6 +152,7 @@ func (e *ExportSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 			return e.api.WaitForSnapshot(&block.WaitForSnapshotRequest{
 				SnapshotID: snapshotID,
 				Zone:       scw.Zone(zone),
+        RetryInterval: transport.DefaultWaitRetryInterval,
 			}, scw.WithContext(ctx))
 		})
 		if err != nil {
