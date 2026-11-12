@@ -1336,10 +1336,11 @@ func terminateServer(ctx context.Context, api *instancehelpers.BlockAndInstanceA
 	}
 
 	err = api.ServerActionAndWait(&instanceSDK.ServerActionAndWaitRequest{
-		Zone:     zone,
-		ServerID: id,
-		Action:   instanceSDK.ServerActionTerminate,
-		Timeout:  &timeout,
+		Zone:          zone,
+		ServerID:      id,
+		Action:        instanceSDK.ServerActionTerminate,
+		Timeout:       &timeout,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
 		return err
