@@ -201,7 +201,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_rdb_user",
 		"scaleway_rdb_snapshot",
 		"scaleway_registry_namespace",
-		"scaleway_sdb_sql_database",
 		"scaleway_vpc_public_gateway_dhcp",
 		"scaleway_vpc_public_gateway_dhcp_reservation",
 	}
@@ -274,7 +273,6 @@ func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
 		"scaleway_rdb_read_replica",
 		"scaleway_rdb_snapshot",
 		"scaleway_rdb_user",
-		"scaleway_sdb_sql_database",
 		"scaleway_tem_blocked_list",
 		"scaleway_tem_domain_validation",
 		"scaleway_tem_webhook",

@@ -46,6 +46,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/sdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
@@ -293,6 +294,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		messageq.NewDeploymentResource,
 		messageq.NewUserResource,
 		partner.NewPartnerOrganizationResource,
+		sdb.NewDatabaseResource,
 		webhosting.NewWebhostingResource,
 	}
 }
@@ -338,6 +340,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		rdb.NewInstanceLogDataSource,
 		rdb.NewInstanceLogsDataSource,
 		rdb.NewInstanceLogsDetailsDataSource,
+		sdb.NewVersionsDataSource,
 		webhosting.NewOfferDataSource,
 		webhosting.NewWebhostingDataSource,
 	}
