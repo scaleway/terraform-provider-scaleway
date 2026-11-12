@@ -237,7 +237,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 		"options": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "The options to enable on server",
+			Description: "The options to enable on server. Retrieving them using the scaleway_baremetal_option datasource is highly recommended.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
@@ -267,7 +267,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Set:         privateNetworkSetHash,
-			Description: "The private networks to attach to the server",
+			Description: "The private networks to attach to the server. Requires an option with the private_network attribute to be enabled.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
