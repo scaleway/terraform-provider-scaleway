@@ -1,7 +1,6 @@
 package iam_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -44,8 +43,8 @@ func TestAccDataSourceApplication_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_iam_application.find_by_name_basic", "name", "tf_tests_data_source_basic"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_application.find_by_id_basic", "id", "scaleway_iam_application.app_ds_basic", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_application.find_by_name_basic", "id", "scaleway_iam_application.app_ds_basic", "id"),
-					resource.TestMatchResourceAttr("data.scaleway_iam_application.find_by_id_basic", "srn", regexp.MustCompile(`^srn://iam\..+/applications/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_iam_application.find_by_name_basic", "srn", regexp.MustCompile(`^srn://iam\..+/applications/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_application.find_by_id_basic", "srn", acctest.CheckSRN("iam", "applications")),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_application.find_by_name_basic", "srn", acctest.CheckSRN("iam", "applications")),
 				),
 			},
 			{
@@ -78,8 +77,8 @@ func TestAccDataSourceApplication_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_iam_application.find_by_name_basic", "description", "tf_tests_data_source_basic_description"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_application.find_by_id_basic", "id", "scaleway_iam_application.app_ds_basic", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_application.find_by_name_basic", "id", "scaleway_iam_application.app_ds_basic", "id"),
-					resource.TestMatchResourceAttr("data.scaleway_iam_application.find_by_id_basic", "srn", regexp.MustCompile(`^srn://iam\..+/applications/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_iam_application.find_by_name_basic", "srn", regexp.MustCompile(`^srn://iam\..+/applications/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_application.find_by_id_basic", "srn", acctest.CheckSRN("iam", "applications")),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_application.find_by_name_basic", "srn", acctest.CheckSRN("iam", "applications")),
 				),
 			},
 		},

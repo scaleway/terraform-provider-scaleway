@@ -1,7 +1,6 @@
 package flexibleip_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -40,9 +39,9 @@ func TestAccDataSourceFlexibleIP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_address", "id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_id", "flexible_ip_id"),
 
-					resource.TestMatchResourceAttr("scaleway_flexible_ip.main", "srn", regexp.MustCompile(`^srn://flexible-ip\..+/zones/.+/flexible-ips/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_flexible_ip.by_address", "srn", regexp.MustCompile(`^srn://flexible-ip\..+/zones/.+/flexible-ips/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_flexible_ip.by_id", "srn", regexp.MustCompile(`^srn://flexible-ip\..+/zones/.+/flexible-ips/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_flexible_ip.main", "srn", acctest.CheckSRN("flexible-ip", "flexible-ips")),
+					resource.TestCheckResourceAttrWith("data.scaleway_flexible_ip.by_address", "srn", acctest.CheckSRN("flexible-ip", "flexible-ips")),
+					resource.TestCheckResourceAttrWith("data.scaleway_flexible_ip.by_id", "srn", acctest.CheckSRN("flexible-ip", "flexible-ips")),
 				),
 			},
 		},
@@ -102,12 +101,12 @@ func TestAccDataSourceFlexibleIP_Multiple(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_address_second", "id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_id_second", "flexible_ip_id"),
 
-					resource.TestMatchResourceAttr("scaleway_flexible_ip.first", "srn", regexp.MustCompile(`^srn://flexible-ip\..+/zones/.+/flexible-ips/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_flexible_ip.by_address_first", "srn", regexp.MustCompile(`^srn://flexible-ip\..+/zones/.+/flexible-ips/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_flexible_ip.by_id_first", "srn", regexp.MustCompile(`^srn://flexible-ip\..+/zones/.+/flexible-ips/.+$`)),
-					resource.TestMatchResourceAttr("scaleway_flexible_ip.second", "srn", regexp.MustCompile(`^srn://flexible-ip\..+/zones/.+/flexible-ips/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_flexible_ip.by_address_second", "srn", regexp.MustCompile(`^srn://flexible-ip\..+/zones/.+/flexible-ips/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_flexible_ip.by_id_second", "srn", regexp.MustCompile(`^srn://flexible-ip\..+/zones/.+/flexible-ips/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_flexible_ip.first", "srn", acctest.CheckSRN("flexible-ip", "flexible-ips")),
+					resource.TestCheckResourceAttrWith("data.scaleway_flexible_ip.by_address_first", "srn", acctest.CheckSRN("flexible-ip", "flexible-ips")),
+					resource.TestCheckResourceAttrWith("data.scaleway_flexible_ip.by_id_first", "srn", acctest.CheckSRN("flexible-ip", "flexible-ips")),
+					resource.TestCheckResourceAttrWith("scaleway_flexible_ip.second", "srn", acctest.CheckSRN("flexible-ip", "flexible-ips")),
+					resource.TestCheckResourceAttrWith("data.scaleway_flexible_ip.by_address_second", "srn", acctest.CheckSRN("flexible-ip", "flexible-ips")),
+					resource.TestCheckResourceAttrWith("data.scaleway_flexible_ip.by_id_second", "srn", acctest.CheckSRN("flexible-ip", "flexible-ips")),
 				),
 			},
 		},

@@ -1,7 +1,6 @@
 package block_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -96,9 +95,9 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"scaleway_block_snapshot.main", "id", "data.scaleway_block_snapshot.find_by_id", "snapshot_id",
 					),
-					resource.TestMatchResourceAttr("scaleway_block_snapshot.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_block_snapshot.find_by_name", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_block_snapshot.find_by_id", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_block_snapshot.main", "srn", acctest.CheckSRN("block", "snapshots")),
+					resource.TestCheckResourceAttrWith("data.scaleway_block_snapshot.find_by_name", "srn", acctest.CheckSRN("block", "snapshots")),
+					resource.TestCheckResourceAttrWith("data.scaleway_block_snapshot.find_by_id", "srn", acctest.CheckSRN("block", "snapshots")),
 				),
 			},
 		},
