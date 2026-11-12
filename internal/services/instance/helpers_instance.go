@@ -394,11 +394,16 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Du
 				return err
 			}
 
+			retryInterval := instancehelpers.DefaultInstanceRetryInterval
+			if transport.DefaultWaitRetryInterval != nil {
+				retryInterval = *transport.DefaultWaitRetryInterval
+			}
+
 			_, err = ph.instanceAPI.WaitForPrivateNetworkInterface(&instanceV2.WaitForPrivateNetworkInterfaceRequest{
 				PrivateNetworkInterfaceID: p.ID,
 				Zone:                      ph.zone,
 				Timeout:                   &timeout,
-				RetryInterval:             new(instancehelpers.DefaultInstanceRetryInterval),
+				RetryInterval:             &retryInterval,
 			})
 			if err != nil && !httperrors.Is404(err) {
 				return err
@@ -672,9 +677,10 @@ func DeleteASGServers(
 		}
 
 		_, err := api.WaitForServer(&instance.WaitForServerRequest{
-			Zone:     zone,
-			ServerID: srv.ID,
-			Timeout:  new(timeout),
+			Zone:          zone,
+			ServerID:      srv.ID,
+			Timeout:       new(timeout),
+			RetryInterval: transport.DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
 			return err

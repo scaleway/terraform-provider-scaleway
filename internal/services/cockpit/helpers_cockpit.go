@@ -106,12 +106,17 @@ func waitForExporter(
 	exporterID string,
 	timeout time.Duration,
 ) (*cockpit.Exporter, error) {
+	retryInterval := defaultCockpitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
 	return transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Exporter, error) {
 		return api.WaitForExporter(&cockpit.WaitForExporterRequest{
 			Region:        region,
 			ExporterID:    exporterID,
 			Timeout:       new(timeout),
-			RetryInterval: new(defaultCockpitRetryInterval),
+			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
 	})
 }
