@@ -334,6 +334,7 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 func TestAccServer_AttachDetachFileSystem_WithProject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),

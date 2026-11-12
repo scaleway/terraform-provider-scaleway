@@ -150,9 +150,9 @@ func (e *ExportSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 	if data.Wait.ValueBool() {
 		_, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*block.Snapshot, error) {
 			return e.api.WaitForSnapshot(&block.WaitForSnapshotRequest{
-				SnapshotID: snapshotID,
-				Zone:       scw.Zone(zone),
-        RetryInterval: transport.DefaultWaitRetryInterval,
+				SnapshotID:    snapshotID,
+				Zone:          scw.Zone(zone),
+				RetryInterval: transport.DefaultWaitRetryInterval,
 			}, scw.WithContext(ctx))
 		})
 		if err != nil {

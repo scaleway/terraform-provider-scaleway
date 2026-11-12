@@ -12,6 +12,7 @@ import (
 func TestAccDataSourceSnapshot_Basic_WithProject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	snapshotName := "tf-snapshot-ds-basic-with-project"
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
