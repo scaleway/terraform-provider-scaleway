@@ -27,6 +27,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datalab"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/dataorchestrator"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
@@ -279,6 +280,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		block.NewSnapshotResource,
 		block.NewVolumeResource,
 		datalab.NewDatalabResource,
+		dataorchestrator.NewWorkflowResource,
 		file.NewFileSystemResource,
 		iam.NewSamlCertificateResource,
 		iam.NewSamlResource,
@@ -325,6 +327,8 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		cockpit.NewGrafanaProductDashboardsDataSource,
 		datalab.NewDatalabDataSource,
 		datalab.NewDatalabsDataSource,
+		dataorchestrator.NewWorkflowDataSource,
+		dataorchestrator.NewWorkflowRunDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
@@ -350,6 +354,10 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		block.NewExportSnapshot,
 		cockpit.NewGrafanaSyncDataSourcesAction,
 		cockpit.NewTriggerTestAlertAction,
+		dataorchestrator.NewPauseWorkflowRunAction,
+		dataorchestrator.NewResumeWorkflowRunAction,
+		dataorchestrator.NewStartWorkflowAction,
+		dataorchestrator.NewTerminateWorkflowRunAction,
 		iam.NewSamlConfigurationAction,
 		instance.NewCreateSnapshot,
 		instance.NewExportSnapshot,
