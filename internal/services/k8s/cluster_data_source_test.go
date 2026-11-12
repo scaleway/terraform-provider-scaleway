@@ -2,7 +2,6 @@ package k8s_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -65,8 +64,8 @@ func TestAccDataSourceCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_k8s_cluster.prod", "name", clusterName),
 					testAccCheckK8SClusterExists(tt, "data.scaleway_k8s_cluster.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_cluster.stg", "name", clusterName),
-					resource.TestMatchResourceAttr("data.scaleway_k8s_cluster.prod", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/clusters/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_k8s_cluster.stg", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/clusters/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_k8s_cluster.prod", "srn", acctest.CheckSRN("k8s", "clusters")),
+					resource.TestCheckResourceAttrWith("data.scaleway_k8s_cluster.stg", "srn", acctest.CheckSRN("k8s", "clusters")),
 				),
 			},
 		},

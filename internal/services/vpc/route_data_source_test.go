@@ -1,7 +1,6 @@
 package vpc_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -63,7 +62,7 @@ func TestAccDataSourceRoute_ByID(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_vpc_route.by_id", "tags.0", "tf"),
 					resource.TestCheckResourceAttr("data.scaleway_vpc_route.by_id", "tags.1", "route"),
 					resource.TestCheckResourceAttr("data.scaleway_vpc_route.by_id", "tags.2", "ds"),
-					resource.TestMatchResourceAttr("data.scaleway_vpc_route.by_id", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/routes/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_route.by_id", "srn", acctest.CheckSRN("vpc", "routes")),
 				),
 			},
 		},
@@ -123,7 +122,7 @@ func TestAccDataSourceRoute_ByFilters(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.scaleway_vpc_route.by_tags", "route_id", "scaleway_vpc_route.rt01", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_vpc_route.by_tags", "destination", "10.0.0.0/24"),
 					resource.TestCheckResourceAttr("data.scaleway_vpc_route.by_tags", "description", "tf-route-ds-filter"),
-					resource.TestMatchResourceAttr("data.scaleway_vpc_route.by_tags", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/routes/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_route.by_tags", "srn", acctest.CheckSRN("vpc", "routes")),
 				),
 			},
 		},

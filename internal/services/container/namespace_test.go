@@ -2,7 +2,6 @@ package container_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -32,7 +31,7 @@ func TestAccNamespace_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
 					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
-					resource.TestMatchResourceAttr("scaleway_container_namespace.main", "srn", regexp.MustCompile(`^srn://containers\..+/regions/.+/namespaces/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_container_namespace.main", "srn", acctest.CheckSRN("containers", "namespaces")),
 				),
 			},
 			{
