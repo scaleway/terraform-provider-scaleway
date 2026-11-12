@@ -3,7 +3,6 @@ package keymanager_test
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -44,7 +43,7 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "tags.0", "tf"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "tags.1", "test"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "protection_level", "software"),
-					resource.TestMatchResourceAttr("scaleway_key_manager_key.main", "srn", regexp.MustCompile(`^srn://key-manager\..+/regions/.+/keys/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_key_manager_key.main", "srn", acctest.CheckSRN("key-manager", "keys")),
 				),
 			},
 		},
@@ -79,7 +78,7 @@ func TestAccKeyManagerKey_ProtectionLevel(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "algorithm", "aes_256_gcm"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "description", "Test key with protection level"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "protection_level", "hsm"),
-					resource.TestMatchResourceAttr("scaleway_key_manager_key.main", "srn", regexp.MustCompile(`^srn://key-manager\..+/regions/.+/keys/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_key_manager_key.main", "srn", acctest.CheckSRN("key-manager", "keys")),
 				),
 			},
 		},
@@ -352,7 +351,7 @@ func TestAccKeyManagerKey_KeyEncapsulation(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "usage", "key_encapsulation"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "algorithm", "ml_kem_768"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.ml_kem", "description", "Test key with ML-KEM-768 algorithm"),
-					resource.TestMatchResourceAttr("scaleway_key_manager_key.ml_kem", "srn", regexp.MustCompile(`^srn://key-manager\..+/regions/.+/keys/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_key_manager_key.ml_kem", "srn", acctest.CheckSRN("key-manager", "keys")),
 				),
 			},
 		},

@@ -1,7 +1,6 @@
 package iam_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -38,7 +37,7 @@ func TestAccDataSourceApiKey_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_api_key.main", "access_key", "scaleway_iam_api_key.main", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_api_key.main", "id", "scaleway_iam_api_key.main", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
-					resource.TestMatchResourceAttr("data.scaleway_iam_api_key.main", "srn", regexp.MustCompile(`^srn://iam\..+/api-keys/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_api_key.main", "srn", acctest.CheckSRN("iam", "api-keys")),
 				),
 			},
 		},

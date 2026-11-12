@@ -1,7 +1,6 @@
 package block_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/compare"
@@ -33,7 +32,7 @@ func TestAccVolume_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "test-block-volume-basic"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "20"),
-					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_block_volume.main", "srn", acctest.CheckSRN("block", "volumes")),
 				),
 			},
 		},
@@ -60,7 +59,7 @@ func TestAccVolume_BasicWithoutSizeInGB(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "test-block-volume-basic-without-size"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "5"),
-					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_block_volume.main", "srn", acctest.CheckSRN("block", "volumes")),
 				),
 			},
 		},

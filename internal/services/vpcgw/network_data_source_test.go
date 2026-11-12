@@ -1,7 +1,6 @@
 package vpcgw_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -80,8 +79,8 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 						"data.scaleway_vpc_gateway_network.by_gateway_and_pn", "id",
 						"scaleway_vpc_gateway_network.main", "id",
 					),
-					resource.TestMatchResourceAttr("data.scaleway_vpc_gateway_network.by_id", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/gateway-networks/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_vpc_gateway_network.by_gateway_and_pn", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/gateway-networks/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_gateway_network.by_id", "srn", acctest.CheckSRN("public-gateway", "gateway-networks")),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_gateway_network.by_gateway_and_pn", "srn", acctest.CheckSRN("public-gateway", "gateway-networks")),
 				),
 			},
 		},
