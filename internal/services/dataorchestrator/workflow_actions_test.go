@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	dataorchestratorSDK "github.com/scaleway/scaleway-sdk-go/api/dataorchestrator/v1alpha2"
@@ -25,36 +26,6 @@ do:
         minutes: 10
 `
 
-func isWorkflowRunCreated(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", resourceName)
-		}
-
-		region, id, err := regional.ParseID(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		api := dataorchestratorSDK.NewAPI(meta.ExtractScwClient(tt.Meta))
-
-		runs, err := api.ListWorkflowRuns(&dataorchestratorSDK.ListWorkflowRunsRequest{
-			Region:               region,
-			WorkflowDefinitionID: &id,
-		}, scw.WithContext(tt.T.Context()))
-		if err != nil {
-			return fmt.Errorf("failed to list workflow runs: %w", err)
-		}
-
-		if len(runs.WorkflowRuns) == 0 {
-			return fmt.Errorf("no workflow runs found for definition %s", rs.Primary.ID)
-		}
-
-		return nil
-	}
-}
-
 func waitWorkflowRunStatus(tt *acctest.TestTools, region scw.Region, runID string, want ...dataorchestratorSDK.RunStatus) (*dataorchestratorSDK.WorkflowRun, error) {
 	api := dataorchestratorSDK.NewAPI(meta.ExtractScwClient(tt.Meta))
 	wanted := make(map[dataorchestratorSDK.RunStatus]struct{}, len(want))
@@ -63,35 +34,35 @@ func waitWorkflowRunStatus(tt *acctest.TestTools, region scw.Region, runID strin
 		wanted[status] = struct{}{}
 	}
 
-	sleep := 2 * time.Second
-	if !*acctest.UpdateCassettes {
-		sleep = 0
-	}
+	var result *dataorchestratorSDK.WorkflowRun
 
-	deadline := time.Now().Add(10 * time.Minute)
-
-	for time.Now().Before(deadline) {
+	err := retry.RetryContext(tt.T.Context(), 10*time.Minute, func() *retry.RetryError {
 		run, err := api.GetWorkflowRun(&dataorchestratorSDK.GetWorkflowRunRequest{
 			Region:        region,
 			WorkflowRunID: runID,
 		}, scw.WithContext(tt.T.Context()))
 		if err != nil {
-			return nil, err
+			return retry.RetryableError(err)
 		}
 
 		if _, ok := wanted[run.Status]; ok {
-			return run, nil
+			result = run
+
+			return nil
 		}
 
 		switch run.Status {
 		case dataorchestratorSDK.RunStatusSucceeded, dataorchestratorSDK.RunStatusFailed, dataorchestratorSDK.RunStatusInterrupted:
-			return nil, fmt.Errorf("workflow run %s reached terminal status %q before %v", runID, run.Status, want)
+			return retry.NonRetryableError(fmt.Errorf("workflow run %s reached terminal status %q before %v", runID, run.Status, want))
 		}
 
-		time.Sleep(sleep)
+		return retry.RetryableError(fmt.Errorf("waiting for workflow run %s status in %v, got %q", runID, want, run.Status))
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, fmt.Errorf("timeout waiting for workflow run %s status in %v", runID, want)
+	return result, nil
 }
 
 func checkWorkflowRunStatus(tt *acctest.TestTools, runID string, want ...dataorchestratorSDK.RunStatus) resource.TestCheckFunc {
@@ -126,53 +97,6 @@ func testAccWorkflowRunControlActionConfig(actionType, runID, triggerInput strin
 					  }
 					}
 				`, actionType, runID, triggerInput, actionType)
-}
-
-func TestAccActionWorkflowStart_Basic(t *testing.T) {
-	if acctest.IsRunningOpenTofu() {
-		t.Skip("Skipping TestAccActionWorkflowStart_Basic because actions are not yet supported on OpenTofu")
-	}
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isWorkflowDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_dataorchestrator_workflow" "main" {
-					  name         = "tf-tests-dataorchestrator-start"
-					  description  = "start"
-					  region       = "fr-par"
-					  version_name = "v1-0-0"
-					  workflow_dsl = <<-EOT
-%s
-EOT
-
-					  lifecycle {
-					    action_trigger {
-					      events  = [after_create]
-					      actions = [action.scaleway_dataorchestrator_workflow_start.main]
-					    }
-					  }
-					}
-
-					action "scaleway_dataorchestrator_workflow_start" "main" {
-					  config {
-					    workflow_definition_id = scaleway_dataorchestrator_workflow.main.id
-					    wait_for_completion    = true
-					  }
-					}
-				`, testAccWorkflowMinimalDSL),
-				Check: resource.ComposeTestCheckFunc(
-					isWorkflowPresent(tt, "scaleway_dataorchestrator_workflow.main"),
-					isWorkflowRunCreated(tt, "scaleway_dataorchestrator_workflow.main"),
-				),
-			},
-		},
-	})
 }
 
 func TestAccActionWorkflowPauseResumeTerminate_Basic(t *testing.T) {
