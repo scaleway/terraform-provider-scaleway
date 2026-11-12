@@ -79,7 +79,7 @@ resource "scaleway_mailbox_forwarding" "main" {
 	})
 }
 
-func TestAccMailbox_ForwardingSettings(t *testing.T) {
+func TestAccMailboxForwarding_Settings(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
