@@ -97,6 +97,12 @@ func NewRecordedClient(t *testing.T, pkgFolder string, update bool) (client *htt
 
 	return &http.Client{Transport: transport.NewRetryableTransportWithOptions(r, retryOptions)}, func() {
 		require.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
+
+		if update {
+			report, err := CompressCassetteV4(vcr.BuildCassetteName(t.Name(), pkgFolder, ".cassette"), true)
+			require.NoError(t, err)
+			t.Logf("compressed cassette %s: %d skipped interactions", report.Path, report.SkippedInteraction)
+		}
 	}, nil
 }
 
