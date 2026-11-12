@@ -4,10 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json/jsontext"
 	"encoding/xml"
+	"flag"
 	"net/http"
 	"os"
-	"slices"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -25,6 +24,9 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
 
+// UpdateCassettes will update all cassettes of a given test
+var UpdateCassettes = flag.Bool("cassettes", os.Getenv(env.UpdateCassettes) == "true", "Record Cassettes")
+
 type TestTools struct {
 	T                 *testing.T
 	Meta              *meta.Meta
@@ -38,36 +40,12 @@ func jsonValid(b []byte) bool {
 	)
 }
 
-var foldersUsingVCRv4 = []string{
-	"account",
-	"annotations",
-	"audittrail",
-	"container",
-	"datalab",
-	"iam",
-	"instance",
-	"jobs",
-	"k8s",
-	"keymanager",
-	"mailbox",
-	"marketplace",
-	"partner",
-	"secret",
-}
-
 func init() {
 	// Cassettes store redacted secrets, and request bodies may carry values
 	// derived from anonymized responses (e.g. a secret version whose data is
 	// an IAM API key secret key); ignore these fields when matching VCRv4
 	// requests.
 	vcr.BodyMatcherIgnore = append(vcr.BodyMatcherIgnore, "password", "new_password", "data")
-}
-
-func FolderUsesVCRv4(fullFolderPath string) bool {
-	fullPathSplit := strings.Split(fullFolderPath, "/")
-	folder := fullPathSplit[len(fullPathSplit)-1]
-
-	return slices.Contains(foldersUsingVCRv4, folder)
 }
 
 // s3Encoder encodes binary payloads as base64 because serialization changed on go-vcr.v4
@@ -138,11 +116,7 @@ func NewTestTools(t *testing.T) *TestTools {
 		cleanup    func()
 	)
 
-	if FolderUsesVCRv4(folder) {
-		httpClient, cleanup, err = NewRecordedClient(t, folder, *UpdateCassettes)
-	} else {
-		httpClient, cleanup, err = getHTTPRecoder(t, folder, *UpdateCassettes)
-	}
+	httpClient, cleanup, err = NewRecordedClient(t, folder, *UpdateCassettes)
 
 	require.NoError(t, err)
 
@@ -189,54 +163,6 @@ func NewTestTools(t *testing.T) *TestTools {
 		},
 		Cleanup: cleanup,
 	}
-}
-
-// Test Generated name has format: "{prefix}-{generated_number}
-// example: test-acc-scaleway-project-3723338038624371236
-// Also supports FQDNs: tf-tests-mbx-basic-123.scaleway-terraform.com
-func extractTestGeneratedNamePrefix(name string) string {
-	suffix := ""
-	host := name
-
-	if dot := strings.Index(name, "."); dot >= 0 {
-		host = name[:dot]
-		suffix = name[dot:]
-	}
-
-	dashIndex := strings.LastIndex(host, "-")
-	if dashIndex == -1 {
-		return name
-	}
-
-	generated := host[dashIndex+1:]
-
-	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
-	if generatedToIntErr != nil {
-		return name
-	}
-
-	return host[:dashIndex] + suffix
-}
-
-// Generated names have format: "tf-{prefix}-{generated1}-{generated2}"
-// example: tf-sg-gifted-yonath
-func extractGeneratedNamePrefix(name string) string {
-	if strings.Count(name, "-") < 3 {
-		return name
-	}
-	// tf-{prefix}-gifted-yonath
-	name = strings.TrimPrefix(name, "tf-")
-
-	// {prefix}-gifted-yonath
-	//                ^
-	dashIndex := strings.LastIndex(name, "-")
-	name = name[:dashIndex]
-	// {prefix}-gifted
-	//         ^
-	dashIndex = strings.LastIndex(name, "-")
-	name = name[:dashIndex]
-
-	return name
 }
 
 // IsTestResource returns true if given resource identifier is from terraform test
