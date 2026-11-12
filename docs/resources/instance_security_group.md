@@ -102,6 +102,8 @@ The following arguments are supported:
 
 - `stateful` - (Defaults to `true`) A boolean to specify whether the security group should be stateful or not.
 
+- `project_default` - (Defaults to `false`) A boolean to specify whether the default security group for the project.
+
 - `inbound_default_policy` - (Defaults to `accept`) The default policy on incoming traffic. Possible values are: `accept` or `drop`.
 
 - `outbound_default_policy` - (Defaults to `accept`) The default policy on outgoing traffic. Possible values are: `accept` or `drop`.
