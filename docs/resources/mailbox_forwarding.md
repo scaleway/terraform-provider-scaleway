@@ -52,11 +52,11 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - Unique identifier of the forwarding rule (UUID).
 - `status` - Current status of the rule:
-  - `provisioning` – rule is being provisioned.
-  - `ready` – rule is active.
-  - `updating` – rule is being updated.
-  - `deleting` – rule is being deleted.
-  - `unknown_status` – status is not known.
+    - `provisioning` – rule is being provisioned.
+    - `ready` – rule is active.
+    - `updating` – rule is being updated.
+    - `deleting` – rule is being deleted.
+    - `unknown_status` – status is not known.
 - `created_at` - Date and time of rule creation (RFC 3339 format).
 - `updated_at` - Date and time of last update (RFC 3339 format).
 
