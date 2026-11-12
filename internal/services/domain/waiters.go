@@ -132,3 +132,26 @@ func waitForDNSSECStatus(ctx context.Context, api *domain.RegistrarAPI, domainNa
 
 	return registeredDomain, err
 }
+
+func waitForExternalDomainValidation(ctx context.Context, api *domain.RegistrarAPI, domainName string, timeout time.Duration) (*domain.Domain, error) {
+	retryInterval := defaultWaitExternalDomainsValidationRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	var validatedDomain *domain.Domain
+
+	err := transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		var err error
+
+		validatedDomain, err = api.WaitForValidatedExternalDomain(&domain.WaitForValidatedExternalDomainRequest{
+			Domain:        domainName,
+			Timeout:       new(timeout),
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return validatedDomain, err
+}
