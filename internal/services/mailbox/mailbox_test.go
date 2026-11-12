@@ -37,6 +37,8 @@ resource "scaleway_mailbox" "basic" {
 					resource.TestCheckResourceAttr("scaleway_mailbox.basic", "subscription_period", "monthly"),
 					resource.TestCheckResourceAttr("scaleway_mailbox.basic", "domain_id", domainID),
 					resource.TestCheckResourceAttr("scaleway_mailbox.basic", "status", "ready"),
+					resource.TestCheckResourceAttr("scaleway_mailbox.basic", "forwarding_enabled", "false"),
+					resource.TestCheckResourceAttr("scaleway_mailbox.basic", "forwarding_keep_copy", "false"),
 					resource.TestCheckResourceAttrSet("scaleway_mailbox.basic", "email"),
 					resource.TestCheckResourceAttrSet("scaleway_mailbox.basic", "created_at"),
 					acctest.CheckResourceAttrUUID("scaleway_mailbox.basic", "id"),

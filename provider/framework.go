@@ -288,6 +288,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		keymanager.NewKeyMaterialResource,
 		mailbox.NewAliasResource,
 		mailbox.NewDomainResource,
+		mailbox.NewForwardingResource,
 		mailbox.NewMailboxResource,
 		messageq.NewDeploymentResource,
 		messageq.NewUserResource,

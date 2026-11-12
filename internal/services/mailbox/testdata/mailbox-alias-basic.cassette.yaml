@@ -1,13 +1,13 @@
 interactions:
     - id: 0
       request:
-        body: '{"domain":"scaleway-terraform.com","subdomain":"tf-tests-mbx-alias-6127879919392157430","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}'
-        content_length: 140
+        body: '{"domain":"scaleway-terraform.com","subdomain":"tf-tests-mbx-alias-58796453232930515","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}'
+        content_length: 138
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: POST
         proto: HTTP/1.1
@@ -15,17 +15,17 @@ interactions:
         proto_minor: 1
         url: https://api.scaleway.com/domain/v2beta1/dns-zones
       response:
-        body: '{"domain":"scaleway-terraform.com", "subdomain":"tf-tests-mbx-alias-6127879919392157430", "ns":["ns0.dom.scw.cloud", "ns1.dom.scw.cloud"], "ns_default":["ns0.dom.scw.cloud", "ns1.dom.scw.cloud"], "ns_master":[], "status":"active", "message":null, "updated_at":"2026-10-13T12:58:35Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "linked_products":[]}'
+        body: '{"domain":"scaleway-terraform.com", "subdomain":"tf-tests-mbx-alias-58796453232930515", "ns":["ns0.dom.scw.cloud", "ns1.dom.scw.cloud"], "ns_default":["ns0.dom.scw.cloud", "ns1.dom.scw.cloud"], "ns_master":[], "status":"active", "message":null, "updated_at":"2026-11-12T10:56:58Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "linked_products":[], "srn":"", "dns_zone":""}'
         code: 200
-        content_length: 358
-        duration: 640.484ms
+        content_length: 381
+        duration: 506.87575ms
         headers:
             Content-Length:
-                - "358"
+                - "381"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:58:35 GMT
+                - Thu, 12 Nov 2026 10:56:58 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -35,7 +35,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 90030f86-43c1-42d6-9dd1-f0be2e7ff597
+                - 7c244f02-9cd5-436a-b030-bdc320b1b47f
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -43,34 +43,27 @@ interactions:
     - id: 1
       request:
         content_length: 0
-        form:
-            dns_zone:
-                - tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com
-            domain:
-                - ""
-            order_by:
-                - domain_asc
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com&domain=&order_by=domain_asc
+        url: https://api.scaleway.com/metadata
       response:
-        body: '{"total_count":1, "dns_zones":[{"domain":"scaleway-terraform.com", "subdomain":"tf-tests-mbx-alias-6127879919392157430", "ns":["ns0.dom.scw.cloud", "ns1.dom.scw.cloud"], "ns_default":["ns0.dom.scw.cloud", "ns1.dom.scw.cloud"], "ns_master":[], "status":"active", "message":null, "updated_at":"2026-10-13T12:58:35Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "linked_products":[]}]}'
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
         code: 200
-        content_length: 391
-        duration: 154.992334ms
+        content_length: 59
+        duration: 13.496834ms
         headers:
             Content-Length:
-                - "391"
+                - "59"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:58:36 GMT
+                - Thu, 12 Nov 2026 10:56:59 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -80,20 +73,65 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - a16ae716-68d5-46f3-9901-ce6af0b54446
+                - 4f42119d-7902-4bc0-aaa4-0a141bc507a3
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         status: 200 OK
     - id: 2
       request:
-        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com"}'
-        content_length: 124
+        content_length: 0
+        form:
+            dns_zone:
+                - tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com
+            domain:
+                - ""
+            order_by:
+                - domain_asc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com&domain=&order_by=domain_asc
+      response:
+        body: '{"total_count":1, "dns_zones":[{"domain":"scaleway-terraform.com", "subdomain":"tf-tests-mbx-alias-58796453232930515", "ns":["ns0.dom.scw.cloud", "ns1.dom.scw.cloud"], "ns_default":["ns0.dom.scw.cloud", "ns1.dom.scw.cloud"], "ns_master":[], "status":"active", "message":null, "updated_at":"2026-11-12T10:56:58Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "linked_products":[], "srn":"", "dns_zone":""}]}'
+        code: 200
+        content_length: 414
+        duration: 158.625583ms
+        headers:
+            Content-Length:
+                - "414"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 10:56:59 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 53492acf-29df-4f4e-aabb-65e6bebb5298
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 3
+      request:
+        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com"}'
+        content_length: 122
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: POST
         proto: HTTP/1.1
@@ -101,17 +139,17 @@ interactions:
         proto_minor: 1
         url: https://api.scaleway.com/mailbox/v1alpha1/domains
       response:
-        body: '{"id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"creating", "mailbox_total_count":0, "created_at":"2026-10-13T12:58:36.395703Z", "updated_at":"2026-10-13T12:58:36.395703Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"creating", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:56:59.412406Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 504
-        duration: 219.904958ms
+        content_length: 502
+        duration: 304.4645ms
         headers:
             Content-Length:
-                - "504"
+                - "502"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:58:36 GMT
+                - Thu, 12 Nov 2026 10:56:59 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -121,45 +159,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 8802672c-5944-442c-81a5-44e426eeaf53
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 3
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5
-      response:
-        body: '{"id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"creating", "mailbox_total_count":0, "created_at":"2026-10-13T12:58:36.395703Z", "updated_at":"2026-10-13T12:58:36.395703Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
-        code: 200
-        content_length: 504
-        duration: 147.817666ms
-        headers:
-            Content-Length:
-                - "504"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 12:58:36 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "48"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - dc29349e-d9d4-4097-a0cd-ec5900bdb876
+                - 2f27bc41-726b-4ae3-bf13-1b36ffc7602a
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -169,35 +169,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
       response:
-        body: '{"id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_validation", "mailbox_total_count":0, "created_at":"2026-10-13T12:58:36.395703Z", "updated_at":"2026-10-13T12:58:38.013402Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"creating", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:56:59.412406Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 514
-        duration: 296.352375ms
+        content_length: 502
+        duration: 148.421708ms
         headers:
             Content-Length:
-                - "514"
+                - "502"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:58:41 GMT
+                - Thu, 12 Nov 2026 10:56:59 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "48"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 877d7458-3baf-424b-a57a-0a3ff5b1dee7
+                - 6c5d1cef-b53b-43a8-83dd-300b5d271a4c
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -207,25 +207,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5/records
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
       response:
-        body: '{"autoconfig":{"id":"0b1f9c27-7a92-46fd-9021-ba132e3c10b5", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"recommended", "dns_type":"cname_dns_type", "dns_name":"autoconfig.tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"autoconfig.mailbox.scw.eu.", "created_at":"2026-10-13T12:58:37.851388Z", "updated_at":"2026-10-13T12:58:37.851388Z"}, "autodiscover":{"id":"8c8c5c63-ede2-4ed0-be4d-016f5b0dfc10", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"recommended", "dns_type":"cname_dns_type", "dns_name":"autodiscover.tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"autodiscover.mailbox.scw.eu.", "created_at":"2026-10-13T12:58:37.933460Z", "updated_at":"2026-10-13T12:58:37.933460Z"}, "caldav":{"id":"1af37fa0-849f-47a0-8efd-baa616ac5dfb", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"optional", "dns_type":"srv_dns_type", "dns_name":"_caldavs._tcp.tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"0 1 443 caldav.mailbox.scw.eu.", "created_at":"2026-10-13T12:58:37.437366Z", "updated_at":"2026-10-13T12:58:37.437366Z"}, "carddav":{"id":"c8fc05b5-c2a8-440d-92e9-5ce2cad5ace6", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"optional", "dns_type":"srv_dns_type", "dns_name":"_carddavs._tcp.tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"0 1 443 carddav.mailbox.scw.eu.", "created_at":"2026-10-13T12:58:37.520100Z", "updated_at":"2026-10-13T12:58:37.520100Z"}, "dkim":{"id":"9c6f4899-8087-409e-afd6-0e79451712b9", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"required", "dns_type":"txt_dns_type", "dns_name":"scw-mbox._domainkey.tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3ZBGahTpWdAs3V8JjxibTrt9hzJvJGD9D+n6673cl44kNSHkjTtUQ+ZJ/2JIb5lIf332U9vouHd9E6OiqAOoF/jl7J7niJvtRGMbzwemZu4jmLoG+iviVJhLDYOJ0cNPADOkMZiu5L3A1a1tyPSi/CVnNRGNZ8tDLKzag3sS1JKLk+bPB/UyeSRO7ir8V+yWF5VpsLvsveB+b0kts/XCV2MSRh54RUrdGoA73GizgcrL4BkoLbEM5Tt/XRNanXMsgGz21QJG9FR9xVyGJRa7sQ+4MEvb1dVN5ailed8J9ymmjGE7uu5xmpbbzV5wsgvftHj+CzraOI+mJ22NZOG+owIDAQAB", "created_at":"2026-10-13T12:58:37.107868Z", "updated_at":"2026-10-13T12:58:37.107868Z"}, "dmarc":{"id":"63a1fdb3-6bac-4be3-b509-ecf6ad86ccb2", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"required", "dns_type":"txt_dns_type", "dns_name":"_dmarc.tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"v=DMARC1; p=none", "created_at":"2026-10-13T12:58:37.188459Z", "updated_at":"2026-10-13T12:58:37.188459Z"}, "domain_validation":{"id":"becf3196-9b60-4035-8dac-e943349c5851", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"required", "dns_type":"txt_dns_type", "dns_name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"scaleway-mailbox=de1e44e6-ff8c-4ab4-a686-379f8d891f5a", "created_at":"2026-10-13T12:58:36.695918Z", "updated_at":"2026-10-13T12:58:36.695918Z"}, "imap":{"id":"261e4631-2177-47a7-95aa-98af9932747f", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"recommended", "dns_type":"srv_dns_type", "dns_name":"_imaps._tcp.tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"0 1 993 imap.mailbox.scw.eu.", "created_at":"2026-10-13T12:58:37.602390Z", "updated_at":"2026-10-13T12:58:37.602390Z"}, "mx":{"id":"8d1624d6-4b59-47ed-ba0a-5c7eb06056a6", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"required", "dns_type":"mx_dns_type", "dns_name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"10 smtp.mailbox.scw.eu.", "created_at":"2026-10-13T12:58:37.271457Z", "updated_at":"2026-10-13T12:58:37.271457Z"}, "pop3":{"id":"a09ac86e-b578-4f3c-bae9-a1ec13742749", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"recommended", "dns_type":"srv_dns_type", "dns_name":"_pop3s._tcp.tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"0 1 995 pop3.mailbox.scw.eu.", "created_at":"2026-10-13T12:58:37.683538Z", "updated_at":"2026-10-13T12:58:37.683538Z"}, "spf":{"id":"352e0d0f-ce16-4d60-b3f6-6cf07d2618c9", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"required", "dns_type":"txt_dns_type", "dns_name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"v=spf1 include:spf.mailbox.scw.eu -all", "created_at":"2026-10-13T12:58:36.790433Z", "updated_at":"2026-10-13T12:58:36.790433Z"}, "submission":{"id":"21b7a795-5cef-4ab0-a03c-17dcc89c8f36", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "status":"unknown_status", "level":"recommended", "dns_type":"srv_dns_type", "dns_name":"_submissions._tcp.tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com.", "dns_value":"0 1 465 smtp.mailbox.scw.eu.", "created_at":"2026-10-13T12:58:37.771088Z", "updated_at":"2026-10-13T12:58:37.771088Z"}}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_validation", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:01.019107Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 5257
-        duration: 127.517542ms
+        content_length: 512
+        duration: 230.669958ms
         headers:
             Content-Length:
-                - "5257"
+                - "512"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:58:42 GMT
+                - Thu, 12 Nov 2026 10:57:04 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -235,53 +235,91 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 0cfeb550-02a7-4ab7-a4ea-07801cb9dcc6
+                - 154fcd43-f494-4f6f-b717-932e58380f8f
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         status: 200 OK
     - id: 6
       request:
-        body: '{"changes":[{"add":{"records":[{"data":"scaleway-mailbox=de1e44e6-ff8c-4ab4-a686-379f8d891f5a","name":"","priority":0,"ttl":3600,"type":"TXT","comment":null,"id":"","updated_at":null},{"data":"smtp.mailbox.scw.eu.","name":"","priority":10,"ttl":3600,"type":"MX","comment":null,"id":"","updated_at":null},{"data":"v=DMARC1; p=none","name":"_dmarc","priority":0,"ttl":3600,"type":"TXT","comment":null,"id":"","updated_at":null},{"data":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3ZBGahTpWdAs3V8JjxibTrt9hzJvJGD9D+n6673cl44kNSHkjTtUQ+ZJ/2JIb5lIf332U9vouHd9E6OiqAOoF/jl7J7niJvtRGMbzwemZu4jmLoG+iviVJhLDYOJ0cNPADOkMZiu5L3A1a1tyPSi/CVnNRGNZ8tDLKzag3sS1JKLk+bPB/UyeSRO7ir8V+yWF5VpsLvsveB+b0kts/XCV2MSRh54RUrdGoA73GizgcrL4BkoLbEM5Tt/XRNanXMsgGz21QJG9FR9xVyGJRa7sQ+4MEvb1dVN5ailed8J9ymmjGE7uu5xmpbbzV5wsgvftHj+CzraOI+mJ22NZOG+owIDAQAB","name":"scw-mbox._domainkey","priority":0,"ttl":3600,"type":"TXT","comment":null,"id":"","updated_at":null},{"data":"v=spf1 include:spf.mailbox.scw.eu -all","name":"","priority":0,"ttl":3600,"type":"TXT","comment":null,"id":"","updated_at":null}]}}],"return_all_records":false,"disallow_new_zone_creation":false}'
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5/records
+      response:
+        body: '{"autoconfig":{"id":"2b695471-0ec2-4066-a6e0-f430a1e17205", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"recommended", "dns_type":"cname_dns_type", "dns_name":"autoconfig.tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"autoconfig.mailbox.scw.eu.", "created_at":"2026-11-12T10:57:00.852694Z", "updated_at":"2026-11-12T10:57:00.852694Z"}, "autodiscover":{"id":"76ce59a9-4205-4311-8f54-ae4735bf657a", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"recommended", "dns_type":"cname_dns_type", "dns_name":"autodiscover.tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"autodiscover.mailbox.scw.eu.", "created_at":"2026-11-12T10:57:00.935932Z", "updated_at":"2026-11-12T10:57:00.935932Z"}, "caldav":{"id":"93d72ca1-3626-48da-b336-1eeb550deb4d", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"optional", "dns_type":"srv_dns_type", "dns_name":"_caldavs._tcp.tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"0 1 443 caldav.mailbox.scw.eu.", "created_at":"2026-11-12T10:57:00.411828Z", "updated_at":"2026-11-12T10:57:00.411828Z"}, "carddav":{"id":"d3d644a2-709a-4b08-b551-92350586863c", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"optional", "dns_type":"srv_dns_type", "dns_name":"_carddavs._tcp.tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"0 1 443 carddav.mailbox.scw.eu.", "created_at":"2026-11-12T10:57:00.500925Z", "updated_at":"2026-11-12T10:57:00.500925Z"}, "dkim":{"id":"233f9daf-9517-49d2-9e0a-c33b653f282f", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"required", "dns_type":"txt_dns_type", "dns_name":"scw-mbox._domainkey.tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsfnBxkrg0hW6HQRZCGBpNIRL+Y8pRUte32h8OqK/IYgZSIXDnfvb6tuT9yZf7RgNxrLpCSNhNlK6vSjSoEyGAdgwmXr0NMn6puKvNdDB3nF0Oc0SSrZWafSQ4f/181A6iejFE3olfmVTY20eh0ScjODJlg9o5aRidKwD7t8oIHn7pw8n25y7ZihsSNykD0LGB0yxxjft7++0CvLp0HMw7/aUKt7k//X98ecFrqH58rJnJy+BfRZJQRUhvse/FRiThZVyGoEMD/1yvgxLiCD23kCeWFOc7YYbwQqEonGJIx1o6VRfoisRaYesDfy13/eWLKScSFT11XumljoNgWmTpwIDAQAB", "created_at":"2026-11-12T10:57:00.050266Z", "updated_at":"2026-11-12T10:57:00.050266Z"}, "dmarc":{"id":"65a09f73-ea0a-4162-9ab3-f37219b9a1ac", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"required", "dns_type":"txt_dns_type", "dns_name":"_dmarc.tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"v=DMARC1; p=none", "created_at":"2026-11-12T10:57:00.137934Z", "updated_at":"2026-11-12T10:57:00.137934Z"}, "domain_validation":{"id":"fc57bb9b-fad4-441c-bfbd-04727f1e10a2", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"required", "dns_type":"txt_dns_type", "dns_name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"scaleway-mailbox=9476b7cc-ba4f-43f2-90aa-34f43718f54f", "created_at":"2026-11-12T10:56:59.712229Z", "updated_at":"2026-11-12T10:56:59.712229Z"}, "imap":{"id":"78331b04-78d1-4a73-b08a-5b528697d87f", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"recommended", "dns_type":"srv_dns_type", "dns_name":"_imaps._tcp.tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"0 1 993 imap.mailbox.scw.eu.", "created_at":"2026-11-12T10:57:00.586423Z", "updated_at":"2026-11-12T10:57:00.586423Z"}, "mx":{"id":"ecb12826-0121-4cef-8144-ecfb911cea62", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"required", "dns_type":"mx_dns_type", "dns_name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"10 smtp.mailbox.scw.eu.", "created_at":"2026-11-12T10:57:00.234052Z", "updated_at":"2026-11-12T10:57:00.234052Z"}, "pop3":{"id":"8367cedf-e375-4918-ac5d-864a1b774b46", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"recommended", "dns_type":"srv_dns_type", "dns_name":"_pop3s._tcp.tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"0 1 995 pop3.mailbox.scw.eu.", "created_at":"2026-11-12T10:57:00.674139Z", "updated_at":"2026-11-12T10:57:00.674139Z"}, "spf":{"id":"3d428aef-782c-4e86-b8d4-3d5310b5bb79", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"required", "dns_type":"txt_dns_type", "dns_name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"v=spf1 include:spf.mailbox.scw.eu -all", "created_at":"2026-11-12T10:56:59.810818Z", "updated_at":"2026-11-12T10:56:59.810818Z"}, "submission":{"id":"09020e1a-313b-477b-9082-c80109935d98", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "status":"unknown_status", "level":"recommended", "dns_type":"srv_dns_type", "dns_name":"_submissions._tcp.tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com.", "dns_value":"0 1 465 smtp.mailbox.scw.eu.", "created_at":"2026-11-12T10:57:00.763357Z", "updated_at":"2026-11-12T10:57:00.763357Z"}}'
+        code: 200
+        content_length: 5233
+        duration: 305.916833ms
+        headers:
+            Content-Length:
+                - "5233"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 10:57:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 4be71bcc-e8d5-495d-98c3-dab8b8776192
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 7
+      request:
+        body: '{"changes":[{"add":{"records":[{"data":"scaleway-mailbox=9476b7cc-ba4f-43f2-90aa-34f43718f54f","name":"","priority":0,"ttl":3600,"type":"TXT","comment":null,"id":"","updated_at":null},{"data":"smtp.mailbox.scw.eu.","name":"","priority":10,"ttl":3600,"type":"MX","comment":null,"id":"","updated_at":null},{"data":"v=DMARC1; p=none","name":"_dmarc","priority":0,"ttl":3600,"type":"TXT","comment":null,"id":"","updated_at":null},{"data":"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsfnBxkrg0hW6HQRZCGBpNIRL+Y8pRUte32h8OqK/IYgZSIXDnfvb6tuT9yZf7RgNxrLpCSNhNlK6vSjSoEyGAdgwmXr0NMn6puKvNdDB3nF0Oc0SSrZWafSQ4f/181A6iejFE3olfmVTY20eh0ScjODJlg9o5aRidKwD7t8oIHn7pw8n25y7ZihsSNykD0LGB0yxxjft7++0CvLp0HMw7/aUKt7k//X98ecFrqH58rJnJy+BfRZJQRUhvse/FRiThZVyGoEMD/1yvgxLiCD23kCeWFOc7YYbwQqEonGJIx1o6VRfoisRaYesDfy13/eWLKScSFT11XumljoNgWmTpwIDAQAB","name":"scw-mbox._domainkey","priority":0,"ttl":3600,"type":"TXT","comment":null,"id":"","updated_at":null},{"data":"v=spf1 include:spf.mailbox.scw.eu -all","name":"","priority":0,"ttl":3600,"type":"TXT","comment":null,"id":"","updated_at":null}]}}],"return_all_records":false,"disallow_new_zone_creation":false}'
         content_length: 1169
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: PATCH
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/domain/v2beta1/dns-zones/tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com/records
+        url: https://api.scaleway.com/domain/v2beta1/dns-zones/tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com/records
       response:
-        body: '{"records":[{"id":"9dfc4a33-0293-4e7b-8fd5-25cca1cfb2e5", "data":"\"scaleway-mailbox=de1e44e6-ff8c-4ab4-a686-379f8d891f5a\"", "name":"", "priority":0, "ttl":3600, "type":"TXT", "comment":null, "updated_at":"2026-10-13T12:58:42Z"}, {"id":"4ecee62e-10d8-419d-a843-f44d539f01ab", "data":"10 smtp.mailbox.scw.eu.", "name":"", "priority":10, "ttl":3600, "type":"MX", "comment":null, "updated_at":"2026-10-13T12:58:42Z"}, {"id":"afd0426e-a8eb-457d-99fc-f6a0dbcf8ba9", "data":"\"v=DMARC1; p=none\"", "name":"_dmarc", "priority":0, "ttl":3600, "type":"TXT", "comment":null, "updated_at":"2026-10-13T12:58:42Z"}, {"id":"f144a868-996c-4b2b-ae85-bb5c219f15b6", "data":"\"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3ZBGahTpWdAs3V8JjxibTrt9hzJvJGD9D+n6673cl44kNSHkjTtUQ+ZJ/2JIb5lIf332U9vouHd9E6OiqAOoF/jl7J7niJvtRGMbzwemZu4jmLoG+iviVJhLDYOJ0cNPADOkMZiu5L3A1a1tyPSi/CVnNRGNZ8tDLKzag3sS1JKLk+bPB/UyeSRO7ir8V+yWF5VpsLvsveB+b0kts/XCV2MSRh54RUrdGoA73GizgcrL4BkoLbEM5Tt/XRNanXMsgGz21QJG9FR9xVyGJRa7sQ+4MEvb1dVN5ailed8J9ymmjGE7uu5xmpbbzV5wsgvftHj+CzraOI+mJ22NZOG+owIDAQAB\"", "name":"scw-mbox._domainkey", "priority":0, "ttl":3600, "type":"TXT", "comment":null, "updated_at":"2026-10-13T12:58:42Z"}, {"id":"204a19ad-ef63-4588-ad21-3b4f1639350d", "data":"\"v=spf1 include:spf.mailbox.scw.eu -all\"", "name":"", "priority":0, "ttl":3600, "type":"TXT", "comment":null, "updated_at":"2026-10-13T12:58:42Z"}]}'
+        body: '{"records":[{"id":"bd7a6b53-c12e-45a5-a14e-bb9ca954045d", "data":"\"scaleway-mailbox=9476b7cc-ba4f-43f2-90aa-34f43718f54f\"", "name":"", "priority":0, "ttl":3600, "type":"TXT", "comment":null, "updated_at":"2026-11-12T10:57:05Z"}, {"id":"1cdff564-27de-4a8f-ae55-dbb0e4c93c19", "data":"10 smtp.mailbox.scw.eu.", "name":"", "priority":10, "ttl":3600, "type":"MX", "comment":null, "updated_at":"2026-11-12T10:57:05Z"}, {"id":"3e944a9d-c17e-4e4f-8032-ce78888df2eb", "data":"\"v=DMARC1; p=none\"", "name":"_dmarc", "priority":0, "ttl":3600, "type":"TXT", "comment":null, "updated_at":"2026-11-12T10:57:05Z"}, {"id":"4680e17b-fac6-4210-ad77-63e14125abbd", "data":"\"v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsfnBxkrg0hW6HQRZCGBpNIRL+Y8pRUte32h8OqK/IYgZSIXDnfvb6tuT9yZf7RgNxrLpCSNhNlK6vSjSoEyGAdgwmXr0NMn6puKvNdDB3nF0Oc0SSrZWafSQ4f/181A6iejFE3olfmVTY20eh0ScjODJlg9o5aRidKwD7t8oIHn7pw8n25y7ZihsSNykD0LGB0yxxjft7++0CvLp0HMw7/aUKt7k//X98ecFrqH58rJnJy+BfRZJQRUhvse/FRiThZVyGoEMD/1yvgxLiCD23kCeWFOc7YYbwQqEonGJIx1o6VRfoisRaYesDfy13/eWLKScSFT11XumljoNgWmTpwIDAQAB\"", "name":"scw-mbox._domainkey", "priority":0, "ttl":3600, "type":"TXT", "comment":null, "updated_at":"2026-11-12T10:57:05Z"}, {"id":"aa9bc321-12cd-491c-9136-6026decdd788", "data":"\"v=spf1 include:spf.mailbox.scw.eu -all\"", "name":"", "priority":0, "ttl":3600, "type":"TXT", "comment":null, "updated_at":"2026-11-12T10:57:05Z"}]}'
         code: 200
         content_length: 1413
-        duration: 217.51025ms
+        duration: 507.125ms
         headers:
             Content-Length:
                 - "1413"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:58:42 GMT
+                - Thu, 12 Nov 2026 10:57:05 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "48"
+                - "49"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 565143e1-70ba-4854-bb59-c6967920b39b
+                - 1b1c4b44-73a0-4492-9540-6e448d767e46
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         status: 200 OK
-    - id: 7
+    - id: 8
       request:
         body: '{}'
         content_length: 2
@@ -289,99 +327,23 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: POST
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5/validate-records
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5/validate-records
       response:
         body: ""
         code: 204
         content_length: 0
-        duration: 327.724541ms
+        duration: 284.295333ms
         headers:
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:58:42 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "47"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 50a0b9ef-e928-4609-9738-3546163786a4
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 204 No Content
-    - id: 8
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5
-      response:
-        body: '{"id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"validating", "mailbox_total_count":0, "created_at":"2026-10-13T12:58:36.395703Z", "updated_at":"2026-10-13T12:58:42.361009Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
-        code: 200
-        content_length: 506
-        duration: 163.927458ms
-        headers:
-            Content-Length:
-                - "506"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 12:58:42 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "48"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - dc0d9e1a-8948-4e25-bf8f-db34eee0f55d
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 9
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5
-      response:
-        body: '{"id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"validating", "mailbox_total_count":0, "created_at":"2026-10-13T12:58:36.395703Z", "updated_at":"2026-10-13T12:58:42.361009Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
-        code: 200
-        content_length: 506
-        duration: 174.160958ms
-        headers:
-            Content-Length:
-                - "506"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 12:58:47 GMT
+                - Thu, 12 Nov 2026 10:57:05 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -391,7 +353,45 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 6f0afdeb-9dd2-493e-b6c4-ef5961162bb2
+                - 0f88dca7-c3f6-41cc-8b69-26b7986a926e
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 204 No Content
+    - id: 9
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
+      response:
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"validating", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:05.819592Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
+        code: 200
+        content_length: 504
+        duration: 179.390541ms
+        headers:
+            Content-Length:
+                - "504"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 10:57:06 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - bfe33092-6fdf-4c0b-8fa3-768ede7fb407
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -401,64 +401,102 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
       response:
-        body: '{"id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_validation", "mailbox_total_count":0, "created_at":"2026-10-13T12:58:36.395703Z", "updated_at":"2026-10-13T12:58:49.486691Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"validating", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:05.819592Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 514
-        duration: 162.306666ms
+        content_length: 504
+        duration: 38.110667ms
         headers:
             Content-Length:
-                - "514"
+                - "504"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:58:53 GMT
+                - Thu, 12 Nov 2026 10:57:11 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "48"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 39fc45a7-148d-419a-aa4d-4036b29531b6
+                - 79c217c5-41a1-4e96-b7d3-f5f3d70aa003
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         status: 200 OK
     - id: 11
       request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
+      response:
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_validation", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:11.937047Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
+        code: 200
+        content_length: 512
+        duration: 146.834333ms
+        headers:
+            Content-Length:
+                - "512"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 10:57:16 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 051136b1-e395-4c68-beec-d51f5a36cdec
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 12
+      request:
         body: '{}'
         content_length: 2
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: POST
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5/validate-records
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5/validate-records
       response:
         body: ""
         code: 204
         content_length: 0
-        duration: 424.627667ms
+        duration: 182.636291ms
         headers:
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:58:53 GMT
+                - Thu, 12 Nov 2026 10:57:16 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -468,112 +506,112 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 7676b062-f2d5-43c0-b66a-769e2853332f
+                - 27181452-f70e-4cbf-9992-02f1289b9435
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         status: 204 No Content
-    - id: 12
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5
-      response:
-        body: '{"id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"validating", "mailbox_total_count":0, "created_at":"2026-10-13T12:58:36.395703Z", "updated_at":"2026-10-13T12:58:53.205689Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
-        code: 200
-        content_length: 506
-        duration: 134.475ms
-        headers:
-            Content-Length:
-                - "506"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 12:58:58 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 4bd3179e-be72-49ee-82a8-8c08b10f604d
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
     - id: 13
       request:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
       response:
-        body: '{"id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_validation", "mailbox_total_count":0, "created_at":"2026-10-13T12:58:36.395703Z", "updated_at":"2026-10-13T12:58:59.090952Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"validating", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:16.462644Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 514
-        duration: 306.940542ms
+        content_length: 504
+        duration: 43.144583ms
         headers:
             Content-Length:
-                - "514"
+                - "504"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:03 GMT
+                - Thu, 12 Nov 2026 10:57:21 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "48"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 04e39cb4-5a16-433e-a6ba-1aec7b8f3e51
+                - 474167fd-eef4-409a-b838-1b2b2d54d891
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         status: 200 OK
     - id: 14
       request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
+      response:
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_validation", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:21.876496Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
+        code: 200
+        content_length: 512
+        duration: 206.411125ms
+        headers:
+            Content-Length:
+                - "512"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 10:57:26 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 6f19a2dd-3904-4c67-9763-70c09a23bf02
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 15
+      request:
         body: '{}'
         content_length: 2
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: POST
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5/validate-records
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5/validate-records
       response:
         body: ""
         code: 204
         content_length: 0
-        duration: 171.46075ms
+        duration: 191.419708ms
         headers:
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:04 GMT
+                - Thu, 12 Nov 2026 10:57:26 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -583,73 +621,35 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - da9156ba-fe7b-4cb5-8e56-3c7b04e861dc
+                - 0c55c7fe-a981-449a-8c34-ff51597947a9
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         status: 204 No Content
-    - id: 15
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5
-      response:
-        body: '{"id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"validating", "mailbox_total_count":0, "created_at":"2026-10-13T12:58:36.395703Z", "updated_at":"2026-10-13T12:59:04.060621Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
-        code: 200
-        content_length: 506
-        duration: 233.332458ms
-        headers:
-            Content-Length:
-                - "506"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 12:59:09 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - a051cce6-8dc6-4cf8-bf4a-d4cb101b0c38
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
     - id: 16
       request:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e735d3f3-ab77-4f10-8a43-2b6e852140a5
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
       response:
-        body: '{"id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"ready", "mailbox_total_count":0, "created_at":"2026-10-13T12:58:36.395703Z", "updated_at":"2026-10-13T12:59:11.182445Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"validating", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:26.900232Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 501
-        duration: 167.513875ms
+        content_length: 504
+        duration: 162.438584ms
         headers:
             Content-Length:
-                - "501"
+                - "504"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:14 GMT
+                - Thu, 12 Nov 2026 10:57:32 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -659,114 +659,112 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 2fc9e590-f2b1-4ab9-a7ce-8f2a507203f0
+                - a8c0bb65-1671-4ab8-aed9-31a12795d8c0
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         status: 200 OK
     - id: 17
       request:
-        body: '{"domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5","mailboxes":[{"local_part":"alias.owner","password":"xxxxxxxx"}],"subscription_period":"monthly"}'
-        content_length: 156
+        content_length: 0
         headers:
-            Content-Type:
-                - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
-        method: POST
+        method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/batch-create-mailboxes
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
       response:
-        body: '{"mailboxes":[{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}]}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_validation", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:32.411733Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 628
-        duration: 314.1335ms
+        content_length: 512
+        duration: 173.395542ms
         headers:
             Content-Length:
-                - "628"
+                - "512"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:15 GMT
+                - Thu, 12 Nov 2026 10:57:37 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "47"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - cd66a581-7b51-4ca2-bf28-7ca6e95d98e7
+                - c126e675-fa0a-4e1f-9729-5a9b5bb0b80f
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         status: 200 OK
     - id: 18
       request:
-        content_length: 0
+        body: '{}'
+        content_length: 2
         headers:
+            Content-Type:
+                - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
-        method: GET
+        method: POST
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5/validate-records
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
-        code: 200
-        content_length: 612
-        duration: 168.42775ms
+        body: ""
+        code: 204
+        content_length: 0
+        duration: 172.83625ms
         headers:
-            Content-Length:
-                - "612"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:15 GMT
+                - Thu, 12 Nov 2026 10:57:37 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "47"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - f31f8768-6a94-48ae-9e5b-2c031b544872
+                - 10c1196b-42ed-469e-8dcc-80d18ad4aea4
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        status: 200 OK
+        status: 204 No Content
     - id: 19
       request:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"validating", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:37.419805Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 612
-        duration: 130.447833ms
+        content_length: 504
+        duration: 148.656167ms
         headers:
             Content-Length:
-                - "612"
+                - "504"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:20 GMT
+                - Thu, 12 Nov 2026 10:57:42 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -776,7 +774,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 2474bd17-4159-4114-b3de-9f1656577155
+                - a10f940d-bd91-4935-b523-92349a361c3d
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -786,25 +784,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_validation", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:42.974091Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 612
-        duration: 152.877292ms
+        content_length: 512
+        duration: 167.409875ms
         headers:
             Content-Length:
-                - "612"
+                - "512"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:25 GMT
+                - Thu, 12 Nov 2026 10:57:47 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -814,73 +812,74 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - fe059b40-c6cf-4e4f-b552-a4ae46bb2a2e
+                - b84147ed-8fc9-4300-aa17-a17ca1595150
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         status: 200 OK
     - id: 21
       request:
-        content_length: 0
+        body: '{}'
+        content_length: 2
         headers:
+            Content-Type:
+                - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
-        method: GET
+        method: POST
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5/validate-records
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
-        code: 200
-        content_length: 612
-        duration: 96.022375ms
+        body: ""
+        code: 204
+        content_length: 0
+        duration: 249.147625ms
         headers:
-            Content-Length:
-                - "612"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:30 GMT
+                - Thu, 12 Nov 2026 10:57:48 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "48"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 266b73b3-898a-4d7a-8998-854715b0e2eb
+                - 321f7644-0ec4-49ef-b834-87677cac58d5
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        status: 200 OK
+        status: 204 No Content
     - id: 22
       request:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"validating", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:47.981112Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 612
-        duration: 581.343ms
+        content_length: 504
+        duration: 178.656125ms
         headers:
             Content-Length:
-                - "612"
+                - "504"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:36 GMT
+                - Thu, 12 Nov 2026 10:57:53 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -890,7 +889,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 38d9b456-2b98-4de6-aa23-98aeea177c1d
+                - 5e74a5f6-e85d-4174-91d7-651e705da2f5
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -900,63 +899,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/domains/e7b026be-8a64-40bf-beff-309e41d15ac5
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"ready", "mailbox_total_count":0, "created_at":"2026-11-12T10:56:59.412406Z", "updated_at":"2026-11-12T10:57:55.721596Z", "webmail_url":"https://mailbox.scw.eu", "imap_url":"imap.mailbox.scw.eu", "pop3_url":"pop3.mailbox.scw.eu", "smtp_url":"smtp.mailbox.scw.eu"}'
         code: 200
-        content_length: 612
-        duration: 36.290666ms
+        content_length: 499
+        duration: 146.585959ms
         headers:
             Content-Length:
-                - "612"
+                - "499"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:41 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "47"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 811fa878-b1f7-4f8a-9212-7c9ebeef98af
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 24
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
-      response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
-        code: 200
-        content_length: 612
-        duration: 161.404ms
-        headers:
-            Content-Length:
-                - "612"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 12:59:46 GMT
+                - Thu, 12 Nov 2026 10:57:58 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -966,7 +927,48 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - bf134c04-2b82-4db0-b6bc-ab77765305a8
+                - cb3cd734-3436-4c2b-a6ae-457777bbfd91
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 24
+      request:
+        body: '{"domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5","subscription_period":"monthly","mailboxes":[{"password":"xxxxxxxx","local_part":"alias.owner"}]}'
+        content_length: 156
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: POST
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/batch-create-mailboxes
+      response:
+        body: '{"mailboxes":[{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}]}'
+        code: 200
+        content_length: 626
+        duration: 301.40775ms
+        headers:
+            Content-Length:
+                - "626"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:04:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 879c8cb3-a066-4346-83f4-fb9b023ee257
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -976,35 +978,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 156.899917ms
+        content_length: 610
+        duration: 151.155583ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:51 GMT
+                - Thu, 12 Nov 2026 11:04:09 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "47"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 5e9b1ac7-9987-49bb-a3e9-caaf02a68d76
+                - 2c72ebb3-6178-46d2-ba04-946a2789d84b
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1014,25 +1016,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 184.759375ms
+        content_length: 610
+        duration: 42.840875ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 12:59:56 GMT
+                - Thu, 12 Nov 2026 11:04:14 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -1042,7 +1044,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - e35c12df-b767-4bb7-8976-eb467ec0b41f
+                - 8dbfd745-0da5-48c2-992b-b765bccda28f
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1052,25 +1054,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 34.798042ms
+        content_length: 610
+        duration: 37.966208ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:01 GMT
+                - Thu, 12 Nov 2026 11:04:19 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -1080,7 +1082,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - e01995f2-89d2-4b95-b4eb-26fc6a859f52
+                - ed9babd7-abff-412c-bc0f-bdd6a6103f9f
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1090,35 +1092,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 152.077834ms
+        content_length: 610
+        duration: 458.6465ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:07 GMT
+                - Thu, 12 Nov 2026 11:04:25 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "47"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - fdb56b50-f1c1-4ccd-857b-977db74ebb18
+                - 16d5043e-ed4b-450b-883a-29d24457db82
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1128,35 +1130,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 183.145875ms
+        content_length: 610
+        duration: 34.317ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:12 GMT
+                - Thu, 12 Nov 2026 11:04:30 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "47"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - f2f274b3-8529-4523-ba47-b3617e54d1b3
+                - 2a5ac346-4fec-4695-a4d2-edff9a489ae9
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1166,25 +1168,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 135.198416ms
+        content_length: 610
+        duration: 32.784333ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:17 GMT
+                - Thu, 12 Nov 2026 11:04:35 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -1194,7 +1196,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - fbb3b270-2005-478a-8f95-37a40db9fe65
+                - eaa3e3a0-9e46-49c9-8222-9571446de013
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1204,35 +1206,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 157.414417ms
+        content_length: 610
+        duration: 53.566ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:22 GMT
+                - Thu, 12 Nov 2026 11:04:40 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "45"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - cca3c5b6-4bf4-4147-aa84-230e32a6dfc1
+                - 633e2518-6da6-4e4c-aca8-44d398565189
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1242,35 +1244,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 162.116333ms
+        content_length: 610
+        duration: 95.181083ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:27 GMT
+                - Thu, 12 Nov 2026 11:04:45 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "47"
+                - "48"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - d9c5c0ee-73a0-4be5-8b6c-fdbf117e0d5e
+                - fd6da44f-3034-4eb0-82bc-d65efef42bb4
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1280,25 +1282,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 288.881166ms
+        content_length: 610
+        duration: 41.864584ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:32 GMT
+                - Thu, 12 Nov 2026 11:04:50 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -1308,7 +1310,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - c7025cc2-df72-40fb-b6e1-ea4340883699
+                - aba1c5a7-098f-48ee-9c1d-bbb3f0ab6a60
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1318,25 +1320,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 193.655667ms
+        content_length: 610
+        duration: 48.185958ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:38 GMT
+                - Thu, 12 Nov 2026 11:04:55 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -1346,7 +1348,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - e5f4d14a-9213-43ec-ae61-b231ea3424c1
+                - bd200a7f-d5bf-49dc-b8eb-74202e65ff52
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1356,25 +1358,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 241.532959ms
+        content_length: 610
+        duration: 54.619333ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:43 GMT
+                - Thu, 12 Nov 2026 11:05:00 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -1384,7 +1386,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 3c1b403f-a32a-4274-bd82-b8c508b60ddd
+                - 7f61fde9-bc05-4c52-a09d-c53b2560988d
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1394,25 +1396,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:04:09.273222Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 241.36225ms
+        content_length: 610
+        duration: 34.089875ms
         headers:
             Content-Length:
-                - "612"
+                - "610"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:48 GMT
+                - Thu, 12 Nov 2026 11:05:05 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -1422,7 +1424,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - e05bb250-7e7d-45f6-90ec-230890bcd092
+                - d74ace29-5dc4-4ce1-9735-8c458b99060f
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1432,35 +1434,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"creating", "subscription_period":"monthly", "subscription_period_started_at":"2026-11-12T11:05:08Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-12-12T11:05:08Z", "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:05:10.211808Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 323.914208ms
+        content_length: 639
+        duration: 60.825708ms
         headers:
             Content-Length:
-                - "612"
+                - "639"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:53 GMT
+                - Thu, 12 Nov 2026 11:05:10 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "46"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - e33b34d7-080a-4ebe-ada0-93867b5b5c21
+                - 7e9362c7-b0fb-4d05-87a4-f3750762bccd
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1470,487 +1472,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"ready", "subscription_period":"monthly", "subscription_period_started_at":"2026-11-12T11:05:08Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-12-12T11:05:08Z", "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:05:11.144462Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 612
-        duration: 38.46075ms
+        content_length: 636
+        duration: 65.308834ms
         headers:
             Content-Length:
-                - "612"
+                - "636"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:00:59 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 8320a25b-429e-48f1-b00e-46f7ddbdd60d
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 39
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
-      response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"waiting_payment", "subscription_period":"unknown_subscription_period", "subscription_period_started_at":null, "next_subscription_period":"monthly", "next_subscription_period_starts_at":null, "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T12:59:15.092916Z", "deletion_scheduled_at":null}'
-        code: 200
-        content_length: 612
-        duration: 144.799125ms
-        headers:
-            Content-Length:
-                - "612"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:04 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "48"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - b53f57a2-9e94-42f0-986d-18ebffa2626e
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 40
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
-      response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"ready", "subscription_period":"monthly", "subscription_period_started_at":"2026-10-13T13:01:06Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-11-13T13:01:06Z", "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T13:01:07.616517Z", "deletion_scheduled_at":null}'
-        code: 200
-        content_length: 638
-        duration: 114.8505ms
-        headers:
-            Content-Length:
-                - "638"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:09 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 21180bac-a918-4a6c-b899-8439af3a57d4
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 41
-      request:
-        body: '{"local_part":"contact","mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61","description":"Public contact address"}'
-        content_length: 115
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: POST
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases
-      response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Public contact address", "status":"provisioning", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:09.378280Z"}'
-        code: 200
-        content_length: 332
-        duration: 181.100084ms
-        headers:
-            Content-Length:
-                - "332"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:09 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - ccef1c35-9297-4113-8f5f-0c9a14ddbc5f
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 42
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
-      response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Public contact address", "status":"provisioning", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:09.378280Z"}'
-        code: 200
-        content_length: 332
-        duration: 173.6755ms
-        headers:
-            Content-Length:
-                - "332"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:09 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "48"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - c1b5424b-1b70-47aa-86f9-934168bed228
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 43
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
-      response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Public contact address", "status":"ready", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:10.211806Z"}'
-        code: 200
-        content_length: 325
-        duration: 29.08925ms
-        headers:
-            Content-Length:
-                - "325"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:14 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - e6888851-3a03-4c16-93fd-2c05be455b42
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 44
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
-      response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Public contact address", "status":"ready", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:10.211806Z"}'
-        code: 200
-        content_length: 325
-        duration: 138.376875ms
-        headers:
-            Content-Length:
-                - "325"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:14 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - f4b31047-e087-414a-bde5-eaf145cabc50
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 45
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
-      response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"ready", "subscription_period":"monthly", "subscription_period_started_at":"2026-10-13T13:01:06Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-11-13T13:01:06Z", "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T13:01:07.616517Z", "deletion_scheduled_at":null}'
-        code: 200
-        content_length: 638
-        duration: 152.428208ms
-        headers:
-            Content-Length:
-                - "638"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:15 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 73b0c500-d9c3-4c9f-bae2-41ce44d6378a
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 46
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
-      response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Public contact address", "status":"ready", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:10.211806Z"}'
-        code: 200
-        content_length: 325
-        duration: 27.486458ms
-        headers:
-            Content-Length:
-                - "325"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:15 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 1e9aa0df-bc07-4856-8f02-20a041f7c197
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 47
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
-      response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"ready", "subscription_period":"monthly", "subscription_period_started_at":"2026-10-13T13:01:06Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-11-13T13:01:06Z", "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T13:01:07.616517Z", "deletion_scheduled_at":null}'
-        code: 200
-        content_length: 638
-        duration: 149.021583ms
-        headers:
-            Content-Length:
-                - "638"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:15 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "48"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 91b24c31-6938-432b-ad6c-7ac4ef8f945f
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 48
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
-      response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Public contact address", "status":"ready", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:10.211806Z"}'
-        code: 200
-        content_length: 325
-        duration: 128.538667ms
-        headers:
-            Content-Length:
-                - "325"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:15 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 66d0b75f-700e-4b48-934b-ada8110db512
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 49
-      request:
-        body: '{"description":"Updated contact address"}'
-        content_length: 41
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: PATCH
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
-      response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Updated contact address", "status":"ready", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:15.978499Z"}'
-        code: 200
-        content_length: 326
-        duration: 183.355167ms
-        headers:
-            Content-Length:
-                - "326"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:16 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "48"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - 3753eab4-62b3-4175-9f0c-9ed1805f0143
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 200 OK
-    - id: 50
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
-      response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Updated contact address", "status":"ready", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:15.978499Z"}'
-        code: 200
-        content_length: 326
-        duration: 34.004ms
-        headers:
-            Content-Length:
-                - "326"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:16 GMT
+                - Thu, 12 Nov 2026 11:05:15 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -1960,7 +1500,469 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - a8be470a-9c49-4deb-b67a-d923681dc85f
+                - 4a0a07d7-0def-48be-ba46-b3fed70977a8
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 39
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa/forwarding
+      response:
+        body: '{"mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "keep_copy":false, "enabled":false, "created_at":"2026-11-12T11:04:09.243529Z", "updated_at":"2026-11-12T11:04:09.243529Z"}'
+        code: 200
+        content_length: 177
+        duration: 155.437875ms
+        headers:
+            Content-Length:
+                - "177"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:15 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - ea6a4e6d-7467-4d2a-86fe-b3d63e5587b0
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 40
+      request:
+        body: '{"local_part":"contact","mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa","description":"Public contact address"}'
+        content_length: 115
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: POST
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases
+      response:
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Public contact address", "status":"provisioning", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:15.818113Z"}'
+        code: 200
+        content_length: 330
+        duration: 294.992292ms
+        headers:
+            Content-Length:
+                - "330"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:16 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "44"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - ddab2441-7e81-4ae5-9326-7cf4fbfac092
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 41
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
+      response:
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Public contact address", "status":"provisioning", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:15.818113Z"}'
+        code: 200
+        content_length: 330
+        duration: 36.568292ms
+        headers:
+            Content-Length:
+                - "330"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:16 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "41"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 7b814925-7b8f-4ca5-9158-d971dbc139c9
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 42
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
+      response:
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Public contact address", "status":"ready", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:18.516259Z"}'
+        code: 200
+        content_length: 323
+        duration: 64.069542ms
+        headers:
+            Content-Length:
+                - "323"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 3871f084-1ff9-4fe8-8e40-8d150e9d0726
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 43
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
+      response:
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Public contact address", "status":"ready", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:18.516259Z"}'
+        code: 200
+        content_length: 323
+        duration: 98.397666ms
+        headers:
+            Content-Length:
+                - "323"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 606fb3d9-4fd2-4532-87f5-1356cb68d5aa
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 44
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
+      response:
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"ready", "subscription_period":"monthly", "subscription_period_started_at":"2026-11-12T11:05:08Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-12-12T11:05:08Z", "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:05:11.144462Z", "deletion_scheduled_at":null}'
+        code: 200
+        content_length: 636
+        duration: 39.53825ms
+        headers:
+            Content-Length:
+                - "636"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 7d7b2c14-444a-4822-8954-cddc1bc3e287
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 45
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa/forwarding
+      response:
+        body: '{"mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "keep_copy":false, "enabled":false, "created_at":"2026-11-12T11:04:09.243529Z", "updated_at":"2026-11-12T11:04:09.243529Z"}'
+        code: 200
+        content_length: 177
+        duration: 204.131083ms
+        headers:
+            Content-Length:
+                - "177"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 845dc5ad-4e04-4a45-a741-adaf7e2e1d1a
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 46
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
+      response:
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Public contact address", "status":"ready", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:18.516259Z"}'
+        code: 200
+        content_length: 323
+        duration: 36.710333ms
+        headers:
+            Content-Length:
+                - "323"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 15a57c00-3f4a-4553-acc5-26f801dfc429
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 47
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
+      response:
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"ready", "subscription_period":"monthly", "subscription_period_started_at":"2026-11-12T11:05:08Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-12-12T11:05:08Z", "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:05:11.144462Z", "deletion_scheduled_at":null}'
+        code: 200
+        content_length: 636
+        duration: 40.781792ms
+        headers:
+            Content-Length:
+                - "636"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:22 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 0f91a0b6-9db9-4807-b62e-168e35381216
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 48
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa/forwarding
+      response:
+        body: '{"mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "keep_copy":false, "enabled":false, "created_at":"2026-11-12T11:04:09.243529Z", "updated_at":"2026-11-12T11:04:09.243529Z"}'
+        code: 200
+        content_length: 177
+        duration: 62.482834ms
+        headers:
+            Content-Length:
+                - "177"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:22 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 6b51831d-77ac-42c1-bd9c-1812751c04a8
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 49
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
+      response:
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Public contact address", "status":"ready", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:18.516259Z"}'
+        code: 200
+        content_length: 323
+        duration: 47.973583ms
+        headers:
+            Content-Length:
+                - "323"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:22 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 0c4544a1-c56f-4b2d-bf97-e4cde0bca010
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 50
+      request:
+        body: '{"description":"Updated contact address"}'
+        content_length: 41
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: PATCH
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
+      response:
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Updated contact address", "status":"ready", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:22.293863Z"}'
+        code: 200
+        content_length: 324
+        duration: 160.7505ms
+        headers:
+            Content-Length:
+                - "324"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:22 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 23627f3c-1452-4acb-b07e-be4a3479d7c4
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -1970,35 +1972,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
       response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Updated contact address", "status":"ready", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:15.978499Z"}'
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Updated contact address", "status":"ready", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:22.293863Z"}'
         code: 200
-        content_length: 326
-        duration: 45.993417ms
+        content_length: 324
+        duration: 31.9875ms
         headers:
             Content-Length:
-                - "326"
+                - "324"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:01:16 GMT
+                - Thu, 12 Nov 2026 11:05:22 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "47"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 115e5ef7-9964-453f-bc82-cd28ecbe02cf
+                - 44596131-c139-437d-906d-b31b6d628817
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -2008,35 +2010,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"ready", "subscription_period":"monthly", "subscription_period_started_at":"2026-10-13T13:01:06Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-11-13T13:01:06Z", "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T13:01:07.616517Z", "deletion_scheduled_at":null}'
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Updated contact address", "status":"ready", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:22.293863Z"}'
         code: 200
-        content_length: 638
-        duration: 184.250375ms
+        content_length: 324
+        duration: 37.691292ms
         headers:
             Content-Length:
-                - "638"
+                - "324"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:01:16 GMT
+                - Thu, 12 Nov 2026 11:05:22 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "46"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 20414c34-7544-4380-8e23-726b8b32568f
+                - 196871b3-aa3d-44c3-a726-e3eee6538dd9
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -2046,35 +2048,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
       response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Updated contact address", "status":"ready", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:15.978499Z"}'
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"ready", "subscription_period":"monthly", "subscription_period_started_at":"2026-11-12T11:05:08Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-12-12T11:05:08Z", "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:05:11.144462Z", "deletion_scheduled_at":null}'
         code: 200
-        content_length: 326
-        duration: 48.469ms
+        content_length: 636
+        duration: 37.0085ms
         headers:
             Content-Length:
-                - "326"
+                - "636"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:01:16 GMT
+                - Thu, 12 Nov 2026 11:05:22 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "38"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - f92696a9-b4b1-4689-80d0-763bf60cea09
+                - 36039969-d44f-4400-9993-3dedea2f55de
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -2084,35 +2086,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa/forwarding
       response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Updated contact address", "status":"ready", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:15.978499Z"}'
+        body: '{"mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "keep_copy":false, "enabled":false, "created_at":"2026-11-12T11:04:09.243529Z", "updated_at":"2026-11-12T11:04:09.243529Z"}'
         code: 200
-        content_length: 326
-        duration: 138.661292ms
+        content_length: 177
+        duration: 155.080458ms
         headers:
             Content-Length:
-                - "326"
+                - "177"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:01:17 GMT
+                - Thu, 12 Nov 2026 11:05:22 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "37"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - f62a2a31-29e3-413d-8611-345f093461d2
+                - e6200bca-36d4-4871-a8b7-da024623241b
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -2122,35 +2124,35 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
-        method: DELETE
+        method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
       response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Updated contact address", "status":"deleting", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:17.221114Z"}'
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Updated contact address", "status":"ready", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:22.293863Z"}'
         code: 200
-        content_length: 329
-        duration: 187.619375ms
+        content_length: 324
+        duration: 34.836084ms
         headers:
             Content-Length:
-                - "329"
+                - "324"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:01:17 GMT
+                - Thu, 12 Nov 2026 11:05:22 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "48"
+                - "41"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - fcd7435e-38f5-4121-a04f-a4575511333a
+                - 2a2343da-ae5e-4cc3-a900-011de7e4e129
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -2160,25 +2162,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
       response:
-        body: '{"id":"cc186876-9908-4f80-a85e-810046fd92e5", "email":"contact@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "mailbox_id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "description":"Updated contact address", "status":"deleting", "created_at":"2026-10-13T13:01:09.378280Z", "updated_at":"2026-10-13T13:01:17.221114Z"}'
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Updated contact address", "status":"ready", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:22.293863Z"}'
         code: 200
-        content_length: 329
-        duration: 26.366958ms
+        content_length: 324
+        duration: 42.079541ms
         headers:
             Content-Length:
-                - "329"
+                - "324"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:01:17 GMT
+                - Thu, 12 Nov 2026 11:05:23 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -2188,7 +2190,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - efc2efc6-83d0-44d3-b1e8-bce809879b39
+                - e6c25a80-a3a9-4308-a544-7e57681352dd
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -2198,73 +2200,73 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        host: api.scaleway.com
-        method: GET
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
-      response:
-        body: '{"message":"resource is not found","resource":"alias","resource_id":"cc186876-9908-4f80-a85e-810046fd92e5","type":"not_found"}'
-        code: 404
-        content_length: 126
-        duration: 20.212125ms
-        headers:
-            Content-Length:
-                - "126"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 13 Oct 2026 13:01:22 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            X-Ratelimit-Limit:
-                - 50, 50;w=1
-            X-Ratelimit-Remaining:
-                - "49"
-            X-Ratelimit-Reset:
-                - "1"
-            X-Request-Id:
-                - ad49ebe0-065d-41c7-8438-acb48a9d1b4e
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        status: 404 Not Found
-    - id: 58
-      request:
-        content_length: 0
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: DELETE
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"deletion_scheduled", "subscription_period":"monthly", "subscription_period_started_at":"2026-10-13T13:01:06Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-11-13T13:01:06Z", "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T13:01:22.554448Z", "deletion_scheduled_at":"2026-10-13T13:11:22.556399Z"}'
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Updated contact address", "status":"deleting", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:23.438006Z"}'
         code: 200
-        content_length: 676
-        duration: 158.067ms
+        content_length: 327
+        duration: 67.386125ms
         headers:
             Content-Length:
-                - "676"
+                - "327"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:01:22 GMT
+                - Thu, 12 Nov 2026 11:05:23 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
                 - 50, 50;w=1
             X-Ratelimit-Remaining:
-                - "49"
+                - "40"
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - c93f2565-1d64-4fe3-b1a2-0c826049eb40
+                - cca788ef-db1a-4fbf-82e5-63ae9d7a00dd
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 58
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
+      response:
+        body: '{"id":"a08215fb-9720-4b86-90f6-2db12a1fe04b", "email":"contact@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "mailbox_id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "description":"Updated contact address", "status":"deleting", "created_at":"2026-11-12T11:05:15.818113Z", "updated_at":"2026-11-12T11:05:23.438006Z"}'
+        code: 200
+        content_length: 327
+        duration: 30.935917ms
+        headers:
+            Content-Length:
+                - "327"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:23 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - cb6398f5-31ae-40c8-8e80-0adca6258af0
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -2274,25 +2276,25 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/cc186876-9908-4f80-a85e-810046fd92e5
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
       response:
-        body: '{"message":"resource is not found","resource":"alias","resource_id":"cc186876-9908-4f80-a85e-810046fd92e5","type":"not_found"}'
+        body: '{"message":"resource is not found","resource":"alias","resource_id":"a08215fb-9720-4b86-90f6-2db12a1fe04b","type":"not_found"}'
         code: 404
         content_length: 126
-        duration: 193.938958ms
+        duration: 24.662708ms
         headers:
             Content-Length:
                 - "126"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:01:22 GMT
+                - Thu, 12 Nov 2026 11:05:28 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -2302,7 +2304,7 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - 72f909da-346b-4fc0-908f-7f5b329e2fdb
+                - 9256dc78-c985-4bab-abf4-132e94bae4a0
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
@@ -2312,25 +2314,63 @@ interactions:
         content_length: 0
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.38.1-0.20261006091840-96b6b943dbf2 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: DELETE
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
+      response:
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"deletion_scheduled", "subscription_period":"monthly", "subscription_period_started_at":"2026-11-12T11:05:08Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-12-12T11:05:08Z", "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:05:28.574780Z", "deletion_scheduled_at":"2026-11-12T11:15:28.575432Z"}'
+        code: 200
+        content_length: 674
+        duration: 74.014459ms
+        headers:
+            Content-Length:
+                - "674"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:28 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - a78f1a09-62dd-4518-a395-1706a7d1294c
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 200 OK
+    - id: 61
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         host: api.scaleway.com
         method: GET
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/8045b5a5-c34d-44d2-a814-2eb8cff8ed61
+        url: https://api.scaleway.com/mailbox/v1alpha1/aliases/a08215fb-9720-4b86-90f6-2db12a1fe04b
       response:
-        body: '{"id":"8045b5a5-c34d-44d2-a814-2eb8cff8ed61", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e735d3f3-ab77-4f10-8a43-2b6e852140a5", "email":"alias.owner@tf-tests-mbx-alias-6127879919392157430.scaleway-terraform.com", "status":"deletion_scheduled", "subscription_period":"monthly", "subscription_period_started_at":"2026-10-13T13:01:06Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-11-13T13:01:06Z", "created_at":"2026-10-13T12:59:15.092916Z", "updated_at":"2026-10-13T13:01:22.554448Z", "deletion_scheduled_at":"2026-10-13T13:11:22.556399Z"}'
-        code: 200
-        content_length: 676
-        duration: 135.920666ms
+        body: '{"message":"resource is not found","resource":"alias","resource_id":"a08215fb-9720-4b86-90f6-2db12a1fe04b","type":"not_found"}'
+        code: 404
+        content_length: 126
+        duration: 36.205583ms
         headers:
             Content-Length:
-                - "676"
+                - "126"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 13 Oct 2026 13:01:22 GMT
+                - Thu, 12 Nov 2026 11:05:28 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge03)
             X-Ratelimit-Limit:
@@ -2340,7 +2380,45 @@ interactions:
             X-Ratelimit-Reset:
                 - "1"
             X-Request-Id:
-                - a2c3aa54-a65f-4564-83e6-3eefe56483d6
+                - a8f649f0-7ece-44b5-aa46-3360052db811
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        status: 404 Not Found
+    - id: 62
+      request:
+        content_length: 0
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.39.1-0.20261109092512-5f7a51a2884a (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        host: api.scaleway.com
+        method: GET
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        url: https://api.scaleway.com/mailbox/v1alpha1/mailboxes/3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa
+      response:
+        body: '{"id":"3c7d3c89-3ae5-4a8d-a0aa-7558323a0cfa", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "domain_id":"e7b026be-8a64-40bf-beff-309e41d15ac5", "email":"alias.owner@tf-tests-mbx-alias-58796453232930515.scaleway-terraform.com", "status":"deletion_scheduled", "subscription_period":"monthly", "subscription_period_started_at":"2026-11-12T11:05:08Z", "next_subscription_period":"unknown_subscription_period", "next_subscription_period_starts_at":"2026-12-12T11:05:08Z", "created_at":"2026-11-12T11:04:09.273222Z", "updated_at":"2026-11-12T11:05:28.574780Z", "deletion_scheduled_at":"2026-11-12T11:15:28.575432Z"}'
+        code: 200
+        content_length: 674
+        duration: 39.987083ms
+        headers:
+            Content-Length:
+                - "674"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 12 Nov 2026 11:05:28 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge03)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - a68af32d-3a47-4253-999d-962b589e6160
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
