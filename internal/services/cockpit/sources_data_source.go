@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
@@ -88,9 +89,16 @@ func (d *SourcesDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
+	projectID, err := meta.ExtractFrameworkProjectID(data.ProjectID, d.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve project_id", err.Error())
+
+		return
+	}
+
 	listReq := &cockpit.RegionalAPIListDataSourcesRequest{
 		Region:    region,
-		ProjectID: data.ProjectID.ValueString(),
+		ProjectID: projectID,
 	}
 
 	if data.Type.ValueString() != "" {
@@ -122,6 +130,7 @@ func (d *SourcesDataSource) Read(ctx context.Context, req datasource.ReadRequest
 
 	data.ID = types.StringValue(region.String())
 	data.Region = types.StringValue(region.String())
+	data.ProjectID = types.StringValue(projectID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

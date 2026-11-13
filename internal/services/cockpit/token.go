@@ -212,7 +212,19 @@ func (r *TokenResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanR
 	defaults, diags := flattenTokenScopes(defaultCockpitTokenScopes())
 	resp.Diagnostics.Append(diags...)
 
-	if len(plan.Scopes.Elements()) == 0 && state.Scopes.Equal(defaults) {
+	planEmpty := plan.Scopes.IsNull() || len(plan.Scopes.Elements()) == 0
+	stateEmpty := state.Scopes.IsNull() || len(state.Scopes.Elements()) == 0
+
+	// Omitted plan + empty state: normalize null→empty so Terraform sees no drift.
+	if planEmpty && stateEmpty {
+		empty := types.ListValueMust(tokenScopesObjectType(), []attr.Value{})
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("scopes"), empty)...)
+
+		return
+	}
+
+	// Omitted plan + SDKv2 defaults still in state: update in place (drop the block from state).
+	if planEmpty && state.Scopes.Equal(defaults) {
 		return
 	}
 
@@ -276,6 +288,7 @@ func (r *TokenResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if plan.Scopes.IsNull() {
 		empty, d := types.ListValue(tokenScopesObjectType(), []attr.Value{})
 		resp.Diagnostics.Append(d...)
+
 		plan.Scopes = empty
 	}
 
