@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 //go:embed descriptions/domain_registration_resource.md
@@ -245,7 +246,7 @@ func contactSchema() map[string]*schema.Schema {
 		"legal_form": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Legal form of the contact (e.g., 'individual' or 'organization').",
+			Description: "Legal form of the contact (individual, corporate, association, or other). Not the SIDN .nl legal form — use extension_nl.legal_form for that.",
 		},
 		"firstname": {
 			Type:             schema.TypeString,
@@ -346,9 +347,10 @@ func contactSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"mode": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Mode of the French extension (e.g., 'individual', 'duns', 'association', etc.).",
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: verify.ValidateEnum[domain.ContactExtensionFRMode](),
+						Description:      "Mode of the French extension (e.g., 'individual', 'duns', 'association', etc.).",
 					},
 					"individual_info": {
 						Type:     schema.TypeList,
@@ -473,18 +475,19 @@ func contactSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"legal_form": {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Legal form of the contact (specific to Dutch domains).",
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: verify.ValidateEnum[domain.ContactExtensionNLLegalForm](),
+						Description:      "SIDN legal form for .nl domains (e.g. limited_company, natural_person). Distinct from the contact-level legal_form.",
 					},
 					"legal_form_registration_number": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Registration number for the legal form (specific to Dutch domains).",
+						Description: "KvK (Chamber of Commerce) or other registry registration number for the SIDN legal form.",
 					},
 				},
 			},
-			Description: "Details specific to Dutch domain extensions.",
+			Description: "SIDN-specific details for Dutch (.nl) domain registrations.",
 		},
 	}
 }

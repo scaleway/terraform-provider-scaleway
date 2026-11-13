@@ -217,6 +217,55 @@ func TestExpandNewContact(t *testing.T) {
 			},
 		},
 		{
+			name: "new contact with terraform TypeList extension blocks",
+			contactMap: map[string]any{
+				"phone_number":   "0612345678",
+				"legal_form":     "corporate",
+				"firstname":      "Jane",
+				"lastname":       "Doe",
+				"email":          "jane@example.com",
+				"address_line_1": "1 Main",
+				"zip":            "1000AA",
+				"city":           "Amsterdam",
+				"country":        "NL",
+				"extension_nl": []any{
+					map[string]any{
+						"legal_form":                     "limited_company",
+						"legal_form_registration_number": "87654321",
+					},
+				},
+				"extension_fr": []any{
+					map[string]any{
+						"mode": "individual",
+						"individual_info": []any{
+							map[string]any{
+								"whois_opt_in": true,
+							},
+						},
+					},
+				},
+			},
+			expected: &domainSDK.NewContact{
+				PhoneNumber:  "0612345678",
+				LegalForm:    domainSDK.ContactLegalForm("corporate"),
+				Firstname:    "Jane",
+				Lastname:     "Doe",
+				Email:        "jane@example.com",
+				AddressLine1: "1 Main",
+				Zip:          "1000AA",
+				City:         "Amsterdam",
+				Country:      "NL",
+				ExtensionNl: &domainSDK.ContactExtensionNL{
+					LegalForm:                   domainSDK.ContactExtensionNLLegalFormLimitedCompany,
+					LegalFormRegistrationNumber: "87654321",
+				},
+				ExtensionFr: &domainSDK.ContactExtensionFR{
+					Mode:           domainSDK.ContactExtensionFRModeIndividual,
+					IndividualInfo: &domainSDK.ContactExtensionFRIndividualInfo{WhoisOptIn: true},
+				},
+			},
+		},
+		{
 			name:        "nil input map",
 			contactMap:  nil,
 			expected:    nil,
