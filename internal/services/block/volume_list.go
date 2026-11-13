@@ -9,19 +9,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 var (
-	_ list.ListResource                 = (*VolumeListResource)(nil)
-	_ list.ListResourceWithConfigure    = (*VolumeListResource)(nil)
-	_ list.ListResourceWithRawV6Schemas = (*VolumeListResource)(nil)
+	_ list.ListResource              = (*VolumeListResource)(nil)
+	_ list.ListResourceWithConfigure = (*VolumeListResource)(nil)
 )
 
 type VolumeListResource struct {
@@ -59,13 +56,6 @@ func (r *VolumeListResource) ListResourceConfigSchema(_ context.Context, _ list.
 			"organization_id": listscw.OrganizationIDAttribute("Organization ID of the volume to filter on"),
 		},
 	}
-}
-
-func (r *VolumeListResource) RawV6Schemas(ctx context.Context, _ list.RawV6SchemaRequest, resp *list.RawV6SchemaResponse) {
-	volumeResource := ResourceVolume()
-
-	resp.ProtoV6Schema = translate.Schema(volumeResource.ProtoSchema(ctx)())
-	resp.ProtoV6IdentitySchema = translate.ResourceIdentitySchema(volumeResource.ProtoIdentitySchema(ctx)())
 }
 
 type VolumeListResourceModel struct {
@@ -170,46 +160,11 @@ func (r *VolumeListResource) List(ctx context.Context, req list.ListRequest, str
 			result := req.NewListResult(ctx)
 			result.DisplayName = row.Volume.Name
 
-			volumeResource := ResourceVolume()
-			resourceData := volumeResource.Data(&terraform.InstanceState{})
+			identityData := framework.SetZonalIdentity(row.Zone, row.Volume.ID)
+			result.Diagnostics.Append(result.Identity.Set(ctx, &identityData)...)
 
-			err := identity.SetZonalIdentity(resourceData, row.Zone, row.Volume.ID)
-			if err != nil {
-				result.Diagnostics.AddError(
-					"Retrieving identity data",
-					"An error was encountered when retrieving the identity data: "+err.Error(),
-				)
-
-				if !push(result) {
-					return
-				}
-
-				continue
-			}
-
-			tfTypeIdentity, errIdentityState := resourceData.TfTypeIdentityState()
-			if errIdentityState != nil {
-				result.Diagnostics.AddError(
-					"Converting identity data",
-					"An error was encountered when converting the identity data: "+errIdentityState.Error(),
-				)
-			}
-
-			identitySetDiags := result.Identity.Set(ctx, *tfTypeIdentity)
-			result.Diagnostics.Append(identitySetDiags...)
-
-			setVolumeState(r.blockAPI, resourceData, row.Volume)
-
-			tfTypeResource, errTfTypeResourceState := resourceData.TfTypeResourceState()
-			if errTfTypeResourceState != nil {
-				result.Diagnostics.AddError(
-					"Converting resource state",
-					"An error was encountered when converting the resource state: "+errTfTypeResourceState.Error(),
-				)
-			}
-
-			resourceSetDiags := result.Resource.Set(ctx, *tfTypeResource)
-			result.Diagnostics.Append(resourceSetDiags...)
+			flatVolume := flattenVolume(ctx, r.blockAPI, row.Volume, nil, &result.Diagnostics)
+			result.Diagnostics.Append(result.Resource.Set(ctx, &flatVolume)...)
 
 			if !push(result) {
 				return

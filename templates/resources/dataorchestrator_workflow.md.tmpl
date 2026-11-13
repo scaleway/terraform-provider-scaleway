@@ -1,0 +1,58 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Data Orchestrator"
+page_title: "Scaleway: scaleway_dataorchestrator_workflow"
+---
+
+# Resource: scaleway_dataorchestrator_workflow
+
+Manages a Scaleway Data Orchestrator workflow definition.
+
+The `workflow_dsl` attribute is the Open Workflow Specification YAML for the current version.
+Updating it calls `UpdateWorkflowVersion` in place (same as Save in the console).
+
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/data-orchestrator/).
+
+## Example Usage
+
+### Basic
+
+{{ tffile "examples/resources/scaleway_dataorchestrator_workflow/resource.tf" }}
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `name` - (Optional, Computed) Name of the workflow definition. If omitted, a random name is generated.
+- `workflow_dsl` - (Required) Open Workflow Specification YAML for the current version.
+- `version_name` - (Optional, Computed) Name of the workflow version (3-50 chars: letters, digits, `-`, `_`). Defaults to `v1-0-0` on create.
+- `description` - (Optional) Description of the workflow definition. Omit the attribute to leave it empty; an empty string is not allowed.
+- `version_description` - (Optional) Description of the workflow version. Omit the attribute to leave it empty; an empty string is not allowed.
+- `environment_variables` - (Optional) Environment variables of the workflow.
+- `cron_schedule` - (Optional) Cron schedule of the workflow.
+    - `schedule` - (Required) UNIX cron expression.
+    - `timezone_identifier` - (Required) Canonical TZ identifier (e.g. `Europe/Paris`).
+    - `overlap` - (Optional) Overlap policy (`forbid`, `allow`, `queue`, …).
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the workflow.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the workflow is associated with.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the workflow definition.
+
+~> **Important:** Data Orchestrator workflow IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
+- `version_id` - ID of the current workflow version.
+- `srn` - Scaleway Resource Name.
+- `created_at` - Creation timestamp.
+- `updated_at` - Last update timestamp.
+
+## Import
+
+Workflows can be imported using the `{region}/{id}`, e.g.
+
+```bash
+terraform import scaleway_dataorchestrator_workflow.main fr-par/11111111-1111-1111-1111-111111111111
+```

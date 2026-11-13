@@ -2,7 +2,6 @@ package iam_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -41,7 +40,7 @@ func TestAccSamlResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_iam_saml.main", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_iam_saml.main", "service_provider.entity_id"),
 					resource.TestCheckResourceAttrSet("scaleway_iam_saml.main", "service_provider.assertion_consumer_service_url"),
-					resource.TestMatchResourceAttr("scaleway_iam_saml.main", "srn", regexp.MustCompile(`^srn://iam\..+/saml/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_iam_saml.main", "srn", acctest.CheckSRN("iam", "saml")),
 				),
 			},
 			{

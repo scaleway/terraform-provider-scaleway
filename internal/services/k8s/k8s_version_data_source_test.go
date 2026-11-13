@@ -2,7 +2,6 @@ package k8s_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -49,7 +48,7 @@ func TestAccDataSourceVersion_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.1", "CPUManagerPolicyAlphaOptions"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.2", "ImageVolume"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.3", "MutatingAdmissionPolicy"),
-					resource.TestMatchResourceAttr("data.scaleway_k8s_version.by_name", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/versions/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_k8s_version.by_name", "srn", acctest.CheckSRN("k8s", "versions")),
 				),
 			},
 		},
