@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
@@ -178,13 +179,14 @@ func (d *ExporterDataSource) fetchByFilters(ctx context.Context, data exporterDa
 		return nil, nil, err
 	}
 
-	if data.ProjectID.ValueString() == "" {
-		return nil, nil, errors.New("project_id is required when not fetching by id")
+	projectID, err := meta.ExtractFrameworkProjectID(data.ProjectID, d.meta.ScwClient())
+	if err != nil {
+		return nil, nil, err
 	}
 
 	listReq := &cockpit.RegionalAPIListExportersRequest{
 		Region:    region,
-		ProjectID: data.ProjectID.ValueString(),
+		ProjectID: projectID,
 	}
 
 	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListExportersResponse, error) {
