@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 var (
@@ -200,7 +201,11 @@ func (r *VolumeListResource) fetchVolumeRows(ctx context.Context, target volumeL
 		listReq.OrganizationID = &orgID
 	}
 
-	resp, err := r.blockAPI.ListVolumes(listReq, scw.WithContext(ctx), scw.WithAllPages())
+	resp, err := transport.RetryOnStatusValue(
+		ctx, transport.IAMPropagation, func(ctx context.Context) (*blockSDK.ListVolumesResponse, error) {
+			return r.blockAPI.ListVolumes(listReq, scw.WithContext(ctx), scw.WithAllPages())
+		},
+	)
 	if err != nil {
 		return nil, err
 	}

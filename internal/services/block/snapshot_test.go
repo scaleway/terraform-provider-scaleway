@@ -12,9 +12,48 @@ import (
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
+func TestAccSnapshot_Basic_WithProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf-tests-block-snapshot-basic-with-project"
+					}
+
+					resource scaleway_block_volume main {
+						project_id = scaleway_account_project.project.id
+						iops = 5000
+						size_in_gb = 10
+					}
+
+					resource scaleway_block_snapshot main {
+						project_id = scaleway_account_project.project.id
+						name = "test-block-snapshot-basic"
+						volume_id = scaleway_block_volume.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
+					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_block_snapshot.main", "name", "test-block-snapshot-basic"),
+					resource.TestMatchResourceAttr("scaleway_block_snapshot.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/snapshots/.+$`)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -77,6 +116,8 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	acctest.SkipUnlessDefaultProjectID(t, tt)
+
 	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -119,6 +160,8 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 func TestAccSnapshot_ToS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-export-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{

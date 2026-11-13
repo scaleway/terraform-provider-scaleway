@@ -13,6 +13,42 @@ import (
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 )
 
+func TestAccListBlockSnapshots_Basic_WithProject(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccListBlockSnapshots_Basic_WithProject because list resources are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf-tests-block-snapshot-list-basic-with-project"
+					}
+
+					resource "scaleway_block_volume" "vol1" {
+						project_id = scaleway_account_project.project.id
+						name       = "test-vol-snapshot-list-1"
+						size_in_gb = 10
+						iops       = 5000
+					}
+
+					resource "scaleway_block_snapshot" "snap1" {
+						project_id = scaleway_account_project.project.id
+						name      = "test-snapshot-list-1"
+						volume_id = scaleway_block_volume.vol1.id
+					}
+				`,
+			},
+		},
+	})
+}
+
 func TestAccListBlockSnapshots_Basic(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
 		t.Skip("Skipping TestAccListBlockSnapshots_Basic because list resources are not yet supported on OpenTofu")
@@ -20,6 +56,8 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	testDefaultZone, _ := tt.Meta.ScwClient().GetDefaultZone()
 

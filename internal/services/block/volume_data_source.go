@@ -16,6 +16,7 @@ import (
 	scwdatasource "github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -178,8 +179,9 @@ func (d *VolumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	case hasName:
 		volumeName := config.Name.ValueString()
 		listReq := &block.ListVolumesRequest{
-			Zone: zone,
-			Name: &volumeName,
+			Zone:      zone,
+			Name:      &volumeName,
+			ProjectID: new(config.ProjectID.String()),
 		}
 
 		if !config.ProjectID.IsNull() {
@@ -193,7 +195,11 @@ func (d *VolumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			listReq.ProjectID = &projectID
 		}
 
-		res, listErr := d.api.ListVolumes(listReq, scw.WithContext(ctx))
+		res, listErr := transport.RetryOnStatusValue(
+			ctx, transport.IAMPropagation, func(ctx context.Context) (*block.ListVolumesResponse, error) {
+				return d.api.ListVolumes(listReq, scw.WithContext(ctx))
+			},
+		)
 		if listErr != nil {
 			resp.Diagnostics.AddError("Failed to list block volumes", listErr.Error())
 

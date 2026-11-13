@@ -9,7 +9,7 @@ import (
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 )
 
-func TestAccDataSourceSnapshots_Basic(t *testing.T) {
+func TestAccDataSourceSnapshots_Basic_WithProject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -21,18 +21,25 @@ func TestAccDataSourceSnapshots_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf-tests-block-snapshots-datasource-basic-with-project"
+					}
+
 					resource scaleway_block_volume main {
+						project_id = scaleway_account_project.project.id
 						iops = 5000
 						size_in_gb = 10
 					}
 
 					resource scaleway_block_snapshot main {
+						project_id = scaleway_account_project.project.id
 						name = "test-ds-block-snapshots-basic-tf"
 						volume_id = scaleway_block_volume.main.id
 						tags = ["test-ds-block-snapshots-basic-tf", "first"]
 					}
 
 					resource scaleway_block_snapshot second {
+						project_id = scaleway_account_project.project.id
 						name = "test-ds-block-snapshots-other-tf"
 						volume_id = scaleway_block_volume.main.id
 						tags = ["test-ds-block-snapshots-basic-tf", "second"]
@@ -42,27 +49,32 @@ func TestAccDataSourceSnapshots_Basic(t *testing.T) {
 					}
 
 					data scaleway_block_snapshots by_name {
+						project_id = scaleway_account_project.project.id
 						name = scaleway_block_snapshot.main.name
 						depends_on = [scaleway_block_snapshot.main, scaleway_block_snapshot.second]
 					}
 
 					data scaleway_block_snapshots by_tags {
+						project_id = scaleway_account_project.project.id
 						tags = ["test-ds-block-snapshots-basic-tf"]
 						depends_on = [scaleway_block_snapshot.main, scaleway_block_snapshot.second]
 					}
 
 					data scaleway_block_snapshots by_volume_id {
+						project_id = scaleway_account_project.project.id
 						volume_id = scaleway_block_volume.main.id
 						depends_on = [scaleway_block_snapshot.main, scaleway_block_snapshot.second]
 					}
 
 					data scaleway_block_snapshots by_tags_ordered_desc {
+						project_id = scaleway_account_project.project.id
 						tags = ["test-ds-block-snapshots-basic-tf"]
 						order_by = "created_at_desc"
 						depends_on = [scaleway_block_snapshot.main, scaleway_block_snapshot.second]
 					}
 
 					data scaleway_block_snapshots by_name_empty {
+						project_id = scaleway_account_project.project.id
 						name = "test-ds-block-snapshots-nonexistent-tf"
 						depends_on = [scaleway_block_snapshot.main, scaleway_block_snapshot.second]
 					}

@@ -14,6 +14,42 @@ import (
 	filetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file/testfuncs"
 )
 
+func TestAccFileSystem_Basic_WithProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	fileSystemName := "TestAccFileSystem_Basic_WithProject"
+	sizeInGB := 100
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "tf-tests-file-filesystem-basic-with-project"
+					}
+
+					resource "scaleway_file_filesystem" "fs" {
+						project_id = scaleway_account_project.project.id
+						name = "%s"
+						size_in_gb = %d
+					}
+				`, fileSystemName, sizeInGB),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
+					resource.TestMatchResourceAttr("scaleway_file_filesystem.fs", "srn", regexp.MustCompile(`^srn://file\..+/regions/.+/file-systems/.+$`)),
+					resource.TestMatchResourceAttr("scaleway_file_filesystem.fs", "created_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`)),
+					resource.TestMatchResourceAttr("scaleway_file_filesystem.fs", "updated_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccFileSystem_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
