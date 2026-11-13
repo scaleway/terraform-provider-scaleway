@@ -43,6 +43,66 @@ func TestAccSnapshot_Basic(t *testing.T) {
 	})
 }
 
+// TestAccSnapshot_RefreshBareUUIDIdentity reproduces the v2.80.0 -> v2.88.0
+// upgrade regression where a refresh failed with:
+//
+//	Failed to parse block snapshot ID
+//	cant parse localized id: <bare uuid>
+//
+// The zonal identity schema stores the snapshot id as a bare UUID. v2.88.0 fed
+// that bare UUID straight into zonal.ParseID (which expects "zone/uuid"), so
+// every refresh after the SDKv2 -> Framework migration blew up. The second
+// step forces a refresh of the state written by step 1, exercising the Read
+// path with a bare-UUID identity.
+func TestAccSnapshot_RefreshBareUUIDIdentity(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						iops = 5000
+						size_in_gb = 10
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-block-snapshot-refresh"
+						volume_id = scaleway_block_volume.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
+					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.main", "id"),
+				),
+			},
+			{
+				// Same config: Terraform refreshes the existing resource before
+				// planning. This is the step that errored in v2.88.0 when Read
+				// parsed the bare-UUID identity id as a localized id.
+				Config: `
+					resource scaleway_block_volume main {
+						iops = 5000
+						size_in_gb = 10
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-block-snapshot-refresh"
+						volume_id = scaleway_block_volume.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
+					acctest.CheckResourceAttrUUID("scaleway_block_snapshot.main", "id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccSnapshot_VolumeIDConflict(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
