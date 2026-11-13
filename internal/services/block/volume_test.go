@@ -1,6 +1,7 @@
 package block_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/compare"
