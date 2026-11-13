@@ -2,17 +2,23 @@ package mnq
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+//go:embed descriptions/mnq_sqs_resource.md
+var sqsResourceDescription string
+
 func ResourceSQS() *schema.Resource {
 	return &schema.Resource{
+		Description:   sqsResourceDescription,
 		CreateContext: ResourceMNQSQSCreate,
 		ReadContext:   ResourceMNQSQSRead,
 		DeleteContext: ResourceMNQSQSDelete,
@@ -21,6 +27,7 @@ func ResourceSQS() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    sqsSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -50,7 +57,9 @@ func ResourceMNQSQSCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, sqs.ProjectID))
+	if err := identity.SetRegionalIdentity(d, region, sqs.ProjectID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQSQSRead(ctx, d, m)
 }
@@ -65,10 +74,59 @@ func ResourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		Region:    region,
 		ProjectID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sqs, err = api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+				Region:    region,
+				ProjectID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	if err := identity.SetRegionalIdentity(d, region, id); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setSQSState(d, sqs)
+}
+
+// readSQSIntoState fetches the SQS info and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readSQSIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, region, id, err := NewSQSAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	sqs, err := api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+		Region:    region,
+		ProjectID: id,
+	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sqs, err = api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+				Region:    region,
+				ProjectID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setSQSState(d, sqs)
+}
+
+func setSQSState(d *schema.ResourceData, sqs *mnq.SqsInfo) diag.Diagnostics {
 	_ = d.Set("endpoint", sqs.SqsEndpointURL)
 	_ = d.Set("region", sqs.Region)
 	_ = d.Set("project_id", sqs.ProjectID)
@@ -86,6 +144,17 @@ func ResourceMNQSQSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		Region:    region,
 		ProjectID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sqs, err = api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+				Region:    region,
+				ProjectID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -96,10 +165,14 @@ func ResourceMNQSQSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return nil
 	}
 
-	_, err = api.DeactivateSqs(&mnq.SqsAPIDeactivateSqsRequest{
-		Region:    region,
-		ProjectID: id,
-	}, scw.WithContext(ctx))
+	err = retryMNQNamespaceRead(ctx, func() error {
+		_, e := api.DeactivateSqs(&mnq.SqsAPIDeactivateSqsRequest{
+			Region:    region,
+			ProjectID: id,
+		}, scw.WithContext(ctx))
+
+		return e
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

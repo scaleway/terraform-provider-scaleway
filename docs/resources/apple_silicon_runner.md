@@ -11,21 +11,21 @@ Creates and manages Scaleway Apple silicon runners.
 
 ```terraform
 resource "scaleway_apple_silicon_runner" "main" {
-    name       = "my-github-runner"
-    ci_provider   = "github"
-    url        = "https://github.com/my-org/my-repo"
-    token      = "my-token"
+  name        = "my-github-runner"
+  ci_provider = "github"
+  url         = "https://github.com/my-org/my-repo"
+  token       = "my-token"
 }
 ```
 
 ## Argument Reference
 
 - `ci_provider` - (Required) The CI/CD provider for the runner. Must be either 'github' or 'gitlab'
-- `token` -  (Required) The token used to authenticate the runner to run
+- `token` - (Required) The token used to authenticate the runner to run
 - `url` - (Required) The URL of the runner to run
 - `name` - (Optional) The name of the runner
 - `project_id` - (Optional) The project_id you want to attach the resource to
-- `zone` -  (Optional) The zone of the runner
+- `zone` - (Optional) The zone of the runner
 
 ## Attributes Reference
 
@@ -35,6 +35,7 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - The status of the runner
 - `labels` - A list of labels applied to the runner. Only for github provider
 - `error_message` - The error message if the runner is in error state
+- `srn` - The Scaleway Resource Name (SRN) of the runner
 
 ## Import
 

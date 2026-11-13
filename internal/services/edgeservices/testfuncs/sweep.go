@@ -1,12 +1,11 @@
 package edgeservicestestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	edge "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 func AddTestSweepers() {
@@ -50,7 +49,9 @@ func testSweepPipeline(_ string) error {
 
 		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list pipelines: %w", err)
+			logging.L.Warningf("failed to list pipelines in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, pipeline := range listPipelines.Pipelines {
@@ -58,7 +59,7 @@ func testSweepPipeline(_ string) error {
 				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete pipeline: %w", err)
+				logging.L.Warningf("failed to delete pipeline %s: %s", pipeline.ID, err)
 			}
 		}
 
@@ -72,7 +73,9 @@ func testSweepDNS(_ string) error {
 
 		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list pipelines: %w", err)
+			logging.L.Warningf("failed to list pipelines in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, pipeline := range listPipelines.Pipelines {
@@ -80,7 +83,9 @@ func testSweepDNS(_ string) error {
 				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to list DNS stages: %w", err)
+				logging.L.Warningf("failed to list DNS stages for pipeline %s: %s", pipeline.ID, err)
+
+				continue
 			}
 
 			for _, stage := range listDNS.Stages {
@@ -88,7 +93,7 @@ func testSweepDNS(_ string) error {
 					DNSStageID: stage.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("failed to delete DNS stage: %w", err)
+					logging.L.Warningf("failed to delete DNS stage %s: %s", stage.ID, err)
 				}
 			}
 		}
@@ -103,7 +108,9 @@ func testSweepTLS(_ string) error {
 
 		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list pipelines: %w", err)
+			logging.L.Warningf("failed to list pipelines in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, pipeline := range listPipelines.Pipelines {
@@ -111,7 +118,9 @@ func testSweepTLS(_ string) error {
 				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to list TLS stages: %w", err)
+				logging.L.Warningf("failed to list TLS stages for pipeline %s: %s", pipeline.ID, err)
+
+				continue
 			}
 
 			for _, stage := range listTLS.Stages {
@@ -119,7 +128,7 @@ func testSweepTLS(_ string) error {
 					TLSStageID: stage.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("failed to delete TLS stage: %w", err)
+					logging.L.Warningf("failed to delete TLS stage %s: %s", stage.ID, err)
 				}
 			}
 		}
@@ -134,7 +143,9 @@ func testSweepCache(_ string) error {
 
 		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list pipelines: %w", err)
+			logging.L.Warningf("failed to list pipelines in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, pipeline := range listPipelines.Pipelines {
@@ -142,7 +153,9 @@ func testSweepCache(_ string) error {
 				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to list cache stages: %w", err)
+				logging.L.Warningf("failed to list cache stages for pipeline %s: %s", pipeline.ID, err)
+
+				continue
 			}
 
 			for _, stage := range listCaches.Stages {
@@ -150,7 +163,7 @@ func testSweepCache(_ string) error {
 					CacheStageID: stage.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("failed to delete cache stage: %w", err)
+					logging.L.Warningf("failed to delete cache stage %s: %s", stage.ID, err)
 				}
 			}
 		}
@@ -165,7 +178,9 @@ func testSweepBackend(_ string) error {
 
 		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list pipelines: %w", err)
+			logging.L.Warningf("failed to list pipelines in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, pipeline := range listPipelines.Pipelines {
@@ -173,7 +188,9 @@ func testSweepBackend(_ string) error {
 				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to list backend stage: %w", err)
+				logging.L.Warningf("failed to list backend stages for pipeline %s: %s", pipeline.ID, err)
+
+				continue
 			}
 
 			for _, stage := range listBackends.Stages {
@@ -181,7 +198,7 @@ func testSweepBackend(_ string) error {
 					BackendStageID: stage.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("failed to delete backend stage: %w", err)
+					logging.L.Warningf("failed to delete backend stage %s: %s", stage.ID, err)
 				}
 			}
 		}
@@ -196,7 +213,9 @@ func testSweepPlan(_ string) error {
 
 		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list pipelines when deleting plan: %w", err)
+			logging.L.Warningf("failed to list pipelines when deleting plan: %s", err)
+
+			return nil
 		}
 
 		for _, pipeline := range listPipelines.Pipelines {
@@ -204,7 +223,7 @@ func testSweepPlan(_ string) error {
 				ProjectID: pipeline.ProjectID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete current plan: %w", err)
+				logging.L.Warningf("failed to delete current plan for project %s: %s", pipeline.ProjectID, err)
 			}
 		}
 
@@ -218,7 +237,9 @@ func testSweepWAF(_ string) error {
 
 		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list pipelines: %w", err)
+			logging.L.Warningf("failed to list pipelines in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, pipeline := range listPipelines.Pipelines {
@@ -226,7 +247,9 @@ func testSweepWAF(_ string) error {
 				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to list WAF stage: %w", err)
+				logging.L.Warningf("failed to list WAF stages for pipeline %s: %s", pipeline.ID, err)
+
+				continue
 			}
 
 			for _, stage := range listWAF.Stages {
@@ -234,7 +257,7 @@ func testSweepWAF(_ string) error {
 					WafStageID: stage.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("failed to delete WAF stage: %w", err)
+					logging.L.Warningf("failed to delete WAF stage %s: %s", stage.ID, err)
 				}
 			}
 		}
@@ -249,7 +272,9 @@ func testSweepRoute(_ string) error {
 
 		listPipelines, err := edgeAPI.ListPipelines(&edge.ListPipelinesRequest{})
 		if err != nil {
-			return fmt.Errorf("failed to list pipelines: %w", err)
+			logging.L.Warningf("failed to list pipelines in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, pipeline := range listPipelines.Pipelines {
@@ -257,7 +282,9 @@ func testSweepRoute(_ string) error {
 				PipelineID: pipeline.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to list route stage: %w", err)
+				logging.L.Warningf("failed to list route stages for pipeline %s: %s", pipeline.ID, err)
+
+				continue
 			}
 
 			for _, stage := range listRoutes.Stages {
@@ -265,7 +292,7 @@ func testSweepRoute(_ string) error {
 					RouteStageID: stage.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("failed to delete route stage: %w", err)
+					logging.L.Warningf("failed to delete route stage %s: %s", stage.ID, err)
 				}
 			}
 		}

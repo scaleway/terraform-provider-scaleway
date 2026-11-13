@@ -1,24 +1,19 @@
-resource "scaleway_container_namespace" "main" {
-  name        = "my-ns-test"
-  description = "test container"
-}
+resource "scaleway_container_namespace" "main" {}
 
 resource "scaleway_container" "main" {
-  name            = "my-container-02"
-  description     = "environment variables test"
-  tags            = ["tag1", "tag2"]
-  namespace_id    = scaleway_container_namespace.main.id
-  registry_image  = "${scaleway_container_namespace.main.registry_endpoint}/alpine:test"
-  port            = 9997
-  cpu_limit       = 1024
-  memory_limit    = 2048
-  min_scale       = 3
-  max_scale       = 5
-  timeout         = 600
-  max_concurrency = 80
-  privacy         = "private"
-  protocol        = "http1"
-  deploy          = true
+  name         = "my-container"
+  description  = "This container has a description."
+  tags         = ["tag1", "tag2"]
+  namespace_id = scaleway_container_namespace.main.id
+  image        = "nginx:latest"
+  port         = 80
+
+  cpu_limit          = 1024
+  memory_limit_bytes = 2048000000
+  min_scale          = 3
+  max_scale          = 5
+  timeout            = 600
+  protocol           = "http1"
 
   command = ["bash", "-c", "script.sh"]
   args    = ["some", "args"]

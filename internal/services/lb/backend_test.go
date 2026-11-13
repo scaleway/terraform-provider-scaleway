@@ -239,7 +239,7 @@ func TestAccBackend_HealthCheck(t *testing.T) {
 }
 
 func TestAccBackend_WithFailoverHost(t *testing.T) {
-	rName := sdkacctest.RandomWithPrefix("tf-acc-test")
+	rName := sdkacctest.RandomWithPrefix("tf-test-acc")
 	resourceName := "scaleway_object_bucket_website_configuration.test"
 
 	tt := acctest.NewTestTools(t)
@@ -483,6 +483,83 @@ func TestAccBackend_HealthCheck_Port(t *testing.T) {
 					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "forward_port", "5555"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "4444"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccBackend_Host(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isBackendDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "http"
+					forward_port = 80
+					host = "backend.example.com"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "host", "backend.example.com"),
+				),
+			},
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "http"
+					forward_port = 80
+					host = "updated.example.com"
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "host", "updated.example.com"),
+				),
+			},
+			{
+				Config: `
+				resource scaleway_lb_ip ip01 {}
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb"
+					type = "lb-s"
+				}
+
+				resource scaleway_lb_backend bkd01 {
+					lb_id = scaleway_lb.lb01.id
+					name = "bkd01"
+					forward_protocol = "http"
+					forward_port = 80
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isBackendPresent(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "host", ""),
 				),
 			},
 		},

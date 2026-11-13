@@ -48,7 +48,14 @@ func TestAccIPAMIP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "address_cidr"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "updated_at"),
+					resource.TestCheckResourceAttrWith("scaleway_ipam_ip.ip01", "srn", acctest.CheckSRN("ipam", "ips")),
 				),
+			},
+			{
+				ResourceName:            "scaleway_ipam_ip.ip01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"source.0.private_network_id"},
 			},
 		},
 	})

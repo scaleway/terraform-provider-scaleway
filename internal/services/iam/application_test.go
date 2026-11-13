@@ -38,6 +38,7 @@ func TestAccApplication_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "tags.0", "tf_tests"),
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "tags.1", "tests"),
+					resource.TestCheckResourceAttrWith("scaleway_iam_application.main", "srn", acctest.CheckSRN("iam", "applications")),
 				),
 			},
 			{
@@ -54,6 +55,11 @@ func TestAccApplication_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "description", "another description"),
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "tags.#", "0"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_iam_application.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

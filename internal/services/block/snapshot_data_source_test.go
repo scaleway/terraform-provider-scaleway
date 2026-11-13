@@ -41,10 +41,123 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
 
-					resource.TestCheckResourceAttrPair("scaleway_block_snapshot.main", "name", "data.scaleway_block_snapshot.find_by_name", "name"),
-					resource.TestCheckResourceAttrPair("scaleway_block_snapshot.main", "name", "data.scaleway_block_snapshot.find_by_id", "name"),
-					resource.TestCheckResourceAttrPair("scaleway_block_snapshot.main", "id", "data.scaleway_block_snapshot.find_by_name", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_block_snapshot.main", "id", "data.scaleway_block_snapshot.find_by_id", "id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "name", "data.scaleway_block_snapshot.find_by_name", "name",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "name", "data.scaleway_block_snapshot.find_by_id", "name",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "id", "data.scaleway_block_snapshot.find_by_name", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "id", "data.scaleway_block_snapshot.find_by_id", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "zone", "data.scaleway_block_snapshot.find_by_name", "zone",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "zone", "data.scaleway_block_snapshot.find_by_id", "zone",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "volume_id", "data.scaleway_block_snapshot.find_by_name", "volume_id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "volume_id", "data.scaleway_block_snapshot.find_by_id", "volume_id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "tags", "data.scaleway_block_snapshot.find_by_name", "tags",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "tags", "data.scaleway_block_snapshot.find_by_id", "tags",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "project_id", "data.scaleway_block_snapshot.find_by_name", "project_id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "project_id", "data.scaleway_block_snapshot.find_by_id", "project_id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "import", "data.scaleway_block_snapshot.find_by_name", "import",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "import", "data.scaleway_block_snapshot.find_by_id", "import",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "export", "data.scaleway_block_snapshot.find_by_name", "export",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "export", "data.scaleway_block_snapshot.find_by_id", "export",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "id", "data.scaleway_block_snapshot.find_by_name", "snapshot_id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "id", "data.scaleway_block_snapshot.find_by_id", "snapshot_id",
+					),
+					resource.TestCheckResourceAttrWith("scaleway_block_snapshot.main", "srn", acctest.CheckSRN("block", "snapshots")),
+					resource.TestCheckResourceAttrWith("data.scaleway_block_snapshot.find_by_name", "srn", acctest.CheckSRN("block", "snapshots")),
+					resource.TestCheckResourceAttrWith("data.scaleway_block_snapshot.find_by_id", "srn", acctest.CheckSRN("block", "snapshots")),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceSnapshot_Basic_WithKMS(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			blocktestfuncs.IsSnapshotDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_key_manager_key" "my_key" {
+						name        = "tf-tests-ds-snapshot-basic-with-kms"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume main {
+						iops = 5000
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						size_in_gb = 10
+						kms_key_id = scaleway_key_manager_key.my_key.id
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-ds-block-snapshot-basic-tf"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						volume_id = scaleway_block_volume.main.id
+					}
+
+					data scaleway_block_snapshot find_by_name {
+						name = scaleway_block_snapshot.main.name
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+					}
+
+					data scaleway_block_snapshot find_by_id {
+						snapshot_id = scaleway_block_snapshot.main.id
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "kms_key_id",
+						"data.scaleway_block_snapshot.find_by_name", "kms_key_id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "kms_key_id",
+						"data.scaleway_block_snapshot.find_by_id", "kms_key_id",
+					),
 				),
 			},
 		},

@@ -2,6 +2,7 @@ package tem
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+//go:embed descriptions/tem_blocked_list_resource.md
+var blockedListResourceDescription string
+
 func ResourceBlockedList() *schema.Resource {
 	return &schema.Resource{
+		Description:   blockedListResourceDescription,
 		CreateContext: ResourceBlockedListCreate,
 		ReadContext:   ResourceBlockedListRead,
 		DeleteContext: ResourceBlockedListDelete,
@@ -73,7 +78,6 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	emails := []string{d.Get("email").(string)}
-	reason := d.Get("reason").(string)
 	typeBlockedList := d.Get("type").(string)
 
 	resp, err := api.BulkCreateBlocklists(&tem.BulkCreateBlocklistsRequest{
@@ -81,7 +85,7 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m an
 		Region:   region,
 		DomainID: domainID,
 		Type:     tem.BlocklistType(typeBlockedList),
-		Reason:   &reason,
+		Reason:   new(d.Get("reason").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

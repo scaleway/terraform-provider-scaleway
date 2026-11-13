@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -320,6 +321,39 @@ func IsSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if !httperrors.Is404(err) {
 				return err
 			}
+		}
+
+		return nil
+	}
+}
+
+func IsTemplateDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_instance_template" {
+				continue
+			}
+
+			api := instanceV2.NewAPI(tt.Meta.ScwClient())
+
+			zone, id, err := zonal.ParseID(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.GetTemplate(&instanceV2.GetTemplateRequest{
+				Zone:       zone,
+				TemplateID: id,
+			})
+			if err != nil {
+				if httperrors.Is404(err) {
+					continue
+				}
+
+				return err
+			}
+
+			return fmt.Errorf("template (%s) still exists", rs.Primary.ID)
 		}
 
 		return nil

@@ -2,14 +2,8 @@ version: "2"
 formatters:
   enable:
     - gci # Gci controls golang package import order and makes it always deterministic. [fast: true, auto-fix: false]
-    - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification [fast: true, auto-fix: true]
     - gofumpt # Gofumpt checks whether code was gofumpt-ed. [fast: true, auto-fix: true]
     - goimports # In addition to fixing imports, goimports also formats your code in the same style as gofmt. [fast: true, auto-fix: true]
-  settings:
-    gofmt:
-      rewrite-rules:
-        - pattern: interface{}
-          replacement: any
 
 linters:
   # Run golangci-lint linters to see the list of all linters
@@ -24,6 +18,7 @@ linters:
     - contextcheck # check the function whether use a non-inherited context [fast: false, auto-fix: false]
     - copyloopvar # copyloopvar is a linter detects places where loop variables are copied [fast: true, auto-fix: false]
     - decorder # check declaration order and count of types, constants, variables and functions [fast: true, auto-fix: false]
+    - depguard # Go linter that checks if package imports are in a list of acceptable packages, e.g. the deprecated terraform-plugin-sdk test helpers in _test.go files [fast: true, auto-fix: false]
     - dogsled # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f()) [fast: true, auto-fix: false]
     - dupword # checks for duplicate words in the source code [fast: true, auto-fix: true]
     - durationcheck # check for two durations multiplied together [fast: false, auto-fix: false]
@@ -37,12 +32,11 @@ linters:
     - funcorder # Checks the order of functions, methods, and constructors. [fast]
     - gocheckcompilerdirectives # Checks that go compiler directive comments (//go:) are valid. [fast: true, auto-fix: false]
     - gochecksumtype # Run exhaustiveness checks on Go "sum types" [fast: false, auto-fix: false]
-    - goconst # Finds repeated strings that could be replaced by a constant [fast: true, auto-fix: false]
     - gocritic # Provides diagnostics that check for bugs, performance and style issues. [fast: false, auto-fix: false]
     - gocyclo # Computes and checks the cyclomatic complexity of functions [fast: true, auto-fix: false]
     - goheader # Checks is file header matches to pattern [fast: true, auto-fix: false]
     - gomoddirectives # Manage the use of 'replace', 'retract', and 'excludes' directives in go.mod. [fast: true, auto-fix: false]
-    - gomodguard # Allow and block list linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations. [fast: true, auto-fix: false]
+    - gomodguard_v2 # Allow and block list linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations. [fast: true, auto-fix: false]
     - goprintffuncname # Checks that printf-like functions are named with `f` at the end [fast: true, auto-fix: false]
     - gosec #(gas): Inspects source code for security problems [fast: false, auto-fix: false]
     - gosmopolitan # Report certain i18n/l10n anti-patterns in your Go codebase [fast: false, auto-fix: false]
@@ -94,7 +88,6 @@ linters:
 
   disable:
     - cyclop # checks function and package cyclomatic complexity [fast: false, auto-fix: false]
-    - depguard # Go linter that checks if package imports are in a list of acceptable packages [fast: true, auto-fix: false]
     - dupl # Tool for code clone detection [fast: true, auto-fix: false]
     - err113 # Golang linter to check the errors handling expressions [fast: false, auto-fix: false]
     - exhaustive # check exhaustiveness of enum switch statements [fast: false, auto-fix: false]
@@ -123,8 +116,6 @@ linters:
               desc: use github.com/hashicorp/terraform-plugin-testing/helper/acctest
             - pkg: "github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
               desc: use github.com/hashicorp/terraform-plugin-testing/helper/resource
-            - pkg: "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-              desc: use github.com/hashicorp/terraform-plugin-testing/terraform
     govet:
       disable-all: true
       enable:
@@ -162,6 +153,9 @@ linters:
       - linters:
           - staticcheck
         text: "QF1012:"
+      - path: internal/services/container/helpers_container.go
+        linters:
+          - gocyclo # should be removed along with the deprecated attributes of the scaleway_container resource
 
 issues:
   max-issues-per-linter: 0

@@ -24,7 +24,7 @@ func TestAccObject_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-basic")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -103,7 +103,7 @@ func TestAccObject_ContentType(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-content-type")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-content-type")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -141,7 +141,7 @@ func TestAccObject_Hash(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-hash")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-hash")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -201,7 +201,7 @@ func TestAccObject_Move(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-move")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-move")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -257,7 +257,7 @@ func TestAccObject_StorageClass(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-storage-class")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-storage-class")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -321,7 +321,7 @@ func TestAccObject_Metadata(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-metadata")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-metadata")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -391,7 +391,7 @@ func TestAccObject_Tags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-tags")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-tags")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -455,7 +455,7 @@ func TestAccObject_Visibility(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-visibility")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-visibility")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -513,7 +513,7 @@ func TestAccObject_State(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-visibility")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-visibility")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -582,7 +582,7 @@ func TestAccObject_ByContent(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-by-content")
 
 	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 	fileContentStep2 := "This is a different content"
@@ -640,7 +640,7 @@ func TestAccObject_ByContentBase64(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content-base64")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-by-content-base64")
 
 	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 	fileContentStep2 := "This is a different content"
@@ -715,7 +715,7 @@ func TestAccObject_WithBucketName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-basic")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -771,7 +771,7 @@ func TestAccObject_Encryption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-encryption")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-object-encryption")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(

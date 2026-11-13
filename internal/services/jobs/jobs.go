@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"regexp"
 	"time"
@@ -17,11 +18,16 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/job_definition_resource.md
+var definitionResourceDescription string
+
 func ResourceDefinition() *schema.Resource {
 	return &schema.Resource{
+		Description:   definitionResourceDescription,
 		CreateContext: ResourceJobDefinitionCreate,
 		ReadContext:   ResourceJobDefinitionRead,
 		UpdateContext: ResourceJobDefinitionUpdate,
@@ -130,6 +136,21 @@ func definitionSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"retry_policy": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Description: "Defines a retry policy for the job.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"max_retries": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "The maximum number of retries upon job failure.",
+					},
+				},
+			},
+		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 		"secret_reference": {
@@ -193,7 +214,7 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		CPULimit:             uint32(d.Get("cpu_limit").(int)),
 		MemoryLimit:          uint32(d.Get("memory_limit").(int)),
 		ImageURI:             d.Get("image_uri").(string),
-		Command:              new(d.Get("command").(string)),
+		Command:              new(d.Get("command").(string)), //nolint:staticcheck
 		StartupCommand:       types.ExpandStrings(d.Get("startup_command")),
 		ProjectID:            d.Get("project_id").(string),
 		EnvironmentVariables: types.ExpandMapStringString(d.Get("env")),
@@ -201,6 +222,7 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		CronSchedule:         expandJobDefinitionCron(d.Get("cron")).ToCreateRequest(),
 		Args:                 types.ExpandStrings(d.Get("args")),
 		LocalStorageCapacity: uint32(d.Get("local_storage_capacity").(int)),
+		RetryPolicy:          expandJobDefinitionRetryPolicy(d.Get("retry_policy")).ToCreateRequest(),
 	}
 
 	if timeoutSeconds, ok := d.GetOk("timeout"); ok {
@@ -266,7 +288,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("memory_limit", int(definition.MemoryLimit))
 	_ = d.Set("local_storage_capacity", int(definition.LocalStorageCapacity))
 	_ = d.Set("image_uri", definition.ImageURI)
-	_ = d.Set("command", definition.Command)
+	_ = d.Set("command", definition.Command) //nolint:staticcheck
 	_ = d.Set("startup_command", types.FlattenSliceString(definition.StartupCommand))
 	_ = d.Set("args", types.FlattenSliceString(definition.Args))
 	_ = d.Set("env", types.FlattenMap(definition.EnvironmentVariables))
@@ -275,6 +297,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("cron", flattenJobDefinitionCron(definition.CronSchedule))
 	_ = d.Set("region", definition.Region)
 	_ = d.Set("project_id", definition.ProjectID)
+	_ = d.Set("retry_policy", flattenJobDefinitionRetryPolicy(definition.RetryPolicy))
 	_ = d.Set("secret_reference", flattenJobDefinitionSecret(rawSecretRefs.Secrets))
 
 	return nil
@@ -349,6 +372,10 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if d.HasChange("cron") {
 		req.CronSchedule = expandJobDefinitionCron(d.Get("cron")).ToUpdateRequest()
+	}
+
+	if d.HasChange("retry_policy") {
+		req.RetryPolicy = expandJobDefinitionRetryPolicy(d.Get("retry_policy")).ToUpdateRequest()
 	}
 
 	if d.HasChange("secret_reference") {
@@ -429,8 +456,9 @@ func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m 
 		// Wait for all stopped job runs to terminate
 		for _, jobRunID := range jobRunIDsToWait {
 			_, waitErr := api.WaitForJobRun(&jobs.WaitForJobRunRequest{
-				JobRunID: jobRunID,
-				Region:   region,
+				JobRunID:      jobRunID,
+				Region:        region,
+				RetryInterval: transport.DefaultWaitRetryInterval,
 			}, scw.WithContext(ctx))
 			if waitErr != nil && !httperrors.Is404(waitErr) {
 				return diag.FromErr(fmt.Errorf("failed to wait for job run %s: %w", jobRunID, waitErr))

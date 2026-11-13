@@ -192,7 +192,7 @@ func TestStringValidatorUUIDOrUUIDWithLocality(t *testing.T) {
 
 			resp := validator.StringResponse{}
 
-			verify.IsStringUUIDOrUUIDWithLocality().ValidateString(ctx, req, &resp)
+			verify.IsStringUUIDOrUUIDWithRegion().ValidateString(ctx, req, &resp)
 
 			if tc.wantErr {
 				if !resp.Diagnostics.HasError() {

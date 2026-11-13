@@ -2,15 +2,20 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/vpc_public_gateway_data_source.md
+var vpcpublicGatewayDataSourceDescription string
 
 func DataSourceVPCPublicGateway() *schema.Resource {
 	// Generate datasource schema from resource
@@ -29,13 +34,14 @@ func DataSourceVPCPublicGateway() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: vpcpublicGatewayDataSourceDescription,
 		Schema:      dsSchema,
 		ReadContext: DataSourceVPCPublicGatewayRead,
 	}
 }
 
 func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := newAPIWithZoneV2(d, m)
+	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -75,5 +81,12 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 	d.SetId(zonedID)
 	_ = d.Set("public_gateway_id", zonedID)
 
-	return ResourceVPCPublicGatewayRead(ctx, d, m)
+	parsedID := zonal.ExpandID(zonedID)
+
+	gateway, err := waitForVPCPublicGateway(ctx, api, parsedID.Zone, parsedID.ID, defaultTimeout)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setPublicGatewayState(d, gateway)
 }

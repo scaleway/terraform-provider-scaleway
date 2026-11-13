@@ -29,7 +29,7 @@ func TestAccFunctionTrigger_SQS(t *testing.T) {
 					resource scaleway_function main {
 						name = "test-function-trigger-sqs"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -77,6 +77,7 @@ func TestAccFunctionTrigger_SQS(t *testing.T) {
 					testAccCheckFunctionTriggerExists(tt, "scaleway_function_trigger.main"),
 					acctest.CheckResourceAttrUUID("scaleway_function_trigger.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_function_trigger.main", "name", "test-function-trigger-sqs"),
+					resource.TestCheckResourceAttrWith("scaleway_function_trigger.main", "srn", acctest.CheckSRN("functions", "triggers")),
 					testAccCheckFunctionTriggerStatusReady(tt, "scaleway_function_trigger.main"),
 				),
 			},
@@ -100,7 +101,7 @@ func TestAccFunctionTrigger_Nats(t *testing.T) {
 					resource scaleway_function main {
 						name = "test-function-trigger-sqs"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
@@ -159,7 +160,7 @@ func TestAccFunctionTrigger_Error(t *testing.T) {
 					resource scaleway_function main {
 						name = "test-function-trigger-error"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}

@@ -2,20 +2,27 @@ package s2svpn
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/s2s_vpn_connection_resource.md
+var connectionResourceDescription string
+
 func ResourceConnection() *schema.Resource {
 	return &schema.Resource{
+		Description:   connectionResourceDescription,
 		CreateContext: ResourceConnectionCreate,
 		ReadContext:   ResourceConnectionRead,
 		UpdateContext: ResourceConnectionUpdate,
@@ -23,6 +30,7 @@ func ResourceConnection() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
 		SchemaFunc:    connectionSchema,
 	}
@@ -157,14 +165,24 @@ func connectionSchema() map[string]*schema.Schema {
 			Description: "The status of the VPN gateway",
 		},
 		"secret_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The BGP peer IP on customer side",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Description:      "The ID of a Secret Manager secret containing the PSK. Prefer creating a scaleway_secret (and scaleway_secret_version) yourself so Terraform manages its lifecycle",
+			DiffSuppressFunc: dsf.Locality,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 		},
 		"secret_version": {
-			Type:        schema.TypeInt,
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Computed:     true,
+			RequiredWith: []string{"secret_id"},
+			Description:  "The version of the secret containing the PSK. Requires secret_id. If omitted, the latest version is used",
+		},
+		"srn": {
+			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "The BGP peer IP on customer side",
+			Description: "The Scaleway Resource Name (SRN) of the connection",
 		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
@@ -270,6 +288,7 @@ func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m any
 		CustomerGatewayID:      regional.ExpandID(d.Get("customer_gateway_id").(string)).ID,
 		Ikev2Ciphers:           expandConnectionCiphers(d.Get("ikev2_ciphers")),
 		EspCiphers:             expandConnectionCiphers(d.Get("esp_ciphers")),
+		Secret:                 expandConnectionSecret(d.Get("secret_id"), d.Get("secret_version")),
 	}
 
 	if bgpConfigIpv4Config != nil {
@@ -285,7 +304,10 @@ func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.Connection.ID))
+	err = identity.SetRegionalIdentity(d, res.Connection.Region, res.Connection.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceConnectionRead(ctx, d, m)
 }
@@ -310,6 +332,17 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	diags := setConnectionState(d, connection)
+
+	err = identity.SetRegionalIdentity(d, connection.Region, connection.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setConnectionState(d *schema.ResourceData, connection *s2s_vpn.Connection) diag.Diagnostics {
 	_ = d.Set("name", connection.Name)
 	_ = d.Set("region", connection.Region)
 	_ = d.Set("project_id", connection.ProjectID)
@@ -321,24 +354,25 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("is_ipv6", connection.IsIPv6)
 	_ = d.Set("initiation_policy", connection.InitiationPolicy.String())
 	_ = d.Set("route_propagation_enabled", connection.RoutePropagationEnabled)
-	_ = d.Set("vpn_gateway_id", regional.NewIDString(region, connection.VpnGatewayID))
-	_ = d.Set("customer_gateway_id", regional.NewIDString(region, connection.CustomerGatewayID))
+	_ = d.Set("vpn_gateway_id", regional.NewIDString(connection.Region, connection.VpnGatewayID))
+	_ = d.Set("customer_gateway_id", regional.NewIDString(connection.Region, connection.CustomerGatewayID))
 	_ = d.Set("tunnel_status", connection.TunnelStatus.String())
 	_ = d.Set("ikev2_ciphers", flattenConnectionCiphers(connection.Ikev2Ciphers))
 	_ = d.Set("esp_ciphers", flattenConnectionCiphers(connection.EspCiphers))
 	_ = d.Set("bgp_status_ipv4", connection.BgpStatusIPv4.String())
 	_ = d.Set("bgp_status_ipv6", connection.BgpStatusIPv6.String())
-	_ = d.Set("secret_id", regional.NewIDString(region, connection.SecretID))
+	_ = d.Set("secret_id", regional.NewIDString(connection.Region, connection.SecretID))
 	_ = d.Set("secret_version", int(connection.SecretRevision))
+	_ = d.Set("srn", connection.Srn)
 
-	bgpSessionIPv4, err := flattenBGPSession(region, connection.BgpSessionIPv4)
+	bgpSessionIPv4, err := flattenBGPSession(connection.Region, connection.BgpSessionIPv4)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("bgp_session_ipv4", bgpSessionIPv4)
 
-	bgpSessionIPv6, err := flattenBGPSession(region, connection.BgpSessionIPv6)
+	bgpSessionIPv6, err := flattenBGPSession(connection.Region, connection.BgpSessionIPv6)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -383,6 +417,11 @@ func ResourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m any
 
 	if d.HasChange("esp_ciphers") {
 		req.EspCiphers = expandConnectionCiphers(d.Get("esp_ciphers"))
+		hasChanged = true
+	}
+
+	if d.HasChanges("secret_id", "secret_version") {
+		req.SecretID, req.SecretRevision = expandConnectionSecretUpdate(d.Get("secret_id"), d.Get("secret_version"))
 		hasChanged = true
 	}
 

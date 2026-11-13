@@ -43,3 +43,45 @@ func flattenEndpoints(endpoints []*searchdbapi.Endpoint) []map[string]any {
 
 	return result
 }
+
+func publicDashboardURLFromEndpoints(endpoints []*searchdbapi.Endpoint) string {
+	for _, ep := range endpoints {
+		if ep.Public == nil {
+			continue
+		}
+
+		for _, svc := range ep.Services {
+			// API historically used "dashboard"/"dashboards"; current SearchDB
+			// responses use "ui-dashboard".
+			switch svc.Name {
+			case "dashboard", "dashboards", "ui-dashboard":
+				return svc.URL
+			}
+		}
+	}
+
+	return ""
+}
+
+// EndpointHasOpenSearchAPI reports whether the endpoint exposes the OpenSearch
+// HTTP API (as opposed to Dashboards-only public endpoints left after a
+// private-network create).
+func EndpointHasOpenSearchAPI(endpoint *searchdbapi.Endpoint) bool {
+	if endpoint == nil {
+		return false
+	}
+
+	for _, svc := range endpoint.Services {
+		if svc == nil {
+			continue
+		}
+
+		// API historically used "api"; current SearchDB responses use "api-opensearch".
+		switch svc.Name {
+		case "api", "api-opensearch":
+			return true
+		}
+	}
+
+	return false
+}

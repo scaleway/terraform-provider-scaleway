@@ -1,8 +1,6 @@
 package k8stestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	k8sSDK "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -25,7 +23,9 @@ func testSweepK8SCluster(_ string) error {
 
 		listClusters, err := k8sAPI.ListClusters(&k8sSDK.ListClustersRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing clusters in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing clusters in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, cluster := range listClusters.Clusters {
@@ -35,7 +35,9 @@ func testSweepK8SCluster(_ string) error {
 				ClusterID: cluster.ID,
 			}, scw.WithAllPages())
 			if err != nil {
-				return fmt.Errorf("error listing pool in (%s) in sweeper: %w", region, err)
+				logging.L.Warningf("error listing pool in (%s) in sweeper: %s", region, err)
+
+				continue
 			}
 
 			for _, pool := range listPools.Pools {
@@ -44,7 +46,7 @@ func testSweepK8SCluster(_ string) error {
 					PoolID: pool.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting pool in sweeper: %w", err)
+					logging.L.Warningf("error deleting pool in sweeper: %s", err)
 				}
 			}
 
@@ -53,7 +55,7 @@ func testSweepK8SCluster(_ string) error {
 				ClusterID: cluster.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting cluster in sweeper: %w", err)
+				logging.L.Warningf("error deleting cluster in sweeper: %s", err)
 			}
 		}
 

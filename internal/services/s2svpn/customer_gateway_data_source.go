@@ -2,15 +2,20 @@ package s2svpn
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	s2svpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/s2s_vpn_customer_gateway_data_source.md
+var customerGatewayDataSourceDescription string
 
 func DataSourceCustomerGateway() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceCustomerGateway().SchemaFunc())
@@ -27,6 +32,7 @@ func DataSourceCustomerGateway() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: customerGatewayDataSourceDescription,
 		Schema:      dsSchema,
 		ReadContext: DataSourceS2SCustomerGatewayRead,
 	}
@@ -67,14 +73,13 @@ func DataSourceS2SCustomerGatewayRead(ctx context.Context, d *schema.ResourceDat
 	d.SetId(regionalID)
 	_ = d.Set("customer_gateway_id", regionalID)
 
-	diags := ResourceCustomerGatewayRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read customer gateway state")...)
+	gateway, err := api.GetCustomerGateway(&s2svpn.GetCustomerGatewayRequest{
+		GatewayID: locality.ExpandID(customerGatewayID.(string)),
+		Region:    region,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("customer gateway (%s) not found", regionalID)
-	}
-
-	return nil
+	return setCustomerGatewayState(d, gateway)
 }

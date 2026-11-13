@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,11 +10,16 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/vpcs_data_source.md
+var vpcsDataSourceDescription string
+
 func DataSourceVPCs() *schema.Resource {
 	return &schema.Resource{
+		Description: vpcsDataSourceDescription,
 		ReadContext: DataSourceVPCsRead,
 		SchemaFunc:  vpcsSchema,
 	}
@@ -91,12 +97,14 @@ func DataSourceVPCsRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	res, err := vpcAPI.ListVPCs(&vpc.ListVPCsRequest{
-		Region:    region,
-		Tags:      types.ExpandStrings(d.Get("tags")),
-		Name:      types.ExpandStringPtr(d.Get("name")),
-		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListVPCsResponse, error) {
+		return vpcAPI.ListVPCs(&vpc.ListVPCsRequest{
+			Region:    region,
+			Tags:      types.ExpandStrings(d.Get("tags")),
+			Name:      types.ExpandStringPtr(d.Get("name")),
+			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

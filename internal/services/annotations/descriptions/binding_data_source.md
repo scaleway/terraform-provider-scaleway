@@ -1,0 +1,1 @@
+Use this data source to retrieve information about an annotation binding.

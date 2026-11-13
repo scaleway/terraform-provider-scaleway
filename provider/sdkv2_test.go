@@ -142,7 +142,6 @@ func TestAccProvider_SSHKeys(t *testing.T) {
 
 func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 	exceptions := []string{
-		"scaleway_account_project",
 		"scaleway_account_ssh_key",
 		"scaleway_autoscaling_instance_group",
 		"scaleway_autoscaling_instance_policy",
@@ -150,9 +149,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_baremetal_server",
 		"scaleway_block_snapshot",
 		"scaleway_block_volume",
-		"scaleway_cockpit",
-		"scaleway_cockpit_grafana_user",
-		"scaleway_cockpit_alert_manager",
 		"scaleway_container",
 		"scaleway_container_cron",
 		"scaleway_container_domain",
@@ -163,30 +159,17 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_datawarehouse_user",
 		"scaleway_datawarehouse_database",
 		"scaleway_domain_record",
-		"scaleway_domain_registration",
 		"scaleway_domain_zone",
-		"scaleway_edge_services_head_stage",
-		"scaleway_edge_services_route_stage",
-		"scaleway_edge_services_tls_stage",
-		"scaleway_edge_services_waf_stage",
-		"scaleway_file_filesystem",
 		"scaleway_function",
 		"scaleway_function_cron",
 		"scaleway_function_domain",
 		"scaleway_function_namespace",
 		"scaleway_function_token",
 		"scaleway_function_trigger",
-		"scaleway_iam_api_key",
-		"scaleway_iam_application",
-		"scaleway_iam_group",
 		"scaleway_iam_group_membership",
 		"scaleway_iam_policy",
-		"scaleway_iam_ssh_key",
-		"scaleway_iam_user",
 		"scaleway_inference_deployment",
 		"scaleway_inference_model",
-		"scaleway_instance_security_group",
-		"scaleway_instance_security_group_rules",
 		"scaleway_instance_server",
 		"scaleway_iot_device",
 		"scaleway_iot_hub",
@@ -195,9 +178,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_ipam_ip",
 		"scaleway_ipam_ip_reverse_dns",
 		"scaleway_job_definition",
-		"scaleway_k8s_acl",
-		"scaleway_k8s_cluster",
-		"scaleway_k8s_pool",
 		"scaleway_key_manager_key",
 		"scaleway_mnq_nats_account",
 		"scaleway_mnq_nats_credentials",
@@ -205,15 +185,13 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_mnq_sns_credentials",
 		"scaleway_mnq_sns_topic",
 		"scaleway_mnq_sns_topic_subscription",
-		"scaleway_mnq_sqs",
-		"scaleway_mnq_sqs_credentials",
-		"scaleway_mnq_sqs_queue",
 		"scaleway_object",
 		"scaleway_object_bucket",
 		"scaleway_object_bucket_acl",
 		"scaleway_object_bucket_lock_configuration",
 		"scaleway_object_bucket_policy",
 		"scaleway_object_bucket_website_configuration",
+		"scaleway_redis_cluster",
 		"scaleway_rdb_acl",
 		"scaleway_rdb_database",
 		"scaleway_rdb_database_backup",
@@ -223,25 +201,9 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_rdb_user",
 		"scaleway_rdb_snapshot",
 		"scaleway_registry_namespace",
-		"scaleway_s2s_vpn_gateway",
-		"scaleway_s2s_vpn_customer_gateway",
-		"scaleway_s2s_vpn_connection",
-		"scaleway_s2s_vpn_routing_policy",
 		"scaleway_sdb_sql_database",
-		"scaleway_secret",
-		"scaleway_secret_version",
-		"scaleway_tem_domain",
-		"scaleway_tem_domain_validation",
-		"scaleway_tem_blocked_list",
-		"scaleway_tem_webhook",
-		"scaleway_vpc_gateway_network",
-		"scaleway_vpc_public_gateway",
 		"scaleway_vpc_public_gateway_dhcp",
 		"scaleway_vpc_public_gateway_dhcp_reservation",
-		"scaleway_vpc_public_gateway_ip",
-		"scaleway_vpc_public_gateway_ip_reverse_dns",
-		"scaleway_vpc_public_gateway_pat_rule",
-		"scaleway_webhosting",
 	}
 
 	p := provider.SDKProvider(nil)()
@@ -257,6 +219,90 @@ func TestSDKProvider_ResourceImporterNotEmpty(t *testing.T) {
 	for name, d := range p.ResourcesMap {
 		if d.Importer == nil {
 			t.Errorf("Importer for resource %s is nil", name)
+		}
+	}
+}
+
+func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
+	exceptions := []string{
+		"scaleway_apple_silicon_runner",
+		"scaleway_apple_silicon_server",
+		"scaleway_autoscaling_instance_template",
+		"scaleway_cockpit_alert_manager",
+		"scaleway_cockpit_token",
+		"scaleway_container_cron",
+		"scaleway_container_domain",
+		"scaleway_container_token",
+		"scaleway_container_trigger",
+		"scaleway_datawarehouse_database",
+		"scaleway_datawarehouse_deployment",
+		"scaleway_datawarehouse_user",
+		"scaleway_domain_registration",
+		"scaleway_edge_services_head_stage",
+		"scaleway_edge_services_plan",
+		"scaleway_file_filesystem",
+		"scaleway_flexible_ip_mac_address",
+		"scaleway_function_cron",
+		"scaleway_function_domain",
+		"scaleway_function_token",
+		"scaleway_function_trigger",
+		"scaleway_iam_group_membership",
+		"scaleway_inference_deployment",
+		"scaleway_instance_ip_reverse_dns",
+		"scaleway_instance_security_group_rules",
+		"scaleway_instance_user_data",
+		"scaleway_iot_network",
+		"scaleway_iot_route",
+		"scaleway_ipam_ip_reverse_dns",
+		"scaleway_job_definition",
+		"scaleway_k8s_acl",
+		"scaleway_lb_acl",
+		"scaleway_lb_private_network",
+		"scaleway_mnq_nats_account",
+		"scaleway_mnq_nats_credentials",
+		"scaleway_mnq_sns_credentials",
+		"scaleway_mnq_sns_topic",
+		"scaleway_mnq_sns_topic_subscription",
+		"scaleway_mnq_sqs_credentials",
+		"scaleway_mnq_sqs_queue",
+		"scaleway_mongodb_snapshot",
+		"scaleway_mongodb_user",
+		"scaleway_object_bucket_acl",
+		"scaleway_object_bucket_lock_configuration",
+		"scaleway_object_bucket_website_configuration",
+		"scaleway_opensearch_user",
+		"scaleway_rdb_read_replica",
+		"scaleway_rdb_snapshot",
+		"scaleway_rdb_user",
+		"scaleway_sdb_sql_database",
+		"scaleway_tem_blocked_list",
+		"scaleway_tem_domain_validation",
+		"scaleway_tem_webhook",
+		"scaleway_vpc_public_gateway_ip_reverse_dns",
+	}
+
+	p := provider.SDKProvider(nil)()
+	for name := range p.ResourcesMap {
+		if p.DataSourcesMap[name] == nil && !slices.Contains(exceptions, name) {
+			t.Errorf("DataSource does not exist for %s", name)
+		}
+	}
+}
+
+func TestSDKProvider_DataSourceDescriptionNotEmpty(t *testing.T) {
+	p := provider.SDKProvider(nil)()
+	for name, d := range p.DataSourcesMap {
+		if d.Description == "" {
+			t.Errorf("Description for data source %s is empty", name)
+		}
+	}
+}
+
+func TestSDKProvider_ResourceDescriptionNotEmpty(t *testing.T) {
+	p := provider.SDKProvider(nil)()
+	for name, r := range p.ResourcesMap {
+		if r.Description == "" {
+			t.Errorf("Description for resource %s is empty", name)
 		}
 	}
 }

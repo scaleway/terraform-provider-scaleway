@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,8 +13,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/vpc_public_gateway_pat_rule_data_source.md
+var patruleDataSourceDescription string
+
 func DataSourcePATRule() *schema.Resource {
-	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourcePATRule().SchemaFunc())
 
 	dsSchema["pat_rule_id"] = &schema.Schema{
@@ -23,17 +26,17 @@ func DataSourcePATRule() *schema.Resource {
 		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 	}
 
-	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "zone")
 
 	return &schema.Resource{
+		Description: patruleDataSourceDescription,
 		Schema:      dsSchema,
 		ReadContext: DataSourceVPCPublicGatewayPATRuleRead,
 	}
 }
 
 func DataSourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := newAPIWithZoneV2(d, m)
+	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -44,8 +47,7 @@ func DataSourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resour
 	d.SetId(zonedID)
 	_ = d.Set("pat_rule_id", zonedID)
 
-	// check if pat rule exist
-	_, err = api.GetPatRule(&vpcgw.GetPatRuleRequest{
+	patRule, err := api.GetPatRule(&vpcgw.GetPatRuleRequest{
 		PatRuleID: locality.ExpandID(patRuleIDRaw),
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -53,5 +55,5 @@ func DataSourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	return ResourceVPCPublicGatewayPATRuleRead(ctx, d, m)
+	return setPATRuleState(d, patRule)
 }

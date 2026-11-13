@@ -1,10 +1,12 @@
 package container_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccDataSourceContainer_Basic(t *testing.T) {
@@ -16,13 +18,16 @@ func TestAccDataSourceContainer_Basic(t *testing.T) {
 		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_container_namespace main {
+						name = "tf-test-datasource-basic"
 					}
 
 					resource scaleway_container main {
 						name = "test-container-data"
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 					}
 
 					data "scaleway_container" "by_name" {
@@ -34,7 +39,7 @@ func TestAccDataSourceContainer_Basic(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						container_id = scaleway_container.main.id
 					}
-				`,
+				`, defaultTestImage),
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "name", "test-container-data"),
@@ -43,6 +48,58 @@ func TestAccDataSourceContainer_Basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr("data.scaleway_container.by_id", "name", "test-container-data"),
 					resource.TestCheckResourceAttrSet("data.scaleway_container.by_id", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceContainer_PrivateEndpoint(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isNamespaceDestroyed(tt),
+			isContainerDestroyed(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "tf-acctest-datasource-container-private-endpoint"
+					}
+
+					resource scaleway_vpc_private_network main {
+						name = "test-acc-datasource-container-private-endpoint"
+						vpc_id = scaleway_vpc.main.id
+					}
+
+					resource scaleway_container_namespace main {
+						name = "tf-acctest-datasource-container-private-endpoint"
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
+						private_network_id = scaleway_vpc_private_network.main.id
+						enable_private_endpoint = true
+						enable_default_public_endpoint = false
+					}
+
+					data scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						container_id = scaleway_container.main.id
+					}
+				`, defaultTestImage),
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("data.scaleway_container.main", "enable_private_endpoint", "true"),
+					resource.TestCheckResourceAttrSet("data.scaleway_container.main", "private_endpoint"),
+					resource.TestCheckResourceAttr("data.scaleway_container.main", "enable_default_public_endpoint", "false"),
 				),
 			},
 		},
@@ -58,11 +115,15 @@ func TestAccDataSourceContainer_HealthCheck(t *testing.T) {
 		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource scaleway_container_namespace main {}
+				Config: fmt.Sprintf(`
+					resource scaleway_container_namespace main {
+						name = "tf-test-datasource-healthcheck"
+					}
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 						deploy = false
 					}
 
@@ -70,7 +131,7 @@ func TestAccDataSourceContainer_HealthCheck(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						container_id = scaleway_container.main.id
 					}
-				`,
+				`, defaultTestImage),
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					// Check default option returned by the API when you don't specify the health_check block.
@@ -95,11 +156,15 @@ func TestAccDataSourceContainer_ScalingOption(t *testing.T) {
 		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource scaleway_container_namespace main {}
+				Config: fmt.Sprintf(`
+					resource scaleway_container_namespace main {
+						name = "tf-test-datasource-scalingoption"
+					}
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 						deploy = false
 					}
 
@@ -107,7 +172,7 @@ func TestAccDataSourceContainer_ScalingOption(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						container_id = scaleway_container.main.id
 					}
-				`,
+				`, defaultTestImage),
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					// Check default option returned by the API when you don't specify the scaling_option block.

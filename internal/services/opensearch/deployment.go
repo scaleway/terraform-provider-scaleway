@@ -2,6 +2,7 @@ package opensearch
 
 import (
 	"context"
+	_ "embed"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,15 +11,18 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/opensearch_deployment_resource.md
+var deploymentResourceDescription string
+
 func ResourceDeployment() *schema.Resource {
 	return &schema.Resource{
+		Description:   deploymentResourceDescription,
 		CreateContext: resourceDeploymentCreate,
 		ReadContext:   resourceDeploymentRead,
 		UpdateContext: resourceDeploymentUpdate,
@@ -60,10 +64,20 @@ func deploymentSchema() map[string]*schema.Schema {
 			Description: "OpenSearch version to use",
 		},
 		"node_amount": {
-			Type:        schema.TypeInt,
-			Required:    true,
-			ForceNew:    true,
-			Description: "Number of nodes",
+			Type:          schema.TypeInt,
+			Optional:      true,
+			ForceNew:      true,
+			Deprecated:    "Please use node_count instead",
+			ConflictsWith: []string{"node_count"},
+			ExactlyOneOf:  []string{"node_count"},
+			Description:   "Number of nodes",
+		},
+		"node_count": {
+			Type:          schema.TypeInt,
+			Optional:      true,
+			ConflictsWith: []string{"node_amount"},
+			ExactlyOneOf:  []string{"node_amount"},
+			Description:   "Number of nodes. Changing this value upgrades the deployment in place.",
 		},
 		"node_type": {
 			Type:        schema.TypeString,
@@ -87,7 +101,6 @@ func deploymentSchema() map[string]*schema.Schema {
 		"private_network": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			ForceNew:    true,
 			MaxItems:    1,
 			Description: "Private network configuration",
 			Elem: &schema.Resource{
@@ -124,10 +137,15 @@ func deploymentSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"public_dashboard_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "URL of the OpenSearch Dashboards service when it is exposed on a public endpoint (including when the API uses a private network)",
+		},
 		"endpoints": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "List of endpoints",
+			Description: "List of all endpoints returned by the API",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
@@ -196,13 +214,15 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	nodeCount := uint32(deploymentNodeCountFromConfig(d))
+
 	req := &searchdbapi.CreateDeploymentRequest{
-		Region:     region,
-		ProjectID:  d.Get("project_id").(string),
-		Name:       types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
-		Version:    d.Get("version").(string),
-		NodeAmount: uint32(d.Get("node_amount").(int)),
-		NodeType:   d.Get("node_type").(string),
+		Region:    region,
+		ProjectID: d.Get("project_id").(string),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
+		Version:   d.Get("version").(string),
+		NodeCount: &nodeCount,
+		NodeType:  d.Get("node_type").(string),
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
@@ -224,33 +244,13 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 			sizeGB := uint64(volumeMap["size_in_gb"].(int))
 			req.Volume = &searchdbapi.Volume{
 				Type:      searchdbapi.VolumeType(volumeMap["type"].(string)),
-				SizeBytes: scw.Size(sizeGB * 1000 * 1000 * 1000), // Convert GB to bytes
+				SizeBytes: scw.Size(sizeGB * 1000 * 1000 * 1000),
 			}
 		}
 	}
 
-	// Handle endpoint configuration
-	if v, ok := d.GetOk("private_network"); ok {
-		pnList := v.([]any)
-		if len(pnList) > 0 {
-			pnMap := pnList[0].(map[string]any)
-			pnID := locality.ExpandID(pnMap["private_network_id"].(string))
-			req.Endpoints = []*searchdbapi.EndpointSpec{
-				{
-					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
-						PrivateNetworkID: pnID,
-					},
-				},
-			}
-		}
-	} else {
-		// Create public endpoint by default
-		req.Endpoints = []*searchdbapi.EndpointSpec{
-			{
-				Public: &searchdbapi.EndpointSpecPublicDetails{},
-			},
-		}
-	}
+	desiredPrivate, pnID := privateNetworkDesireFromConfig(d)
+	req.Endpoints = []*searchdbapi.EndpointSpec{endpointSpec(desiredPrivate, pnID)}
 
 	deployment, err := api.CreateDeployment(req, scw.WithContext(ctx))
 	if err != nil {
@@ -258,6 +258,22 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	deployment, err = waitForDeployment(ctx, api, region, deployment.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Same endpoint reconciliation as Update so create-with-PN and create-without
+	// converge through one code path.
+	err = reconcileDeploymentEndpoints(
+		ctx,
+		api,
+		region,
+		deployment.ID,
+		deployment.Endpoints,
+		desiredPrivate,
+		pnID,
+		d.Timeout(schema.TimeoutCreate),
+	)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -303,7 +319,7 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 	_ = d.Set("name", deployment.Name)
 	_ = d.Set("tags", types.FlattenSliceString(deployment.Tags))
 	_ = d.Set("version", deployment.Version)
-	_ = d.Set("node_amount", int(deployment.NodeAmount))
+	setDeploymentNodeCountState(d, deployment)
 	_ = d.Set("node_type", deployment.NodeType)
 	_ = d.Set("status", string(deployment.Status))
 
@@ -325,7 +341,12 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 		})
 	}
 
+	// Expose every endpoint returned by the API. Adding private_network to an
+	// existing deployment attaches a private endpoint but does not remove the
+	// public one, so filtering against config would hide that the cluster is
+	// still publicly reachable.
 	_ = d.Set("endpoints", flattenEndpoints(deployment.Endpoints))
+	_ = d.Set("public_dashboard_url", publicDashboardURLFromEndpoints(deployment.Endpoints))
 
 	return nil
 }
@@ -371,7 +392,63 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
+	// Changing the number of nodes is an in-place upgrade via the SearchDB
+	// upgrade API, not a replacement.
+	diags := upgradeDeploymentNodeCount(ctx, api, d, region, id)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.HasChange("private_network") {
+		deployment, err := waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		desiredPrivate, pnID := privateNetworkDesireFromConfig(d)
+
+		err = reconcileDeploymentEndpoints(
+			ctx,
+			api,
+			region,
+			id,
+			deployment.Endpoints,
+			desiredPrivate,
+			pnID,
+			d.Timeout(schema.TimeoutUpdate),
+		)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return resourceDeploymentRead(ctx, d, meta)
+}
+
+// upgradeDeploymentNodeCount scales the number of nodes in place via the SearchDB
+// upgrade API. It is a no-op when node_count did not change.
+func upgradeDeploymentNodeCount(ctx context.Context, api *searchdbapi.API, d *schema.ResourceData, region scw.Region, id string) diag.Diagnostics {
+	if !d.HasChange("node_count") {
+		return nil
+	}
+
+	nodeCount := uint32(deploymentNodeCountFromConfig(d))
+
+	_, err := api.UpgradeDeployment(&searchdbapi.UpgradeDeploymentRequest{
+		Region:       region,
+		DeploymentID: id,
+		NodeCount:    &nodeCount,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }
 
 func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

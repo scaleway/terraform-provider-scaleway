@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
@@ -21,13 +21,15 @@ func TestAccCron_Basic(t *testing.T) {
 		CheckDestroy:             isCronDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_container_namespace main {
+						name = "tf-acctest-cron-basic"
 					}
 
 					resource scaleway_container main {
-						name = "my-container-with-cron-tf"
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 					}
 
 					resource scaleway_container_cron main {
@@ -36,7 +38,7 @@ func TestAccCron_Basic(t *testing.T) {
 						schedule = "5 4 * * *" #cron at 04:05
 						args = jsonencode({test = "scw"})
 					}
-				`,
+				`, defaultTestImage),
 				Check: resource.ComposeTestCheckFunc(
 					isCronPresent(tt, "scaleway_container_cron.main"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "schedule", "5 4 * * *"),
@@ -46,13 +48,15 @@ func TestAccCron_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_container_namespace main {
+						name = "tf-acctest-cron-basic"
 					}
 
 					resource scaleway_container main {
-						name = "my-container-with-cron-tf"
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 					}
 
 					resource scaleway_container_cron main {
@@ -61,7 +65,7 @@ func TestAccCron_Basic(t *testing.T) {
 						schedule = "5 4 * * *" #cron at 04:05
 						args = jsonencode({test = "scw"})
 					}
-				`,
+				`, defaultTestImage),
 				Check: resource.ComposeTestCheckFunc(
 					isCronPresent(tt, "scaleway_container_cron.main"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "schedule", "5 4 * * *"),
@@ -83,13 +87,16 @@ func TestAccCron_WithMultiArgs(t *testing.T) {
 		CheckDestroy:             isCronDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_container_namespace main {
+						name = "tf-acctest-cron-multi-args"
 					}
 
 					resource scaleway_container main {
 						name = "my-container-with-cron-tf"
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 					}
 
 					resource scaleway_container_cron main {
@@ -108,7 +115,7 @@ func TestAccCron_WithMultiArgs(t *testing.T) {
 						}
                 		)
 					}
-				`,
+				`, defaultTestImage),
 				Check: resource.ComposeTestCheckFunc(
 					isCronPresent(tt, "scaleway_container_cron.main"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "schedule", "5 4 1 * *"),
@@ -116,13 +123,15 @@ func TestAccCron_WithMultiArgs(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_container_namespace main {
+						name = "tf-acctest-cron-multi-args"
 					}
 
 					resource scaleway_container main {
-					name = "my-container-with-cron-tf"
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 					}
 
 					resource scaleway_container_cron main {
@@ -130,7 +139,7 @@ func TestAccCron_WithMultiArgs(t *testing.T) {
 						schedule = "5 4 * * 1" #cron at 04:05
 						args = jsonencode({test = "scw"})
 					}
-				`,
+				`, defaultTestImage),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "schedule", "5 4 * * 1"),
 					resource.TestCheckResourceAttr("scaleway_container_cron.main", "args", "{\"test\":\"scw\"}"),
@@ -152,9 +161,9 @@ func isCronPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = api.GetCron(&containerSDK.GetCronRequest{
-			CronID: id,
-			Region: region,
+		_, err = api.GetTrigger(&containerSDK.GetTriggerRequest{
+			TriggerID: id,
+			Region:    region,
 		})
 		if err != nil {
 			return err
@@ -176,12 +185,12 @@ func isCronDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = api.DeleteCron(&containerSDK.DeleteCronRequest{
-				CronID: id,
-				Region: region,
+			_, err = api.DeleteTrigger(&containerSDK.DeleteTriggerRequest{
+				TriggerID: id,
+				Region:    region,
 			})
 			if err == nil {
-				return fmt.Errorf("containerSDK cron (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("container cron (%s) still exists", rs.Primary.ID)
 			}
 
 			if !httperrors.Is404(err) {

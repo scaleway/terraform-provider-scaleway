@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,4 +41,28 @@ func NewAPIWithRegionAndID(m any, id string) (*kafkaapi.API, scw.Region, string,
 	}
 
 	return api, region, id, nil
+}
+
+// expandClusterAvailability maps multi_az / mono_az_zone to the API oneof.
+// multi_az=true → MultiAz; else mono (explicit zone or provider default).
+func expandClusterAvailability(d *schema.ResourceData, m any) (*kafkaapi.ClusterMultiAZDetails, *kafkaapi.ClusterMonoAZDetails, error) {
+	if d.Get("multi_az").(bool) {
+		return &kafkaapi.ClusterMultiAZDetails{}, nil, nil
+	}
+
+	if v, ok := d.GetOk("mono_az_zone"); ok {
+		zone, err := scw.ParseZone(v.(string))
+		if err != nil {
+			return nil, nil, fmt.Errorf("invalid mono_az_zone: %w", err)
+		}
+
+		return nil, &kafkaapi.ClusterMonoAZDetails{Zone: &zone}, nil
+	}
+
+	zone, err := meta.ExtractZone(d, m)
+	if err != nil {
+		return nil, nil, fmt.Errorf("mono_az default zone: %w", err)
+	}
+
+	return nil, &kafkaapi.ClusterMonoAZDetails{Zone: &zone}, nil
 }

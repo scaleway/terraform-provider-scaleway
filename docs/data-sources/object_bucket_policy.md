@@ -13,7 +13,7 @@ Refer to the Object Storage [documentation](https://www.scaleway.com/en/docs/obj
 
 The following command allows you to retrieve a bucket policy by its bucket.
 
-```hcl
+```terraform
 data "scaleway_object_bucket_policy" "main" {
   bucket = "bucket.test.com"
 }
@@ -39,4 +39,4 @@ The `scaleway_object_bucket_policy` data source exports certain attributes once 
 
 In addition to all above arguments, the following attribute is exported:
 
-* `policy` - The content of the bucket policy in JSON format.
+- `policy` - The content of the bucket policy in JSON format.

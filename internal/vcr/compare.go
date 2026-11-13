@@ -1,0 +1,394 @@
+package vcr
+
+import (
+	"net/http"
+	"net/url"
+	"reflect"
+	"slices"
+	"sort"
+	"strconv"
+	"strings"
+
+	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
+)
+
+// BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes
+var BodyMatcherIgnore = []string{
+	// Client related fields
+	"organization", // like organization_id but deprecated
+	"organization_id",
+	"project_id",
+	"project", // like project_id but should be deprecated
+	// Request related fields
+	// "name" is intentionally NOT ignored: see cassetteBodyMatcher fallback.
+	"expires_at", // is relative to the moment the cassette is replayed
+	"password",   // generated passwords will change every time
+	// MNQ related fields
+	"mnq_project_id",
+	"mnq_region",
+	"mnq_nats_account_id",
+	"mnq_nats_subject",
+}
+
+// RemoveKeyRecursive removes a key from a map and all its nested maps/slices.
+func RemoveKeyRecursive(m map[string]any, key string) {
+	delete(m, key)
+
+	for _, v := range m {
+		switch nested := v.(type) {
+		case map[string]any:
+			RemoveKeyRecursive(nested, key)
+		case []any:
+			for _, item := range nested {
+				if child, ok := item.(map[string]any); ok {
+					RemoveKeyRecursive(child, key)
+				}
+			}
+		}
+	}
+}
+
+// CompareJSONFields is the entry point for comparing two interface values
+// handle string with special cases, map[string]interface{} and []interface{} or any other primitive type.
+// Callers are responsible for stripping ignored keys before calling.
+func CompareJSONFields(requestValue, cassetteValue any, strict bool) bool {
+	switch requestValue := requestValue.(type) {
+	case string:
+		return CompareFieldsStrings(requestValue, cassetteValue.(string))
+	case map[string]any:
+		return CompareJSONBodies(requestValue, cassetteValue.(map[string]any), strict)
+	case []any:
+		return CompareSlices(requestValue, cassetteValue.([]any))
+	default:
+		return reflect.DeepEqual(requestValue, cassetteValue)
+	}
+}
+
+// CompareJSONBodies compare two given maps that represent json bodies.
+// Returns true if both json are equivalent. Callers must strip ignored keys
+// (e.g. via RemoveKeyRecursive) before calling.
+func CompareJSONBodies(request, cassette map[string]any, strict bool) bool {
+	for key, requestValue := range request {
+		cassetteValue, ok := cassette[key]
+		if !ok {
+			if strict {
+				return false
+			}
+
+			continue
+		}
+
+		if reflect.TypeOf(cassetteValue) != reflect.TypeOf(requestValue) {
+			return false
+		}
+
+		if !CompareJSONFields(requestValue, cassetteValue, strict) {
+			return false
+		}
+	}
+
+	for key, cassetteValue := range cassette {
+		if _, ok := request[key]; !ok && cassetteValue != nil {
+			// Fails match if cassettes contains a field not in actual requests
+			// Fields should not disappear from requests unless a sdk breaking change
+			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
+			return false
+		}
+	}
+
+	return true
+}
+
+// CompareFormBodies compares the request form values against the raw cassette
+// body. The cassette body is parsed as url.Values internally so that only body
+// parameters are compared — never URL query parameters (which go-vcr v4 merges
+// into cassette.Form, unlike v3's PostForm-only field). Callers must strip
+// ignored keys from the request values before calling.
+// ponytail: parsing cassette.Body instead of using cassette.Form insulates us
+// from recorder-side Form population changes; revisit if body needs non-form parsing.
+func CompareFormBodies(request url.Values, cassetteBody string) bool {
+	cassetteValues, err := url.ParseQuery(cassetteBody)
+	if err != nil {
+		return false
+	}
+
+	for key, requestValue := range request {
+		cassetteValue, ok := cassetteValues[key]
+		if !ok {
+			// New fields can appear because of new features from the API, don't
+			// generate new cassettes in these cases
+			continue
+		}
+
+		if !CompareStringSlices(requestValue, cassetteValue) {
+			return false
+		}
+	}
+
+	for key, cassetteValue := range cassetteValues {
+		if _, exists := request[key]; !exists && cassetteValue != nil {
+			// Fails match if cassettes contains a field not in actual requests
+			// Fields should not disappear from requests unless a sdk breaking change
+			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
+			return false
+		}
+	}
+
+	return true
+}
+
+// CompareFieldsStrings compare two strings from request JSON bodies
+// Has special case when string are terraform generated names
+func CompareFieldsStrings(expected, actual string) bool {
+	if expected == actual {
+		return true
+	}
+
+	// Action=DeleteTopic&TopicArn=arn%3Ascw%3Asns%3Afr-par%3Aproject-1a080a81-67b6-476d-80b4-f3bb9184e318%3Atest-mnq-sns-topic-basic20250603151943185500000004&Version=2010-03-31
+	snsPrefix := "test-mnq-sns-topic-basic"
+	if strings.HasPrefix(actual, snsPrefix) && strings.HasPrefix(expected, snsPrefix) {
+		return true
+	}
+
+	if strings.HasPrefix(actual, "arn:scw:sns:") && strings.HasPrefix(expected, "arn:scw:sns:") {
+		return true
+	}
+
+	expectedHandled := expected
+	actualHandled := actual
+
+	// Remove s3 url suffix to allow comparison
+	if before, ok := strings.CutSuffix(actual, ".s3-website.fr-par.scw.cloud"); ok {
+		actual = before
+		expected = strings.TrimSuffix(expected, ".s3-website.fr-par.scw.cloud")
+	}
+
+	// Try to parse test generated name
+	if strings.Contains(actual, "-") {
+		expectedHandled = ExtractTestGeneratedNamePrefix(expected)
+		actualHandled = ExtractTestGeneratedNamePrefix(actual)
+	}
+
+	// Try provider generated name (tf-{prefix}-{adj}-{noun})
+	if actualHandled == actual && strings.HasPrefix(actual, "tf-") {
+		expectedHandled = ExtractGeneratedNamePrefix(expected)
+		actualHandled = ExtractGeneratedNamePrefix(actual)
+	}
+
+	// Try SDK-generated name without tf- prefix (e.g. snp-jovial-chaum).
+	// The SDK namegenerator produces {prefix}-{adjective}-{noun} (exactly 2 dashes).
+	// Must not match tf-prefixed names (handled above) or they'd be double-normalized.
+	if actualHandled == actual && strings.Count(actual, "-") == 2 && !strings.HasPrefix(actual, "tf-") {
+		expectedHandled = ExtractSDKGeneratedNamePrefix(expected)
+		actualHandled = ExtractSDKGeneratedNamePrefix(actual)
+	}
+
+	return expectedHandled == actualHandled
+}
+
+func CompareStringSlices(request, cassette []string) bool {
+	if len(request) != len(cassette) {
+		return false
+	}
+
+	slices.Sort(request)
+	slices.Sort(cassette)
+
+	for i, v := range request {
+		if !CompareFieldsStrings(v, cassette[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// CompareSlices compares two slices of interface{}.
+// In case of slice of map[string]interface{}, it will attempt to find a match
+// in the other slice without taking the order into account.
+// Callers are responsible for stripping ignored keys before calling.
+func CompareSlices(request, cassette []any) bool {
+	if len(request) != len(cassette) {
+		return false
+	}
+
+	if len(request) == 0 {
+		return true
+	}
+
+	switch request[0].(type) {
+	case string:
+		requestStrings := make([]string, len(request))
+		for i, v := range request {
+			requestStrings[i] = v.(string)
+		}
+
+		cassetteStrings := make([]string, len(cassette))
+		for i, v := range cassette {
+			cassetteStrings[i] = v.(string)
+		}
+
+		return CompareStringSlices(requestStrings, cassetteStrings)
+	case float64:
+		sort.Slice(request, func(i, j int) bool {
+			return request[i].(float64) < request[j].(float64)
+		})
+		sort.Slice(cassette, func(i, j int) bool {
+			return cassette[i].(float64) < cassette[j].(float64)
+		})
+
+		for i := range request {
+			if request[i] != cassette[i] {
+				return false
+			}
+		}
+
+		return true
+	case map[string]any:
+		// First compare assuming that the order is the same, tolerating missing keys in the cassette
+		matched := 0
+
+		for i := range request {
+			if CompareJSONFields(request[i], cassette[i], false) {
+				matched++
+			}
+		}
+
+		if matched == len(request) {
+			return true
+		}
+
+		// If no match try to compare out of order
+		matched = 0
+		reqVisited := make([]bool, len(request))
+		casVisited := make([]bool, len(cassette))
+
+		for i := range request {
+			if reqVisited[i] {
+				continue
+			}
+
+			for j := range cassette {
+				if casVisited[j] {
+					continue
+				}
+
+				if CompareJSONFields(request[i], cassette[j], true) {
+					matched++
+					reqVisited[i] = true
+					casVisited[j] = true
+
+					break
+				}
+			}
+		}
+
+		return matched == len(request)
+	default:
+		return reflect.DeepEqual(request, cassette)
+	}
+}
+
+// ExtractTestGeneratedNamePrefix extracts the prefix from a test generated name.
+// Test Generated name has format: "{prefix}-{generated_number}"
+// example: test-acc-scaleway-project-3723338038624371236
+// Also supports FQDNs: tf-tests-mbx-basic-123.scaleway-terraform.com
+func ExtractTestGeneratedNamePrefix(name string) string {
+	suffix := ""
+	host := name
+
+	if dot := strings.Index(name, "."); dot >= 0 {
+		host = name[:dot]
+		suffix = name[dot:]
+	}
+
+	// {prefix}-{generated}
+	//         ^
+	dashIndex := strings.LastIndex(host, "-")
+	if dashIndex == -1 {
+		return name
+	}
+
+	generated := host[dashIndex+1:]
+
+	_, generatedToIntErr := strconv.ParseInt(generated, 10, 64)
+	if generatedToIntErr != nil {
+		// some are only {name}
+		return name
+	}
+
+	// {prefix}{suffix}
+	return host[:dashIndex] + suffix
+}
+
+// ExtractGeneratedNamePrefix extracts the prefix from a provider generated name.
+// Generated names have format: "tf-{prefix}-{generated1}-{generated2}"
+// example: tf-sg-gifted-yonath
+func ExtractGeneratedNamePrefix(name string) string {
+	if strings.Count(name, "-") < 3 {
+		return name
+	}
+	// tf-{prefix}-gifted-yonath
+	name = strings.TrimPrefix(name, "tf-")
+
+	// {prefix}-gifted-yonath
+	//                ^
+	dashIndex := strings.LastIndex(name, "-")
+	name = name[:dashIndex]
+	// {prefix}-gifted
+	//         ^
+	dashIndex = strings.LastIndex(name, "-")
+	name = name[:dashIndex]
+
+	return name
+}
+
+// ExtractSDKGeneratedNamePrefix extracts the prefix from an SDK-generated name
+// without the tf- prefix. Format: "{prefix}-{adjective}-{noun}" (exactly 2 dashes).
+// example: snp-jovial-chaum -> snp
+// ponytail: requires exactly 2 dashes so multi-segment hardcoded names like
+// "test-acc-function-pn-00" (4 dashes) are compared literally, not normalized.
+func ExtractSDKGeneratedNamePrefix(name string) string {
+	if strings.Count(name, "-") != 2 {
+		return name
+	}
+
+	dashIndex := strings.LastIndex(name, "-")
+	if dashIndex == -1 {
+		return name
+	}
+
+	name = name[:dashIndex]
+
+	dashIndex = strings.LastIndex(name, "-")
+	if dashIndex == -1 {
+		return name
+	}
+
+	return name[:dashIndex]
+}
+
+func extractGenericBucketNames(request *http.Request, cassette cassette.Request) (requestBucket, cassetteBucket string) {
+	cassetteURL, _ := url.Parse(cassette.URL)
+	requestURL := request.URL
+	requestS3Host := strings.Split(requestURL.Host, ".")
+	cassetteS3Host := strings.Split(cassetteURL.Host, ".")
+
+	if len(requestS3Host) >= 5 && len(cassetteS3Host) >= 5 {
+		// Host is bucket.s3.region.scw.cloud
+		// It could be a host without bucket name (ex: function upload)
+		requestBucket = requestS3Host[0]
+		cassetteBucket = cassetteS3Host[0]
+
+		// Remove random number at the end of the bucket name
+		if strings.Contains(requestBucket, "-") {
+			requestBucket = requestBucket[:strings.LastIndex(requestBucket, "-")]
+		}
+
+		if strings.Contains(cassetteBucket, "-") {
+			cassetteBucket = cassetteBucket[:strings.LastIndex(cassetteBucket, "-")]
+		}
+	}
+
+	return requestBucket, cassetteBucket
+}

@@ -20,13 +20,33 @@ resource "scaleway_edge_services_waf_stage" "main" {
 }
 ```
 
+### Exclude CRS rules
+
+```terraform
+resource "scaleway_edge_services_waf_stage" "main" {
+  pipeline_id    = scaleway_edge_services_pipeline.main.id
+  mode           = "enable"
+  paranoia_level = 3
+
+  exclusion_rules {
+    rule_id = 942100
+  }
+
+  exclusion_rules {
+    rule_id = 920350
+  }
+}
+```
+
 ## Argument Reference
 
 - `pipeline_id` - (Required) The ID of the pipeline.
 - `paranoia_level` - (Required) The sensitivity level (`1`,`2`,`3`,`4`) to use when classifying requests as malicious. With a high level, requests are more likely to be classed as malicious, and false positives are expected. With a lower level, requests are more likely to be classed as benign.
 - `backend_stage_id` - (Optional) The ID of the backend stage to forward requests to after the WAF stage.
 - `mode` - (Optional) The mode defining WAF behavior (`disable`/`log_only`/`enable`).
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the WAF stage is associated with.
+- `exclusion_rules` - (Optional) List of OWASP CRS rule IDs excluded from the WAF.
+    - `rule_id` - (Required) OWASP CRS rule ID excluded from the WAF.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the WAF stage is associated with.
 
 ## Attributes Reference
 

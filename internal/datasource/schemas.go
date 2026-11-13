@@ -45,6 +45,7 @@ func SchemaFromResourceSchema(rs map[string]*schema.Schema) map[string]*schema.S
 			ForceNew:    false,
 			Description: v.Description,
 			Type:        v.Type,
+			Sensitive:   v.Sensitive,
 		}
 
 		switch v.Type {

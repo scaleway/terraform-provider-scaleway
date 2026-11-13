@@ -3,6 +3,7 @@ package billing
 import (
 	"context"
 	"crypto/sha256"
+	_ "embed"
 	"encoding/hex"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/billing_consumptions_data_source.md
+var consumptionsDataSourceDescription string
+
 func DataSourceConsumptions() *schema.Resource {
 	return &schema.Resource{
+		Description: consumptionsDataSourceDescription,
 		ReadContext: DataSourceBillingConsumptionsRead,
 		SchemaFunc:  consumptionSchema,
 	}

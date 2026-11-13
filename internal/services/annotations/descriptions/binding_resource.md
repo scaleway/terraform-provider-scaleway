@@ -1,0 +1,1 @@
+Creates and manages Scaleway Annotations Bindings.

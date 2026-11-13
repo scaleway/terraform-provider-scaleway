@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -77,27 +80,143 @@ func CheckResourceRawIDMatches(res1, attr1, res2, attr2 string) resource.TestChe
 	}
 }
 
+// CheckResourceAttrPairInSet asserts that the set attribute of a resource contains another resource's attribute.
+// If 'ignoreLocality' is set to true, equality will be checked on raw UUIDs only, assuming the values to compare are IDs.
+func CheckResourceAttrPairInSet(resourceWithSet, setAttribute, resourceToLookFor, attrToLookFor string, ignoreLocality bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rsWithSet, ok := s.RootModule().Resources[resourceWithSet]
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceWithSet)
+		}
+
+		rsToLookFor, ok := s.RootModule().Resources[resourceToLookFor]
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceToLookFor)
+		}
+
+		valueToLookFor := rsToLookFor.Primary.Attributes[attrToLookFor]
+
+		setLen, err := strconv.Atoi(rsWithSet.Primary.Attributes[setAttribute+".#"])
+		if err != nil {
+			return fmt.Errorf("conversion error: from %q to int", rsWithSet.Primary.Attributes[setAttribute+".#"])
+		}
+
+		for i := range setLen {
+			pathToCheck := fmt.Sprintf("%s.%d", setAttribute, i)
+
+			elem := rsWithSet.Primary.Attributes[pathToCheck]
+			if elem == valueToLookFor {
+				return nil
+			}
+
+			if ignoreLocality && locality.ExpandID(elem) == locality.ExpandID(valueToLookFor) {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("could not find %q of %s (%s) in set %q from resource %s", attrToLookFor, resourceToLookFor, valueToLookFor, setAttribute, resourceWithSet)
+	}
+}
+
 func CheckResourceAttrUUID(name string, key string) resource.TestCheckFunc {
 	return resource.TestMatchResourceAttr(name, key, UUIDRegex)
 }
 
-var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
+var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}`)
+
+// CheckSRN returns a value-check function for resource.TestCheckResourceAttrWith
+// that parses a Scaleway Resource Name (SRN) and validates its structure.
+func CheckSRN(service, resourceType string) func(string) error {
+	return func(value string) error {
+		u, err := url.Parse(value)
+		if err != nil {
+			return fmt.Errorf("srn %q is not a valid URL: %w", value, err)
+		}
+
+		if u.Scheme != "srn" {
+			return fmt.Errorf("srn %q has scheme %q, want %q", value, u.Scheme, "srn")
+		}
+
+		host := u.Hostname()
+
+		srnService, _, ok := strings.Cut(host, ".")
+		if !ok {
+			return fmt.Errorf("srn %q host %q must be of the form <service>.<account>", value, host)
+		}
+
+		if service != "" && srnService != service {
+			return fmt.Errorf("srn %q service %q, want %q", value, srnService, service)
+		}
+
+		segments := strings.Split(strings.Trim(u.Path, "/"), "/")
+		if len(segments) == 0 || segments[0] == "" || segments[len(segments)-1] == "" {
+			return fmt.Errorf("srn %q has an empty path", value)
+		}
+
+		if resourceType != "" {
+			last := segments[len(segments)-1]
+
+			var secondLast string
+			if len(segments) >= 2 {
+				secondLast = segments[len(segments)-2]
+			}
+
+			if resourceType != last && resourceType != secondLast {
+				return fmt.Errorf("srn %q resource type %q, want %q", value, secondLast, resourceType)
+			}
+		}
+
+		return nil
+	}
+}
+
+// Returns the value of the given attribute of the given resource in the state.
+func GetResourceAttributeValue(s *terraform.State, name, attribute string) (string, error) {
+	rs, ok := s.RootModule().Resources[name]
+	if !ok {
+		return "", fmt.Errorf("given resource %s not found", name)
+	}
+
+	is := rs.Primary
+	if is == nil {
+		return "", fmt.Errorf("resource %s has no primary instance", name)
+	}
+
+	value, ok := is.Attributes[attribute]
+	if !ok {
+		return "", fmt.Errorf("given attribute %s does not exist", attribute)
+	}
+
+	return value, nil
+}
 
 func CheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", name)
+		value, err := GetResourceAttributeValue(s, name, key)
+		if err != nil {
+			return err
 		}
 
-		value, ok := rs.Primary.Attributes[key]
-		if !ok {
-			return fmt.Errorf("key not found: %s", key)
-		}
-
-		err := test(value)
+		err = test(value)
 		if err != nil {
 			return fmt.Errorf("test for %s %s did not pass test: %w", name, key, err)
+		}
+
+		return nil
+	}
+}
+
+// CheckAttributeNotInState asserts that the given attribute of the given
+// resource is not persisted in the state.
+func CheckAttributeNotInState(resource, attribute string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[resource]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resource)
+		}
+
+		if _, exists := rs.Primary.Attributes[attribute]; exists {
+			return fmt.Errorf("%s should not be stored in the state", attribute)
 		}
 
 		return nil
@@ -135,4 +254,16 @@ func CheckResourceAttrIP(name string, key string) resource.TestCheckFunc {
 
 		return nil
 	})
+}
+
+// CheckEphemeralResourceNotInState asserts that an ephemeral resource address
+// was not persisted in Terraform state.
+func CheckEphemeralResourceNotInState(resourceName string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		if _, ok := state.RootModule().Resources[resourceName]; ok {
+			return fmt.Errorf("ephemeral resource %s should not be persisted in state", resourceName)
+		}
+
+		return nil
+	}
 }

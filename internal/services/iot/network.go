@@ -2,6 +2,7 @@ package iot
 
 import (
 	"context"
+	_ "embed"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -17,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/iot_network_resource.md
+var networkResourceDescription string
+
 func ResourceNetwork() *schema.Resource {
 	return &schema.Resource{
+		Description:   networkResourceDescription,
 		CreateContext: ResourceIotNetworkCreate,
 		ReadContext:   ResourceIotNetworkRead,
 		DeleteContext: ResourceIotNetworkDelete,
@@ -31,6 +37,7 @@ func ResourceNetwork() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    networkSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -105,7 +112,9 @@ func ResourceIotNetworkCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.Network.ID))
+	if err := identity.SetRegionalIdentity(d, region, res.Network.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// Secret key cannot be retrieved later
 	_ = d.Set("secret", res.Secret)
@@ -130,6 +139,10 @@ func ResourceIotNetworkRead(ctx context.Context, d *schema.ResourceData, m any) 
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, networkID); err != nil {
 		return diag.FromErr(err)
 	}
 

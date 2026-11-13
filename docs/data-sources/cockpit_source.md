@@ -39,9 +39,9 @@ This section lists the arguments that are supported:
 
 - `id` - (Optional) The unique identifier of the Cockpit data source in the `{region}/{id}` format. If specified, other filters are ignored.
 
-- `region` - (Optional) The [region](../guides/regions_and_zones.md#regions) where the data source is located. Defaults to the region specified in the [provider configuration](../index.md#region).
+- `region` - (Optional) The [region](../guides/regions_and_zones.md#regions) where the data source is located. Defaults to the region specified in the [provider configuration](../index.md#arguments-reference).
 
-- `project_id` - (Required unless `id` is specified) The ID of the Project the data source is associated with. Defaults to the Project ID specified in the [provider configuration](../index.md#project_id).
+- `project_id` - (Required unless `id` is specified) The ID of the Project the data source is associated with. Defaults to the Project ID specified in the [provider configuration](../index.md#arguments-reference).
 
 - `name` - (Optional) The name of the data source.
 
@@ -69,6 +69,8 @@ In addition to all arguments above, the following attributes are exported:
 - `synchronized_with_grafana` - Indicates whether the data source is synchronized with Grafana.
 
 - `retention_days` - The number of days the data is retained in the data source.
+
+- `srn` - The Scaleway Resource Name (SRN) of the data source.
 
 ## Import
 

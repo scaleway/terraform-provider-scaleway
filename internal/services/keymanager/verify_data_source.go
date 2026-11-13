@@ -109,7 +109,7 @@ func dataSourceVerifyRead(ctx context.Context, d *schema.ResourceData, m any) di
 	resp, err := client.Verify(&key_manager.VerifyRequest{
 		Region:    region,
 		KeyID:     keyID.(string),
-		Digest:    digestBytes,
+		Digest:    &digestBytes,
 		Signature: signatureBytes,
 	})
 	if err != nil {

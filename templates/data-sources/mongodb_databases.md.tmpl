@@ -1,0 +1,30 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.DataSourceTemplateType */ -}}
+---
+subcategory: "MongoDB®"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }}
+
+{{ .Description -}}
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end -}}
+{{ end -}}
+
+## Argument Reference
+
+- `instance_id` - (Required) The MongoDB® instance ID. Can be a plain UUID or a regional ID.
+
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® instance exists.
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `databases` - List of databases on the MongoDB® instance.
+    - `name` - Name of the database.

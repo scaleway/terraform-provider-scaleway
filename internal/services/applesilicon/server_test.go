@@ -14,8 +14,10 @@ import (
 )
 
 var (
-	githubUrl   = os.Getenv("GITHUB_URL_AS")
-	githubToken = os.Getenv("GITHUB_TOKEN_AS")
+	githubUrl          = os.Getenv("GITHUB_URL_AS")
+	githubToken        = os.Getenv("GITHUB_TOKEN_AS")
+	githubUrlUpdated   = os.Getenv("GITHUB_URL_UPDATED_AS")
+	githubTokenUpdated = os.Getenv("GITHUB_TOKEN_UPDATED_AS")
 )
 
 func TestAccServer_Basic(t *testing.T) {
@@ -30,42 +32,46 @@ func TestAccServer_Basic(t *testing.T) {
 				Config: `
 					resource scaleway_apple_silicon_server main {
 						name = "TestAccServerBasic"
-						type = "M4-M"
+						type = "M2-L-ASAHI"
 						public_bandwidth = 1000000000
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerBasic"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M4-M"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-L-ASAHI"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "1000000000"),
 					// Computed
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
+					resource.TestCheckResourceAttrWith("scaleway_apple_silicon_server.main", "srn", acctest.CheckSRN("apple-silicon", "servers")),
 				),
 			},
-			{
-				Config: `
-					resource scaleway_apple_silicon_server main {
-						name = "TestAccServerBasic"
-						type = "M4-M"
-						public_bandwidth = 2000000000
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerBasic"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M4-M"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "2000000000"),
-					// Computed
-					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
-					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
-					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
-					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
-				),
-			},
+			// TODO: "M2-L-ASAHI" is the only type currently in stock, but it does not support
+			// bandwidth upgrade. If a server type that supports such an upgrade is back in
+			// stock, edit this test's server type, public_bandwidth, and uncomment this step.
+			// {
+			// 	Config: `
+			// 		resource scaleway_apple_silicon_server main {
+			// 			name = "TestAccServerBasic"
+			// 			type = "M2-L-ASAHI"
+			// 			public_bandwidth = 2000000000
+			// 		}
+			// 	`,
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		isServerPresent(tt, "scaleway_apple_silicon_server.main"),
+			// 		resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerBasic"),
+			// 		resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-L-ASAHI"),
+			// 		resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "1000000000"),
+			// 		// Computed
+			// 		resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
+			// 		resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
+			// 		resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
+			// 		resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
+			// 	),
+			// },
 			{
 				ResourceName:      "scaleway_apple_silicon_server.main",
 				ImportState:       true,
@@ -106,6 +112,46 @@ func TestAccServer_Runner(t *testing.T) {
 						runner_ids = [scaleway_apple_silicon_runner.main.id]
 					}
 				`, githubUrl, githubToken),
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerRunner"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-L"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "1000000000"),
+					// Computed
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "os_id"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "runner_ids.0"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_apple_silicon_os" "devos" {
+						name = "devos-sequoia-15.6"
+					}
+
+					resource "scaleway_apple_silicon_runner" "main" {
+						name       = "TestAccRunnerGithub"
+						ci_provider   = "github"
+						url        = "%s"
+						token      = "%s"
+					}
+
+					resource "scaleway_apple_silicon_runner" "main-bis" {
+						name       = "TestAccRunnerGithub"
+						ci_provider   = "github"
+						url        = "%s"
+						token      = "%s"
+					}
+
+					resource scaleway_apple_silicon_server main {
+						name = "TestAccServerRunner"
+						type = "M2-L"
+						public_bandwidth = 1000000000
+						os_id = data.scaleway_apple_silicon_os.devos.id
+						runner_ids = [scaleway_apple_silicon_runner.main.id, scaleway_apple_silicon_runner.main-bis.id]
+					}
+				`, githubUrl, githubToken, githubUrlUpdated, githubTokenUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerRunner"),
@@ -420,7 +466,7 @@ func isServerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			}
 
 			// Unexpected api error we return it
-			if !httperrors.Is403(err) {
+			if !httperrors.Is404(err) && !httperrors.Is403(err) {
 				return err
 			}
 		}

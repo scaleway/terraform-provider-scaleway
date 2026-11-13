@@ -12,7 +12,7 @@ For more information refer to the [API documentation](https://www.scaleway.com/e
 
 ### Basic
 
-```hcl
+```terraform
 resource "scaleway_tem_blocked_list" "test" {
   domain_id = "fr-par/12345678-1234-1234-1234-123456789abc"
   email     = "spam@example.com"
@@ -32,7 +32,7 @@ The following arguments are supported:
     - `mailbox_full` — The recipient's mailbox is full.
     - `mailbox_not_found` — The recipient's mailbox does not exist.
 - `reason` - (Optional, Default: `manual_block`) Reason for blocking the email address.
-- `region` - (Optional) The [region](../guides/regions_and_zones.md#regions) in which the blocklist is created. Defaults to the provider's region.
+- `region` - (Optional, Computed) The [region](../guides/regions_and_zones.md#regions) in which the blocklist is created. Defaults to the provider's region.
 - `project_id` - (Optional) The ID of the project this blocklist belongs to. Defaults to the provider's project ID.
 
 ## Attributes Reference

@@ -1,8 +1,6 @@
 package sdbtestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	sdbSDK "github.com/scaleway/scaleway-sdk-go/api/serverless_sqldb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -28,7 +26,9 @@ func testSweepServerlessSQLDBDatabase(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing database in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing database in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, database := range listServerlessSQLDBDatabases.Databases {
@@ -37,9 +37,7 @@ func testSweepServerlessSQLDBDatabase(_ string) error {
 				Region:     region,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting database in sweeper: %w", err)
+				logging.L.Warningf("error deleting database in sweeper: %s", err)
 			}
 		}
 

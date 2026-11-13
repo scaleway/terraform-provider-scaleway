@@ -2,18 +2,25 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/cockpit_preconfigured_alert_data_source.md
+var cockpitPreconfiguredAlertDataSourceDescription string
+
 func DataSourceCockpitPreconfiguredAlert() *schema.Resource {
 	return &schema.Resource{
+		Description: cockpitPreconfiguredAlertDataSourceDescription,
 		ReadContext: dataSourceCockpitPreconfiguredAlertRead,
 		Schema: map[string]*schema.Schema{
 			"project_id": account.ProjectIDSchema(),
@@ -110,14 +117,9 @@ func dataSourceCockpitPreconfiguredAlertRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
-	if projectID == "" {
-		defaultProjectID, err := getDefaultProjectID(ctx, m)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		projectID = defaultProjectID
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	req := &cockpit.RegionalAPIListAlertsRequest{
@@ -131,11 +133,12 @@ func dataSourceCockpitPreconfiguredAlertRead(ctx context.Context, d *schema.Reso
 	}
 
 	if ruleStatus, ok := d.GetOk("rule_status"); ok {
-		status := cockpit.AlertStatus(ruleStatus.(string))
-		req.RuleStatus = &status
+		req.RuleStatus = new(cockpit.AlertStatus(ruleStatus.(string)))
 	}
 
-	response, err := api.ListAlerts(req, scw.WithContext(ctx), scw.WithAllPages())
+	response, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListAlertsResponse, error) {
+		return api.ListAlerts(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

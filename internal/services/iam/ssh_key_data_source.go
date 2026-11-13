@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/account_ssh_key_data_source.md
+var sshkeyDataSourceDescription string
 
 func DataSourceSSHKey() *schema.Resource {
 	// Generate datasource schema from resource
@@ -26,6 +30,7 @@ func DataSourceSSHKey() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: sshkeyDataSourceDescription,
 		ReadContext: DataSourceIamSSHKeyRead,
 		Schema:      dsSchema,
 	}
@@ -65,14 +70,12 @@ func DataSourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	diags := resourceIamSSHKeyRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read iam ssh key state")...)
+	res, err := iamAPI.GetSSHKey(&iam.GetSSHKeyRequest{
+		SSHKeyID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("iam ssh key (%s) not found", sshKeyID)
-	}
-
-	return nil
+	return setSSHKeyState(d, res)
 }

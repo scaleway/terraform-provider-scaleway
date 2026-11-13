@@ -2,6 +2,7 @@ package sdb
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/sdb_sql_database_resource.md
+var databaseResourceDescription string
+
 func ResourceDatabase() *schema.Resource {
 	return &schema.Resource{
+		Description:   databaseResourceDescription,
 		CreateContext: ResourceDatabaseCreate,
 		ReadContext:   ResourceDatabaseRead,
 		UpdateContext: ResourceDatabaseUpdate,
@@ -59,6 +64,23 @@ func databaseSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "endpoint of the database",
 		},
+		"version": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Description: "The major version of the PostgreSQL engine (e.g. `16`). If not specified, the default version is used.",
+		},
+		"version_end_of_life_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The end of life date of the database version (RFC3339).",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the database.",
+		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 	}
@@ -77,6 +99,7 @@ func ResourceDatabaseCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		CPUMin:       uint32(d.Get("min_cpu").(int)),
 		CPUMax:       uint32(d.Get("max_cpu").(int)),
 		FromBackupID: nil,
+		Version:      d.Get("version").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -115,6 +138,13 @@ func ResourceDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("endpoint", database.Endpoint)
 	_ = d.Set("region", database.Region)
 	_ = d.Set("project_id", database.ProjectID)
+
+	if database.Version != nil {
+		_ = d.Set("version", database.Version.Name)
+		_ = d.Set("version_end_of_life_at", types.FlattenTime(database.Version.EndOfLifeAt))
+	}
+
+	_ = d.Set("srn", database.Srn)
 
 	return nil
 }

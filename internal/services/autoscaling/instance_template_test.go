@@ -13,6 +13,8 @@ import (
 )
 
 func TestAccInstanceTemplate_Basic(t *testing.T) {
+	t.Skip("autoscaling /instance-templates endpoint deprecated, skip until v1alpha2")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -64,11 +66,18 @@ func TestAccInstanceTemplate_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_instance_template.main", "updated_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_autoscaling_instance_template.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
 
 func TestAccInstanceTemplate_PrivateNetwork(t *testing.T) {
+	t.Skip("autoscaling /instance-templates endpoint deprecated, skip until v1alpha2")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	accounttestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account/testfuncs"
 )
 
 const dummyOrgID = "AB7BD9BF-E1BD-41E8-9F1D-F16A2E3F3925"
@@ -23,7 +24,7 @@ func TestAccDataSourceProject_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isProjectDestroyed(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -41,6 +42,7 @@ func TestAccDataSourceProject_Basic(t *testing.T) {
 						project_id = scaleway_account_project.project.id
 					}`, orgID),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith("data.scaleway_account_project.by_name", "srn", acctest.CheckSRN("account", "projects")),
 					resource.TestCheckResourceAttrPair("data.scaleway_account_project.by_name", "id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_account_project.by_name", "name", "scaleway_account_project.project", "name"),
 					resource.TestCheckResourceAttrPair("data.scaleway_account_project.by_id", "id", "scaleway_account_project.project", "id"),
@@ -134,7 +136,7 @@ func TestAccDataSourceProject_List(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isProjectDestroyed(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{

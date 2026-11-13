@@ -16,10 +16,6 @@ import (
 // Cockpit resource doesn't require explicit deactivation.
 // Sources, tokens, and other resources are cleaned up by their respective sweepers.
 func AddTestSweepers() {
-	resource.AddTestSweepers("scaleway_cockpit_grafana_user", &resource.Sweeper{
-		Name: "scaleway_cockpit_grafana_user",
-		F:    testSweepCockpitGrafanaUser,
-	})
 	resource.AddTestSweepers("scaleway_cockpit_token", &resource.Sweeper{
 		Name: "scaleway_cockpit_token",
 		F:    testSweepCockpitToken,
@@ -57,7 +53,9 @@ func testSweepCockpitToken(_ string) error {
 					continue
 				}
 
-				return fmt.Errorf("failed to list tokens: %w", err)
+				logging.L.Warningf("failed to list tokens: %s", err)
+
+				continue
 			}
 
 			for _, token := range listTokens.Tokens {
@@ -66,50 +64,7 @@ func testSweepCockpitToken(_ string) error {
 				})
 				if err != nil {
 					if !httperrors.Is404(err) {
-						return fmt.Errorf("failed to delete token: %w", err)
-					}
-				}
-			}
-		}
-
-		return nil
-	})
-}
-
-func testSweepCockpitGrafanaUser(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
-		accountAPI := accountSDK.NewProjectAPI(scwClient)
-		cockpitAPI := cockpit.NewGlobalAPI(scwClient)
-
-		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("failed to list projects: %w", err)
-		}
-
-		for _, project := range listProjects.Projects {
-			if !strings.HasPrefix(project.Name, "tf_tests") {
-				continue
-			}
-
-			listGrafanaUsers, err := cockpitAPI.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
-				ProjectID: project.ID,
-			}, scw.WithAllPages())
-			if err != nil {
-				if httperrors.Is404(err) {
-					continue
-				}
-
-				return fmt.Errorf("failed to list grafana users: %w", err)
-			}
-
-			for _, grafanaUser := range listGrafanaUsers.GrafanaUsers {
-				err = cockpitAPI.DeleteGrafanaUser(&cockpit.GlobalAPIDeleteGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
-					ProjectID:     project.ID,
-					GrafanaUserID: grafanaUser.ID,
-				})
-				if err != nil {
-					if !httperrors.Is404(err) {
-						return fmt.Errorf("failed to delete grafana user: %w", err)
+						logging.L.Warningf("failed to delete token: %s", err)
 					}
 				}
 			}
@@ -151,7 +106,9 @@ func testSweepCockpitDataSource(_ string) error {
 			}, scw.WithAllPages())
 			if err != nil {
 				if !httperrors.Is404(err) {
-					return fmt.Errorf("failed to list sources: %w", err)
+					logging.L.Warningf("failed to list sources: %s", err)
+
+					continue
 				}
 			} else {
 				for _, datasource := range listDatasources.DataSources {
@@ -183,7 +140,7 @@ func testSweepCockpitDataSource(_ string) error {
 				})
 				if err != nil {
 					if !httperrors.Is404(err) {
-						logging.L.Warningf("sweeper: failed to delete cockpit source: %w", err)
+						logging.L.Warningf("sweeper: failed to delete cockpit source: %s", err)
 
 						continue
 					}
@@ -196,7 +153,7 @@ func testSweepCockpitDataSource(_ string) error {
 }
 
 func testSweepCockpitAlertManager(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
+	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		accountAPI := accountSDK.NewProjectAPI(scwClient)
 		cockpitAPI := cockpit.NewRegionalAPI(scwClient)
 
@@ -210,13 +167,55 @@ func testSweepCockpitAlertManager(_ string) error {
 				continue
 			}
 
-			_, err := cockpitAPI.DisableAlertManager(&cockpit.RegionalAPIDisableAlertManagerRequest{
+			alertManager, err := cockpitAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+				Region:    region,
 				ProjectID: project.ID,
 			})
 			if err != nil {
-				if !httperrors.Is404(err) {
-					logging.L.Warningf("failed to disable alert manager on project %s: %w", project.ID, err)
+				if httperrors.Is404(err) || httperrors.Is403(err) {
+					continue
 				}
+
+				logging.L.Warningf("failed to get alert manager on project %s: %s", project.ID, err)
+
+				continue
+			}
+
+			if alertManager == nil || !alertManager.AlertManagerEnabled {
+				continue
+			}
+
+			contactPoints, err := cockpitAPI.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
+				Region:    region,
+				ProjectID: project.ID,
+			})
+			if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
+				logging.L.Warningf("failed to list contact points on project %s: %s", project.ID, err)
+			}
+
+			if contactPoints != nil {
+				for _, cp := range contactPoints.ContactPoints {
+					if cp.Email == nil {
+						continue
+					}
+
+					err = cockpitAPI.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
+						Region:    region,
+						ProjectID: project.ID,
+						Email:     &cockpit.ContactPointEmail{To: cp.Email.To},
+					})
+					if err != nil && !httperrors.Is404(err) {
+						logging.L.Warningf("failed to delete contact point on project %s: %s", project.ID, err)
+					}
+				}
+			}
+
+			_, err = cockpitAPI.DisableAlertManager(&cockpit.RegionalAPIDisableAlertManagerRequest{
+				Region:    region,
+				ProjectID: project.ID,
+			})
+			if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
+				logging.L.Warningf("failed to disable alert manager on project %s: %s", project.ID, err)
 			}
 		}
 

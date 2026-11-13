@@ -35,11 +35,11 @@ func TestAccDataSourceSSHKey_Basic(t *testing.T) {
 						name 	   = "%s"
 						public_key = "%s"
 					}
-					
+
 					data "scaleway_iam_ssh_key" "prod" {
 						name = "${scaleway_iam_ssh_key.main.name}"
 					}
-					
+
 					data "scaleway_iam_ssh_key" "stg" {
 						ssh_key_id = "${scaleway_iam_ssh_key.main.id}"
 					}`, sshKeyName, dataSourceIamSSHKey),
@@ -50,6 +50,8 @@ func TestAccDataSourceSSHKey_Basic(t *testing.T) {
 					iamchecks.CheckSSHKeyExists(tt, "data.scaleway_iam_ssh_key.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_iam_ssh_key.stg", "name", sshKeyName),
 					resource.TestCheckResourceAttr("data.scaleway_iam_ssh_key.stg", "public_key", dataSourceIamSSHKeyWithoutComment),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_ssh_key.prod", "srn", acctest.CheckSRN("iam", "ssh-keys")),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_ssh_key.stg", "srn", acctest.CheckSRN("iam", "ssh-keys")),
 				),
 			},
 		},

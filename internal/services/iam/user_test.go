@@ -40,6 +40,7 @@ func TestAccUser_Member(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "tags.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "type", "member"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "mfa", "false"),
+					resource.TestCheckResourceAttrWith("scaleway_iam_user.member_user", "srn", acctest.CheckSRN("iam", "users")),
 				),
 			},
 			// Add tag and update email, username, last name, phone number and locale.
@@ -69,6 +70,12 @@ func TestAccUser_Member(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "tags.0", "tf_tests"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "type", "member"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_iam_user.member_user",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password"},
 			},
 		},
 	})

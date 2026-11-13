@@ -1,0 +1,1 @@
+The `scaleway_cockpit_source` data source allows you to retrieve information about a specific [data source](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#data-sources) in Scaleway's Cockpit.

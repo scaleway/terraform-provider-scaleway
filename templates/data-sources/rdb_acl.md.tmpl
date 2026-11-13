@@ -9,7 +9,7 @@ Gets information about the Database Instance network Access Control List.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get the database ACL for the instance id 11111111-1111-1111-1111-111111111111 located in the default region e.g: fr-par
 data "scaleway_rdb_acl" "my_acl" {
   instance_id = "11111111-1111-1111-1111-111111111111"
@@ -19,7 +19,7 @@ data "scaleway_rdb_acl" "my_acl" {
 ## Argument Reference
 
 - `instance_id` - (Required) The RDB instance ID.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
 
 ## Attributes Reference
 

@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/function_domain_resource.md
+var domainResourceDescription string
+
 func ResourceDomain() *schema.Resource {
 	return &schema.Resource{
+		Description:   domainResourceDescription,
 		CreateContext: ResourceFunctionDomainCreate,
 		ReadContext:   ResourceFunctionDomainRead,
 		DeleteContext: ResourceFunctionDomainDelete,
@@ -54,6 +59,11 @@ func domainSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Description: "URL to use to trigger the function",
 			Computed:    true,
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the function domain",
 		},
 		"region": regional.Schema(),
 	}
@@ -115,6 +125,7 @@ func ResourceFunctionDomainRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("hostname", domain.Hostname)
 	_ = d.Set("function_id", regional.NewIDString(region, domain.FunctionID))
 	_ = d.Set("url", domain.URL)
+	_ = d.Set("srn", domain.Srn)
 	_ = d.Set("region", region)
 
 	return nil

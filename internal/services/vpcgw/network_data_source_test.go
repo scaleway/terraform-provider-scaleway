@@ -20,15 +20,15 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 				Config: `
 					resource "scaleway_vpc_private_network" "pn01" {
 					}
-					
+
 					resource "scaleway_vpc_public_gateway_ip" "gw01" {
 					}
-					
+
 					resource "scaleway_vpc_public_gateway" "pg01" {
 					  type = "VPC-GW-S"
 					  ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
-					
+
 					resource "scaleway_vpc_gateway_network" "main" {
 					  gateway_id = scaleway_vpc_public_gateway.pg01.id
 					  private_network_id = scaleway_vpc_private_network.pn01.id
@@ -42,7 +42,7 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 				Config: `
 					resource "scaleway_vpc_private_network" "pn01" {
 					}
-					
+
 					resource "scaleway_vpc_public_gateway_ip" "gw01" {
 					}
 
@@ -50,7 +50,7 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 					  type = "VPC-GW-S"
 					  ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
-					
+
 					resource "scaleway_vpc_gateway_network" "main" {
 					  gateway_id = scaleway_vpc_public_gateway.pg01.id
 					  private_network_id = scaleway_vpc_private_network.pn01.id
@@ -79,6 +79,8 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 						"data.scaleway_vpc_gateway_network.by_gateway_and_pn", "id",
 						"scaleway_vpc_gateway_network.main", "id",
 					),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_gateway_network.by_id", "srn", acctest.CheckSRN("public-gateway", "gateway-networks")),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_gateway_network.by_gateway_and_pn", "srn", acctest.CheckSRN("public-gateway", "gateway-networks")),
 				),
 			},
 		},

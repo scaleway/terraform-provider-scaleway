@@ -7,6 +7,10 @@ page_title: "Scaleway: scaleway_inference_model"
 
 The scaleway_inference_model resource allows you to upload and manage inference models in the Scaleway Inference ecosystem. Once registered, a model can be used in any scaleway_inference_deployment resource.
 
+-> **Security Best Practice:**
+For enhanced security, we recommend using the [`secret_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `secret` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
+
+
 
 ## Example Usage
 
@@ -66,8 +70,8 @@ The following arguments are supported:
 - `secret` - (Optional, Sensitive) Authentication token used to pull the model from a private or gated URL (e.g., a Hugging Face access token with read permission). Conflicts with `secret_wo`.
 - `secret_wo` - (Optional) Authentication token used to pull the model from a private or gated URL in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. `secret_wo` will not be stored in the Terraform state. Only one of `secret` or `secret_wo` should be specified. Requires `secret_wo_version` to be set.
 - `secret_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) secret. Required when using `secret_wo`.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment is created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the deployment is associated with.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment is created.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the deployment is associated with.
 
 ## Attributes Reference
 
@@ -83,7 +87,7 @@ In addition to all arguments above, the following attributes are exported:
 - `nodes_support` - List of supported node types and their quantization options. Each entry contains:
         - `node_type_name` - The type of node supported.
         - `quantization` - A list of supported quantization options, including:
-            - `quantization_bits` -  Number of bits used for quantization (e.g., 8, 16).
+            - `quantization_bits` - Number of bits used for quantization (e.g., 8, 16).
             - `allowed` - Whether this quantization is allowed.
             - `max_context_size` - Maximum context length supported by this quantization.
 

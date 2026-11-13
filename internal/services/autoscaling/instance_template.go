@@ -2,6 +2,7 @@ package autoscaling
 
 import (
 	"context"
+	_ "embed"
 	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -18,8 +20,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/autoscaling_instance_template_resource.md
+var instanceTemplateResourceDescription string
+
 func ResourceInstanceTemplate() *schema.Resource {
 	return &schema.Resource{
+		Description:   instanceTemplateResourceDescription,
 		CreateContext: ResourceInstanceTemplateCreate,
 		ReadContext:   ResourceInstanceTemplateRead,
 		UpdateContext: ResourceInstanceTemplateUpdate,
@@ -27,6 +33,7 @@ func ResourceInstanceTemplate() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultZonal(),
 		SchemaVersion: 0,
 		SchemaFunc:    instanceTemplateSchema,
 	}
@@ -210,8 +217,7 @@ func ResourceInstanceTemplateCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if ci, ok := d.GetOk("cloud_init"); ok {
-		rawCI := []byte(ci.(string))
-		req.CloudInit = &rawCI
+		req.CloudInit = new([]byte(ci.(string)))
 	}
 
 	volumesList := expandVolumes(d.Get("volumes").([]any))
@@ -223,7 +229,10 @@ func ResourceInstanceTemplateCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, template.ID))
+	err = identity.SetZonalIdentity(d, template.Zone, template.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstanceTemplateRead(ctx, d, m)
 }
@@ -280,6 +289,11 @@ func ResourceInstanceTemplateRead(ctx context.Context, d *schema.ResourceData, m
 
 	if template.CloudInit != nil {
 		_ = d.Set("cloud_init", string(*template.CloudInit))
+	}
+
+	err = identity.SetZonalIdentity(d, template.Zone, template.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
@@ -344,8 +358,7 @@ func ResourceInstanceTemplateUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if d.HasChange("cloud_init") {
-		rawCI := []byte(d.Get("cloud_init").(string))
-		updateRequest.CloudInit = &rawCI
+		updateRequest.CloudInit = new([]byte(d.Get("cloud_init").(string)))
 		hasChanged = true
 	}
 

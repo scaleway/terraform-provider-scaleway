@@ -84,7 +84,13 @@ func TestAccVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"scaleway_vpc_public_gateway_pat_rule.main", "gateway_id",
 						"scaleway_vpc_public_gateway.main", "id"),
+					resource.TestCheckResourceAttrWith("scaleway_vpc_public_gateway_pat_rule.main", "srn", acctest.CheckSRN("public-gateway", "pat-rules")),
 				),
+			},
+			{
+				ResourceName:      "scaleway_vpc_public_gateway_pat_rule.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -97,7 +103,7 @@ func testAccCheckVPCPublicGatewayPATRuleExists(tt *acctest.TestTools, n string) 
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
+		api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -121,7 +127,7 @@ func testAccCheckVPCPublicGatewayPATRuleDestroy(tt *acctest.TestTools) resource.
 				continue
 			}
 
-			api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
+			api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}

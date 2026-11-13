@@ -126,6 +126,12 @@ func TestAccServer_RootVolumeFromImage_Block(t *testing.T) {
 					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
 		},
 	})
 }
@@ -161,6 +167,12 @@ func TestAccServer_RootVolumeFromImage_Local(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "named-volume"),
 					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -246,6 +258,12 @@ func TestAccServer_RootVolumeFromID(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_volume" "local" {
 						type = "l_ssd"
@@ -274,6 +292,12 @@ func TestAccServer_RootVolumeFromID(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.volume_id", "scaleway_instance_volume.local", "id"),
 					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
 			},
 		},
 	})
@@ -355,6 +379,12 @@ func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.from_snapshot", "root_volume.0.volume_id", "scaleway_block_volume.volume", "id"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_server.from_snapshot",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
+			},
 		},
 	})
 }
@@ -407,6 +437,12 @@ func TestAccServer_RootVolume_Boot(t *testing.T) {
 					serverHasNewVolume(tt, "scaleway_instance_server.base", "ubuntu_focal"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
 		},
 	})
 }
@@ -452,6 +488,12 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
+			{
 				// With additional local and block
 				Config: `
 					resource "scaleway_instance_volume" "local" {
@@ -492,6 +534,12 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
+			{
 				// Detach volumes
 				Config: `
 					resource "scaleway_instance_volume" "local" {
@@ -525,6 +573,12 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "15"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "additional_volume_ids.#", "0"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
 			},
 			{
 				// With 2 additional blocks
@@ -565,6 +619,12 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "additional_volume_ids.0", "scaleway_block_volume.block", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "additional_volume_ids.1", "scaleway_block_volume.bigger-volume", "id"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
 			},
 		},
 	})
@@ -617,6 +677,12 @@ func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.additional", "id"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
+			},
 		},
 	})
 }
@@ -657,6 +723,12 @@ func TestAccServer_ScratchStorage(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_instance_volume.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "1600"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
 			},
 		},
 	})

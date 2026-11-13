@@ -1,0 +1,42 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "IAM"
+description: |-
+  Lists Scaleway IAM SSH Keys across projects.
+---
+
+# Resource: {{ .Name }}
+
+Lists Scaleway IAM SSH Keys across projects.
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/iam/concepts/).
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+{{ end -}}
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects. If not specified, the provider default project is used.
+- `name` - (Optional) Name of the SSH key to filter for.
+- `disabled` - (Optional) Filter SSH keys by disabled status.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each SSH Key:
+
+- `id` - The ID of the SSH Key.
+- `name` - The name of the SSH Key.
+- `public_key` - The public SSH key.
+- `fingerprint` - The fingerprint of the SSH key.
+- `created_at` - The date and time of the creation of the SSH Key.
+- `updated_at` - The date and time of the last update of the SSH Key.
+- `organization_id` - The organization ID the SSH Key belongs to.
+- `project_id` - The project ID the SSH Key belongs to.
+- `disabled` - The SSH key status.

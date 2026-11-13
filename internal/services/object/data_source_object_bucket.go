@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"log"
 
@@ -13,6 +14,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
+//go:embed descriptions/object_bucket_data_source.md
+var bucketDataSourceDescription string
+
 func DataSourceBucket() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceBucket().SchemaFunc())
@@ -21,6 +25,7 @@ func DataSourceBucket() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	return &schema.Resource{
+		Description: bucketDataSourceDescription,
 		ReadContext: DataSourceObjectStorageRead,
 		Schema:      dsSchema,
 	}
@@ -68,5 +73,5 @@ func DataSourceObjectStorageRead(ctx context.Context, d *schema.ResourceData, m 
 	bucketRegionalID := regional.NewIDString(region, bucket)
 	d.SetId(bucketRegionalID)
 
-	return resourceObjectBucketRead(ctx, d, m)
+	return setBucketState(ctx, d, m, bucket, region, s3Client)
 }

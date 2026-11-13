@@ -30,7 +30,7 @@ func TestAccFunctionDomain_Basic(t *testing.T) {
 
 					resource scaleway_function main {
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "go122"
+						runtime = "go126"
 						privacy = "private"
 						handler = "Handle"
 						zip_file = "testfixture/gofunction.zip"
@@ -53,6 +53,7 @@ func TestAccFunctionDomain_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionDomainExists(tt, "scaleway_function_domain.main"),
 					resource.TestCheckResourceAttr("scaleway_function_domain.main", "hostname", fmt.Sprintf("%s.%s", "function", testDNSZone)),
+					resource.TestCheckResourceAttrWith("scaleway_function_domain.main", "srn", acctest.CheckSRN("functions", "domains")),
 				),
 			},
 		},

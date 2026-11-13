@@ -7,17 +7,14 @@ page_title: "Scaleway: scaleway_key_manager_key"
 
 Gets information about a Key Manager Key. For more information, refer to the [Key Manager API documentation](https://www.scaleway.com/en/developers/api/key-manager/#path-keys-get-key-metadata).
 
+
+
 ## Example Usage
 
-### Create a key and get its information
+```terraform
+# Create a key and get its information.
+# In the example below, a key named `my-kms-key` is created, and its information is retrieved using the key's ID.
 
-The following commands allow you to:
-
-- create a key named `my-kms-key`
-- retrieve the key's information using the key's ID
-
-```hcl
-// Create a key
 resource "scaleway_key_manager_key" "symmetric" {
   name        = "my-kms-key"
   region      = "fr-par"
@@ -33,17 +30,18 @@ resource "scaleway_key_manager_key" "symmetric" {
   }
 }
 
-// Get the key information by its ID
 data "scaleway_key_manager_key" "byID" {
   key_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
+
+
 ## Argument Reference
 
-- `key_id` -  ID of the key to target. Can be a plain UUID or a [regional](../guides/regions_and_zones.md#resource-ids) ID.
+- `key_id` - ID of the key to target. Can be a plain UUID or a [regional](../guides/regions_and_zones.md#resource-ids) ID.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the key was created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the key was created.
 
 ## Attributes Reference
 

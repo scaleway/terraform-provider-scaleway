@@ -2,6 +2,7 @@ package registry
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/registry_image_data_source.md
+var imageDataSourceDescription string
+
 func DataSourceImage() *schema.Resource {
 	return &schema.Resource{
+		Description: imageDataSourceDescription,
 		ReadContext: DataSourceRegistryImageRead,
 		SchemaFunc:  imageSchema,
 	}
@@ -96,7 +101,7 @@ func DataSourceRegistryImageRead(ctx context.Context, d *schema.ResourceData, m 
 			Name:        types.ExpandStringPtr(imageName),
 			NamespaceID: namespaceID,
 			ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
-		}, scw.WithContext(ctx))
+		}, scw.WithContext(ctx), scw.WithAllPages())
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/mongodb_snapshot_resource.md
+var snapshotResourceDescription string
+
 func ResourceSnapshot() *schema.Resource {
 	return &schema.Resource{
+		Description:   snapshotResourceDescription,
 		CreateContext: ResourceSnapshotCreate,
 		ReadContext:   ResourceSnapshotRead,
 		UpdateContext: ResourceSnapshotUpdate,
@@ -178,8 +183,7 @@ func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 	hasChanged := false
 
 	if d.HasChange("name") {
-		newName := types.ExpandOrGenerateString(d.Get("name"), "snapshot")
-		updateReq.Name = &newName
+		updateReq.Name = new(types.ExpandOrGenerateString(d.Get("name"), "snapshot"))
 		hasChanged = true
 	}
 

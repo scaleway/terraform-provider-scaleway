@@ -17,8 +17,8 @@ The goal of the following guidelines is to have Pull Requests (PRs) that are fai
 - **Please, keep us updated.**
   We will try our best to merge your PR, but please notice that PRs may be closed after 30 days of inactivity.
 
-Your pull request should be rebased against the current master branch. Please do not merge
-the current master branch in with your topic branch, nor use the Update Branch button provided
+Your pull request should be rebased against the current default branch. Please do not merge
+the current default branch in with your topic branch, nor use the Update Branch button provided
 by GitHub on the pull request page.
 
 Keep in mind only the **Pull Request Title** will be used as commit message as we stash all commits on merge.

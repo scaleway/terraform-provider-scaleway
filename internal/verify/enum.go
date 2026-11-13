@@ -3,6 +3,8 @@ package verify
 import (
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -26,6 +28,22 @@ func ValidateEnumIgnoreCase[T EnumValues[T]]() schema.SchemaValidateDiagFunc {
 	return validation.ToDiagFunc(validation.StringInSlice(values, true))
 }
 
+func ValidateEnumFramework[T EnumValues[T]]() validator.String {
+	return FrameworkValidateEnum[T]()
+}
+
+func FrameworkValidateEnum[T EnumValues[T]]() validator.String {
+	values := filterUnknownValues(getValues[T]())
+
+	return stringvalidator.OneOf(values...)
+}
+
+func FrameworkValidateEnumIgnoreCase[T EnumValues[T]]() validator.String {
+	values := filterUnknownValues(getValues[T]())
+
+	return stringvalidator.OneOfCaseInsensitive(values...)
+}
+
 func getValues[T EnumValues[T]]() []string {
 	var t T
 
@@ -37,6 +55,12 @@ func getValues[T EnumValues[T]]() []string {
 	}
 
 	return result
+}
+
+// KnownValues returns the string values of the provided enum type,
+// excluding "unknown" and "unknown_*" placeholder values.
+func KnownValues[T EnumValues[T]]() []string {
+	return filterUnknownValues(getValues[T]())
 }
 
 // filterUnknownValues removes "unknown" and "unknown_*" values from the slice

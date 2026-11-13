@@ -2,6 +2,9 @@ package redis
 
 import (
 	"fmt"
+	"net"
+	"net/url"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -171,4 +174,55 @@ func flattenPublicNetwork(endpoints []*redis.Endpoint) any {
 	}
 
 	return pnFlat
+}
+
+// redisConnectionString builds a URI of the form redis(s)://[user:password@]host:port/0 for the first
+// endpoint with a usable IP (public network preferred, then private).
+// When password is set, user and password are set via url.UserPassword so clients send ACL AUTH (required e.g. on Redis 8).
+// When password is empty (e.g. password_wo), userinfo is omitted because the secret is not in state.
+func redisConnectionString(endpoints []*redis.Endpoint, username, password string, tlsEnabled bool) string {
+	scheme := "redis"
+	if tlsEnabled {
+		scheme = "rediss"
+	}
+
+	host, port := redisConnectionHostPort(endpoints)
+	if host == "" || port == 0 {
+		return ""
+	}
+
+	u := &url.URL{
+		Scheme: scheme,
+		Host:   net.JoinHostPort(host, strconv.FormatUint(uint64(port), 10)),
+		Path:   "/0",
+	}
+	if password != "" {
+		u.User = url.UserPassword(username, password)
+	}
+
+	return u.String()
+}
+
+func redisConnectionHostPort(endpoints []*redis.Endpoint) (host string, port uint32) {
+	for _, endpoint := range endpoints {
+		if endpoint == nil || endpoint.PublicNetwork == nil {
+			continue
+		}
+
+		if len(endpoint.IPs) > 0 {
+			return endpoint.IPs[0].String(), endpoint.Port
+		}
+	}
+
+	for _, endpoint := range endpoints {
+		if endpoint == nil || endpoint.PrivateNetwork == nil {
+			continue
+		}
+
+		if len(endpoint.IPs) > 0 {
+			return endpoint.IPs[0].String(), endpoint.Port
+		}
+	}
+
+	return "", 0
 }

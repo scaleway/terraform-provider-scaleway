@@ -23,15 +23,12 @@ func TestAccDataSourceCockpitGrafana_Basic(t *testing.T) {
 						name = "%s"
 					}
 
-					resource "scaleway_cockpit" "main" {
-						project_id = scaleway_account_project.project.id
-					}
-
 					data "scaleway_cockpit_grafana" "main" {
-						project_id = scaleway_cockpit.main.project_id
+						project_id = scaleway_account_project.project.id
 					}
 				`, projectName),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith("data.scaleway_cockpit_grafana.main", "srn", acctest.CheckSRN("cockpit", "grafana")),
 					resource.TestCheckResourceAttrPair("data.scaleway_cockpit_grafana.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit_grafana.main", "grafana_url"),
 				),
@@ -44,13 +41,25 @@ func TestAccDataSourceCockpitGrafana_DefaultProject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	config := `
+		data scaleway_cockpit_grafana main {
+		}
+	`
+
+	_, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !projectIDExists {
+		config = `
+			data scaleway_cockpit_grafana main {
+				project_id = "105bdce1-64c0-48ab-899d-868455867ecf"
+			}
+		`
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					data "scaleway_cockpit_grafana" "main" {}
-				`,
+				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit_grafana.main", "project_id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit_grafana.main", "grafana_url"),

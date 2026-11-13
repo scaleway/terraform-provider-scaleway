@@ -2,6 +2,7 @@ package ipam
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/ipam_ip_data_source.md
+var ipDataSourceDescription string
+
 func DataSourceIP() *schema.Resource {
 	return &schema.Resource{
+		Description: ipDataSourceDescription,
 		ReadContext: DataSourceIPAMIPRead,
 		SchemaFunc:  dataSourceIPSchema,
 	}
@@ -124,6 +129,11 @@ func dataSourceIPSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The IP address with a CIDR notation",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The SRN of the IP",
+		},
 	}
 }
 
@@ -133,7 +143,7 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	var address, addressCidr string
+	var address, addressCidr, srn string
 
 	var ip scw.IPNet
 
@@ -209,6 +219,7 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 			ip = resp.IPs[0].Address
 			IPID = resp.IPs[0].ID
+			srn = resp.IPs[0].Srn
 
 			return nil
 		})
@@ -225,6 +236,7 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) di
 		}
 
 		ip = res.Address
+		srn = res.Srn
 	}
 
 	address = ip.IP.String()
@@ -237,6 +249,7 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) di
 	d.SetId(IPID.(string))
 	_ = d.Set("address", address)
 	_ = d.Set("address_cidr", addressCidr)
+	_ = d.Set("srn", srn)
 
 	return nil
 }

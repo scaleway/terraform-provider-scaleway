@@ -35,6 +35,7 @@ func TestAccDataSourceVPCPublicGatewayIP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_public_gateway_ip.ip_by_id", "ip_id",
 						"scaleway_vpc_public_gateway_ip.main", "id"),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_public_gateway_ip.ip_by_id", "srn", acctest.CheckSRN("public-gateway", "ips")),
 				),
 			},
 		},

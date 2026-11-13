@@ -50,11 +50,12 @@ This section lists the arguments that are supported:
 
 - `iops` - (Required) The maximum [IOPs](https://www.scaleway.com/en/docs/block-storage/concepts/#iops) expected, must match available options.
 - `name` - (Optional) The name of the volume. If not provided, a name will be randomly generated.
-- `size_in_gb` - (Optional) The size of the volume in gigabytes.
+- `size_in_gb` - (Optional) The size of the volume in gigabytes. Defaults to 5GB, or to the snapshot's size if `snapshot_id` is specified.
 - `snapshot_id` - (Optional) If set, the new volume will be created from this snapshot.
+- `kms_key_id` - (Optional) UUID of the KMS key used to protect the volume's encryption. Using this field will encrypt the new volume. Only available to the Private Beta's users. The KMS key must use symmetric encryption with the `AES-256-GCM` algorithm. Cannot be used with `instance_volume_id`. When creating from a `snapshot_id`, the value must match the snapshot's `kms_key_id`.
 - `tags` - (Optional) A list of tags to apply to the volume.
-- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)). The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
-- `project_id` - (Defaults to the Project ID specified in the [provider configurqtion](../index.md#project_id)). The ID of the Project the volume is associated with.
+- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#arguments-reference)). The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
+- `project_id` - (Defaults to the Project ID specified in the [provider configurqtion](../index.md#arguments-reference)). The ID of the Project the volume is associated with.
 
 ## Attributes Reference
 
@@ -65,6 +66,7 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** The IDs of Block Storage volumes are [zoned](../guides/regions_and_zones.md#resource-ids), meaning that the zone is part of the ID, in the `{zone}/{id}` format. For example, a volume ID might look like the following: `fr-par-1/11111111-1111-1111-1111-111111111111`.
 
 - `organization_id` - The Organization ID the volume is associated with.
+- `srn` - The Scaleway Resource Name (SRN) of the volume.
 
 ## Import
 

@@ -16,7 +16,7 @@ resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
 }
 
-resource scaleway_object "some_file" {
+resource "scaleway_object" "some_file" {
   bucket = scaleway_object_bucket.some_bucket.id
   key    = "object_path"
 
@@ -49,7 +49,7 @@ The following arguments are supported:
 
 * `metadata` - (Optional) Map of metadata used for the object (keys must be lowercase).
 
-* `content_type` -  (Optional) The standard MIME type of the object's content (e.g., 'application/json', 'text/plain'). This specifies how the object should be interpreted by clients. See RFC 9110: <https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type>
+* `content_type` - (Optional) The standard MIME type of the object's content (e.g., 'application/json', 'text/plain'). This specifies how the object should be interpreted by clients. See RFC 9110: <https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type>
 
 * `tags` - (Optional) Map of tags.
 

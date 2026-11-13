@@ -1,0 +1,36 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "Databases"
+description: |-
+  Lists Scaleway RDB database backups for Database Instances across regions and projects.
+---
+
+# Resource: {{ .Name }}
+
+{{ .Description }}
+
+For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/).
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `regions` - (Optional) Regions of the RDB Database Instance to filter on. Use `["*"]` to list from all regions. If omitted, the provider default region is used.
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects. If omitted, the provider default project is used.
+- `instance_ids` - (Required) Database Instance IDs to list backups from. Use `["*"]` only to include all instances in each selected region and project. Otherwise each value must be a regional ID (`region/uuid`) or a bare instance UUID.
+- `name` - (Optional) Name of the database backup to filter on.
+
+## Attributes Reference
+
+Each result corresponds to one RDB database backup and exposes the same attributes as the [`scaleway_rdb_database_backup` resource](../resources/rdb_database_backup.md).

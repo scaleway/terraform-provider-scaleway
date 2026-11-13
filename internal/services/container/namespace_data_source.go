@@ -2,15 +2,19 @@ package container
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/container_namespace_data_source.md
+var namespaceDataSourceDescription string
 
 func DataSourceNamespace() *schema.Resource {
 	// Generate datasource schema from resource
@@ -28,6 +32,7 @@ func DataSourceNamespace() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: namespaceDataSourceDescription,
 		ReadContext: DataSourceContainerNamespaceRead,
 		Schema:      dsSchema,
 	}

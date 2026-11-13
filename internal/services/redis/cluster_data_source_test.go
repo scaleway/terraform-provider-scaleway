@@ -36,6 +36,7 @@ func TestAccDataSourceCluster_Basic(t *testing.T) {
 					}
 				`, latestRedisVersion),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith("data.scaleway_redis_cluster.test", "srn", acctest.CheckSRN("redis", "clusters")),
 					isClusterPresent(tt, "scaleway_redis_cluster.test"),
 
 					resource.TestCheckResourceAttr("data.scaleway_redis_cluster.test", "name", "test_redis_datasource_terraform"),

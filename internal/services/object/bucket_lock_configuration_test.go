@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	LockResourcePrefix   = "tf-acc-test"
+	LockResourcePrefix   = "tf-test-acc"
 	lockResourceTestName = "scaleway_object_bucket_lock_configuration.test"
 )
 

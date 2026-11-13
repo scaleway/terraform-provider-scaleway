@@ -23,9 +23,7 @@ func flattenPermissionSetNames(permissions []string) *schema.Set {
 		rawPermissions = append(rawPermissions, perm)
 	}
 
-	return schema.NewSet(func(i any) int {
-		return types.StringHashcode(i.(string))
-	}, rawPermissions)
+	return schema.NewSet(schema.HashString, rawPermissions)
 }
 
 func expandPolicyRuleSpecs(d any) []*iam.RuleSpecs {

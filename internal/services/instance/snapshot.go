@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -22,8 +23,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance_snapshot_resource.md
+var snapshotResourceDescription string
+
 func ResourceSnapshot() *schema.Resource {
 	return &schema.Resource{
+		Description:   snapshotResourceDescription,
 		CreateContext: ResourceInstanceSnapshotCreate,
 		ReadContext:   ResourceInstanceSnapshotRead,
 		UpdateContext: ResourceInstanceSnapshotUpdate,
@@ -161,7 +166,7 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetZonalIdentity(d, zone, res.Snapshot.ID)
+	err = identity.SetZonalIdentity(d, res.Snapshot.Zone, res.Snapshot.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -217,7 +222,7 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetZonalIdentity(d, zone, snapshot.Snapshot.ID)
+	err = identity.SetZonalIdentity(d, snapshot.Snapshot.Zone, snapshot.Snapshot.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/lb_data_source.md
+var lbDataSourceDescription string
 
 func DataSourceLb() *schema.Resource {
 	// Generate datasource schema from resource
@@ -36,6 +40,7 @@ func DataSourceLb() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: lbDataSourceDescription,
 		ReadContext: DataSourceLbRead,
 		Schema:      dsSchema,
 	}
@@ -90,20 +95,5 @@ func DataSourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	region, err := zone.Region()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	privateNetworks, err := waitForPrivateNetworks(ctx, api, zone, lb.ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	allPrivateIPs, err := getLBPrivateIPs(ctx, m, region, lb.ID, privateNetworks)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return setLBState(d, lb, zone, region, privateNetworks, allPrivateIPs, false)
+	return setLBState(ctx, d, m, api, lb, false)
 }

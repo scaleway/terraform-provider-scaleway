@@ -2,4 +2,4 @@ The [`scaleway_config`](https://registry.terraform.io/providers/scaleway/scalewa
 
 Contrary to the scw_config Data Source, this is an Ephemeral Resource: it is not stored in the Terraform state file. The configuration information is retrieved fresh with each Terraform apply.
 
-Refer to the Scaleway [documentation](https://www.scaleway.com/en/docs/) and [API documentation](https://www.scaleway.com/en/developers/api/) for more information.
+For more information, see [our guide to using Ephemeral Resources with Terraform Scaleway Provider](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-ephemeral-resources), the Scaleway [documentation](https://www.scaleway.com/en/docs/), and the [API documentation](https://www.scaleway.com/en/developers/api/).

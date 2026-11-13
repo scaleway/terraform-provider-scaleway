@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5" //nolint:gosec
+	_ "embed"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -22,8 +23,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/object_resource.md
+var objectResourceDescription string
+
 func ResourceObject() *schema.Resource {
 	return &schema.Resource{
+		Description:   objectResourceDescription,
 		CreateContext: resourceObjectCreate,
 		ReadContext:   resourceObjectRead,
 		UpdateContext: resourceObjectUpdate,
@@ -206,8 +211,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.Body = bytes.NewReader([]byte{})
 	}
 
-	_, err = s3Client.PutObject(ctx, req)
-	if err != nil {
+	if err := uploadObject(ctx, s3Client, req); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -292,7 +296,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			req.Body = bytes.NewReader([]byte{})
 		}
 
-		_, err = s3Client.PutObject(ctx, req)
+		err = uploadObject(ctx, s3Client, req)
 	} else {
 		req := &s3.CopyObjectInput{
 			Bucket:       types.ExpandStringPtr(bucketUpdated),
@@ -378,7 +382,11 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	_ = d.Set("region", region)
-	_ = d.Set("bucket", regional.NewIDString(region, bucket))
+	// Use the raw bucket name (without region prefix) so cross-resource
+	// references in Framework resources don't trigger "inconsistent final
+	// plan" errors. The DiffSuppressFunc on the bucket field already handles
+	// semantic equality between prefixed and unprefixed values.
+	_ = d.Set("bucket", bucket)
 	_ = d.Set("key", key)
 
 	for k, v := range obj.Metadata {

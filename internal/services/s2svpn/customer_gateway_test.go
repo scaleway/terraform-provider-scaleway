@@ -38,7 +38,13 @@ func TestAccCustomerGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_s2s_vpn_customer_gateway.main", "ipv4_public", "scaleway_instance_ip.main", "address"),
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_customer_gateway.main", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_customer_gateway.main", "created_at"),
+					resource.TestCheckResourceAttrWith("scaleway_s2s_vpn_customer_gateway.main", "srn", acctest.CheckSRN("s2s-vpn", "customer-gateways")),
 				),
+			},
+			{
+				ResourceName:      "scaleway_s2s_vpn_customer_gateway.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

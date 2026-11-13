@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
 func TestAccDataSourceConnection_Basic(t *testing.T) {
@@ -13,10 +14,13 @@ func TestAccDataSourceConnection_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckConnectionDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckConnectionDestroy(tt),
+			secrettestfuncs.CheckSecretDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: testAccConnectionPSKSecretConfig("tf-test-connection-ds-psk") + `
 					resource "scaleway_vpc" "main" {
 						name = "tf-test-vpc-connection-ds"
 					}
@@ -56,11 +60,13 @@ func TestAccDataSourceConnection_Basic(t *testing.T) {
 						name                = "tf-test-connection-ds"
 						vpn_gateway_id      = scaleway_s2s_vpn_gateway.main.id
 						customer_gateway_id = scaleway_s2s_vpn_customer_gateway.main.id
+						secret_id           = scaleway_secret.psk.id
+						secret_version      = scaleway_secret_version.psk.revision
 					
 						bgp_config_ipv4 {
 							routing_policy_id = scaleway_s2s_vpn_routing_policy.main.id
-							private_ip        = "169.254.0.1/30"
-							peer_private_ip   = "169.254.0.2/30"
+							private_ip        = "169.254.1.1/30"
+							peer_private_ip   = "169.254.1.2/30"
 						}
 
 						ikev2_ciphers {
@@ -78,7 +84,7 @@ func TestAccDataSourceConnection_Basic(t *testing.T) {
 				`,
 			},
 			{
-				Config: `
+				Config: testAccConnectionPSKSecretConfig("tf-test-connection-ds-psk") + `
 					resource "scaleway_vpc" "main" {
 						name = "tf-test-vpc-connection-ds"
 					}
@@ -118,11 +124,13 @@ func TestAccDataSourceConnection_Basic(t *testing.T) {
 						name                = "tf-test-connection-ds"
 						vpn_gateway_id      = scaleway_s2s_vpn_gateway.main.id
 						customer_gateway_id = scaleway_s2s_vpn_customer_gateway.main.id
+						secret_id           = scaleway_secret.psk.id
+						secret_version      = scaleway_secret_version.psk.revision
 						
 						bgp_config_ipv4 {
 							routing_policy_id = scaleway_s2s_vpn_routing_policy.main.id
-							private_ip        = "169.254.0.1/30"
-							peer_private_ip   = "169.254.0.2/30"
+							private_ip        = "169.254.1.1/30"
+							peer_private_ip   = "169.254.1.2/30"
 						}
 
 						ikev2_ciphers {

@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/edge_services_tls_stage_resource.md
+var tlsstageResourceDescription string
+
 func ResourceTLSStage() *schema.Resource {
 	return &schema.Resource{
+		Description:   tlsstageResourceDescription,
 		CreateContext: ResourceTLSStageCreate,
 		ReadContext:   ResourceTLSStageRead,
 		UpdateContext: ResourceTLSStageUpdate,
@@ -148,6 +153,17 @@ func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
+	diags := setTLSStageState(d, tlsStage)
+
+	err = identity.SetGlobalIdentity(d, tlsStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setTLSStageState(d *schema.ResourceData, tlsStage *edgeservices.TLSStage) diag.Diagnostics {
 	_ = d.Set("backend_stage_id", types.FlattenStringPtr(tlsStage.BackendStageID))
 	_ = d.Set("cache_stage_id", types.FlattenStringPtr(tlsStage.CacheStageID))
 	_ = d.Set("route_stage_id", types.FlattenStringPtr(tlsStage.RouteStageID))
@@ -158,10 +174,6 @@ func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("certificate_expires_at", types.FlattenTime(tlsStage.CertificateExpiresAt))
 	_ = d.Set("created_at", types.FlattenTime(tlsStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(tlsStage.UpdatedAt))
-
-	if err = identity.SetGlobalIdentity(d, tlsStage.ID); err != nil {
-		return diag.FromErr(err)
-	}
 
 	return nil
 }

@@ -214,6 +214,11 @@ func serverSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The username of the server",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the server",
+		},
 
 		// Common
 		"zone":            zonal.Schema(),
@@ -238,8 +243,7 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if OsID, ok := d.GetOk("os_id"); ok {
-		id := zonal.ExpandID(OsID).ID
-		createReq.OsID = &id
+		createReq.OsID = new(zonal.ExpandID(OsID).ID)
 	}
 
 	if runnerIDs, ok := d.GetOk("runner_ids"); ok {
@@ -302,7 +306,7 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 		ServerID: ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if httperrors.Is404(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 
 			return nil
@@ -333,6 +337,7 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("public_bandwidth", int(res.PublicBandwidthBps))
 	_ = d.Set("zone", res.Zone)
 	_ = d.Set("runner_ids", res.AppliedRunnerConfigurationIDs)
+	_ = d.Set("srn", res.Srn)
 
 	switch res.VpcStatus {
 	case applesilicon.ServerPrivateNetworkStatusVpcDisabled:
@@ -375,9 +380,8 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	authorized := true
 
 	for _, privateNetworkID := range privateNetworkIDs {
-		resourceType := ipamAPI.ResourceTypeAppleSiliconPrivateNic
 		opts := &ipam.GetResourcePrivateIPsOptions{
-			ResourceType:     &resourceType,
+			ResourceType:     new(ipamAPI.ResourceTypeAppleSiliconPrivateNic),
 			PrivateNetworkID: &privateNetworkID,
 			ProjectID:        &res.ProjectID,
 		}
@@ -442,8 +446,7 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("enable_vpc") {
-		enableVpc := d.Get("enable_vpc").(bool)
-		req.EnableVpc = &enableVpc
+		req.EnableVpc = new(d.Get("enable_vpc").(bool))
 	}
 
 	if d.HasChange("public_bandwidth") {
@@ -452,7 +455,16 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("runner_ids") {
-		req.AppliedRunnerConfigurations.RunnerConfigurationIDs = d.Get("runner_ids").([]string)
+		if req.AppliedRunnerConfigurations == nil {
+			req.AppliedRunnerConfigurations = &applesilicon.AppliedRunnerConfigurations{}
+		}
+
+		runnerIDs := d.Get("runner_ids")
+		if runnerIDs != nil {
+			req.AppliedRunnerConfigurations.RunnerConfigurationIDs = locality.ExpandIDs(runnerIDs)
+		} else {
+			req.AppliedRunnerConfigurations.RunnerConfigurationIDs = []string{}
+		}
 	}
 
 	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))
@@ -494,6 +506,11 @@ func ResourceAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceDat
 	}
 
 	err = detachAllPrivateNetworkFromServer(ctx, d, m, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForAppleSiliconServer(ctx, asAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}

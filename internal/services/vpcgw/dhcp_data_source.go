@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,8 +10,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/vpc_public_gateway_dhcp_data_source.md
+var dhcpDataSourceDescription string
+
 func DataSourceDHCP() *schema.Resource {
-	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceDHCP().SchemaFunc())
 
 	dsSchema["dhcp_id"] = &schema.Schema{
@@ -21,22 +24,17 @@ func DataSourceDHCP() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Schema:      dsSchema,
-		ReadContext: DataSourceVPCPublicGatewayDHCPRead,
+		Description:        dhcpDataSourceDescription,
+		Schema:             dsSchema,
+		ReadContext:        dataSourceVPCPublicGatewayDHCPRead,
+		DeprecationMessage: dhcpDeprecationMessage,
 	}
 }
 
-func DataSourceVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	_, zone, err := newAPIWithZone(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	dhcpID, _ := d.GetOk("dhcp_id")
-
-	zonedID := datasource.NewZonedID(dhcpID, zone)
-	d.SetId(zonedID)
-	_ = d.Set("dhcp_id", zonedID)
-
-	return ResourceVPCPublicGatewayDHCPRead(ctx, d, m)
+func dataSourceVPCPublicGatewayDHCPRead(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+	return diag.Diagnostics{{
+		Severity: diag.Error,
+		Summary:  "scaleway_vpc_public_gateway_dhcp data source is no longer supported",
+		Detail:   dhcpDeprecationMessage,
+	}}
 }

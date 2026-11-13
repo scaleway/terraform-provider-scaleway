@@ -117,6 +117,7 @@ func flattenAndSortSubnetV2s(subnets []*vpc.Subnet) (any, any) {
 				"address":       s.Subnet.IP.String(),
 				"subnet_mask":   maskHexToDottedDecimal(s.Subnet.Mask),
 				"prefix_length": getPrefixLength(s.Subnet.Mask),
+				"srn":           s.Srn,
 			})
 		} else {
 			sub, err := types.FlattenIPNet(s.Subnet)
@@ -132,6 +133,7 @@ func flattenAndSortSubnetV2s(subnets []*vpc.Subnet) (any, any) {
 				"address":       s.Subnet.IP.String(),
 				"subnet_mask":   maskHexToDottedDecimal(s.Subnet.Mask),
 				"prefix_length": getPrefixLength(s.Subnet.Mask),
+				"srn":           s.Srn,
 			})
 		}
 	}
@@ -183,9 +185,20 @@ func flattenACLRules(rules []*vpc.ACLRule) any {
 
 	flattenedRules := []map[string]any(nil)
 
-	ruleScopeRegex := regexp.MustCompile(`^\(Rule scope: [^)]+\)\s*`)
+	ruleScopeRegex := regexp.MustCompile(`^\(Rule scope: ([^)]+)\)\s*`)
 
 	for _, rule := range rules {
+		rawDescription := types.FlattenStringPtr(rule.Description).(string)
+
+		if matches := ruleScopeRegex.FindStringSubmatch(rawDescription); matches != nil {
+			scope := strings.TrimSpace(matches[1])
+			if scope != "client" {
+				continue
+			}
+		}
+
+		cleanDescription := ruleScopeRegex.ReplaceAllString(rawDescription, "")
+
 		flattenedSource, err := types.FlattenIPNet(rule.Source)
 		if err != nil {
 			return nil
@@ -195,9 +208,6 @@ func flattenACLRules(rules []*vpc.ACLRule) any {
 		if err != nil {
 			return nil
 		}
-
-		rawDescription := types.FlattenStringPtr(rule.Description)
-		cleanDescription := ruleScopeRegex.ReplaceAllString(rawDescription.(string), "")
 
 		flattenedRules = append(flattenedRules, map[string]any{
 			"protocol":      rule.Protocol.String(),

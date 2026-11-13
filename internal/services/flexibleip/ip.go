@@ -2,6 +2,7 @@ package flexibleip
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/flexible_ip_resource.md
+var ipResourceDescription string
+
 func ResourceIP() *schema.Resource {
 	return &schema.Resource{
+		Description:   ipResourceDescription,
 		CreateContext: ResourceFlexibleIPCreate,
 		ReadContext:   ResourceFlexibleIPRead,
 		UpdateContext: ResourceFlexibleIPUpdate,
@@ -94,6 +99,11 @@ func ipSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the flexible IP",
 		},
 	}
 }
@@ -177,6 +187,7 @@ func setFlexibleIPState(d *schema.ResourceData, flexibleIP *flexibleip.FlexibleI
 	_ = d.Set("updated_at", types.FlattenTime(flexibleIP.UpdatedAt))
 	_ = d.Set("tags", flexibleIP.Tags)
 	_ = d.Set("status", flexibleIP.Status.String())
+	_ = d.Set("srn", flexibleIP.Srn)
 
 	if flexibleIP.ServerID != nil {
 		_ = d.Set("server_id", zonal.NewIDString(zone, *flexibleIP.ServerID))

@@ -11,12 +11,12 @@ For further information, please see the [API documentation](https://www.scaleway
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc_public_gateway_ip" "main" {
 }
 
 data "scaleway_vpc_public_gateway_ip" "ip_by_id" {
-  ip_id = "${scaleway_vpc_public_gateway_ip.main.id}"
+  ip_id = scaleway_vpc_public_gateway_ip.main.id
 }
 ```
 

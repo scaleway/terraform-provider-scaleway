@@ -2,6 +2,7 @@ package datawarehouse
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"strings"
 
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
+//go:embed descriptions/datawarehouse_database_resource.md
+var databaseResourceDescription string
+
 func ResourceDatabase() *schema.Resource {
 	return &schema.Resource{
+		Description:   databaseResourceDescription,
 		CreateContext: resourceDatabaseCreate,
 		ReadContext:   resourceDatabaseRead,
 		DeleteContext: resourceDatabaseDelete,
@@ -47,6 +52,11 @@ func databaseSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Computed:    true,
 			Description: "Size of the database (in GB).",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the database",
 		},
 	}
 }
@@ -118,6 +128,7 @@ func resourceDatabaseRead(ctx context.Context, d *schema.ResourceData, meta any)
 	_ = d.Set("deployment_id", deploymentID)
 	_ = d.Set("name", found.Name)
 	_ = d.Set("size", int(found.Size))
+	_ = d.Set("srn", found.Srn)
 
 	return nil
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccActionRDBDatabaseBackupRestore_Basic(t *testing.T) {
@@ -100,11 +101,19 @@ func isDatabaseRestored(tt *acctest.TestTools, instanceResourceName, databaseNam
 
 		api := rdbSDK.NewAPI(tt.Meta.ScwClient())
 
-		databases, err := api.ListDatabases(&rdbSDK.ListDatabasesRequest{
-			Region:     region,
-			InstanceID: id,
-			Name:       new(databaseName),
-		}, scw.WithContext(context.Background()))
+		var databases *rdbSDK.ListDatabasesResponse
+
+		err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+			var err error
+
+			databases, err = api.ListDatabases(&rdbSDK.ListDatabasesRequest{
+				Region:     region,
+				InstanceID: id,
+				Name:       new(databaseName),
+			}, scw.WithContext(ctx))
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list databases: %w", err)
 		}

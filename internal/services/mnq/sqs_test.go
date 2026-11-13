@@ -92,16 +92,20 @@ func isSQSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		sqs, err := api.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
-			ProjectID: id,
-			Region:    region,
+		var sqsInfo *mnqSDK.SqsInfo
+
+		sqsInfo, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.SqsInfo, error) {
+			return api.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
+				ProjectID: id,
+				Region:    region,
+			})
 		})
 		if err != nil {
 			return err
 		}
 
-		if sqs.Status != mnqSDK.SqsInfoStatusEnabled {
-			return fmt.Errorf("sqs status should be enabled, got: %s", sqs.Status)
+		if sqsInfo.Status != mnqSDK.SqsInfoStatusEnabled {
+			return fmt.Errorf("sqs status should be enabled, got: %s", sqsInfo.Status)
 		}
 
 		return nil

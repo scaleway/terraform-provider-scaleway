@@ -66,7 +66,7 @@ func TestAccDataSourceVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					  name        = "Scaleway Instance"
 					  type        = "DEV1-S"
 					  image       = "debian_bullseye"
-					
+
 					  private_network {
 						pn_id = scaleway_vpc_private_network.pn01.id
 					  }
@@ -116,6 +116,7 @@ func TestAccDataSourceVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_public_gateway_pat_rule.main", "private_port",
 						"scaleway_vpc_public_gateway_pat_rule.main", "private_port"),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_public_gateway_pat_rule.main", "srn", acctest.CheckSRN("public-gateway", "pat-rules")),
 				),
 			},
 		},

@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/function_trigger_resource.md
+var triggerResourceDescription string
+
 func ResourceTrigger() *schema.Resource {
 	return &schema.Resource{
+		Description:   triggerResourceDescription,
 		CreateContext: ResourceFunctionTriggerCreate,
 		ReadContext:   ResourceFunctionTriggerRead,
 		UpdateContext: ResourceFunctionTriggerUpdate,
@@ -136,6 +141,11 @@ func triggerSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the function trigger",
+		},
 		"region": regional.Schema(),
 	}
 }
@@ -207,6 +217,7 @@ func ResourceFunctionTriggerRead(ctx context.Context, d *schema.ResourceData, m 
 
 	_ = d.Set("name", trigger.Name)
 	_ = d.Set("description", trigger.Description)
+	_ = d.Set("srn", trigger.Srn)
 
 	diags := diag.Diagnostics(nil)
 

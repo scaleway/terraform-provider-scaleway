@@ -1,10 +1,7 @@
 package vpcgwtestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	v2 "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -12,10 +9,6 @@ import (
 )
 
 func AddTestSweepers() {
-	resource.AddTestSweepers("scaleway_vpc_public_gateway_dhcp", &resource.Sweeper{
-		Name: "scaleway_vpc_public_gateway_dhcp",
-		F:    testSweepVPCPublicGatewayDHCP,
-	})
 	resource.AddTestSweepers("scaleway_vpc_public_gateway_ip", &resource.Sweeper{
 		Name: "scaleway_vpc_public_gateway_ip",
 		F:    testSweepVPCPublicGatewayIP,
@@ -40,7 +33,9 @@ func testSweepVPCPublicGateway(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing public gateway in sweeper: %w", err)
+			logging.L.Warningf("error listing public gateway in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, gateway := range listGatewayResponse.Gateways {
@@ -49,7 +44,7 @@ func testSweepVPCPublicGateway(_ string) error {
 				GatewayID: gateway.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting public gateway in sweeper: %w", err)
+				logging.L.Warningf("error deleting public gateway %s: %s", gateway.ID, err)
 			}
 		}
 
@@ -67,16 +62,18 @@ func testSweepVPCGatewayNetwork(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing gateway network in sweeper: %w", err)
+			logging.L.Warningf("error listing gateway network in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, gn := range listPNResponse.GatewayNetworks {
 			_, err := api.DeleteGatewayNetwork(&v2.DeleteGatewayNetworkRequest{
-				GatewayNetworkID: gn.GatewayID,
+				GatewayNetworkID: gn.ID,
 				Zone:             zone,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting gateway network in sweeper: %w", err)
+				logging.L.Warningf("error deleting gateway network %s: %s", gn.ID, err)
 			}
 		}
 
@@ -94,7 +91,9 @@ func testSweepVPCPublicGatewayIP(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing public gateway ip in sweeper: %w", err)
+			logging.L.Warningf("error listing public gateway ip in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, ip := range listIPResponse.IPs {
@@ -103,34 +102,7 @@ func testSweepVPCPublicGatewayIP(_ string) error {
 				IPID: ip.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting public gateway ip in sweeper: %w", err)
-			}
-		}
-
-		return nil
-	})
-}
-
-func testSweepVPCPublicGatewayDHCP(_ string) error {
-	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		api := vpcgwSDK.NewAPI(scwClient)
-
-		logging.L.Debugf("sweeper: destroying public gateway dhcps in (%+v)", zone)
-
-		listDHCPsResponse, err := api.ListDHCPs(&vpcgwSDK.ListDHCPsRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing public gateway dhcps in sweeper: %w", err)
-		}
-
-		for _, dhcp := range listDHCPsResponse.Dhcps {
-			err := api.DeleteDHCP(&vpcgwSDK.DeleteDHCPRequest{
-				Zone:   zone,
-				DHCPID: dhcp.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting public gateway dhcp in sweeper: %w", err)
+				logging.L.Warningf("error deleting public gateway ip %s: %s", ip.ID, err)
 			}
 		}
 

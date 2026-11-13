@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 
@@ -22,8 +23,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance_volume_resource.md
+var volumeResourceDescription string
+
 func ResourceVolume() *schema.Resource {
 	return &schema.Resource{
+		Description:   volumeResourceDescription,
 		CreateContext: ResourceInstanceVolumeCreate,
 		ReadContext:   ResourceInstanceVolumeRead,
 		UpdateContext: ResourceInstanceVolumeUpdate,
@@ -116,8 +121,7 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
-		volumeSizeInBytes := scw.Size(uint64(size.(int)) * gb)
-		createVolumeRequest.Size = &volumeSizeInBytes
+		createVolumeRequest.Size = new(scw.Size(uint64(size.(int)) * gb))
 	}
 
 	if snapshotID, ok := d.GetOk("from_snapshot_id"); ok {
@@ -225,8 +229,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChange("name") {
-		newName := d.Get("name").(string)
-		req.Name = &newName
+		req.Name = new(d.Get("name").(string))
 	}
 
 	tags := types.ExpandStrings(d.Get("tags"))
@@ -248,12 +251,10 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		volumeSizeInBytes := scw.Size(uint64(d.Get("size_in_gb").(int)) * gb)
-
 		_, err = instanceAPI.UpdateVolume(&instanceSDK.UpdateVolumeRequest{
 			VolumeID: id,
 			Zone:     zone,
-			Size:     &volumeSizeInBytes,
+			Size:     new(scw.Size(uint64(d.Get("size_in_gb").(int)) * gb)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("couldn't resize volume: %w", err))

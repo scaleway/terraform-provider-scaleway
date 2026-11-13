@@ -13,6 +13,8 @@ import (
 )
 
 func TestAccInstanceGroup_Basic(t *testing.T) {
+	t.Skip("autoscaling /instance-templates endpoint deprecated, skip until v1alpha2")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -108,6 +110,12 @@ func TestAccInstanceGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_instance_group.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_instance_group.main", "updated_at"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_autoscaling_instance_group.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_servers_on_destroy"},
 			},
 		},
 	})

@@ -2,6 +2,7 @@ package container
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/container_token_resource.md
+var tokenResourceDescription string
+
 func ResourceToken() *schema.Resource {
 	return &schema.Resource{
+		Description:        tokenResourceDescription,
 		CreateContext:      ResourceContainerTokenCreate,
 		ReadContext:        ResourceContainerTokenRead,
 		DeleteContext:      ResourceContainerTokenDelete,
@@ -74,7 +79,7 @@ func tokenSchema() map[string]*schema.Schema {
 }
 
 func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, err := newAPIWithRegion(d, m)
+	api, region, err := newAPIBetaWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -98,12 +103,12 @@ func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func ResourceContainerTokenRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	api, region, ID, err := NewAPIBetaWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	token, err := api.GetToken(&container.GetTokenRequest{
+	token, err := api.GetToken(&container.GetTokenRequest{ //nolint:staticcheck // legacy token resource uses deprecated API
 		Region:  region,
 		TokenID: ID,
 	}, scw.WithContext(ctx))
@@ -126,12 +131,12 @@ func ResourceContainerTokenRead(ctx context.Context, d *schema.ResourceData, m a
 }
 
 func ResourceContainerTokenDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	api, region, ID, err := NewAPIBetaWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = api.DeleteToken(&container.DeleteTokenRequest{
+	_, err = api.DeleteToken(&container.DeleteTokenRequest{ //nolint:staticcheck // legacy token resource uses deprecated API
 		Region:  region,
 		TokenID: ID,
 	}, scw.WithContext(ctx))

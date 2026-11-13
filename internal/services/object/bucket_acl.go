@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -21,6 +22,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/object_bucket_acl_resource.md
+var bucketACLResourceDescription string
+
 const (
 	BucketACLSeparator = "/"
 
@@ -31,6 +35,7 @@ const (
 
 func ResourceBucketACL() *schema.Resource {
 	return &schema.Resource{
+		Description:   bucketACLResourceDescription,
 		CreateContext: resourceBucketACLCreate,
 		ReadContext:   resourceBucketACLRead,
 		UpdateContext: resourceBucketACLUpdate,
@@ -151,7 +156,7 @@ func bucketAclSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,
-			ValidateFunc:     validation.StringLenBetween(1, 63),
+			ValidateFunc:     validation.StringLenBetween(1, 127),
 			Description:      "The bucket's name or regional ID.",
 			DiffSuppressFunc: dsf.Locality,
 		},

@@ -9,7 +9,7 @@ provider. Il will allow you to provision and manage NATS Jetstream resources.
 
 ## Examples
 
-```hcl
+```terraform
 terraform {
   required_providers {
     scaleway = {

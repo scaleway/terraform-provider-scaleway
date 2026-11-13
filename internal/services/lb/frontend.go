@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 	"math"
 	"sort"
 
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/lb_frontend_resource.md
+var frontendResourceDescription string
+
 func ResourceFrontend() *schema.Resource {
 	return &schema.Resource{
+		Description:   frontendResourceDescription,
 		CreateContext: resourceLbFrontendCreate,
 		ReadContext:   resourceLbFrontendRead,
 		UpdateContext: resourceLbFrontendUpdate,
@@ -549,9 +554,11 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	diagnostics := resourceLbFrontendUpdateACL(ctx, d, lbAPI, zone, ID)
-	if diagnostics != nil {
-		return diagnostics
+	if !d.Get("external_acls").(bool) {
+		diagnostics := resourceLbFrontendUpdateACL(ctx, d, lbAPI, zone, ID)
+		if diagnostics != nil {
+			return diagnostics
+		}
 	}
 
 	return resourceLbFrontendRead(ctx, d, m)

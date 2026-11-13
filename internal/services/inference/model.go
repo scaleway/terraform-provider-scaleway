@@ -65,7 +65,7 @@ func modelSchema() map[string]*schema.Schema {
 		"secret_wo": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "A token or credential used to authenticate when pulling the model from a private or gated source in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. For example, a Hugging Face access token with read permissions. `secret_wo` will not be set in the Terraform state. Only one of `secret` or `secret_wo` should be specified.",
+			Description: "A token or credential used to authenticate when pulling the model from a private or gated source in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. For example, a Hugging Face access token with read permissions. `secret_wo` will not be set in the Terraform state. Only one of `secret` or `secret_wo` should be specified.",
 			WriteOnly:   true,
 			ConflictsWith: []string{
 				"secret",
@@ -78,7 +78,7 @@ func modelSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Optional:    true,
 			ForceNew:    true,
-			Description: "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) secret. To update the `secret_wo`, you must also update the `secret_wo_version`.",
+			Description: "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) secret. To update the `secret_wo`, you must also update the `secret_wo_version`.",
 			RequiredWith: []string{
 				"secret_wo",
 			},

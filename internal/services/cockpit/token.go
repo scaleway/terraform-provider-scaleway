@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,11 +13,16 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/cockpit_token_resource.md
+var tokenResourceDescription string
+
 func ResourceToken() *schema.Resource {
 	return &schema.Resource{
+		Description:   tokenResourceDescription,
 		CreateContext: ResourceCockpitTokenCreate,
 		ReadContext:   ResourceCockpitTokenRead,
 		DeleteContext: ResourceCockpitTokenDelete,
@@ -159,26 +165,21 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m a
 	var scopes []cockpit.TokenScope
 
 	if !scopesSet || len(rawScopes.([]any)) == 0 {
-		schema := resourceCockpitTokenScopes().Schema
-		for key, val := range schema {
-			if defaultVal, ok := val.Default.(bool); ok && defaultVal {
-				if scopeConst, found := scopeMapping[key]; found {
-					scopes = append(scopes, scopeConst)
-				}
-			}
-		}
+		scopes = defaultCockpitTokenScopes()
 	} else {
 		scopes = expandCockpitTokenScopes(rawScopes)
 	}
 
 	logging.L.Debugf("Creating token %+v", scopes)
 
-	res, err := api.CreateToken(&cockpit.RegionalAPICreateTokenRequest{
-		Name:        name,
-		TokenScopes: scopes,
-		ProjectID:   projectID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Token, error) {
+		return api.CreateToken(&cockpit.RegionalAPICreateTokenRequest{
+			Name:        name,
+			TokenScopes: scopes,
+			ProjectID:   projectID,
+			Region:      region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -198,10 +199,12 @@ func ResourceCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	res, err := api.GetToken(&cockpit.RegionalAPIGetTokenRequest{
-		Region:  region,
-		TokenID: id,
-	}, scw.WithContext(ctx))
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.Token, error) {
+		return api.GetToken(&cockpit.RegionalAPIGetTokenRequest{
+			Region:  region,
+			TokenID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -232,10 +235,12 @@ func ResourceCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
-		Region:  region,
-		TokenID: id,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOnStatus(ctx, transport.IAMPropagation, func(ctx context.Context) error {
+		return api.DeleteToken(&cockpit.RegionalAPIDeleteTokenRequest{
+			Region:  region,
+			TokenID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

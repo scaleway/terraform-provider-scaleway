@@ -2,6 +2,7 @@ package mnq
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,6 +11,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 )
 
+//go:embed descriptions/mnq_sns_data_source.md
+var snsDataSourceDescription string
+
 func DataSourceSNS() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceSNS().SchemaFunc())
@@ -17,6 +21,7 @@ func DataSourceSNS() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 
 	return &schema.Resource{
+		Description: snsDataSourceDescription,
 		ReadContext: DataSourceMNQSNSRead,
 		SchemaFunc: func() map[string]*schema.Schema {
 			return dsSchema
@@ -34,6 +39,17 @@ func DataSourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) di
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 	})
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sns, err = api.GetSnsInfo(&mnq.SnsAPIGetSnsInfoRequest{
+				Region:    region,
+				ProjectID: d.Get("project_id").(string),
+			})
+
+			return err
+		})
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -45,7 +61,7 @@ func DataSourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) di
 	regionID := datasource.NewRegionalID(sns.ProjectID, region)
 	d.SetId(regionID)
 
-	diags := ResourceMNQSNSRead(ctx, d, m)
+	diags := readSNSIntoState(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read sns state")...)
 	}

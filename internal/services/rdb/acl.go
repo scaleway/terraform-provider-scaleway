@@ -3,6 +3,7 @@ package rdb
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"fmt"
 	"net"
 	"sort"
@@ -14,21 +15,24 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/rdb_acl_resource.md
+var aclResourceDescription string
+
 func ResourceACL() *schema.Resource {
 	return &schema.Resource{
+		Description:   aclResourceDescription,
 		CreateContext: ResourceACLCreate,
 		ReadContext:   ResourceRdbACLRead,
 		UpdateContext: ResourceACLUpdate,
 		DeleteContext: ResourceACLDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.DefaultRegionalImporter(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),
@@ -39,6 +43,7 @@ func ResourceACL() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    aclSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -106,12 +111,16 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	d.SetId(instanceID)
+	if err := identity.SetRegionalIdentity(d, region, locality.ExpandID(instanceID)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRdbACLRead(ctx, d, m)
 }
 
-func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+// readACLIntoState fetches the ACL rules and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readACLIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, instanceID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,9 +145,7 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	id := regional.NewID(region, instanceID).String()
-	d.SetId(id)
-	_ = d.Set("instance_id", id)
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
 
 	diags := diag.Diagnostics{}
 
@@ -161,6 +168,28 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	_ = d.Set("region", region)
+
+	return diags
+}
+
+func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readACLIntoState(ctx, d, m)
+	if diags != nil && diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	_, region, instanceID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, instanceID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }
@@ -328,6 +357,49 @@ func mergeDiffToSchema(rulesFromSchema map[string]struct{}, ruleMap map[string]*
 	}
 
 	return res
+}
+
+func maintainACLDuringUpgrade(ctx context.Context, api *rdb.API, region scw.Region, oldInstanceID, newInstanceID string) error {
+	res, err := api.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
+		Region:     region,
+		InstanceID: locality.ExpandID(oldInstanceID),
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+
+		return err
+	}
+
+	if len(res.Rules) == 0 {
+		return nil
+	}
+
+	rules := rdbACLRulesToRequests(res.Rules)
+	_, err = api.SetInstanceACLRules(&rdb.SetInstanceACLRulesRequest{
+		Region:     region,
+		InstanceID: locality.ExpandID(newInstanceID),
+		Rules:      rules,
+	}, scw.WithContext(ctx))
+
+	return err
+}
+
+func rdbACLRulesToRequests(rules []*rdb.ACLRule) []*rdb.ACLRuleRequest {
+	if len(rules) == 0 {
+		return nil
+	}
+
+	reqs := make([]*rdb.ACLRuleRequest, len(rules))
+	for i, r := range rules {
+		reqs[i] = &rdb.ACLRuleRequest{
+			IP:          r.IP,
+			Description: r.Description,
+		}
+	}
+
+	return reqs
 }
 
 func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]any {

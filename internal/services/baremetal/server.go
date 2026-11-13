@@ -2,7 +2,8 @@ package baremetal
 
 import (
 	"context"
-	"encoding/json"
+	_ "embed"
+	"encoding/json/v2"
 	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -23,12 +24,17 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/baremetal_server_resource.md
+var serverResourceDescription string
+
 func ResourceServer() *schema.Resource {
 	return &schema.Resource{
+		Description:   serverResourceDescription,
 		CreateContext: ResourceServerCreate,
 		ReadContext:   ResourceServerRead,
 		UpdateContext: ResourceServerUpdate,
@@ -122,10 +128,25 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			Description: "User used for the installation.",
 		},
 		"password": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Sensitive:   true,
-			Description: "Password used for the installation.",
+			Type:          schema.TypeString,
+			Optional:      true,
+			Sensitive:     true,
+			Description:   "Password used for the installation. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{"password_wo"},
+		},
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Password used for the installation in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
 		},
 		"service_user": {
 			Type:        schema.TypeString,
@@ -134,10 +155,25 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			Description: "User used for the service to install.",
 		},
 		"service_password": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Sensitive:   true,
-			Description: "Password used for the service to install.",
+			Type:          schema.TypeString,
+			Optional:      true,
+			Sensitive:     true,
+			Description:   "Password used for the service to install. Only one of `service_password` or `service_password_wo` should be specified.",
+			ConflictsWith: []string{"service_password_wo"},
+		},
+		"service_password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Password used for the service to install in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `service_password` or `service_password_wo` should be specified. `service_password_wo` will not be set in the Terraform state. To update the `service_password_wo`, you must also update the `service_password_wo_version`.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"service_password"},
+			RequiredWith:  []string{"service_password_wo_version"},
+		},
+		"service_password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) service password. To update the `service_password_wo`, you must also update the `service_password_wo_version`.",
+			RequiredWith: []string{"service_password_wo"},
 		},
 		"reinstall_on_config_changes": {
 			Type:        schema.TypeBool,
@@ -201,13 +237,14 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 		"options": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "The options to enable on server",
+			Description: "The options to enable on server. Retrieving them using the scaleway_baremetal_option datasource is highly recommended.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
-						Type:        schema.TypeString,
-						Description: "IDs of the options",
-						Required:    true,
+						Type:             schema.TypeString,
+						Description:      "IDs of the options",
+						Required:         true,
+						DiffSuppressFunc: dsf.Locality,
 					},
 					"expires_at": {
 						Type:             schema.TypeString,
@@ -230,7 +267,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Set:         privateNetworkSetHash,
-			Description: "The private networks to attach to the server",
+			Description: "The private networks to attach to the server. Requires an option with the private_network attribute to be enabled.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
@@ -378,8 +415,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if cloudInit, ok := d.GetOk("cloud_init"); ok {
-		cloudInitStr := []byte(cloudInit.(string))
-		req.UserData = &cloudInitStr
+		req.UserData = new([]byte(cloudInit.(string)))
 	}
 
 	if file, ok := d.GetOk("partitioning"); ok || !d.Get("install_config_afterward").(bool) {
@@ -387,13 +423,27 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 			return diags
 		}
 
+		var password string
+		if _, ok := d.GetOk("password_wo_version"); ok {
+			password = d.GetRawConfig().GetAttr("password_wo").AsString()
+		} else {
+			password = d.Get("password").(string)
+		}
+
+		var servicePassword string
+		if _, ok := d.GetOk("service_password_wo_version"); ok {
+			servicePassword = d.GetRawConfig().GetAttr("service_password_wo").AsString()
+		} else {
+			servicePassword = d.Get("service_password").(string)
+		}
+
 		req.Install = &baremetal.CreateServerRequestInstall{
 			OsID:            zonal.ExpandID(d.Get("os")).ID,
 			Hostname:        d.Get("hostname").(string),
 			SSHKeyIDs:       types.ExpandStrings(d.Get("ssh_key_ids")),
 			User:            types.ExpandStringPtr(d.Get("user")),
-			Password:        types.ExpandStringPtr(d.Get("password")),
-			ServicePassword: types.ExpandStringPtr(d.Get("service_password")),
+			Password:        types.ExpandStringPtr(password),
+			ServicePassword: types.ExpandStringPtr(servicePassword),
 			ServiceUser:     types.ExpandStringPtr(d.Get("service_user")),
 		}
 
@@ -402,7 +452,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		if file != "" {
 			todecode, _ := file.(string)
 
-			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
+			err = json.Unmarshal([]byte(todecode), &partitioningSchema, json.RejectUnknownMembers(true))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -574,9 +624,8 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	diags := diag.Diagnostics{}
 
 	for _, privateNetworkID := range privateNetworkIDs {
-		resourceType := ipamAPI.ResourceTypeBaremetalPrivateNic
 		opts := &ipam.GetResourcePrivateIPsOptions{
-			ResourceType:     &resourceType,
+			ResourceType:     new(ipamAPI.ResourceTypeBaremetalPrivateNic),
 			PrivateNetworkID: &privateNetworkID,
 			ProjectID:        &server.ProjectID,
 		}
@@ -642,8 +691,9 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		}
 
 		_, err := api.WaitForServer(&baremetal.WaitForServerRequest{
-			Zone:     zonedID.Zone,
-			ServerID: ServerID.ID,
+			Zone:          zonedID.Zone,
+			ServerID:      ServerID.ID,
+			RetryInterval: transport.DefaultWaitRetryInterval,
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -721,8 +771,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	if d.HasChange("cloud_init") {
 		cloudInit, _ := d.Get("cloud_init").(string)
-		cloudInitStr := []byte(cloudInit)
-		req.UserData = &cloudInitStr
+		req.UserData = new([]byte(cloudInit))
 		hasChanged = true
 	}
 
@@ -753,15 +802,44 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		}
 	}
 
+	var password string
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	} else {
+		password = d.Get("password").(string)
+	}
+
+	var servicePassword string
+	if _, ok := d.GetOk("service_password_wo_version"); ok {
+		servicePassword = d.GetRawConfig().GetAttr("service_password_wo").AsString()
+	} else {
+		servicePassword = d.Get("service_password").(string)
+	}
+
 	installReq := &baremetal.InstallServerRequest{
 		Zone:            zonedID.Zone,
 		ServerID:        zonedID.ID,
 		Hostname:        types.ExpandStringWithDefault(d.Get("hostname"), d.Get("name").(string)),
 		SSHKeyIDs:       types.ExpandStrings(d.Get("ssh_key_ids")),
 		User:            types.ExpandStringPtr(d.Get("user")),
-		Password:        types.ExpandStringPtr(d.Get("password")),
+		Password:        types.ExpandStringPtr(password),
 		ServiceUser:     types.ExpandStringPtr(d.Get("service_user")),
-		ServicePassword: types.ExpandStringPtr(d.Get("service_password")),
+		ServicePassword: types.ExpandStringPtr(servicePassword),
+	}
+
+	if file, ok := d.GetOk("partitioning"); ok {
+		partitioningSchema := baremetal.Schema{}
+
+		if file != "" {
+			todecode, _ := file.(string)
+
+			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			installReq.PartitioningSchema = &partitioningSchema
+		}
 	}
 
 	if d.HasChange("os") {
@@ -782,7 +860,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	var diags diag.Diagnostics
 
-	if d.HasChanges("ssh_key_ids", "user", "password", "reinstall_on_config_changes") {
+	if d.HasChanges("ssh_key_ids", "user", "password", "password_wo_version", "service_password", "service_password_wo_version", "partition", "reinstall_on_config_changes") {
 		if !d.Get("reinstall_on_config_changes").(bool) && !d.HasChange("os") {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,
@@ -843,7 +921,22 @@ func ResourceServerDelete(ctx context.Context, d *schema.ResourceData, m any) di
 
 func installAttributeMissing(field *baremetal.OSOSField, d *schema.ResourceData, attribute string) bool {
 	if field != nil && field.Required && field.DefaultValue == nil {
-		if _, attributeExists := d.GetOk(attribute); !attributeExists {
+		var attributeExists bool
+
+		switch attribute {
+		case "password", "service_password":
+			// Handle write only attributes based on their wo_version
+			if _, ok := d.GetOk(attribute + "_wo_version"); ok {
+				passwordWO := d.GetRawConfig().GetAttr(attribute + "_wo").AsString()
+				attributeExists = passwordWO != ""
+			} else {
+				_, attributeExists = d.GetOk(attribute)
+			}
+		default:
+			_, attributeExists = d.GetOk(attribute)
+		}
+
+		if !attributeExists {
 			return true
 		}
 	}

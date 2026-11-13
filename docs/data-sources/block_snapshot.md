@@ -42,7 +42,7 @@ This section lists the arguments that you can provide to the `scaleway_block_sna
 - `snapshot_id` - (Optional) The unique identifier of the snapshot. Only one of `name` and `snapshot_id` should be specified.
 - `name` - (Optional) The name of the snapshot. Only one of name or snapshot_id should be specified.
 - `volume_id` - (Optional) The unique identifier of the volume from which the snapshot was created.
-- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)) The [zone](../guides/regions_and_zones.md#zones) in which the snapshot exists.
+- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#arguments-reference)) The [zone](../guides/regions_and_zones.md#zones) in which the snapshot exists.
 - `project_id` - (Optional) The unique identifier of the Project to which the snapshot is associated.
 
 ## Attributes Reference

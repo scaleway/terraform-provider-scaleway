@@ -6,7 +6,10 @@ page_title: "Scaleway: scaleway_rdb_user"
 # Resource: scaleway_rdb_user
 
 The [`scaleway_rdb_user`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/rdb_user) resource creates and manages database users.
-For more information refer to the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
+
+-> **Security Best Practice:**
+For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
 
 
 
@@ -108,7 +111,7 @@ The following arguments are supported:
         - At least 1 digit (0-9)
         - At least 1 special character (!@#$%^&*()_+-=[]{}|;:,.<>?)
 
-    For secure password generation, consider using the `random_password` resource with appropriate parameters.
+  For secure password generation, consider using the `random_password` resource with appropriate parameters.
 
 - `password_wo` - (Optional) Database user password in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
 
@@ -116,7 +119,7 @@ The following arguments are supported:
 
 - `is_admin` - (Optional) Grant admin permissions to the database user.
 
-- `region` - The Scaleway region this resource resides in.
+- `region` - (Optional, Computed) The Scaleway region this resource resides in.
 
 ## Attributes Reference
 

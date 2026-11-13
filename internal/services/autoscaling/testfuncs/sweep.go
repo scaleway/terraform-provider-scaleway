@@ -1,8 +1,6 @@
 package autoscalingtestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	autoscaling "github.com/scaleway/scaleway-sdk-go/api/autoscaling/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -38,7 +36,9 @@ func testSweepInstanceGroup(_ string) error {
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing instancegroup in (%s) in sweeper: %w", zone, err)
+			logging.L.Warningf("error listing instancegroup in (%s) in sweeper: %s", zone, err)
+
+			return nil
 		}
 
 		for _, instanceGroup := range listInstanceGroups.InstanceGroups {
@@ -47,9 +47,7 @@ func testSweepInstanceGroup(_ string) error {
 				Zone:            zone,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%w)", err)
-
-				return fmt.Errorf("error deleting instance group in sweeper: %w", err)
+				logging.L.Warningf("error deleting instance group in sweeper: %s", err)
 			}
 		}
 
@@ -68,7 +66,9 @@ func testSweepInstanceTemplate(_ string) error {
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing instance templates in (%s) in sweeper: %w", zone, err)
+			logging.L.Warningf("error listing instance templates in (%s) in sweeper: %s", zone, err)
+
+			return nil
 		}
 
 		for _, instanceTemplate := range listInstanceTemplates.InstanceTemplates {
@@ -77,9 +77,7 @@ func testSweepInstanceTemplate(_ string) error {
 				Zone:       zone,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%w)", err)
-
-				return fmt.Errorf("error deleting instance template in sweeper: %w", err)
+				logging.L.Warningf("error deleting instance template in sweeper: %s", err)
 			}
 		}
 
@@ -97,7 +95,9 @@ func testSweepInstancePolicy(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing instance policy in (%s) in sweeper: %w", zone, err)
+			logging.L.Warningf("error listing instance policy in (%s) in sweeper: %s", zone, err)
+
+			return nil
 		}
 
 		for _, instancePolicy := range listInstancePolicies.Policies {
@@ -106,9 +106,7 @@ func testSweepInstancePolicy(_ string) error {
 				Zone:     zone,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%w)", err)
-
-				return fmt.Errorf("error deleting instance policy in sweeper: %w", err)
+				logging.L.Warningf("error deleting instance policy in sweeper: %s", err)
 			}
 		}
 

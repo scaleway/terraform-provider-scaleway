@@ -2,6 +2,8 @@ package instance
 
 import (
 	"context"
+	_ "embed"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+//go:embed descriptions/instance_server_type_data_source.md
+var serverTypeDataSourceDescription string
+
 func DataSourceServerType() *schema.Resource {
 	return &schema.Resource{
+		Description: serverTypeDataSourceDescription,
 		ReadContext: DataSourceInstanceServerTypeRead,
 		SchemaFunc:  serverTypeSchema,
 	}
@@ -192,19 +198,18 @@ func DataSourceInstanceServerTypeRead(ctx context.Context, d *schema.ResourceDat
 		ProductTypes: []product_catalog.ListPublicCatalogProductsRequestProductType{
 			product_catalog.ListPublicCatalogProductsRequestProductTypeInstance,
 		},
-		Zone: &zone,
+		APIIDs: []string{name},
+		Zone:   &zone,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	for _, pcuInstance := range pcuInstances.Products {
-		if pcuInstance.Properties.Instance.OfferID != name {
-			continue
-		}
-
-		_ = d.Set("hourly_price", pcuInstance.Price.RetailPrice.ToFloat())
+	if pcuInstances.TotalCount != 1 {
+		return diag.FromErr(fmt.Errorf("expected exactly 1 PCU entry for %q, got %d", name, pcuInstances.TotalCount))
 	}
+
+	_ = d.Set("hourly_price", pcuInstances.Products[0].Price.RetailPrice.ToFloat())
 
 	// Availability
 	availabilitiesResponse, err := instanceAPI.GetServerTypesAvailability(&instance.GetServerTypesAvailabilityRequest{

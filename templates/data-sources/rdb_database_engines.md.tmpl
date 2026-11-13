@@ -1,0 +1,42 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.DataSourceTemplateType */ -}}
+---
+subcategory: "Databases"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }}
+
+{{ .Description -}}
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end -}}
+{{ end -}}
+
+## Argument Reference
+
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which to list database engines.
+
+- `name` - (Optional) Filter by database engine name (e.g. `PostgreSQL`, `MySQL`).
+
+- `version` - (Optional) Filter by database engine version (e.g. `16`).
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the data source (the region).
+
+- `engines` - List of available database engines.
+    - `name` - Name of the database engine.
+    - `logo_url` - URL of the database engine logo.
+    - `region` - Region of the database engine.
+    - `versions` - Available versions for the database engine.
+        - `version` - Database engine version number.
+        - `name` - Full engine name including version (e.g. `PostgreSQL-16`).
+        - `end_of_life` - End of life date of the engine version (RFC3339).
+        - `disabled` - Whether the engine version is disabled and cannot be created.
+        - `beta` - Whether the engine version is in beta.

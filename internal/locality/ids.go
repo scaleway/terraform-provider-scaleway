@@ -11,15 +11,18 @@ func ExpandID(id any) string {
 }
 
 func ExpandIDs(data any) []string {
-	expandedIDs := make([]string, 0, len(data.([]any)))
+	raw, ok := data.([]any)
+	if !ok || data == nil {
+		return []string{}
+	}
 
-	for _, s := range data.([]any) {
+	expandedIDs := make([]string, 0, len(raw))
+	for _, s := range raw {
 		if s == nil {
 			s = ""
 		}
 
-		expandedID := ExpandID(s.(string))
-		expandedIDs = append(expandedIDs, expandedID)
+		expandedIDs = append(expandedIDs, ExpandID(s.(string)))
 	}
 
 	return expandedIDs

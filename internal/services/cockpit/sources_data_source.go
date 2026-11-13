@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,8 +11,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
+
+//go:embed descriptions/cockpit_sources_data_source.md
+var cockpitSourcesDataSourceDescription string
 
 func DataSourceCockpitSources() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpitSource().SchemaFunc())
@@ -38,6 +43,7 @@ func DataSourceCockpitSources() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "type", "origin")
 
 	return &schema.Resource{
+		Description: cockpitSourcesDataSourceDescription,
 		ReadContext: dataSourceCockpitSourcesRead,
 		Schema:      dsSchema,
 	}
@@ -75,7 +81,9 @@ func dataSourceCockpitSourcesRead(ctx context.Context, d *schema.ResourceData, m
 		req.Origin = cockpit.DataSourceOrigin(v.(string))
 	}
 
-	res, err := api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
+	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListDataSourcesResponse, error) {
+		return api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,5 +123,6 @@ func flattenDataSourceToMap(ds *cockpit.DataSource) map[string]any {
 		"retention_days":            int(ds.RetentionDays),
 		"region":                    ds.Region.String(),
 		"push_url":                  pushURL,
+		"srn":                       ds.Srn,
 	}
 }

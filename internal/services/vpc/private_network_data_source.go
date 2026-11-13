@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,9 +11,13 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/vpc_private_network_data_source.md
+var privateNetworkDataSourceDescription string
 
 func DataSourcePrivateNetwork() *schema.Resource {
 	// Generate datasource schema from resource
@@ -38,6 +43,7 @@ func DataSourcePrivateNetwork() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: privateNetworkDataSourceDescription,
 		Schema:      dsSchema,
 		ReadContext: DataSourceVPCPrivateNetworkRead,
 	}
@@ -53,13 +59,15 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	if !ok {
 		pnName := d.Get("name").(string)
 
-		res, err := vpcAPI.ListPrivateNetworks(
-			&vpc.ListPrivateNetworksRequest{
-				Name:      types.ExpandStringPtr(pnName),
-				Region:    region,
-				ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-				VpcID:     types.ExpandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
-			}, scw.WithContext(ctx))
+		res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListPrivateNetworksResponse, error) {
+			return vpcAPI.ListPrivateNetworks(
+				&vpc.ListPrivateNetworksRequest{
+					Name:      types.ExpandStringPtr(pnName),
+					Region:    region,
+					ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+					VpcID:     types.ExpandStringPtr(locality.ExpandID(d.Get("vpc_id"))),
+				}, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -80,13 +88,15 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	d.SetId(regionalID)
 	_ = d.Set("private_network_id", regionalID)
 
-	pn, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
-		PrivateNetworkID: regional.ExpandID(privateNetworkID).ID,
-		Region:           region,
-	}, scw.WithContext(ctx))
+	pn, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.PrivateNetwork, error) {
+		return vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
+			PrivateNetworkID: regional.ExpandID(privateNetworkID).ID,
+			Region:           region,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return setPrivateNetworkState(d, m, pn, region)
+	return setPrivateNetworkState(d, m, pn)
 }

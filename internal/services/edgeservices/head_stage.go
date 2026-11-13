@@ -2,16 +2,22 @@ package edgeservices
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 )
+
+//go:embed descriptions/edge_services_head_stage_resource.md
+var headStageResourceDescription string
 
 func ResourceHeadStage() *schema.Resource {
 	return &schema.Resource{
+		Description:   headStageResourceDescription,
 		CreateContext: ResourceHeadStageCreate,
 		ReadContext:   ResourceHeadStageRead,
 		UpdateContext: ResourceHeadStageUpdate,
@@ -21,6 +27,7 @@ func ResourceHeadStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    headStageSchema,
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
@@ -55,13 +62,25 @@ func ResourceHeadStageCreate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	if dnsStage.HeadStage.DNSStageID != nil {
-		d.SetId(*dnsStage.HeadStage.DNSStageID)
+		err = identity.SetGlobalIdentity(d, *dnsStage.HeadStage.DNSStageID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ResourceHeadStageRead(ctx, d, m)
 }
 
-func ResourceHeadStageRead(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+func ResourceHeadStageRead(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
+	if d.Id() == "" {
+		return nil
+	}
+
+	err := identity.SetGlobalIdentity(d, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

@@ -3,10 +3,12 @@ package rdb
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -16,9 +18,49 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+// customizeDiffCloneFromInherited marks clone-inherited attributes as computed on create when
+// omitted, so CloneInstance can keep the source values without an inconsistent-result error
+// (schema defaults would otherwise force false/lssd into the plan).
+func customizeDiffCloneFromInherited(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	if _, ok := diff.GetOk("clone_from"); !ok {
+		return nil
+	}
+
+	if diff.Id() != "" {
+		return nil
+	}
+
+	if types.GetBool(diff, "is_ha_cluster") == nil {
+		if err := diff.SetNewComputed("is_ha_cluster"); err != nil {
+			return err
+		}
+	}
+
+	if types.GetBool(diff, "disable_backup") == nil {
+		if err := diff.SetNewComputed("disable_backup"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// diffSuppressCloneInheritedBool suppresses diffs for bool attrs inherited by clone_from when
+// the user omitted them (Default would otherwise fight the inherited API value on every plan).
+func diffSuppressCloneInheritedBool(attr string) schema.SchemaDiffSuppressFunc {
+	return func(_, _, _ string, d *schema.ResourceData) bool {
+		if _, ok := d.GetOk("clone_from"); !ok {
+			return false
+		}
+
+		return types.GetBool(d, attr) == nil
+	}
+}
+
 const (
-	defaultInstanceTimeout   = 30 * time.Minute
-	defaultWaitRetryInterval = 30 * time.Second
+	defaultInstanceTimeout       = 30 * time.Minute
+	defaultInstanceUpdateTimeout = 60 * time.Minute
+	defaultWaitRetryInterval     = 30 * time.Second
 )
 
 // newAPI returns a new RDB API
@@ -130,4 +172,45 @@ func retryRDBReadOnTransient[T any](ctx context.Context, api *rdb.API, region sc
 			return waitForRDBInstance(ctx, api, region, instanceID, defaultInstanceTimeout)
 		},
 	)
+}
+
+func isTimeoutErr(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+
+	msg := strings.ToLower(err.Error())
+
+	return strings.Contains(msg, "timeout") || strings.Contains(msg, "deadline exceeded")
+}
+
+// majorUpgradeTimeoutOrErr returns a clear diagnostic when a blue/green engine upgrade
+// wait times out. The Scaleway workflow may still continue after Terraform gives up.
+func majorUpgradeTimeoutOrErr(err error, region scw.Region, newInstanceID, oldInstanceID string) diag.Diagnostics {
+	if !isTimeoutErr(err) {
+		return diag.FromErr(err)
+	}
+
+	newID := regional.NewIDString(region, newInstanceID)
+	oldID := regional.NewIDString(region, oldInstanceID)
+
+	return diag.Diagnostics{{
+		Severity: diag.Error,
+		Summary:  "RDB engine upgrade timed out",
+		Detail: fmt.Sprintf(
+			"Terraform timed out while waiting for the blue/green engine upgrade to finish. "+
+				"The Scaleway upgrade may still be running in the background (snapshot/restore/endpoint migration).\n\n"+
+				"New instance: %s\nOld instance: %s\n\n"+
+				"Check both instances (status, engine, endpoints), e.g. `scw rdb instance get %s region=%s`. "+
+				"If the new instance is ready with the target engine and endpoints migrated, ensure Terraform state points to the new ID and delete the old instance manually if it remains. "+
+				"Do not re-apply an engine change while an upgrade is still in progress: "+
+				"if state still points to the old instance, Terraform may start another blue/green upgrade and create more orphaned instances. "+
+				"For large or HA upgrades, increase timeouts.update (default is 60m).\n\nUnderlying error: %v",
+			newID, oldID, newInstanceID, region, err,
+		),
+	}}
 }

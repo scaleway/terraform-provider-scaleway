@@ -39,6 +39,7 @@ func TestAccRunner_BasicGithub(t *testing.T) {
 
 					// Computed
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_runner.main", "status"),
+					resource.TestCheckResourceAttrWith("scaleway_apple_silicon_runner.main", "srn", acctest.CheckSRN("apple-silicon", "runners")),
 				),
 			},
 			{

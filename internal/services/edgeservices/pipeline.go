@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/edge_services_pipeline_resource.md
+var pipelineResourceDescription string
+
 func ResourcePipeline() *schema.Resource {
 	return &schema.Resource{
+		Description:   pipelineResourceDescription,
 		CreateContext: ResourcePipelineCreate,
 		ReadContext:   ResourcePipelineRead,
 		UpdateContext: ResourcePipelineUpdate,
@@ -101,16 +106,23 @@ func ResourcePipelineRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
+	diags := setPipelineState(d, pipeline)
+
+	err = identity.SetGlobalIdentity(d, pipeline.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPipelineState(d *schema.ResourceData, pipeline *edgeservices.Pipeline) diag.Diagnostics {
 	_ = d.Set("name", pipeline.Name)
 	_ = d.Set("description", pipeline.Description)
 	_ = d.Set("created_at", types.FlattenTime(pipeline.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(pipeline.UpdatedAt))
 	_ = d.Set("status", pipeline.Status.String())
 	_ = d.Set("project_id", pipeline.ProjectID)
-
-	if err = identity.SetGlobalIdentity(d, pipeline.ID); err != nil {
-		return diag.FromErr(err)
-	}
 
 	return nil
 }

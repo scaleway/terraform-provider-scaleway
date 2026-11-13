@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/iam_application_data_source.md
+var applicationDataSourceDescription string
 
 func DataSourceApplication() *schema.Resource {
 	// Generate datasource schema from resource
@@ -34,6 +38,7 @@ func DataSourceApplication() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: applicationDataSourceDescription,
 		ReadContext: DataSourceIamApplicationRead,
 		Schema:      dsSchema,
 	}
@@ -74,14 +79,14 @@ func DataSourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	diags := resourceIamApplicationRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read iam application state")...)
+	app, err := api.GetApplication(&iam.GetApplicationRequest{
+		ApplicationID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("iam application (%s) not found", appID)
-	}
+	setApplicationState(d, app)
 
 	return nil
 }

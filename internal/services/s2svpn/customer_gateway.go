@@ -2,20 +2,25 @@ package s2svpn
 
 import (
 	"context"
-	_ "time"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/s2s_vpn_customer_gateway_resource.md
+var customerGatewayResourceDescription string
+
 func ResourceCustomerGateway() *schema.Resource {
 	return &schema.Resource{
+		Description:   customerGatewayResourceDescription,
 		CreateContext: ResourceCustomerGatewayCreate,
 		ReadContext:   ResourceCustomerGatewayRead,
 		UpdateContext: ResourceCustomerGatewayUpdate,
@@ -23,6 +28,7 @@ func ResourceCustomerGateway() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
 		SchemaFunc:    customerGatewaySchema,
 	}
@@ -71,6 +77,11 @@ func customerGatewaySchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the TLS stage",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the customer gateway",
+		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 		"organization_id": {
@@ -118,7 +129,10 @@ func ResourceCustomerGatewayCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCustomerGatewayRead(ctx, d, m)
 }
@@ -143,6 +157,17 @@ func ResourceCustomerGatewayRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	diags := setCustomerGatewayState(d, gateway)
+
+	err = identity.SetRegionalIdentity(d, gateway.Region, gateway.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setCustomerGatewayState(d *schema.ResourceData, gateway *s2s_vpn.CustomerGateway) diag.Diagnostics {
 	_ = d.Set("name", gateway.Name)
 	_ = d.Set("project_id", gateway.ProjectID)
 	_ = d.Set("organization_id", gateway.OrganizationID)
@@ -152,6 +177,8 @@ func ResourceCustomerGatewayRead(ctx context.Context, d *schema.ResourceData, m 
 	_ = d.Set("ipv4_public", types.FlattenIPPtr(gateway.PublicIPv4))
 	_ = d.Set("ipv6_public", types.FlattenIPPtr(gateway.PublicIPv6))
 	_ = d.Set("asn", int(gateway.Asn))
+	_ = d.Set("region", gateway.Region.String())
+	_ = d.Set("srn", gateway.Srn)
 
 	return nil
 }

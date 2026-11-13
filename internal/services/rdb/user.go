@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -30,9 +31,7 @@ func ResourceUser() *schema.Resource {
 		ReadContext:   ResourceUserRead,
 		UpdateContext: ResourceUserUpdate,
 		DeleteContext: ResourceUserDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.CompositeRegionalImporter("region", "instance_id", "name"),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),
@@ -43,6 +42,7 @@ func ResourceUser() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    userSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.CompositeRegionalIdentity("instance_id", "name"),
 	}
 }
 
@@ -71,7 +71,7 @@ func userSchema() map[string]*schema.Schema {
 		"password_wo": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			Description:  "Database user password in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:  "Database user password in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
 			WriteOnly:    true,
 			ExactlyOneOf: []string{"password", "password_wo"},
 			RequiredWith: []string{"password_wo_version"},
@@ -79,7 +79,7 @@ func userSchema() map[string]*schema.Schema {
 		"password_wo_version": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Description:  "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
 			RequiredWith: []string{"password_wo"},
 		},
 		"is_admin": {
@@ -148,7 +148,13 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	d.SetId(ResourceUserID(region, locality.ExpandID(instanceID), user.Name))
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":      region.String(),
+		"instance_id": locality.ExpandID(instanceID),
+		"name":        user.Name,
+	}, "region", "instance_id", "name"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceUserRead(ctx, d, m)
 }
@@ -195,12 +201,18 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	}
 
 	user := res.Users[0]
-	_ = d.Set("instance_id", regional.NewID(region, instanceID).String())
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
 	_ = d.Set("name", user.Name)
 	_ = d.Set("is_admin", user.IsAdmin)
 	_ = d.Set("region", string(region))
 
-	d.SetId(ResourceUserID(region, instanceID, user.Name))
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":      region.String(),
+		"instance_id": instanceID,
+		"name":        user.Name,
+	}, "region", "instance_id", "name"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

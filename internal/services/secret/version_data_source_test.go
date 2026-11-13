@@ -113,6 +113,10 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v2", "data", secret.Base64Encoded([]byte(secretVersionDataV2))),
 					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_latest", "secret_id", "scaleway_secret.main", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_latest", "data", secret.Base64Encoded([]byte(secretVersionDataV2))),
+
+					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_v1", "srn", acctest.CheckSRN("secret-manager", "versions")),
+					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_v2", "srn", acctest.CheckSRN("secret-manager", "versions")),
+					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_latest", "srn", acctest.CheckSRN("secret-manager", "versions")),
 				),
 			},
 			{
@@ -154,6 +158,7 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v3"),
 					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_v3", "secret_id", "scaleway_secret.main", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v3", "data", secret.Base64Encoded([]byte(secretVersionDataV3))),
+					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_v3", "srn", acctest.CheckSRN("secret-manager", "versions")),
 				),
 			},
 		},
@@ -220,7 +225,10 @@ func TestAccDataSourceSecretVersion_ByNameSecret(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name", "data", secret.Base64Encoded([]byte(secretVersionData))),
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name", "revision", "1"),
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name_latest", "data", secret.Base64Encoded([]byte(secretVersionData))),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name_latest", "revision", "1")),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name_latest", "revision", "1"),
+					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_by_name", "srn", acctest.CheckSRN("secret-manager", "versions")),
+					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_by_name_latest", "srn", acctest.CheckSRN("secret-manager", "versions")),
+				),
 			},
 		},
 	})

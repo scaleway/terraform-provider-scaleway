@@ -47,6 +47,7 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 						"enable_default_route_propagation",
 						"false",
 					),
+					resource.TestCheckResourceAttrWith("scaleway_vpc_private_network.pn01", "srn", acctest.CheckSRN("vpc", "private-networks")),
 				),
 			},
 			{

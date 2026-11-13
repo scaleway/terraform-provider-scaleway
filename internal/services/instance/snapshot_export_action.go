@@ -8,12 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 var (
@@ -163,8 +164,9 @@ func (e *ExportSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 
 		if data.Wait.ValueBool() {
 			_, err = e.blockAndInstanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
-				SnapshotID: snapshotID,
-				Zone:       scw.Zone(zone),
+				SnapshotID:    snapshotID,
+				Zone:          scw.Zone(zone),
+				RetryInterval: transport.DefaultWaitRetryInterval,
 			}, scw.WithContext(ctx))
 			if err != nil {
 				resp.Diagnostics.AddError(
@@ -196,8 +198,9 @@ func (e *ExportSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 
 		if data.Wait.ValueBool() {
 			_, err = api.WaitForSnapshot(&block.WaitForSnapshotRequest{
-				SnapshotID: snapshotID,
-				Zone:       scw.Zone(zone),
+				SnapshotID:    snapshotID,
+				Zone:          scw.Zone(zone),
+				RetryInterval: transport.DefaultWaitRetryInterval,
 			}, scw.WithContext(ctx))
 			if err != nil {
 				resp.Diagnostics.AddError(

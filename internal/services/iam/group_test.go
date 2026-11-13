@@ -37,6 +37,7 @@ func TestAccGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.0", "tf_tests"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.1", "tests"),
+					resource.TestCheckResourceAttrWith("scaleway_iam_group.main_basic", "srn", acctest.CheckSRN("iam", "groups")),
 				),
 			},
 			{
@@ -98,6 +99,12 @@ func TestAccGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", ""),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.#", "0"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_iam_group.main_basic",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_membership"},
 			},
 		},
 	})

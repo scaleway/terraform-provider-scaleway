@@ -51,11 +51,11 @@ func TestAccDataSourceCluster_Basic(t *testing.T) {
 						autoscaling = true
 						size = 1
 					}
-					
+
 					data "scaleway_k8s_cluster" "prod" {
 					  	name = "${scaleway_k8s_cluster.main.name}"
 					}
-					
+
 					data "scaleway_k8s_cluster" "stg" {
 					  	cluster_id = "${scaleway_k8s_cluster.main.id}"
 					}`, clusterName, version),
@@ -64,6 +64,8 @@ func TestAccDataSourceCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_k8s_cluster.prod", "name", clusterName),
 					testAccCheckK8SClusterExists(tt, "data.scaleway_k8s_cluster.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_cluster.stg", "name", clusterName),
+					resource.TestCheckResourceAttrWith("data.scaleway_k8s_cluster.prod", "srn", acctest.CheckSRN("k8s", "clusters")),
+					resource.TestCheckResourceAttrWith("data.scaleway_k8s_cluster.stg", "srn", acctest.CheckSRN("k8s", "clusters")),
 				),
 			},
 		},

@@ -68,9 +68,8 @@ func TestAccGroupMembership_Basic(t *testing.T) {
 				ResourceName: "scaleway_iam_group_membership.import",
 				ImportStateIdFunc: func(state *terraform.State) (string, error) {
 					groupID := state.RootModule().Resources["scaleway_iam_group.main"].Primary.ID
-					applicationID := state.RootModule().Resources["scaleway_iam_application.main"].Primary.ID
 
-					return iam.GroupMembershipID(groupID, nil, &applicationID), nil
+					return iam.GroupMembershipID(groupID, nil, new(state.RootModule().Resources["scaleway_iam_application.main"].Primary.ID)), nil
 				},
 				ImportStatePersist: true,
 			},

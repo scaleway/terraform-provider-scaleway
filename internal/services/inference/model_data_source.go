@@ -2,6 +2,7 @@ package inference
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/inference_model_data_source.md
+var modelDataSourceDescription string
 
 func DataSourceModel() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceModel().SchemaFunc())
@@ -27,6 +31,7 @@ func DataSourceModel() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: modelDataSourceDescription,
 		ReadContext: DataSourceModelRead,
 		Schema:      dsSchema,
 	}
@@ -39,15 +44,13 @@ func DataSourceModelRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	modelID, ok := d.GetOk("model_id")
-	pageSize := uint32(1000)
-
 	if !ok {
 		modelName := d.Get("name").(string)
 
 		modelList, err := api.ListModels(&inference.ListModelsRequest{
 			Region:    region,
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
-			PageSize:  &pageSize,
+			PageSize:  new(uint32(1000)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

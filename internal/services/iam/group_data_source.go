@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/iam_group_data_source.md
+var groupDataSourceDescription string
 
 func DataSourceGroup() *schema.Resource {
 	// Generate datasource schema from resource
@@ -34,6 +38,7 @@ func DataSourceGroup() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: groupDataSourceDescription,
 		ReadContext: DataSourceIamGroupRead,
 		Schema:      dsSchema,
 	}
@@ -74,14 +79,12 @@ func DataSourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	diags := resourceIamGroupRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read iam group state")...)
+	res, err := api.GetGroup(&iam.GetGroupRequest{
+		GroupID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("iam group (%s) not found", groupID)
-	}
-
-	return nil
+	return setGroupState(d, res, false)
 }

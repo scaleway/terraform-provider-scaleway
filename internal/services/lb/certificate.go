@@ -2,6 +2,7 @@ package lb
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 
@@ -15,8 +16,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/lb_certificate_resource.md
+var certificateResourceDescription string
+
 func ResourceCertificate() *schema.Resource {
 	return &schema.Resource{
+		Description:   certificateResourceDescription,
 		CreateContext: resourceLbCertificateCreate,
 		ReadContext:   resourceLbCertificateRead,
 		UpdateContext: resourceLbCertificateUpdate,

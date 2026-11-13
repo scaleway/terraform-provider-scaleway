@@ -70,6 +70,8 @@ func TestAccDataSourceVPCPrivateNetwork_Basic(t *testing.T) {
 					resource.TestCheckTypeSetElemAttrPair(
 						"data.scaleway_vpc_private_network.pn_test_by_id", "ipv6_subnets.0.subnet",
 						"scaleway_vpc_private_network.pn_test", "ipv6_subnets.0.subnet"),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_private_network.pn_test_by_name", "srn", acctest.CheckSRN("vpc", "private-networks")),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_private_network.pn_test_by_id", "srn", acctest.CheckSRN("vpc", "private-networks")),
 				),
 			},
 		},
@@ -93,7 +95,7 @@ func TestAccDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
 					resource "scaleway_vpc" "vpc02" {
 					  name = "TestAccScalewayResourceVPC_Basic02"
 					}
-					
+
 					resource "scaleway_vpc_private_network" "pn01" {
 					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic"
 					  vpc_id = scaleway_vpc.vpc01.id
@@ -114,7 +116,7 @@ func TestAccDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
 					resource "scaleway_vpc" "vpc02" {
 					  name = "TestAccScalewayResourceVPC_Basic02"
 					}
-					
+
 					resource "scaleway_vpc_private_network" "pn01" {
 					  name = "TestAccScalewayResourceVPCPrivateNetwork_Basic"
 					  vpc_id = scaleway_vpc.vpc01.id
@@ -157,6 +159,8 @@ func TestAccDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_private_network.by_vpc_id_2", "vpc_id",
 						"scaleway_vpc.vpc02", "id"),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_private_network.by_vpc_id", "srn", acctest.CheckSRN("vpc", "private-networks")),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_private_network.by_vpc_id_2", "srn", acctest.CheckSRN("vpc", "private-networks")),
 				),
 			},
 		},

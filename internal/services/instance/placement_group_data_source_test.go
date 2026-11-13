@@ -32,6 +32,7 @@ func TestAccDataSourcePlacementGroup_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith("data.scaleway_instance_placement_group.find_by_name", "srn", acctest.CheckSRN("instance", "placement-groups")),
 					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.main"),
 
 					resource.TestCheckResourceAttrPair("scaleway_instance_placement_group.main", "name", "data.scaleway_instance_placement_group.find_by_name", "name"),

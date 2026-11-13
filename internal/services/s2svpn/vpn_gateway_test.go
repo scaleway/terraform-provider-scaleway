@@ -54,7 +54,13 @@ func TestAccVPNGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_gateway.main", "ipam_private_ipv6_id"),
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_gateway.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_gateway.main", "updated_at"),
+					resource.TestCheckResourceAttrWith("scaleway_s2s_vpn_gateway.main", "srn", acctest.CheckSRN("s2s-vpn", "vpn-gateways")),
 				),
+			},
+			{
+				ResourceName:      "scaleway_s2s_vpn_gateway.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
