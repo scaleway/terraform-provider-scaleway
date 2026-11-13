@@ -272,6 +272,17 @@ func (r *TokenResource) Create(ctx context.Context, req resource.CreateRequest, 
 	// The secret key is only returned on creation.
 	plan.SecretKey = types.StringPointerValue(res.SecretKey)
 
+	// An omitted scopes block is planned null; store it empty so Create does not hydrate API defaults into state.
+	if plan.Scopes.IsNull() {
+		empty, d := types.ListValue(tokenScopesObjectType(), []attr.Value{})
+		resp.Diagnostics.Append(d...)
+		plan.Scopes = empty
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	state, diags := flattenToken(res, plan)
 	resp.Diagnostics.Append(diags...)
 
@@ -285,12 +296,17 @@ func (r *TokenResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 // flattenToken builds the state from the API token; prior provides the secret key and timeouts.
 func flattenToken(res *cockpit.Token, prior tokenResourceModel) (tokenResourceModel, diag.Diagnostics) {
-	// An omitted scopes block stays empty; import / pre-identity upgrades (null scopes) refresh from the API.
+	// An omitted scopes block stays empty (null is normalized to empty). Import (name unset) or an
+	// explicit scopes block refreshes from the API.
 	scopes := prior.Scopes
 
 	var diags diag.Diagnostics
 
-	if prior.Name.IsNull() || prior.Scopes.IsNull() || len(scopes.Elements()) > 0 {
+	if scopes.IsNull() {
+		scopes = types.ListValueMust(tokenScopesObjectType(), []attr.Value{})
+	}
+
+	if prior.Name.IsNull() || len(scopes.Elements()) > 0 {
 		scopes, diags = flattenTokenScopes(res.Scopes)
 	}
 
@@ -463,7 +479,6 @@ func upgradeTokenStateV0(ctx context.Context, req resource.UpgradeStateRequest, 
 		return
 	}
 
-	// scopes stay null so the next Read (prior.Scopes.IsNull) refreshes them from the API.
 	for _, key := range []string{"id", "region", "name", "project_id", "secret_key", "created_at", "updated_at"} {
 		value, ok := upgraded[key].(string)
 		if !ok {
@@ -471,5 +486,12 @@ func upgradeTokenStateV0(ctx context.Context, req resource.UpgradeStateRequest, 
 		}
 
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(key), value)...)
+	}
+
+	// Keep omitted scopes empty; restore an explicit scopes block from the previous state when present.
+	if rawScopes, ok := upgraded["scopes"]; ok {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scopes"), rawScopes)...)
+	} else {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scopes"), []any{})...)
 	}
 }

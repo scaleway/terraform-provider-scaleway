@@ -48,5 +48,6 @@ func TestUpgradeTokenStateV0(t *testing.T) {
 	assert.Equal(t, "fr-par/3ed23100-398f-4b39-b3ab-fadd1b693da5", id.ValueString())
 	assert.Equal(t, "fr-par", region.ValueString())
 	assert.Equal(t, "secret", secretKey.ValueString())
-	assert.True(t, scopes.IsNull())
+	assert.False(t, scopes.IsNull())
+	assert.Empty(t, scopes.Elements())
 }
