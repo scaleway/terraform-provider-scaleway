@@ -59,8 +59,6 @@ func dataSourceOptionRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 	optionID, ok := d.GetOk("option_id")
 	if ok {
-		optionID = d.Get("option_id")
-
 		match, err = api.GetOption(&baremetal.GetOptionRequest{
 			Zone:     zone,
 			OptionID: optionID.(string),
@@ -85,6 +83,7 @@ func dataSourceOptionRead(ctx context.Context, d *schema.ResourceData, m any) di
 				match = option
 			}
 		}
+
 		if match == nil {
 			return diag.FromErr(fmt.Errorf("no option found with the name %s", d.Get("name")))
 		}
