@@ -61,5 +61,6 @@ In addition to all above arguments, the following attributes are exported:
     - `volume_id` - The ID of the volume from which the snapshot was created. Empty if the parent volume was deleted.
     - `tags` - The list of tags assigned to the snapshot.
     - `srn` - The Scaleway Resource Name (SRN) of the snapshot.
+    - `kms_key_id` - The UUID of the KMS key used to protect the parent volume's encryption. Empty if the parent volume is not encrypted.
     - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the snapshot is.
     - `project_id` - The ID of the Project the snapshot is associated with.

@@ -1,6 +1,7 @@
 package block_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/compare"
@@ -33,6 +34,206 @@ func TestAccVolume_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "test-block-volume-basic"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "20"),
 					resource.TestCheckResourceAttrWith("scaleway_block_volume.main", "srn", acctest.CheckSRN("block", "volumes")),
+				),
+			},
+		},
+	})
+}
+
+func TestAccVolume_Basic_WithKMSKeyID(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_key_manager_key" "my_key" {
+						name        = "tf-tests-volume-basic-with-kms"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume main {
+						name = "tf-tests-block-volume-basic-with-kms"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops = 5000
+						size_in_gb = 20
+						kms_key_id = scaleway_key_manager_key.my_key.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "tf-tests-block-volume-basic-with-kms"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "20"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "kms_key_id", "scaleway_key_manager_key.my_key", "id"),
+					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccVolume_KMS_WrongKey(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_key_manager_key" "goodkey" {
+						name        = "tf-tests-good-volume-kms-wrong-key"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource "scaleway_key_manager_key" "badkey" {
+						name        = "tf-tests-bad-volume-kms-wrong-key"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-basic"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops = 5000
+						size_in_gb = 20
+						kms_key_id = scaleway_key_manager_key.goodkey.id
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-block-snapshot-basic"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						volume_id = scaleway_block_volume.main.id
+					}
+
+					resource scaleway_block_volume imported {
+						name = "test-block-volume-basic-imported"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops = 5000
+						snapshot_id = scaleway_block_snapshot.main.id
+						kms_key_id = scaleway_key_manager_key.badkey.id
+					}
+				`,
+				ExpectError: regexp.MustCompile(
+					`The kms_key_id cannot be different from the snapshot's`,
+				),
+			},
+		},
+	})
+}
+
+func TestAccVolume_KMS_NoKeys(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_key_manager_key" "key" {
+						name        = "tf-tests-volume-kms-no-keys"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-basic"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops = 5000
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-block-snapshot-basic"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						volume_id = scaleway_block_volume.main.id
+					}
+
+					resource scaleway_block_volume imported {
+						name = "test-block-volume-basic-imported"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops = 5000
+						snapshot_id = scaleway_block_snapshot.main.id
+						kms_key_id = scaleway_key_manager_key.key.id
+					}
+				`,
+				ExpectError: regexp.MustCompile(
+					`Cannot use kms_key_id if the snapshot is not encrypted`,
+				),
+			},
+		},
+	})
+}
+
+func TestAccVolume_KMS_InheritedFromSnapshot(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				// Create an encrypted volume, snapshot it, then create a new
+				// volume from that snapshot WITHOUT specifying kms_key_id.
+				Config: `
+					resource "scaleway_key_manager_key" "my_key" {
+						name        = "tf-tests-volume-kms-inherited"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume encrypted {
+						name       = "test-block-volume-kms-inherited-src"
+						zone       = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops       = 5000
+						size_in_gb = 20
+						kms_key_id = scaleway_key_manager_key.my_key.id
+					}
+
+					resource scaleway_block_snapshot snapshot {
+						name      = "test-block-snapshot-kms-inherited"
+						zone      = "fr-par-3"
+						volume_id = scaleway_block_volume.encrypted.id
+					}
+
+					resource scaleway_block_volume inherited {
+						name        = "test-block-volume-kms-inherited-dst"
+						zone        = "fr-par-3"
+						iops        = 5000
+						snapshot_id = scaleway_block_snapshot.snapshot.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.inherited"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_volume.inherited", "kms_key_id",
+						"scaleway_key_manager_key.my_key", "id",
+					),
 				),
 			},
 		},
