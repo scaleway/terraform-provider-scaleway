@@ -8,92 +8,332 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/hashicorp/aws-sdk-go-base/v2/tfawserr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
+
+// appendProjectIDFromACL refreshes projectID from the bucket ACL owner.
+func appendProjectIDFromACL(ctx context.Context, s3Client *s3.Client, bucket string, diags diag.Diagnostics) (types.String, diag.Diagnostics) {
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucket),
+	})
+	if err != nil {
+		diags.AddWarning("Failed to read bucket ACL", err.Error())
+
+		return types.StringNull(), diags
+	}
+
+	if acl != nil && acl.Owner != nil && acl.Owner.ID != nil {
+		return types.StringValue(aws.ToString(NormalizeOwnerID(acl.Owner.ID))), diags
+	}
+
+	return types.StringNull(), diags
+}
 
 //go:embed descriptions/object_bucket_policy_resource.md
 var bucketPolicyResourceDescription string
 
-func ResourceBucketPolicy() *schema.Resource {
-	return &schema.Resource{
-		Description:   bucketPolicyResourceDescription,
-		CreateContext: resourceObjectBucketPolicyCreate,
-		ReadContext:   resourceObjectBucketPolicyRead,
-		UpdateContext: resourceObjectBucketPolicyCreate,
-		DeleteContext: resourceObjectBucketPolicyDelete,
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultObjectBucketTimeout),
+var (
+	_ resource.Resource                = (*BucketPolicyResource)(nil)
+	_ resource.ResourceWithConfigure   = (*BucketPolicyResource)(nil)
+	_ resource.ResourceWithImportState = (*BucketPolicyResource)(nil)
+)
+
+func NewBucketPolicyResource() resource.Resource {
+	return &BucketPolicyResource{}
+}
+
+type BucketPolicyResource struct {
+	meta *meta.Meta
+}
+
+type bucketPolicyResourceModel struct {
+	ID        types.String `tfsdk:"id"`
+	Bucket    types.String `tfsdk:"bucket"`
+	Policy    types.String `tfsdk:"policy"`
+	Region    types.String `tfsdk:"region"`
+	ProjectID types.String `tfsdk:"project_id"`
+}
+
+func (r *BucketPolicyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_object_bucket_policy"
+}
+
+func (r *BucketPolicyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: bucketPolicyResourceDescription,
+		Description:         bucketPolicyResourceDescription, // Required for "TestProviderResourceDescriptionsAreNotEmpty"
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The regional ID of the bucket policy, in the `{region}/{bucket}` format.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"bucket": schema.StringAttribute{
+				Required:    true,
+				Description: "The bucket's name or regional ID.",
+				PlanModifiers: []planmodifier.String{
+					regional.LocalityPlanModifier{},
+				},
+			},
+			"policy": schema.StringAttribute{
+				Required:    true,
+				Description: "The text of the policy.",
+				PlanModifiers: []planmodifier.String{
+					policyEquivalentPlanModifier{},
+				},
+			},
+			"region": regional.SchemaAttributeComputed("The region you want to attach the resource to"),
+			"project_id": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The project ID the bucket belongs to.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		SchemaFunc: bucketPolicySchema,
 	}
 }
 
-func bucketPolicySchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"bucket": {
-			Type:             schema.TypeString,
-			Required:         true,
-			Description:      "The bucket's name or regional ID.",
-			DiffSuppressFunc: dsf.Locality,
-		},
-		"policy": {
-			Type:             schema.TypeString,
-			Required:         true,
-			Description:      "The text of the policy.",
-			DiffSuppressFunc: SuppressEquivalentPolicyDiffs,
-		},
-		"region":     regional.Schema(),
-		"project_id": account.ProjectIDSchema(),
+func (r *BucketPolicyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
 	}
+
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.meta = m
 }
 
-func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
+func (r *BucketPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan bucketPolicyResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	state, diags := r.putPolicy(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func (r *BucketPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan bucketPolicyResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	state, diags := r.putPolicy(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func (r *BucketPolicyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state bucketPolicyResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, bucketName, projectID, err := r.resolveFromState(ctx, &state)
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to resolve bucket policy state", err.Error())
+
+		return
 	}
 
-	regionalID := regional.ExpandID(d.Get("bucket"))
+	s3Client, err := NewS3ClientFromMetaWithProjectID(ctx, r.meta, region.String(), projectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to create S3 client", err.Error())
+
+		return
+	}
+
+	tflog.Debug(ctx, fmt.Sprintf("scw object bucket: %s, delete policy", bucketName))
+
+	_, err = s3Client.DeleteBucketPolicy(ctx, &s3.DeleteBucketPolicyInput{
+		Bucket: aws.String(bucketName),
+	})
+
+	if err == nil || IsS3Err(err, ErrCodeNoSuchBucket, "") {
+		return
+	}
+
+	resp.Diagnostics.AddError("error deleting SCW Object policy", err.Error())
+}
+
+func (r *BucketPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state bucketPolicyResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, bucketName, projectID, err := r.resolveFromState(ctx, &state)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve bucket policy state", err.Error())
+
+		return
+	}
+
+	s3Client, err := NewS3ClientFromMetaWithProjectID(ctx, r.meta, region.String(), projectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to create S3 client", err.Error())
+
+		return
+	}
+
+	tflog.Debug(ctx, "[DEBUG] SCW bucket policy, read for bucket: "+state.ID.ValueString())
+
+	pol, err := s3Client.GetBucketPolicy(ctx, &s3.GetBucketPolicyInput{
+		Bucket: aws.String(bucketName),
+	})
+
+	if IsS3Err(err, ErrCodeNoSuchBucketPolicy, "") || IsS3Err(err, ErrCodeNoSuchBucket, "") {
+		tflog.Warn(
+			ctx, fmt.Sprintf("[WARN] SCW Bucket Policy (%s) not found, removing from state", state.ID.ValueString()),
+		)
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
+
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read bucket policy", err.Error())
+
+		return
+	}
+
+	remotePolicy := ""
+	if pol != nil && pol.Policy != nil {
+		remotePolicy = aws.ToString(pol.Policy)
+	}
+
+	policyToSet, err := SecondJSONUnlessEquivalent(state.Policy.ValueString(), remotePolicy)
+	if err != nil {
+		resp.Diagnostics.AddError("while setting policy", "encountered: "+err.Error())
+
+		return
+	}
+
+	policyToSet, err = structure.NormalizeJsonString(policyToSet)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"invalid policy JSON",
+			fmt.Sprintf("policy (%s) is an invalid JSON: %s", policyToSet, err.Error()),
+		)
+
+		return
+	}
+
+	state.Policy = types.StringValue(policyToSet)
+	state.Bucket = types.StringValue(regional.NewIDString(region, bucketName))
+	state.Region = types.StringValue(region.String())
+
+	state.ProjectID, resp.Diagnostics = appendProjectIDFromACL(ctx, s3Client, bucketName, resp.Diagnostics)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func (r *BucketPolicyResource) ImportState(
+	ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse,
+) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+// putPolicy applies (create or update) the bucket policy and returns the resulting state.
+func (r *BucketPolicyResource) putPolicy(
+	ctx context.Context, plan *bucketPolicyResourceModel,
+) (bucketPolicyResourceModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	region, err := meta.ExtractFrameworkRegion(plan.Region, r.meta.ScwClient())
+	if err != nil {
+		diags.AddError("Failed to resolve region", err.Error())
+
+		return bucketPolicyResourceModel{}, diags
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(plan.ProjectID, r.meta.ScwClient())
+	if err != nil {
+		diags.AddError("Failed to resolve project ID", err.Error())
+
+		return bucketPolicyResourceModel{}, diags
+	}
+
+	regionalID := regional.ExpandID(plan.Bucket.ValueString())
 	bucket := regionalID.ID
 	bucketRegion := regionalID.Region
 
-	tflog.Debug(ctx, "bucket name: "+bucket)
-
 	if bucketRegion != "" && bucketRegion != region {
-		s3Client, err = s3ClientForceRegion(ctx, d, m, bucketRegion.String())
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
 		region = bucketRegion
 	}
 
-	policy, err := structure.NormalizeJsonString(d.Get("policy").(string))
+	policy, err := structure.NormalizeJsonString(plan.Policy.ValueString())
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("policy (%s) is an invalid JSON: %w", policy, err))
+		diags.AddError(
+			"invalid policy JSON",
+			fmt.Sprintf("policy (%s) is an invalid JSON: %s", plan.Policy.ValueString(), err.Error()),
+		)
+
+		return bucketPolicyResourceModel{}, diags
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] SCW bucket: %s, put policy: %s", bucket, policy))
 
+	s3Client, err := NewS3ClientFromMetaWithProjectID(ctx, r.meta, region.String(), projectID)
+	if err != nil {
+		diags.AddError("Failed to create S3 client", err.Error())
+
+		return bucketPolicyResourceModel{}, diags
+	}
+
 	params := &s3.PutBucketPolicyInput{
-		Bucket: new(bucket),
-		Policy: new(policy),
+		Bucket: aws.String(bucket),
+		Policy: aws.String(policy),
 	}
 
 	err = retry.RetryContext(ctx, 1*time.Minute, func() *retry.RetryError {
 		_, err := s3Client.PutBucketPolicy(ctx, params)
-		if tfawserr.ErrCodeEquals(err, "MalformedPolicy") {
+		if IsS3Err(err, "MalformedPolicy", "") {
 			return retry.RetryableError(err)
 		}
 
@@ -108,95 +348,72 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error putting SCW bucket policy: %w", err))
+		diags.AddError("error putting SCW bucket policy", err.Error())
+
+		return bucketPolicyResourceModel{}, diags
 	}
 
-	d.SetId(regional.NewIDString(region, bucket))
+	// State mirrors plan rather than re-reading; the plan modifier
+	// suppresses equivalent-policy diffs and the next Read reconciles drift.
+	state := bucketPolicyResourceModel{
+		ID:        types.StringValue(regional.NewIDString(region, bucket)),
+		Bucket:    plan.Bucket,
+		Policy:    types.StringValue(policy),
+		Region:    types.StringValue(region.String()),
+		ProjectID: plan.ProjectID,
+	}
 
-	return resourceObjectBucketPolicyRead(ctx, d, m)
+	state.ProjectID, diags = appendProjectIDFromACL(ctx, s3Client, bucket, diags)
+
+	return state, diags
 }
 
-//gocyclo:ignore
-func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	s3Client, region, _, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
+// resolveFromState extracts the region, bucket name and project ID from the resource state.
+func (r *BucketPolicyResource) resolveFromState(
+	_ context.Context, state *bucketPolicyResourceModel,
+) (scw.Region, string, string, error) {
+	region, bucketName, err := regional.ParseID(state.ID.ValueString())
 	if err != nil {
-		return diag.FromErr(err)
-	}
+		// Fall back to parsing the bucket attribute if the ID is not a regional ID.
+		regionalID := regional.ExpandID(state.Bucket.ValueString())
+		bucketName = regionalID.ID
 
-	regionalID := regional.ExpandID(d.Id())
-	bucket := regionalID.ID
-
-	_ = d.Set("region", region)
-
-	tflog.Debug(ctx, "[DEBUG] SCW bucket policy, read for bucket: "+d.Id())
-	pol, err := s3Client.GetBucketPolicy(ctx, &s3.GetBucketPolicyInput{
-		Bucket: aws.String(bucket),
-	})
-
-	if !d.IsNewResource() && tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucketPolicy, ErrCodeNoSuchBucket) {
-		tflog.Warn(ctx, fmt.Sprintf("[WARN] SCW Bucket Policy (%s) not found, removing from state", d.Id()))
-		d.SetId("")
-
-		return nil
-	}
-
-	v := ""
-	if err == nil && pol.Policy != nil {
-		v = aws.ToString(pol.Policy)
-	}
-
-	policyToSet, err := SecondJSONUnlessEquivalent(d.Get("policy").(string), v)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("while setting policy (%s), encountered: %w", policyToSet, err))
-	}
-
-	policyToSet, err = structure.NormalizeJsonString(policyToSet)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("policy (%s) is an invalid JSON: %w", policyToSet, err))
-	}
-
-	if err := d.Set("policy", policyToSet); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := d.Set("bucket", regionalID.String()); err != nil {
-		return diag.FromErr(err)
-	}
-
-	var diags diag.Diagnostics
-
-	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
-		Bucket: aws.String(bucket),
-	})
-	if err != nil {
-		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
-			return diags
+		region = regionalID.Region
+		if region == "" {
+			region, err = meta.ExtractFrameworkRegion(state.Region, r.meta.ScwClient())
+			if err != nil {
+				return "", "", "", err
+			}
 		}
-	} else if acl != nil && acl.Owner != nil {
-		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 	}
 
-	return diags
+	projectID, err := meta.ExtractFrameworkProjectID(state.ProjectID, r.meta.ScwClient())
+	if err != nil {
+		return "", "", "", err
+	}
+
+	return region, bucketName, projectID, nil
 }
 
-func resourceObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+// policyEquivalentPlanModifier suppresses plan diffs when the configured policy JSON
+// is semantically equivalent to the prior state. This is the Plugin Framework
+// counterpart of the SDKv2 SuppressEquivalentPolicyDiffs diff suppressor.
+type policyEquivalentPlanModifier struct{}
+
+func (policyEquivalentPlanModifier) Description(_ context.Context) string {
+	return "Suppresses diffs for semantically equivalent bucket policy JSON."
+}
+
+func (policyEquivalentPlanModifier) MarkdownDescription(_ context.Context) string {
+	return "Suppresses diffs for semantically equivalent bucket policy JSON."
+}
+
+func (policyEquivalentPlanModifier) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if req.PlanValue.IsNull() || req.PlanValue.IsUnknown() || req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+		return
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("scw object bucket: %s, delete policy", bucketName))
-	_, err = s3Client.DeleteBucketPolicy(ctx, &s3.DeleteBucketPolicyInput{
-		Bucket: aws.String(bucketName),
-	})
-
-	if tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucket) {
-		return nil
+	if policiesEquivalent(req.StateValue.ValueString(), req.PlanValue.ValueString()) {
+		resp.PlanValue = req.StateValue
 	}
-
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error deleting SCW Object policy: %w", err))
-	}
-
-	return nil
 }

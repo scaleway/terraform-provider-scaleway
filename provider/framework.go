@@ -294,6 +294,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		mailbox.NewMailboxResource,
 		messageq.NewDeploymentResource,
 		messageq.NewUserResource,
+		object.NewBucketPolicyResource,
 		partner.NewPartnerOrganizationResource,
 		webhosting.NewWebhostingResource,
 	}
@@ -339,6 +340,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		messageq.NewDeploymentDataSource,
 		messageq.NewNodeTypeDataSource,
 		messageq.NewVersionDataSource,
+		object.NewBucketPolicyDataSource,
 		rdb.NewInstanceLogDataSource,
 		rdb.NewInstanceLogsDataSource,
 		rdb.NewInstanceLogsDetailsDataSource,
