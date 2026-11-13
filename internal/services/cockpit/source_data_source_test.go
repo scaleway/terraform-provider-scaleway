@@ -34,6 +34,7 @@ func TestAccCockpitSource_DataSource_ByID(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith("data.scaleway_cockpit_source.by_id", "srn", acctest.CheckSRN("cockpit", "data-sources")),
 					resource.TestCheckResourceAttrPair("data.scaleway_cockpit_source.by_id", "id", "scaleway_cockpit_source.main", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_cockpit_source.by_id", "name", "source-by-id"),
 					resource.TestCheckResourceAttr("data.scaleway_cockpit_source.by_id", "type", "metrics"),

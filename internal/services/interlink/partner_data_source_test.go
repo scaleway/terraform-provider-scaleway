@@ -25,6 +25,7 @@ func TestAccDataSourceInterlinkPartner_ByName(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_interlink_partner.by_name", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_interlink_partner.by_name", "name", "FreePro"),
 					resource.TestCheckResourceAttrSet("data.scaleway_interlink_partner.by_name", "contact_email"),
+					resource.TestCheckResourceAttrWith("data.scaleway_interlink_partner.by_name", "srn", acctest.CheckSRN("interlink", "partners")),
 				),
 			},
 		},
@@ -59,6 +60,8 @@ func TestAccDataSourceInterlinkPartner_ByID(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_interlink_partner.by_id", "contact_email",
 						"data.scaleway_interlink_partner.by_name", "contact_email"),
+					resource.TestCheckResourceAttrWith("data.scaleway_interlink_partner.by_name", "srn", acctest.CheckSRN("interlink", "partners")),
+					resource.TestCheckResourceAttrWith("data.scaleway_interlink_partner.by_id", "srn", acctest.CheckSRN("interlink", "partners")),
 				),
 			},
 		},

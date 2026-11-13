@@ -2,6 +2,7 @@ package tem
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 
@@ -16,8 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/tem_domain_resource.md
+var domainResourceDescription string
+
 func ResourceDomain() *schema.Resource {
 	return &schema.Resource{
+		Description:   domainResourceDescription,
 		CreateContext: ResourceDomainCreate,
 		ReadContext:   ResourceDomainRead,
 		UpdateContext: ResourceDomainUpdate,

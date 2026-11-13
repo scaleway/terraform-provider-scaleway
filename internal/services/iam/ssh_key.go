@@ -3,6 +3,7 @@ package iam
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -16,8 +17,12 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+//go:embed descriptions/account_ssh_key_resource.md
+var sskkeyResourceDescription string
+
 func ResourceSSKKey() *schema.Resource {
 	return &schema.Resource{
+		Description:   sskkeyResourceDescription,
 		CreateContext: resourceIamSSKKeyCreate,
 		ReadContext:   resourceIamSSHKeyRead,
 		UpdateContext: resourceIamSSKKeyUpdate,

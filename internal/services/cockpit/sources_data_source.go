@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,6 +14,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
+
+//go:embed descriptions/cockpit_sources_data_source.md
+var cockpitSourcesDataSourceDescription string
 
 func DataSourceCockpitSources() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpitSource().SchemaFunc())
@@ -39,6 +43,7 @@ func DataSourceCockpitSources() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "type", "origin")
 
 	return &schema.Resource{
+		Description: cockpitSourcesDataSourceDescription,
 		ReadContext: dataSourceCockpitSourcesRead,
 		Schema:      dsSchema,
 	}
@@ -118,5 +123,6 @@ func flattenDataSourceToMap(ds *cockpit.DataSource) map[string]any {
 		"retention_days":            int(ds.RetentionDays),
 		"region":                    ds.Region.String(),
 		"push_url":                  pushURL,
+		"srn":                       ds.Srn,
 	}
 }

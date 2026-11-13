@@ -65,6 +65,7 @@ func TestAccPartnerOrganizationResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_partner_organization.main", "locked_by"),
 					resource.TestCheckResourceAttrSet("scaleway_partner_organization.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_partner_organization.main", "locked_at"),
+					resource.TestCheckResourceAttrWith("scaleway_partner_organization.main", "srn", acctest.CheckSRN("account", "organizations")),
 				),
 			},
 			{

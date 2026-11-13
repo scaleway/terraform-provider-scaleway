@@ -26,6 +26,7 @@ func TestAccDataSourceInterlinkPop_ByName(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "name", "TeleHouse TH2"),
 					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "hosting_provider_name", "TeleHouse"),
 					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "city", "Paris"),
+					resource.TestCheckResourceAttrWith("data.scaleway_interlink_pop.by_name", "srn", acctest.CheckSRN("interlink", "pops")),
 				),
 			},
 		},
@@ -63,6 +64,8 @@ func TestAccDataSourceInterlinkPop_ByID(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_interlink_pop.by_id", "city",
 						"data.scaleway_interlink_pop.by_name", "city"),
+					resource.TestCheckResourceAttrWith("data.scaleway_interlink_pop.by_name", "srn", acctest.CheckSRN("interlink", "pops")),
+					resource.TestCheckResourceAttrWith("data.scaleway_interlink_pop.by_id", "srn", acctest.CheckSRN("interlink", "pops")),
 				),
 			},
 		},

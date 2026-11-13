@@ -23,6 +23,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -113,6 +114,7 @@ func (r *DatalabResource) Metadata(_ context.Context, req resource.MetadataReque
 func (r *DatalabResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Scaleway Datalab instance.",
+		Description:         "Manages a Scaleway Datalab instance.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -429,8 +431,9 @@ func (r *DatalabResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	dl, err = r.api.WaitForDatalab(&datalab.WaitForDatalabRequest{
-		Region:    region,
-		DatalabID: dl.ID,
+		Region:        region,
+		DatalabID:     dl.ID,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("Failed waiting for Datalab", err.Error())
@@ -599,8 +602,9 @@ func (r *DatalabResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	dl, err = r.api.WaitForDatalab(&datalab.WaitForDatalabRequest{
-		Region:    region,
-		DatalabID: dl.ID,
+		Region:        region,
+		DatalabID:     dl.ID,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("Failed waiting for Datalab update", err.Error())
@@ -653,8 +657,9 @@ func (r *DatalabResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	dl, err := r.api.WaitForDatalab(&datalab.WaitForDatalabRequest{
-		Region:    region,
-		DatalabID: id,
+		Region:        region,
+		DatalabID:     id,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {

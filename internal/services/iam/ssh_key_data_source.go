@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +12,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/account_ssh_key_data_source.md
+var sshkeyDataSourceDescription string
 
 func DataSourceSSHKey() *schema.Resource {
 	// Generate datasource schema from resource
@@ -26,6 +30,7 @@ func DataSourceSSHKey() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: sshkeyDataSourceDescription,
 		ReadContext: DataSourceIamSSHKeyRead,
 		Schema:      dsSchema,
 	}

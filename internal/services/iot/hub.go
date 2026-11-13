@@ -2,6 +2,7 @@ package iot
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/iot_hub_resource.md
+var hubResourceDescription string
+
 func ResourceHub() *schema.Resource {
 	return &schema.Resource{
+		Description:   hubResourceDescription,
 		CreateContext: ResourceIotHubCreate,
 		ReadContext:   ResourceIotHubRead,
 		UpdateContext: ResourceIotHubUpdate,

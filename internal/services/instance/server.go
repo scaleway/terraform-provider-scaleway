@@ -3,6 +3,7 @@ package instance
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io"
@@ -42,8 +43,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance_server_resource.md
+var serverResourceDescription string
+
 func ResourceServer() *schema.Resource {
 	return &schema.Resource{
+		Description:   serverResourceDescription,
 		CreateContext: ResourceInstanceServerCreate,
 		ReadContext:   ResourceInstanceServerRead,
 		UpdateContext: ResourceInstanceServerUpdate,
@@ -1331,10 +1336,11 @@ func terminateServer(ctx context.Context, api *instancehelpers.BlockAndInstanceA
 	}
 
 	err = api.ServerActionAndWait(&instanceSDK.ServerActionAndWaitRequest{
-		Zone:     zone,
-		ServerID: id,
-		Action:   instanceSDK.ServerActionTerminate,
-		Timeout:  &timeout,
+		Zone:          zone,
+		ServerID:      id,
+		Action:        instanceSDK.ServerActionTerminate,
+		Timeout:       &timeout,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
 		return err

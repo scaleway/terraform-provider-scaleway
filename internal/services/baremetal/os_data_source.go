@@ -2,6 +2,7 @@ package baremetal
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/baremetal_os_data_source.md
+var osDataSourceDescription string
+
 func DataSourceOS() *schema.Resource {
 	return &schema.Resource{
+		Description: osDataSourceDescription,
 		ReadContext: DataSourceOSRead,
 		SchemaFunc:  osSchema,
 	}

@@ -2,6 +2,7 @@ package partner_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -86,6 +87,7 @@ func TestAccListPartnerOrganizations_Basic(t *testing.T) {
 						identitycheck.FilterByResourceIdentityFunc(identity.Checks()),
 						[]querycheck.KnownValueCheck{
 							identitycheck.KnownValueCheck(tfjsonpath.New("partner_id"), knownvalue.StringExact(orgID)),
+							identitycheck.KnownValueCheck(tfjsonpath.New("srn"), knownvalue.StringRegexp(regexp.MustCompile(`^srn://account\..+/organizations/.+$`))),
 						},
 					),
 				},

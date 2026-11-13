@@ -2,7 +2,6 @@ package function_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -34,7 +33,7 @@ func TestAccFunctionNamespace_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.0", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "tags.1", "tag2"),
-					resource.TestMatchResourceAttr("scaleway_function_namespace.main", "srn", regexp.MustCompile(`^srn://functions\..+/regions/.+/namespaces/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_function_namespace.main", "srn", acctest.CheckSRN("functions", "namespaces")),
 				),
 			},
 			{

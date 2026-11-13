@@ -136,6 +136,7 @@ func TestAccCockpitExporter_Basic_OTLP(t *testing.T) {
 				`, orgID, exporterName),
 				Check: resource.ComposeTestCheckFunc(
 					isExporterPresent(tt, "scaleway_cockpit_exporter.main"),
+					resource.TestCheckResourceAttrWith("scaleway_cockpit_exporter.main", "srn", acctest.CheckSRN("cockpit", "exporters")),
 					resource.TestCheckResourceAttr("scaleway_cockpit_exporter.main", "name", exporterName),
 					resource.TestCheckResourceAttr("scaleway_cockpit_exporter.main", "region", "fr-par"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_exporter.main", "status"),

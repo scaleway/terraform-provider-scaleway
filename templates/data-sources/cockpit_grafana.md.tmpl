@@ -94,6 +94,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the project (same as `project_id`).
 - `grafana_url` - The URL to access the Grafana dashboard. Use your Scaleway IAM credentials to authenticate.
+- `srn` - The Scaleway Resource Name (SRN) of the Grafana instance.
 
 ## Authentication
 

@@ -21,7 +21,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/az"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datawarehouse"
@@ -55,7 +54,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/webhosting"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -162,7 +160,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_autoscaling_instance_policy":                        autoscaling.ResourceInstancePolicy(),
 				"scaleway_autoscaling_instance_template":                      autoscaling.ResourceInstanceTemplate(),
 				"scaleway_baremetal_server":                                   baremetal.ResourceServer(),
-				"scaleway_block_volume":                                       block.ResourceVolume(),
 				"scaleway_cockpit_source":                                     cockpit.ResourceCockpitSource(),
 				"scaleway_cockpit_token":                                      cockpit.ResourceToken(),
 				"scaleway_cockpit_alert_manager":                              cockpit.ResourceCockpitAlertManager(),
@@ -293,7 +290,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_ip_reverse_dns":                  vpcgw.ResourceIPReverseDNS(),
 				"scaleway_vpc_public_gateway_pat_rule":                        vpcgw.ResourcePATRule(),
 				"scaleway_vpc_route":                                          vpc.ResourceRoute(),
-				"scaleway_webhosting":                                         webhosting.ResourceWebhosting(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
@@ -312,7 +308,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_baremetal_server":                                   baremetal.DataSourceServer(),
 				"scaleway_billing_consumptions":                               billing.DataSourceConsumptions(),
 				"scaleway_billing_invoices":                                   billing.DataSourceInvoices(),
-				"scaleway_block_volume":                                       block.DataSourceVolume(),
 				"scaleway_cockpit_config":                                     cockpit.DataSourceCockpitConfig(),
 				"scaleway_cockpit_grafana":                                    cockpit.DataSourceCockpitGrafana(),
 				"scaleway_cockpit_preconfigured_alert":                        cockpit.DataSourceCockpitPreconfiguredAlert(),
@@ -429,8 +424,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_route":                                          vpc.DataSourceRoute(),
 				"scaleway_vpc_routes":                                         vpc.DataSourceRoutes(),
 				"scaleway_vpcs":                                               vpc.DataSourceVPCs(),
-				"scaleway_webhosting":                                         webhosting.DataSourceWebhosting(),
-				"scaleway_webhosting_offer":                                   webhosting.DataSourceOffer(),
 			},
 		}
 

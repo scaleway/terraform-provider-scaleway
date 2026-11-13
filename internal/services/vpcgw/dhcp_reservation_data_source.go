@@ -2,12 +2,16 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/vpc_public_gateway_dhcp_reservation_data_source.md
+var dhcpreservationDataSourceDescription string
 
 func DataSourceDHCPReservation() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceDHCPReservation().SchemaFunc())
@@ -33,6 +37,7 @@ func DataSourceDHCPReservation() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "zone")
 
 	return &schema.Resource{
+		Description:        dhcpreservationDataSourceDescription,
 		Schema:             dsSchema,
 		ReadContext:        dataSourceDHCPReservationRead,
 		DeprecationMessage: dhcpDeprecationMessage,

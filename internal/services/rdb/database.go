@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"regexp"
 	"strings"
@@ -19,8 +20,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/rdb_database_resource.md
+var databaseResourceDescription string
+
 func ResourceDatabase() *schema.Resource {
 	return &schema.Resource{
+		Description:   databaseResourceDescription,
 		CreateContext: ResourceRdbDatabaseCreate,
 		ReadContext:   ResourceRdbDatabaseRead,
 		DeleteContext: ResourceRdbDatabaseDelete,

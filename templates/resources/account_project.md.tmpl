@@ -20,6 +20,17 @@ resource "scaleway_account_project" "project" {
 }
 ```
 
+### Create a Scaleway Project and delete all its resources on deletion
+
+The following command allows you to create a project named `my_project`. Destroying this project will also delete all the resources it contains, including resources not managed by Terraform.
+
+```terraform
+resource "scaleway_account_project" "project" {
+  name                  = "my_project"
+  delete_with_resources = true
+}
+```
+
 ### Use a project in provider configuration
 
 If you want to use as default a project created in terraform you can use a temporary provider alias.
@@ -52,6 +63,7 @@ The following arguments are supported:
 - `name` - (Optional) The name of the Project.
 - `description` - (Optional) The description of the Project.
 - `organization_id` - (Optional. Defaults to [provider](../index.md#arguments-reference) `organization_id`)The organization ID the Project is associated with. Any change made to the `organization_id` will recreate the resource.
+- `delete_with_resources` - (Optional) If true, deleting the project also deletes all the resources it contains, including resources not managed by Terraform. Defaults to `false`.
 
 ## Attributes Reference
 

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -55,6 +56,8 @@ type mailboxResourceModel struct {
 	DeletionScheduledAt            types.String `tfsdk:"deletion_scheduled_at"`
 	CreatedAt                      types.String `tfsdk:"created_at"`
 	PasswordWoVersion              types.Int64  `tfsdk:"password_wo_version"`
+	ForwardingEnabled              types.Bool   `tfsdk:"forwarding_enabled"`
+	ForwardingKeepCopy             types.Bool   `tfsdk:"forwarding_keep_copy"`
 }
 
 type mailboxResourceIdentityModel = framework.GlobalIdentity
@@ -69,6 +72,7 @@ var mailboxResourceDescription string
 func (r *MailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: mailboxResourceDescription,
+		Description:         mailboxResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -172,6 +176,22 @@ func (r *MailboxResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Computed:            true,
 				MarkdownDescription: "Date and time of last update (RFC 3339 format)",
 			},
+			"forwarding_enabled": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Whether email forwarding is enabled for this mailbox. When false, no forwarding rules deliver mail. Defaults to false when omitted.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"forwarding_keep_copy": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Whether to keep a copy of forwarded emails in this mailbox. Defaults to false when omitted.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -254,7 +274,23 @@ func (r *MailboxResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	state := convertMailboxToState(mb, plan)
+	err = applyMailboxForwardingSettings(ctx, r.api, mb.ID, config, mailboxResourceModel{})
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to update mailbox forwarding settings", err.Error())
+
+		return
+	}
+
+	settings, err := r.api.GetMailboxForwarding(&mailboxsdk.GetMailboxForwardingRequest{
+		MailboxID: mb.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to get mailbox forwarding settings", err.Error())
+
+		return
+	}
+
+	state := convertMailboxToState(mb, plan, settings)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(mb.ID))...)
 }
@@ -302,7 +338,16 @@ func (r *MailboxResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	state = convertMailboxToState(mb, state)
+	settings, err := r.api.GetMailboxForwarding(&mailboxsdk.GetMailboxForwardingRequest{
+		MailboxID: mb.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to get mailbox forwarding settings", err.Error())
+
+		return
+	}
+
+	state = convertMailboxToState(mb, state, settings)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(mb.ID))...)
 }
@@ -378,16 +423,17 @@ func (r *MailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 			return
 		}
 
-		mb, err := waitForMailbox(ctx, r.api, plan.ID.ValueString(), defaultMailboxTimeout)
+		_, err = waitForMailbox(ctx, r.api, plan.ID.ValueString(), defaultMailboxTimeout)
 		if err != nil {
 			resp.Diagnostics.AddError("Failed waiting for mailbox after update", err.Error())
 
 			return
 		}
+	}
 
-		newState := convertMailboxToState(mb, plan)
-		resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
-		resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(mb.ID))...)
+	err := applyMailboxForwardingSettings(ctx, r.api, plan.ID.ValueString(), config, state)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to update mailbox forwarding settings", err.Error())
 
 		return
 	}
@@ -399,7 +445,16 @@ func (r *MailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	newState := convertMailboxToState(mb, plan)
+	settings, err := r.api.GetMailboxForwarding(&mailboxsdk.GetMailboxForwardingRequest{
+		MailboxID: mb.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to get mailbox forwarding settings", err.Error())
+
+		return
+	}
+
+	newState := convertMailboxToState(mb, plan, settings)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(mb.ID))...)
 }
@@ -440,7 +495,7 @@ func (r *MailboxResource) ImportState(ctx context.Context, req resource.ImportSt
 }
 
 // convertMailboxToState maps API fields into state, preserving password fields from prior state/plan.
-func convertMailboxToState(mb *mailboxsdk.Mailbox, prior mailboxResourceModel) mailboxResourceModel {
+func convertMailboxToState(mb *mailboxsdk.Mailbox, prior mailboxResourceModel, settings *mailboxsdk.MailboxForwarding) mailboxResourceModel {
 	subscriptionPeriod := mb.SubscriptionPeriod.String()
 	// UpdateMailbox may only schedule the next period; keep the configured value when it
 	// matches next_subscription_period to avoid a perpetual plan diff.
@@ -449,6 +504,14 @@ func convertMailboxToState(mb *mailboxsdk.Mailbox, prior mailboxResourceModel) m
 		if desired != "" && desired == mb.NextSubscriptionPeriod.String() && desired != subscriptionPeriod {
 			subscriptionPeriod = desired
 		}
+	}
+
+	enabled := types.BoolNull()
+	keepCopy := types.BoolNull()
+
+	if settings != nil {
+		enabled = types.BoolValue(settings.Enabled)
+		keepCopy = types.BoolValue(settings.KeepCopy)
 	}
 
 	return mailboxResourceModel{
@@ -467,5 +530,39 @@ func convertMailboxToState(mb *mailboxsdk.Mailbox, prior mailboxResourceModel) m
 		DeletionScheduledAt:            flattenTime(mb.DeletionScheduledAt),
 		CreatedAt:                      flattenTime(mb.CreatedAt),
 		UpdatedAt:                      flattenTime(mb.UpdatedAt),
+		ForwardingEnabled:              enabled,
+		ForwardingKeepCopy:             keepCopy,
 	}
+}
+
+// applyMailboxForwardingSettings PATCHes only config-present attrs that differ from prior state.
+// Pass Config (not Plan): UseStateForUnknown would otherwise look like an explicit value.
+// On Create, pass a zero prior so any config-present attr is written.
+func applyMailboxForwardingSettings(ctx context.Context, api *mailboxsdk.API, mailboxID string, config, prior mailboxResourceModel) error {
+	updateReq := &mailboxsdk.UpdateMailboxForwardingRequest{MailboxID: mailboxID}
+	needsUpdate := false
+
+	if !config.ForwardingEnabled.IsNull() && !config.ForwardingEnabled.IsUnknown() {
+		enabled := config.ForwardingEnabled.ValueBool()
+		if prior.ForwardingEnabled.IsNull() || prior.ForwardingEnabled.IsUnknown() || prior.ForwardingEnabled.ValueBool() != enabled {
+			updateReq.Enabled = &enabled
+			needsUpdate = true
+		}
+	}
+
+	if !config.ForwardingKeepCopy.IsNull() && !config.ForwardingKeepCopy.IsUnknown() {
+		keepCopy := config.ForwardingKeepCopy.ValueBool()
+		if prior.ForwardingKeepCopy.IsNull() || prior.ForwardingKeepCopy.IsUnknown() || prior.ForwardingKeepCopy.ValueBool() != keepCopy {
+			updateReq.KeepCopy = &keepCopy
+			needsUpdate = true
+		}
+	}
+
+	if !needsUpdate {
+		return nil
+	}
+
+	_, err := api.UpdateMailboxForwarding(updateReq, scw.WithContext(ctx))
+
+	return err
 }

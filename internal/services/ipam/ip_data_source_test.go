@@ -2,7 +2,6 @@ package ipam_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -59,8 +58,8 @@ func TestAccDataSourceIPAMIP_Instance(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.by_mac", "address"),
 					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.by_id", "address"),
 					resource.TestCheckResourceAttrPair("data.scaleway_ipam_ip.by_mac", "address", "data.scaleway_ipam_ip.by_id", "address"),
-					resource.TestMatchResourceAttr("data.scaleway_ipam_ip.by_mac", "srn", regexp.MustCompile(`^srn://ipam\..+/(zones|regions)/[^/]+/ips/[^/]+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_ipam_ip.by_id", "srn", regexp.MustCompile(`^srn://ipam\..+/(zones|regions)/[^/]+/ips/[^/]+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_ipam_ip.by_mac", "srn", acctest.CheckSRN("ipam", "ips")),
+					resource.TestCheckResourceAttrWith("data.scaleway_ipam_ip.by_id", "srn", acctest.CheckSRN("ipam", "ips")),
 				),
 			},
 		},
@@ -118,7 +117,7 @@ func TestAccDataSourceIPAMIP_InstanceLB(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.main", "address"),
-					resource.TestMatchResourceAttr("data.scaleway_ipam_ip.main", "srn", regexp.MustCompile(`^srn://ipam\..+/(zones|regions)/[^/]+/ips/[^/]+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_ipam_ip.main", "srn", acctest.CheckSRN("ipam", "ips")),
 				),
 			},
 		},
@@ -176,7 +175,7 @@ func TestAccDataSourceIPAMIP_RDB(t *testing.T) {
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.main", "address"),
-					resource.TestMatchResourceAttr("data.scaleway_ipam_ip.main", "srn", regexp.MustCompile(`^srn://ipam\..+/(zones|regions)/[^/]+/ips/[^/]+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_ipam_ip.main", "srn", acctest.CheckSRN("ipam", "ips")),
 				),
 			},
 		},
@@ -219,7 +218,7 @@ func TestAccDataSourceIPAMIP_ID(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_ipam_ip.by_id", "address", "172.16.32.5"),
 					resource.TestCheckResourceAttr("data.scaleway_ipam_ip.by_id", "address_cidr", "172.16.32.5/22"),
 					resource.TestCheckResourceAttrPair("data.scaleway_ipam_ip.by_id", "ipam_ip_id", "scaleway_ipam_ip.ip01", "id"),
-					resource.TestMatchResourceAttr("data.scaleway_ipam_ip.by_id", "srn", regexp.MustCompile(`^srn://ipam\..+/(zones|regions)/[^/]+/ips/[^/]+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_ipam_ip.by_id", "srn", acctest.CheckSRN("ipam", "ips")),
 				),
 			},
 		},

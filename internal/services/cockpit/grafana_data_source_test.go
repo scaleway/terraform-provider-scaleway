@@ -28,6 +28,7 @@ func TestAccDataSourceCockpitGrafana_Basic(t *testing.T) {
 					}
 				`, projectName),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith("data.scaleway_cockpit_grafana.main", "srn", acctest.CheckSRN("cockpit", "grafana")),
 					resource.TestCheckResourceAttrPair("data.scaleway_cockpit_grafana.main", "project_id", "scaleway_account_project.project", "id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit_grafana.main", "grafana_url"),
 				),

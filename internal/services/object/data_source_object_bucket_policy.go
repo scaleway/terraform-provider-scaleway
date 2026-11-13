@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -15,6 +16,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
+//go:embed descriptions/object_bucket_policy_data_source.md
+var bucketPolicyDataSourceDescription string
+
 func DataSourceBucketPolicy() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceBucketPolicy().SchemaFunc())
@@ -23,6 +27,7 @@ func DataSourceBucketPolicy() *schema.Resource {
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 
 	return &schema.Resource{
+		Description: bucketPolicyDataSourceDescription,
 		ReadContext: DataSourceObjectBucketPolicyRead,
 		Schema:      dsSchema,
 	}

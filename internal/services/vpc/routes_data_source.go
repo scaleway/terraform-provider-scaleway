@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/vpc_routes_data_source.md
+var routesDataSourceDescription string
+
 func DataSourceRoutes() *schema.Resource {
 	return &schema.Resource{
+		Description: routesDataSourceDescription,
 		ReadContext: DataSourceRoutesRead,
 		SchemaFunc:  routesSchema,
 	}
@@ -144,10 +149,7 @@ func DataSourceRoutesRead(ctx context.Context, d *schema.ResourceData, m any) di
 		NexthopResourceType:     vpc.RouteWithNexthopResourceType(d.Get("nexthop_resource_type").(string)),
 	}
 
-	isipv6, isipv6Exists := d.GetOk("is_ipv6")
-	if isipv6Exists {
-		req.IsIPv6 = types.ExpandBoolPtr(isipv6)
-	}
+	req.IsIPv6 = types.ExpandBoolPtr(types.GetBool(d, "is_ipv6"))
 
 	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*vpc.ListRoutesWithNexthopResponse, error) {
 		return routesAPI.ListRoutesWithNexthop(req, scw.WithContext(ctx))

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"strings"
 
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/domain_zone_resource.md
+var zoneResourceDescription string
+
 func ResourceZone() *schema.Resource {
 	return &schema.Resource{
+		Description:   zoneResourceDescription,
 		CreateContext: resourceDomainZoneCreate,
 		ReadContext:   resourceDomainZoneRead,
 		UpdateContext: resourceZoneUpdate,

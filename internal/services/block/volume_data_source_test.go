@@ -1,7 +1,6 @@
 package block_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -92,9 +91,9 @@ func TestAccDataSourceVolume_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"scaleway_block_volume.main", "id", "data.scaleway_block_volume.find_by_id", "volume_id",
 					),
-					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_block_volume.find_by_name", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_block_volume.find_by_id", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_block_volume.main", "srn", acctest.CheckSRN("block", "volumes")),
+					resource.TestCheckResourceAttrWith("data.scaleway_block_volume.find_by_name", "srn", acctest.CheckSRN("block", "volumes")),
+					resource.TestCheckResourceAttrWith("data.scaleway_block_volume.find_by_id", "srn", acctest.CheckSRN("block", "volumes")),
 				),
 			},
 		},

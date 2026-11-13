@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/cockpit_alert_manager_resource.md
+var cockpitAlertManagerResourceDescription string
+
 func ResourceCockpitAlertManager() *schema.Resource {
 	return &schema.Resource{
+		Description:   cockpitAlertManagerResourceDescription,
 		CreateContext: ResourceCockpitAlertManagerCreate,
 		ReadContext:   ResourceCockpitAlertManagerRead,
 		UpdateContext: ResourceCockpitAlertManagerUpdate,
@@ -78,6 +83,11 @@ func alertManagerSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Alert manager URL",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the alert manager",
 		},
 	}
 }
@@ -145,6 +155,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 					ProjectID:          projectID,
 					PreconfiguredRules: alertIDs,
 					TargetStatus:       cockpit.AlertStatusEnabled,
+					RetryInterval:      transport.DefaultWaitRetryInterval,
 				}, scw.WithContext(ctx))
 			})
 			if err != nil {
@@ -217,6 +228,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("region", string(alertManager.Region))
 	_ = d.Set("alert_manager_url", alertManager.AlertManagerURL)
 	_ = d.Set("project_id", projectID)
+	_ = d.Set("srn", alertManager.Srn)
 
 	if err := setCockpitAlertManagerIdentity(d, alertManager.Region, projectID); err != nil {
 		return diag.FromErr(err)
@@ -320,6 +332,7 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 					ProjectID:          projectID,
 					PreconfiguredRules: toDisable,
 					TargetStatus:       cockpit.AlertStatusDisabled,
+					RetryInterval:      transport.DefaultWaitRetryInterval,
 				}, scw.WithContext(ctx))
 			})
 			if err != nil {
@@ -348,6 +361,7 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 					ProjectID:          projectID,
 					PreconfiguredRules: toEnable,
 					TargetStatus:       cockpit.AlertStatusEnabled,
+					RetryInterval:      transport.DefaultWaitRetryInterval,
 				}, scw.WithContext(ctx))
 			})
 			if err != nil {

@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,6 +14,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/iam_policy_data_source.md
+var policyDataSourceDescription string
 
 func DataSourcePolicy() *schema.Resource {
 	// Generate datasource schema from resource
@@ -28,6 +32,7 @@ func DataSourcePolicy() *schema.Resource {
 	}
 
 	return &schema.Resource{
+		Description: policyDataSourceDescription,
 		ReadContext: DataSourceIamPolicyRead,
 		Schema:      dsSchema,
 	}

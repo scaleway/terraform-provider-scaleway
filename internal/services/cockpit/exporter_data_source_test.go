@@ -62,6 +62,7 @@ func TestAccCockpitExporter_DataSource_ByID(t *testing.T) {
 					}
 				`, orgID, exporterName),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith("data.scaleway_cockpit_exporter.by_id", "srn", acctest.CheckSRN("cockpit", "exporters")),
 					resource.TestCheckResourceAttrPair("data.scaleway_cockpit_exporter.by_id", "id", "scaleway_cockpit_exporter.main", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_cockpit_exporter.by_id", "name", exporterName),
 					resource.TestCheckResourceAttr("data.scaleway_cockpit_exporter.by_id", "region", "fr-par"),
