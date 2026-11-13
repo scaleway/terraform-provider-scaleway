@@ -57,6 +57,30 @@ resource "scaleway_instance_template" "main" {
 }
 ```
 
+### With cloud-init
+
+```terraform
+resource "scaleway_instance_template" "main" {
+  name        = "instance-template-with-cloud-init"
+  server_type = "PLAY2-PICO"
+
+  volumes = [
+    {
+      volume_type = "sbs"
+      image_label = "ubuntu_noble"
+      size_in_gb  = 10
+      perf_iops   = 5000
+    }
+  ]
+
+  cloud_init = <<-EOT
+    #cloud-config
+    packages:
+      - nginx
+  EOT
+}
+```
+
 ### With scratch storage
 
 ```terraform
@@ -170,6 +194,8 @@ The following arguments are supported:
 - `filesystem_ids` - (Optional) - The IDs of the filesystems to attach to the servers created using the template.
 
 - `windows_rdp_ssh_key_id` - (Optional) The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server. This will be repeated on all servers created using the template.
+
+- `cloud_init` - (Optional) The cloud-init configuration of the servers created using the template. Changing it updates the template in place; servers that already exist keep their configuration.
 
 - `zone` - (Defaults to provider `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the template should be created.
 
