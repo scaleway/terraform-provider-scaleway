@@ -3,14 +3,15 @@ package cockpit
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
-	"github.com/hashicorp/go-cty/cty"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
+	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -31,15 +32,60 @@ func NewGlobalAPI(m any) (*cockpit.GlobalAPI, error) {
 	return api, nil
 }
 
-func cockpitAPIWithRegion(d *schema.ResourceData, m any) (*cockpit.RegionalAPI, scw.Region, error) {
-	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
+// dataSourceBase holds the provider meta shared by the cockpit Framework data sources.
+type dataSourceBase struct {
+	meta *meta.Meta
+}
 
-	region, err := meta.ExtractRegion(d, m)
+func (b *dataSourceBase) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Data Source Configure Type",
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	b.meta = m
+}
+
+// regionalAPI returns a regional API and the region resolved from the attribute or the provider default.
+func (b *dataSourceBase) regionalAPI(regionAttr types.String) (*cockpit.RegionalAPI, scw.Region, error) {
+	region, err := meta.ExtractFrameworkRegion(regionAttr, b.meta.ScwClient())
 	if err != nil {
 		return nil, "", err
 	}
 
-	return api, region, err
+	return cockpit.NewRegionalAPI(b.meta.ScwClient()), region, nil
+}
+
+// getRegionalIdentity reads the resource identity; it must be called before reading the state.
+// The returned bool is false when the identity is missing (e.g. state written before identity support).
+func getRegionalIdentity(ctx context.Context, identity *tfsdk.ResourceIdentity) (identityfw.RegionalIdentity, bool) {
+	var ident identityfw.RegionalIdentity
+
+	if identity == nil || identity.Get(ctx, &ident).HasError() {
+		return ident, false
+	}
+
+	return ident, !ident.ID.IsNull() && !ident.ID.IsUnknown()
+}
+
+// resolveRegionalID resolves the region and ID of a resource from its identity when available, else from the state ID.
+func resolveRegionalID(ident identityfw.RegionalIdentity, identityAvailable bool, stateID types.String) (scw.Region, string, error) {
+	if identityAvailable {
+		region, id := identityfw.ResolveRegionalIdentity(ident)
+
+		return region, id, nil
+	}
+
+	return regional.ParseID(stateID.ValueString())
 }
 
 func NewAPIWithRegionAndID(m any, id string) (*cockpit.RegionalAPI, scw.Region, string, error) {
@@ -72,25 +118,6 @@ func waitForExporter(
 			Timeout:       new(timeout),
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
-	})
-}
-
-// NewAPIWithRegionAndProjectID returns a new cockpit API with region and project ID extracted from composite ID.
-// The ID format is "region/projectID/1" (used by alert_manager resource).
-func NewAPIWithRegionAndProjectID(m any, id string) (*cockpit.RegionalAPI, scw.Region, string, error) {
-	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
-
-	parts := strings.Split(id, "/")
-	if len(parts) != 3 {
-		return nil, "", "", fmt.Errorf("invalid alert manager ID format: %s, expected region/projectID/1", id)
-	}
-
-	return api, scw.Region(parts[0]), parts[1], nil
-}
-
-func cockpitTokenUpgradeV1SchemaType() cty.Type {
-	return cty.Object(map[string]cty.Type{
-		"id": cty.String,
 	})
 }
 
