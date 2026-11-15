@@ -51,6 +51,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `updated_at` - The date and time of the last update of the MongoDB® snapshot.
 
+- `srn` - The Scaleway Resource Name (SRN) of the snapshot.
+
 ## Import
 
 MongoDB® snapshots can be imported using the `{region}/{id}`, e.g.
