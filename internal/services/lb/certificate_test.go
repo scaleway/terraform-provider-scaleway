@@ -2,6 +2,7 @@ package lb_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -52,6 +53,7 @@ func TestAccCertificate_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_lb_certificate.cert01", "srn", regexp.MustCompile(`^srn://lb\..+/zones/.+/certificates/.+$`)),
 					resource.TestCheckResourceAttr("scaleway_lb_certificate.cert01", "name", "test-cert"),
 					resource.TestCheckResourceAttr("scaleway_lb_certificate.cert01", "letsencrypt.#", "1"),
 				),
