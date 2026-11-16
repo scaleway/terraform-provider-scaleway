@@ -165,7 +165,7 @@ func setVolumeState(d *schema.ResourceData, volume *instanceSDK.Volume, m any) d
 	_ = d.Set("type", volume.VolumeType.String())
 	_ = d.Set("tags", volume.Tags)
 
-	srn, err := buildSRN(meta.ExtractScwClient(m), "block", "volumes", volume.Zone, volume.ID, "")
+	srn, err := buildSRN(meta.ExtractScwClient(m), "instance", "volumes", volume.Zone, volume.ID, volume.Srn)
 	if err != nil {
 		return diag.FromErr(err)
 	}
