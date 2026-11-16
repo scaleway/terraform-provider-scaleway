@@ -244,9 +244,10 @@ func registrationSchema() map[string]*schema.Schema {
 func contactSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"legal_form": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Legal form of the contact (individual, corporate, association, or other). Not the SIDN .nl legal form — use extension_nl.legal_form for that.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.ValidateEnum[domain.ContactLegalForm](),
+			Description:      "Legal form of the contact (individual, corporate, association, or other). Not the SIDN .nl legal form — use extension_nl.legal_form for that.",
 		},
 		"firstname": {
 			Type:             schema.TypeString,
