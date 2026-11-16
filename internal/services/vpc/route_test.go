@@ -2,7 +2,6 @@ package vpc_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -64,7 +63,7 @@ func TestAccVPCRoute_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "tags.0", "tf"),
 					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "tags.1", "route"),
 					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "region", "fr-par"),
-					resource.TestMatchResourceAttr("scaleway_vpc_route.rt01", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/routes/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_vpc_route.rt01", "srn", acctest.CheckSRN("vpc", "routes")),
 				),
 			},
 			{

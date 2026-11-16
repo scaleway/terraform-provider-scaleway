@@ -2,7 +2,6 @@ package iam_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -51,7 +50,7 @@ func TestAccDataSourceSamlCertificate_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_saml_certificate.main", "type", "scaleway_iam_saml_certificate.main", "type"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iam_saml_certificate.main", "origin"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iam_saml_certificate.main", "expires_at"),
-					resource.TestMatchResourceAttr("data.scaleway_iam_saml_certificate.main", "srn", regexp.MustCompile(`^srn://iam\..+/saml-certificates/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_saml_certificate.main", "srn", acctest.CheckSRN("iam", "saml-certificates")),
 				),
 			},
 		},
@@ -98,7 +97,7 @@ func TestAccDataSourceSamlCertificate_WithDefaultOrganizationID(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_saml_certificate.main", "type", "scaleway_iam_saml_certificate.main", "type"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iam_saml_certificate.main", "origin"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iam_saml_certificate.main", "expires_at"),
-					resource.TestMatchResourceAttr("data.scaleway_iam_saml_certificate.main", "srn", regexp.MustCompile(`^srn://iam\..+/saml-certificates/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_saml_certificate.main", "srn", acctest.CheckSRN("iam", "saml-certificates")),
 				),
 			},
 		},

@@ -248,7 +248,7 @@ func CompressCassetteV3(path string, saveCompressed bool) (CompressReport, error
 func CompressCassetteV4(path string, saveCompressed bool) (CompressReport, error) {
 	inputCassette, err := cassetteV4.Load(path)
 	if err != nil {
-		log.Fatalf("Error while reading file : %v\n", err)
+		return CompressReport{}, fmt.Errorf("error while reading file: %w", err)
 	}
 
 	outputCassette := cassetteV4.New(path)

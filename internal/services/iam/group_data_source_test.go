@@ -1,7 +1,6 @@
 package iam_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -39,8 +38,8 @@ func TestAccDataSourceGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_iam_group.find_by_name_basic", "name", "tf_test_data_source_basic"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_group.find_by_id_basic", "id", "scaleway_iam_group.main_ds_basic", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_group.find_by_name_basic", "id", "scaleway_iam_group.main_ds_basic", "id"),
-					resource.TestMatchResourceAttr("data.scaleway_iam_group.find_by_id_basic", "srn", regexp.MustCompile(`^srn://iam\..+/groups/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_iam_group.find_by_name_basic", "srn", regexp.MustCompile(`^srn://iam\..+/groups/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_group.find_by_id_basic", "srn", acctest.CheckSRN("iam", "groups")),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_group.find_by_name_basic", "srn", acctest.CheckSRN("iam", "groups")),
 				),
 			},
 		},
@@ -103,8 +102,8 @@ func TestAccDataSourceGroup_UsersAndApplications(t *testing.T) {
 					resource.TestCheckTypeSetElemAttrPair("data.scaleway_iam_group.find_by_name_mix", "user_ids.*", "data.scaleway_iam_user.user01", "user_id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_group.find_by_id_mix", "application_ids.0", "scaleway_iam_application.app00", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_iam_group.find_by_name_mix", "application_ids.0", "scaleway_iam_application.app00", "id"),
-					resource.TestMatchResourceAttr("data.scaleway_iam_group.find_by_id_mix", "srn", regexp.MustCompile(`^srn://iam\..+/groups/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_iam_group.find_by_name_mix", "srn", regexp.MustCompile(`^srn://iam\..+/groups/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_group.find_by_id_mix", "srn", acctest.CheckSRN("iam", "groups")),
+					resource.TestCheckResourceAttrWith("data.scaleway_iam_group.find_by_name_mix", "srn", acctest.CheckSRN("iam", "groups")),
 				),
 			},
 		},

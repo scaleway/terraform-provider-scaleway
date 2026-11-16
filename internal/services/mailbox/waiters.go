@@ -120,3 +120,26 @@ func waitForAliasDeleted(ctx context.Context, api *mailboxsdk.API, aliasID strin
 
 	return err
 }
+
+func waitForForwarding(ctx context.Context, api *mailboxsdk.API, forwardingID string, timeout time.Duration) (*mailboxsdk.Forwarding, error) {
+	retryInterval := defaultRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	return api.WaitForForwarding(&mailboxsdk.WaitForForwardingRequest{
+		ForwardingID:  forwardingID,
+		Timeout:       &timeout,
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
+// waitForForwardingDeleted waits until the forwarding rule is gone (GetForwarding returns 404).
+func waitForForwardingDeleted(ctx context.Context, api *mailboxsdk.API, forwardingID string, timeout time.Duration) error {
+	_, err := waitForForwarding(ctx, api, forwardingID, timeout)
+	if err != nil && httperrors.Is404(err) {
+		return nil
+	}
+
+	return err
+}

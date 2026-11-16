@@ -455,3 +455,46 @@ func CheckAliasExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		return nil
 	}
 }
+
+// CheckForwardingDestroyed verifies that all mailbox forwarding resources in state have been deleted.
+func CheckForwardingDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		api := mailboxsdk.NewAPI(tt.Meta.ScwClient())
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_mailbox_forwarding" {
+				continue
+			}
+
+			_, err := api.GetForwarding(&mailboxsdk.GetForwardingRequest{ForwardingID: rs.Primary.ID}, scw.WithContext(tt.T.Context()))
+			if err == nil {
+				return fmt.Errorf("mailbox forwarding %s still exists", rs.Primary.ID)
+			}
+
+			if !httperrors.Is404(err) {
+				return fmt.Errorf("unexpected error checking forwarding %s: %w", rs.Primary.ID, err)
+			}
+		}
+
+		return nil
+	}
+}
+
+// CheckForwardingExists verifies a mailbox forwarding resource exists in both state and API.
+func CheckForwardingExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource %q not found in state", n)
+		}
+
+		api := mailboxsdk.NewAPI(tt.Meta.ScwClient())
+
+		_, err := api.GetForwarding(&mailboxsdk.GetForwardingRequest{ForwardingID: rs.Primary.ID}, scw.WithContext(tt.T.Context()))
+		if err != nil {
+			return fmt.Errorf("error reading mailbox forwarding %s: %w", rs.Primary.ID, err)
+		}
+
+		return nil
+	}
+}

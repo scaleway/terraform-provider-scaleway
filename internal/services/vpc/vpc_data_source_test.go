@@ -2,7 +2,6 @@ package vpc_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -43,8 +42,8 @@ func TestAccDataSourceVPC_Basic(t *testing.T) {
 					vpcchecks.IsVPCPresent(tt, "scaleway_vpc.vpc01"),
 					resource.TestCheckResourceAttrPair("data.scaleway_vpc.by_name", "vpc_id", "scaleway_vpc.vpc01", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_vpc.by_id", "name", "scaleway_vpc.vpc01", "name"),
-					resource.TestMatchResourceAttr("data.scaleway_vpc.by_name", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/vpcs/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_vpc.by_id", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/vpcs/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc.by_name", "srn", acctest.CheckSRN("vpc", "vpcs")),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc.by_id", "srn", acctest.CheckSRN("vpc", "vpcs")),
 				),
 			},
 		},
@@ -69,7 +68,7 @@ func TestAccDataSourceVPC_Default(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_vpc.default", "name", "default"),
 					resource.TestCheckResourceAttr("data.scaleway_vpc.default", "is_default", "true"),
 					resource.TestCheckResourceAttr("data.scaleway_vpc.default", "tags.0", "default"),
-					resource.TestMatchResourceAttr("data.scaleway_vpc.default", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/vpcs/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc.default", "srn", acctest.CheckSRN("vpc", "vpcs")),
 				),
 			},
 		},

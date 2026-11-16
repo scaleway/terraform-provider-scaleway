@@ -22,11 +22,8 @@ func expandOptions(i any) ([]*baremetal.ServerOption, error) {
 			option.ExpiresAt = types.ExpandTimePtr(optionExpiresAt)
 		}
 
-		id := locality.ExpandID(rawOption["id"].(string))
-		name := rawOption["name"].(string)
-
-		option.ID = id
-		option.Name = name
+		option.ID = locality.ExpandID(rawOption["id"].(string))
+		option.Name = rawOption["name"].(string)
 
 		options = append(options, option)
 	}

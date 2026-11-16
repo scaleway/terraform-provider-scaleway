@@ -35,6 +35,8 @@ A **mailbox** is a hosted email address (`local_part@domain`) that belongs to a
 - `password_wo` - (Optional, Write-only) Password in [write-only](../guides/using-write-only-arguments.md) mode. Conflicts with `password`. Never stored in state. Requires `password_wo_version`.
 - `password_wo_version` - (Optional) Version of the write-only password. Bump it together with `password_wo` to rotate the password.
 - `subscription_period` - (Required) Billing period for the mailbox. Accepted values: `monthly`, `yearly`. Can be updated in place to change the next renewal period.
+- `forwarding_enabled` - (Optional) Whether email forwarding is enabled for this mailbox. When `false`, no forwarding rules deliver mail. Defaults to `false` when omitted (API default).
+- `forwarding_keep_copy` - (Optional) Whether to keep a copy of forwarded emails in this mailbox. Defaults to `false` when omitted (API default).
 
 ## Attributes Reference
 

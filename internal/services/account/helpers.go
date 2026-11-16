@@ -47,7 +47,7 @@ func isProjectNotUsableError(err error) bool {
 	return false
 }
 
-func isProjectStillInUseError(err error) bool {
+func IsProjectStillInUseError(err error) bool {
 	if err == nil {
 		return false
 	}

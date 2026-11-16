@@ -2,7 +2,6 @@ package applesilicon_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -40,7 +39,7 @@ func TestAccRunner_BasicGithub(t *testing.T) {
 
 					// Computed
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_runner.main", "status"),
-					resource.TestMatchResourceAttr("scaleway_apple_silicon_runner.main", "srn", regexp.MustCompile(`^srn://apple-silicon\..+/zones/.+/runners/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_apple_silicon_runner.main", "srn", acctest.CheckSRN("apple-silicon", "runners")),
 				),
 			},
 			{

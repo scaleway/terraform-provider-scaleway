@@ -187,7 +187,7 @@ func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m
 		return nil
 	})
 
-	if isProjectStillInUseError(err) && d.Get("delete_with_resources").(bool) {
+	if IsProjectStillInUseError(err) && d.Get("delete_with_resources").(bool) {
 		err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 			_, err := accountAPI.DeleteProjectWithResources(&accountSDK.ProjectAPIDeleteProjectWithResourcesRequest{
 				ProjectID:   d.Id(),
