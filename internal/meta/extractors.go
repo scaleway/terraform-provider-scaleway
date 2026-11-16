@@ -193,6 +193,17 @@ func ExtractScwClient(m any) *scw.Client {
 	return m.(*Meta).ScwClient()
 }
 
+// ExtractDefaultAnnotationsConfig returns the resolved default annotations
+// config (with API IDs) from the meta value, or nil if not yet resolved.
+func ExtractDefaultAnnotationsConfig(m any) *AnnotationDefaultsConfig {
+	metaVal, ok := m.(*Meta)
+	if !ok {
+		return nil
+	}
+
+	return metaVal.DefaultAnnotationsConfig()
+}
+
 func ExtractHTTPClient(m any) *http.Client {
 	return m.(*Meta).HTTPClient()
 }
