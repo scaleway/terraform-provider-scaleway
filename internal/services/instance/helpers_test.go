@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -130,4 +131,19 @@ func imageIDMatchLabel(tt *acctest.TestTools, resourceWithImageID, resourceWithI
 
 		return nil
 	}
+}
+
+func IsOfferAvailable(offerName string, zone scw.Zone, tt *acctest.TestTools) bool {
+	api := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
+	availabilities, err := api.GetServerTypesAvailability(&instanceSDK.GetServerTypesAvailabilityRequest{
+		Zone: zone,
+	})
+	if err != nil {
+		return false
+	}
+
+	availability, ok := availabilities.Servers[offerName]
+
+	return ok && availability.Availability == instanceSDK.ServerTypesAvailabilityAvailable
 }
