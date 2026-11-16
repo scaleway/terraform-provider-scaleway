@@ -172,7 +172,7 @@ func setSecurityGroupState(ctx context.Context, instanceAPI *instanceSDK.API, d 
 	_ = d.Set("enable_default_security", sg.EnableDefaultSecurity)
 	_ = d.Set("tags", sg.Tags)
 
-	srn, err := buildSRN(meta.ExtractScwClient(m), "instance", "security-groups", sg.Zone, sg.ID, sg.Srn)
+	srn, err := BuildSRN(meta.ExtractScwClient(m), "instance", "security-groups", sg.Zone, sg.ID, sg.Srn)
 	if err != nil {
 		return diag.FromErr(err)
 	}

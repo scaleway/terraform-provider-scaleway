@@ -201,7 +201,7 @@ func setSnapshotState(d *schema.ResourceData, snapshot *instanceSDK.Snapshot, m 
 	_ = d.Set("type", snapshot.VolumeType.String())
 	_ = d.Set("tags", snapshot.Tags)
 
-	srn, err := buildSRN(meta.ExtractScwClient(m), "instance", "snapshots", snapshot.Zone, snapshot.ID, snapshot.Srn)
+	srn, err := BuildSRN(meta.ExtractScwClient(m), "instance", "snapshots", snapshot.Zone, snapshot.ID, snapshot.Srn)
 	if err != nil {
 		return diag.FromErr(err)
 	}

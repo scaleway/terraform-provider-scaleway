@@ -705,7 +705,7 @@ func setServerState(ctx context.Context, d *schema.ResourceData, m any, api *ins
 	_ = d.Set("project_id", server.Project)
 	_ = d.Set("protected", server.Protected)
 
-	srn, err := buildSRN(meta.ExtractScwClient(m), "instance", "servers", zone, id, server.Srn)
+	srn, err := BuildSRN(meta.ExtractScwClient(m), "instance", "servers", zone, id, server.Srn)
 	if err != nil {
 		return diag.FromErr(err)
 	}
