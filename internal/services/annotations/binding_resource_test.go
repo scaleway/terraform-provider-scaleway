@@ -1,16 +1,13 @@
 package annotations_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	annotationsSDK "github.com/scaleway/scaleway-sdk-go/api/annotations/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	annotationstestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations/testfuncs"
+	keymanagertestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager/testfuncs"
 )
 
 func TestAccAnnotationsBindingResource_Basic(t *testing.T) {
@@ -24,7 +21,12 @@ func TestAccAnnotationsBindingResource_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsAnnotationsBindingDestroyed(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
+			annotationstestfuncs.IsAnnotationsValueDestroyed(tt),
+			annotationstestfuncs.IsAnnotationsBindingDestroyed(tt),
+			keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -70,35 +72,4 @@ func TestAccAnnotationsBindingResource_Basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func IsAnnotationsBindingDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		ctx := context.Background()
-
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
-			for _, rs := range state.RootModule().Resources {
-				if rs.Type != "scaleway_annotations_binding" {
-					continue
-				}
-
-				api := annotationsSDK.NewAPI(tt.Meta.ScwClient())
-
-				bindings, err := api.ListBindings(&annotationsSDK.ListBindingsRequest{})
-				if err != nil {
-					return retry.NonRetryableError(err)
-				}
-
-				for _, binding := range bindings.Bindings {
-					if binding.ID == rs.Primary.ID {
-						return retry.RetryableError(fmt.Errorf("annotation binding (%s) still exists", rs.Primary.ID))
-					}
-				}
-
-				continue
-			}
-
-			return nil
-		})
-	}
 }

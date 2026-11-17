@@ -3,9 +3,11 @@ package provider_test
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -13,6 +15,7 @@ import (
 	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -305,4 +308,77 @@ func TestSDKProvider_ResourceDescriptionNotEmpty(t *testing.T) {
 			t.Errorf("Description for resource %s is empty", name)
 		}
 	}
+}
+
+func TestSDKProvider_DefaultAnnotationsValidation(t *testing.T) {
+	t.Parallel()
+
+	p := provider.SDKProvider(nil)()
+
+	testCases := []struct {
+		entries  map[string]any
+		name     string
+		expected []string
+	}{
+		{
+			entries:  map[string]any{"": "value"},
+			name:     "empty key",
+			expected: []string{`invalid default annotation key ""`},
+		},
+		{
+			entries:  map[string]any{"2key": "value"},
+			name:     "invalid key",
+			expected: []string{`invalid default annotation key "2key"`},
+		},
+		{
+			entries:  map[string]any{"key": "2value"},
+			name:     "invalid value",
+			expected: []string{`invalid default annotation value "2value" for key "key"`},
+		},
+		{
+			entries: map[string]any{"2key": "2value"},
+			name:    "invalid key and value",
+			expected: []string{
+				`invalid default annotation key "2key"`,
+				`invalid default annotation value "2value" for key "2key"`,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			rc := terraform.NewResourceConfigRaw(map[string]any{
+				"default_annotations": tc.entries,
+			})
+
+			diags := p.Configure(t.Context(), rc)
+
+			require.True(t, diags.HasError())
+
+			var messages strings.Builder
+			for _, d := range diags {
+				fmt.Fprintf(&messages, "%s: %s\n", d.Summary, d.Detail)
+			}
+
+			for _, want := range tc.expected {
+				assert.Contains(t, messages.String(), want)
+			}
+		})
+	}
+
+	t.Run("valid pair", func(t *testing.T) {
+		t.Parallel()
+
+		rc := terraform.NewResourceConfigRaw(map[string]any{
+			"default_annotations": map[string]any{"team": "platform"},
+		})
+
+		diags := p.Configure(t.Context(), rc)
+
+		for _, d := range diags {
+			assert.NotContains(t, d.Summary+d.Detail, "invalid default annotation")
+		}
+	})
 }

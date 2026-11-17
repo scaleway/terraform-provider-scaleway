@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	accounttestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account/testfuncs"
+	keymanagertestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager/testfuncs"
 )
 
 func TestAccListKeyManagerKeys_ByProjectIDs(t *testing.T) {
@@ -20,7 +21,7 @@ func TestAccListKeyManagerKeys_ByProjectIDs(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			IsKeyManagerKeyDestroyed(tt),
+			keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 			accounttestfuncs.IsProjectDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -69,7 +70,7 @@ func TestAccListKeyManagerKeys_ByName(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			IsKeyManagerKeyDestroyed(tt),
+			keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 			accounttestfuncs.IsProjectDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -142,7 +143,7 @@ func TestAccListKeyManagerKeys_ByUsage(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			IsKeyManagerKeyDestroyed(tt),
+			keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 			accounttestfuncs.IsProjectDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -216,7 +217,7 @@ func TestAccListKeyManagerKeys_ByTags(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			IsKeyManagerKeyDestroyed(tt),
+			keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 			accounttestfuncs.IsProjectDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -291,7 +292,7 @@ func TestAccListKeyManagerKeys_ByScheduledForDeletion(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			IsKeyManagerKeyDestroyed(tt),
+			keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 			accounttestfuncs.IsProjectDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -366,7 +367,7 @@ func TestAccListKeyManagerKeys_ByProtectionLevel(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			IsKeyManagerKeyDestroyed(tt),
+			keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 			accounttestfuncs.IsProjectDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -441,7 +442,7 @@ func TestAccListKeyManagerKeys_ByRegions(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			IsKeyManagerKeyDestroyed(tt),
+			keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 			accounttestfuncs.IsProjectDestroyed(tt),
 		),
 		Steps: []resource.TestStep{

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	keymanagertestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager/testfuncs"
 )
 
 func TestAccSignEphemeralResource_Basic(t *testing.T) {
@@ -30,7 +31,7 @@ func TestAccSignEphemeralResource_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data

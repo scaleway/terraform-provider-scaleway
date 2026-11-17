@@ -235,6 +235,14 @@ See the [Custom Service Endpoints Guide](https://registry.terraform.io/providers
 When using a different endpoint for your own S3 API, make sure to adjust the `s3_use_path_style`
 flag according to what your endpoint supports.
 
+- `default_annotations` - (Optional) A map of annotation key name to annotation value name, applied as
+a binding to every resource managed by the provider. The annotation keys and values must be created
+beforehand (for example with the `scaleway_annotations_key` and `scaleway_annotations_value` resources);
+the provider fails to resolve a name that does not exist. When a resource is updated, its bindings are
+reconciled: missing bindings are created and bindings under a default key holding another value are
+deleted. Bindings under other keys are left untouched. When a resource is destroyed, its default
+bindings are removed.
+
 ## Store terraform state
 
 For detailed instructions and best practices, see the full [Backend guide](guides/backend_guide.md)
