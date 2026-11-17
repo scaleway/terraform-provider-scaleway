@@ -1,21 +1,15 @@
 package annotations_test
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	annotationsSDK "github.com/scaleway/scaleway-sdk-go/api/annotations/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	annotationstestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations/testfuncs"
 )
-
-var DestroyWaitTimeout = 3 * time.Minute
 
 func TestAccAnnotationsKeyResource_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -28,7 +22,7 @@ func TestAccAnnotationsKeyResource_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsAnnotationsKeyDestroyed(tt),
+		CheckDestroy:             annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -77,7 +71,7 @@ func TestAccAnnotationsKeyResource_WithOrganizationID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsAnnotationsKeyDestroyed(tt),
+		CheckDestroy:             annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -124,7 +118,7 @@ func TestAccAnnotationsKeyResource_Update(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsAnnotationsKeyDestroyed(tt),
+		CheckDestroy:             annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -183,7 +177,7 @@ func TestAccAnnotationsKeyResource_Minimal(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsAnnotationsKeyDestroyed(tt),
+		CheckDestroy:             annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -229,7 +223,7 @@ func TestAccAnnotationsKeyResource_WithDefaultOrg(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsAnnotationsKeyDestroyed(tt),
+		CheckDestroy:             annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -260,34 +254,4 @@ func TestAccAnnotationsKeyResource_WithDefaultOrg(t *testing.T) {
 			},
 		},
 	})
-}
-
-func IsAnnotationsKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		ctx := context.Background()
-
-		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
-			for _, rs := range state.RootModule().Resources {
-				if rs.Type != "scaleway_annotations_key" {
-					continue
-				}
-
-				api := annotationsSDK.NewAPI(tt.Meta.ScwClient())
-				_, err := api.GetKey(&annotationsSDK.GetKeyRequest{
-					KeyID: rs.Primary.ID,
-				})
-
-				switch {
-				case err == nil:
-					return retry.RetryableError(fmt.Errorf("annotation key (%s) still exists", rs.Primary.ID))
-				case httperrors.Is404(err):
-					continue
-				default:
-					return retry.NonRetryableError(err)
-				}
-			}
-
-			return nil
-		})
-	}
 }

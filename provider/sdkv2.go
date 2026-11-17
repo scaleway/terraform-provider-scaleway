@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/audittrail"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
@@ -148,6 +149,15 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Optional:    true,
 					Default:     false,
 					Description: "Whether to enable the request to use path-style addressing.",
+				},
+				"default_annotations": {
+					Type:     schema.TypeMap,
+					Optional: true,
+					Description: "Default annotations to apply to every resource, as a map of annotation key name to annotation value name. " +
+						"The keys and values must exist beforehand (for example created with the scaleway_annotations_key and scaleway_annotations_value resources).",
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
 				},
 			},
 
@@ -427,6 +437,14 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 
 		addBetaResources(p)
 
+		// Wrap every resource so that its default annotation bindings are
+		// reconciled after Create, Update, and Delete.
+		// No-op for resources without a Computed "srn" attribute or when
+		// no default annotations are configured.
+		for name, r := range p.ResourcesMap {
+			p.ResourcesMap[name] = annotations.WithDefaultBindings(r)
+		}
+
 		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (any, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
 
@@ -451,11 +469,41 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 
 			s3UsePathStyle := types.ExpandBoolPtr(types.GetBool(data, "s3_use_path_style"))
 
+			defaultAnnotations := make(map[string]string)
+
+			if rawAnnotations, ok := data.GetOk("default_annotations"); ok {
+				annotationsMap, _ := rawAnnotations.(map[string]any)
+
+				var diags diag.Diagnostics
+
+				for key, value := range annotationsMap {
+					strValue, ok := value.(string)
+					if !ok {
+						return nil, diag.Errorf("default annotation %q: value must be a string", key)
+					}
+
+					if err := annotations.ValidateAnnotationKeyName(key); err != nil {
+						diags = append(diags, diag.Errorf("invalid default annotation key %q: %s", key, err)...)
+					}
+
+					if err := annotations.ValidateAnnotationValueName(strValue); err != nil {
+						diags = append(diags, diag.Errorf("invalid default annotation value %q for key %q: %s", strValue, key, err)...)
+					}
+
+					defaultAnnotations[key] = strValue
+				}
+
+				if diags.HasError() {
+					return nil, diags
+				}
+			}
+
 			m, err := meta.NewMeta(ctx, &meta.Config{
-				ProviderSchema:   data,
-				TerraformVersion: terraformVersion,
-				Endpoints:        endpoints,
-				S3UsePathStyle:   s3UsePathStyle,
+				ProviderSchema:     data,
+				TerraformVersion:   terraformVersion,
+				Endpoints:          endpoints,
+				S3UsePathStyle:     s3UsePathStyle,
+				DefaultAnnotations: defaultAnnotations,
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)

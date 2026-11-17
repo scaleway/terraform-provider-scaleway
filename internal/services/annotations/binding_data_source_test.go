@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	annotationstestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations/testfuncs"
+	keymanagertestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager/testfuncs"
 )
 
 func TestAccDataSourceAnnotationsBinding_Basic(t *testing.T) {
@@ -19,7 +21,12 @@ func TestAccDataSourceAnnotationsBinding_Basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsAnnotationsBindingDestroyed(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
+			annotationstestfuncs.IsAnnotationsValueDestroyed(tt),
+			annotationstestfuncs.IsAnnotationsBindingDestroyed(tt),
+			keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

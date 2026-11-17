@@ -160,6 +160,8 @@ func (r *AnnotationsKeyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
+	r.meta.InvalidateAnnotationCache()
+
 	data.ID = types.StringValue(key.ID)
 	data.SRN = types.StringValue(key.Srn)
 	data.Name = types.StringValue(key.Name)
@@ -269,6 +271,8 @@ func (r *AnnotationsKeyResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
+	r.meta.InvalidateAnnotationCache()
+
 	data.ID = types.StringValue(key.ID)
 	data.SRN = types.StringValue(key.Srn)
 	data.Name = types.StringValue(key.Name)
@@ -304,6 +308,8 @@ func (r *AnnotationsKeyResource) Delete(ctx context.Context, req resource.Delete
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
+			r.meta.InvalidateAnnotationCache()
+
 			return
 		}
 
@@ -314,6 +320,8 @@ func (r *AnnotationsKeyResource) Delete(ctx context.Context, req resource.Delete
 
 		return
 	}
+
+	r.meta.InvalidateAnnotationCache()
 }
 
 func (r *AnnotationsKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

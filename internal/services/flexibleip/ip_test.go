@@ -10,11 +10,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	annotationsSDK "github.com/scaleway/scaleway-sdk-go/api/annotations/v1"
 	baremetalSDK "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	flexibleipSDK "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	annotationstestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	baremetalchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
@@ -104,6 +107,226 @@ func TestAccFlexibleIP_IPv6(t *testing.T) {
 					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_flexible_ip.main", "is_ipv6", "true"),
 					testAccCheckFlexibleIPIsIPv6(tt, "scaleway_flexible_ip.main"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccFlexibleIP_DefaultAnnotations(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+	if !orgIDExists {
+		t.Skip("No default organization ID found, skipping test")
+	}
+
+	keyName := "tf_test_fip_default_key"
+	valueName := "tf_test_fip_default_value"
+
+	tt.Meta.SetDefaultAnnotations(map[string]string{keyName: valueName})
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckFlexibleIPDestroy(tt),
+			annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
+			annotationstestfuncs.IsAnnotationsValueDestroyed(tt),
+			testAccCheckFlexibleIPDefaultAnnotationBindingDestroyed(tt, "scaleway_flexible_ip.main", keyName, valueName),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+						resource "scaleway_annotations_key" "main" {
+							name            = %q
+							organization_id = %q
+						}
+
+						resource "scaleway_annotations_value" "main" {
+							key_id = scaleway_annotations_key.main.id
+							name   = %q
+						}
+
+						resource "scaleway_flexible_ip" "main" {
+							depends_on = [scaleway_annotations_value.main]
+						}
+					`, keyName, orgID, valueName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
+					resource.TestCheckResourceAttrWith("scaleway_flexible_ip.main", "srn", acctest.CheckSRN("flexible-ip", "flexible-ips")),
+					testAccCheckFlexibleIPDefaultAnnotationBinding(tt, "scaleway_flexible_ip.main", keyName, valueName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccFlexibleIP_DefaultAnnotationsUpdate(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+	if !orgIDExists {
+		t.Skip("No default organization ID found, skipping test")
+	}
+
+	keyName := "tf_test_fip_default_update_key"
+	valueAName := "tf_test_fip_default_update_value_a"
+	valueBName := "tf_test_fip_default_update_value_b"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckFlexibleIPDestroy(tt),
+			annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
+			annotationstestfuncs.IsAnnotationsValueDestroyed(tt),
+			testAccCheckFlexibleIPDefaultAnnotationBindingDestroyed(tt, "scaleway_flexible_ip.main", keyName, valueBName),
+		),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					tt.Meta.SetDefaultAnnotations(map[string]string{keyName: valueAName})
+				},
+				Config: fmt.Sprintf(`
+						resource "scaleway_annotations_key" "main" {
+							name            = %q
+							organization_id = %q
+						}
+
+						resource "scaleway_annotations_value" "a" {
+							key_id = scaleway_annotations_key.main.id
+							name   = %q
+						}
+
+						resource "scaleway_annotations_value" "b" {
+							key_id = scaleway_annotations_key.main.id
+							name   = %q
+						}
+
+						resource "scaleway_flexible_ip" "main" {
+							description = "step 1"
+							depends_on  = [scaleway_annotations_value.a, scaleway_annotations_value.b]
+						}
+					`, keyName, orgID, valueAName, valueBName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
+					testAccCheckFlexibleIPDefaultAnnotationBinding(tt, "scaleway_flexible_ip.main", keyName, valueAName),
+					// value B is not part of the wishlist yet, so no binding for it exists.
+					testAccCheckFlexibleIPDefaultAnnotationBindingDestroyed(tt, "scaleway_flexible_ip.main", keyName, valueBName),
+				),
+			},
+			{
+				PreConfig: func() {
+					tt.Meta.SetDefaultAnnotations(map[string]string{keyName: valueBName})
+				},
+				Config: fmt.Sprintf(`
+						resource "scaleway_annotations_key" "main" {
+							name            = %q
+							organization_id = %q
+						}
+
+						resource "scaleway_annotations_value" "a" {
+							key_id = scaleway_annotations_key.main.id
+							name   = %q
+						}
+
+						resource "scaleway_annotations_value" "b" {
+							key_id = scaleway_annotations_key.main.id
+							name   = %q
+						}
+
+						resource "scaleway_flexible_ip" "main" {
+							description = "step 2"
+							depends_on  = [scaleway_annotations_value.a, scaleway_annotations_value.b]
+						}
+					`, keyName, orgID, valueAName, valueBName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
+					// The update re-runs the reconcile, replacing the stale value A binding with value B.
+					testAccCheckFlexibleIPDefaultAnnotationBinding(tt, "scaleway_flexible_ip.main", keyName, valueBName),
+					testAccCheckFlexibleIPDefaultAnnotationBindingDestroyed(tt, "scaleway_flexible_ip.main", keyName, valueAName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccFlexibleIP_DefaultAnnotationsUserBindingPreserved(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+	if !orgIDExists {
+		t.Skip("No default organization ID found, skipping test")
+	}
+
+	defaultKeyName := "tf_test_fip_default_preserved_default_key"
+	defaultValueName := "tf_test_fip_default_preserved_default_value"
+	userKeyName := "tf_test_fip_default_preserved_user_key"
+	userValueName := "tf_test_fip_default_preserved_user_value"
+
+	tt.Meta.SetDefaultAnnotations(map[string]string{defaultKeyName: defaultValueName})
+
+	userConfig := func(description string) string {
+		return fmt.Sprintf(`
+					resource "scaleway_annotations_key" "default" {
+						name            = %q
+						organization_id = %q
+					}
+
+					resource "scaleway_annotations_value" "default" {
+						key_id = scaleway_annotations_key.default.id
+						name   = %q
+					}
+
+					resource "scaleway_annotations_key" "user" {
+						name            = %q
+						organization_id = %q
+					}
+
+					resource "scaleway_annotations_value" "user" {
+						key_id = scaleway_annotations_key.user.id
+						name   = %q
+					}
+
+					resource "scaleway_flexible_ip" "main" {
+						description = %q
+						depends_on  = [scaleway_annotations_value.default]
+					}
+
+					resource "scaleway_annotations_binding" "user" {
+						target_srn = scaleway_flexible_ip.main.srn
+						value_id   = scaleway_annotations_value.user.id
+					}
+				`, defaultKeyName, orgID, defaultValueName, userKeyName, orgID, userValueName, description)
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckFlexibleIPDestroy(tt),
+			annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
+			annotationstestfuncs.IsAnnotationsValueDestroyed(tt),
+			testAccCheckFlexibleIPDefaultAnnotationBindingDestroyed(tt, "scaleway_flexible_ip.main", defaultKeyName, defaultValueName),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: userConfig("step 1"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
+					testAccCheckFlexibleIPDefaultAnnotationBinding(tt, "scaleway_flexible_ip.main", defaultKeyName, defaultValueName),
+					testAccCheckFlexibleIPDefaultAnnotationBinding(tt, "scaleway_flexible_ip.main", userKeyName, userValueName),
+				),
+			},
+			{
+				// Forcing an update re-runs the reconcile; the user binding
+				// (outside the wishlist) must be left untouched.
+				Config: userConfig("step 2"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
+					testAccCheckFlexibleIPDefaultAnnotationBinding(tt, "scaleway_flexible_ip.main", defaultKeyName, defaultValueName),
+					testAccCheckFlexibleIPDefaultAnnotationBinding(tt, "scaleway_flexible_ip.main", userKeyName, userValueName),
 				),
 			},
 		},
@@ -328,6 +551,74 @@ func testAccCheckFlexibleIPExists(tt *acctest.TestTools, name string) resource.T
 		})
 		if err != nil {
 			return err
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckFlexibleIPDefaultAnnotationBinding(tt *acctest.TestTools, name, keyName, valueName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
+
+		srn := rs.Primary.Attributes["srn"]
+		if srn == "" {
+			return fmt.Errorf("resource %s has no srn", name)
+		}
+
+		annotationsAPI := annotationsSDK.NewAPI(tt.Meta.ScwClient())
+
+		bindings, err := annotationsAPI.ListBindings(&annotationsSDK.ListBindingsRequest{
+			TargetSrn: &srn,
+		}, scw.WithAllPages())
+		if err != nil {
+			return err
+		}
+
+		for _, binding := range bindings.Bindings {
+			if binding.Key != nil && binding.Key.Name == keyName &&
+				binding.Value != nil && binding.Value.Name == valueName {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("no default annotation binding found for key %q and value %q on %s", keyName, valueName, srn)
+	}
+}
+
+func testAccCheckFlexibleIPDefaultAnnotationBindingDestroyed(tt *acctest.TestTools, name, keyName, valueName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
+
+		srn := rs.Primary.Attributes["srn"]
+		if srn == "" {
+			return fmt.Errorf("resource %s has no srn", name)
+		}
+
+		annotationsAPI := annotationsSDK.NewAPI(tt.Meta.ScwClient())
+
+		bindings, err := annotationsAPI.ListBindings(&annotationsSDK.ListBindingsRequest{
+			TargetSrn: &srn,
+		}, scw.WithAllPages())
+		if err != nil {
+			if httperrors.Is404(err) {
+				return nil
+			}
+
+			return err
+		}
+
+		for _, binding := range bindings.Bindings {
+			if binding.Key != nil && binding.Key.Name == keyName &&
+				binding.Value != nil && binding.Value.Name == valueName {
+				return fmt.Errorf("default annotation binding for key %q and value %q still exists on %s", keyName, valueName, srn)
+			}
 		}
 
 		return nil

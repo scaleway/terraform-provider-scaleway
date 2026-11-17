@@ -235,6 +235,22 @@ See the [Custom Service Endpoints Guide](https://registry.terraform.io/providers
 When using a different endpoint for your own S3 API, make sure to adjust the `s3_use_path_style`
 flag according to what your endpoint supports.
 
+- `default_annotations` - (Optional) A map of annotation key name to annotation value name, applied as
+a binding to the resources managed by the provider that expose a computed `srn` attribute. The
+annotation keys and values must exist before the bindings are applied. They can be created in the
+same configuration with the `scaleway_annotations_key` and `scaleway_annotations_value` resources,
+but in that case the resources the bindings apply to must declare a dependency on them (for example
+with `depends_on`): Terraform does not guarantee the creation order of unrelated resources, and a
+resource that is created before its annotation keys or values are will not have its bindings applied.
+The provider reports a warning if a name cannot be resolved and the corresponding binding is not
+applied. When a resource is created or updated, its bindings are reconciled: missing bindings are
+created and bindings under a default key holding another value are deleted, so a binding managed with
+`scaleway_annotations_binding` under a default key and holding another value is removed on each
+reconcile and re-created by Terraform on the next plan. Bindings under other keys are left untouched.
+When a resource is destroyed, its default bindings are removed. Bindings applied under a key that is
+later removed from `default_annotations` are not deleted: the provider only reconciles the keys of
+the current configuration and cannot distinguish them from manually created bindings.
+
 ## Store terraform state
 
 For detailed instructions and best practices, see the full [Backend guide](guides/backend_guide.md)
