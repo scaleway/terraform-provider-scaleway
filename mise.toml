@@ -216,6 +216,12 @@ run = '''
 typos
 '''
 
+[tasks.'lint:renovate']
+description = "validate the renovate config"
+run = '''
+npx --yes --package renovate -- renovate-config-validator --strict
+'''
+
 [tasks.'lint:provider']
 description = "lint the provider for terraform-specific issues"
 run = '''
