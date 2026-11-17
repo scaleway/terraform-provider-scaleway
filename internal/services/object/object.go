@@ -211,8 +211,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.Body = bytes.NewReader([]byte{})
 	}
 
-	_, err = s3Client.PutObject(ctx, req)
-	if err != nil {
+	if err := uploadObject(ctx, s3Client, req); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -297,7 +296,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			req.Body = bytes.NewReader([]byte{})
 		}
 
-		_, err = s3Client.PutObject(ctx, req)
+		err = uploadObject(ctx, s3Client, req)
 	} else {
 		req := &s3.CopyObjectInput{
 			Bucket:       types.ExpandStringPtr(bucketUpdated),
