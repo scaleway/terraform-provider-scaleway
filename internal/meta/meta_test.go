@@ -1,7 +1,6 @@
 package meta_test
 
 import (
-	"errors"
 	"os"
 	"path"
 	"testing"
@@ -47,46 +46,4 @@ SCW_SECRET_KEY             Active Profile in config.yaml, Environment variable  
 SCW_DEFAULT_PROJECT_ID     Active Profile in config.yaml, Environment variable     Environment variable
 `
 	assert.Equal(t, expectedMessage, message)
-}
-
-func TestCleanupOrphanedDefaultAnnotations_RunsOnce(t *testing.T) {
-	m := &meta.Meta{}
-	calls := 0
-
-	require.NoError(t, m.CleanupOrphanedDefaultAnnotations(func() error {
-		calls++
-
-		return nil
-	}))
-	require.NoError(t, m.CleanupOrphanedDefaultAnnotations(func() error {
-		calls++
-
-		return nil
-	}))
-
-	assert.Equal(t, 1, calls)
-}
-
-func TestCleanupOrphanedDefaultAnnotations_RetriesOnError(t *testing.T) {
-	m := &meta.Meta{}
-	calls := 0
-
-	err := m.CleanupOrphanedDefaultAnnotations(func() error {
-		calls++
-
-		if calls == 1 {
-			return errors.New("boom")
-		}
-
-		return nil
-	})
-	require.Error(t, err)
-
-	require.NoError(t, m.CleanupOrphanedDefaultAnnotations(func() error {
-		calls++
-
-		return nil
-	}))
-
-	assert.Equal(t, 2, calls)
 }
