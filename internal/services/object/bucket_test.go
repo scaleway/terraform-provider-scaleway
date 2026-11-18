@@ -154,6 +154,74 @@ func TestAccObjectBucket_CheckRegionIsSet(t *testing.T) {
 	})
 }
 
+// TestAccObjectBucket_Disappears reproduces https://github.com/scaleway/terraform-provider-scaleway/issues/2914
+// When a bucket is deleted outside of Terraform, a plan/refresh should remove
+// it from the state instead of failing with a 404 error.
+func TestAccObjectBucket_Disappears(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	ctx := t.Context()
+
+	resourceName := "scaleway_object_bucket.bucket"
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-disappears")
+
+	deleteBucket := func(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			rs, ok := s.RootModule().Resources[n]
+			if !ok {
+				return fmt.Errorf("not found: %s", n)
+			}
+
+			bucketRegion := rs.Primary.Attributes["region"]
+
+			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
+			if err != nil {
+				return err
+			}
+
+			_, err = conn.DeleteBucket(ctx, &s3.DeleteBucketInput{
+				Bucket: new(rs.Primary.Attributes["name"]),
+			})
+			if err != nil {
+				return fmt.Errorf("failed to delete bucket outside of Terraform: %w", err)
+			}
+
+			return nil
+		}
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket" {
+						name = %[1]q
+						region = %[2]q
+					}`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, resourceName, true),
+					deleteBucket(tt, resourceName),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket" {
+						name = %[1]q
+						region = %[2]q
+					}`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					// Bucket should be re-created by Terraform
+					objectchecks.CheckBucketExists(tt, resourceName, true),
+				),
+			},
+		},
+	})
+}
+
 func TestAccObjectBucket_Lifecycle(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
