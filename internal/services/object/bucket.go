@@ -758,6 +758,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 	diags := setBucketState(ctx, d, m, bucketName, region, s3Client)
 
+	// Only set the identity if the bucket was not removed from the state
 	if d.Id() != "" {
 		err = identity.SetRegionalIdentity(d, region, bucketName)
 		if err != nil {

@@ -214,8 +214,7 @@ func TestAccObjectBucket_Disappears(t *testing.T) {
 						region = %[2]q
 					}`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					// If the bucket was correctly removed from the state on
-					// refresh, Terraform should have recreated it.
+					// Bucket should be re-created by Terraform
 					objectchecks.CheckBucketExists(tt, resourceName, true),
 				),
 			},
