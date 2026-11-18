@@ -227,8 +227,7 @@ func objectBody(d *schema.ResourceData) (io.Reader, error) {
 	}
 
 	if content, hasContent := d.GetOk("content_base64"); hasContent {
-		// DecodeString returns exactly the decoded bytes; a buffer of DecodedLen is one or two bytes longer when the
-		// content's length isn't a multiple of 3
+		// DecodeString avoids uploading unused bytes from a buffer sized by DecodedLen.
 		decoded, err := base64.StdEncoding.DecodeString(content.(string))
 		if err != nil {
 			return nil, err
