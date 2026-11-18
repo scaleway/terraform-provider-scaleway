@@ -920,7 +920,7 @@ func NormalizeOwnerID(id *string) *string {
 
 func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource string, awsResourceNotFoundCode string) (bucketFound bool, resourceFound bool) {
 	switch {
-	case errors.As(err, new(*s3Types.NoSuchBucket)):
+	case IsS3Err(err, ErrCodeNoSuchBucket, ""):
 		*diags = append(*diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Bucket not found",

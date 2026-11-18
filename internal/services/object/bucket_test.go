@@ -205,6 +205,7 @@ func TestAccObjectBucket_Disappears(t *testing.T) {
 					objectchecks.CheckBucketExists(tt, resourceName, true),
 					deleteBucket(tt, resourceName),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
