@@ -51,7 +51,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/sdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -273,10 +272,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_sdb_sql_database":                                   sdb.ResourceDatabase(),
 				"scaleway_secret":                                             secret.ResourceSecret(),
 				"scaleway_secret_version":                                     secret.ResourceVersion(),
-				"scaleway_tem_domain":                                         tem.ResourceDomain(),
-				"scaleway_tem_domain_validation":                              tem.ResourceDomainValidation(),
-				"scaleway_tem_blocked_list":                                   tem.ResourceBlockedList(),
-				"scaleway_tem_webhook":                                        tem.ResourceWebhook(),
 				"scaleway_vpc":                                                vpc.ResourceVPC(),
 				"scaleway_vpc_acl":                                            vpc.ResourceACL(),
 				"scaleway_vpc_connector":                                      vpc.ResourceConnector(),
@@ -408,8 +403,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_secret":                                             secret.DataSourceSecret(),
 				"scaleway_secret_version":                                     secret.DataSourceVersion(),
 				"scaleway_sdb_sql_versions":                                   sdb.DataSourceVersions(),
-				"scaleway_tem_domain":                                         tem.DataSourceDomain(),
-				"scaleway_tem_offer_subscription":                             tem.DataSourceOfferSubscription(),
 				"scaleway_vpc":                                                vpc.DataSourceVPC(),
 				"scaleway_vpc_acl":                                            vpc.DataSourceACL(),
 				"scaleway_vpc_connector":                                      vpc.DataSourceConnector(),

@@ -3,435 +3,595 @@ package tem
 import (
 	"context"
 	_ "embed"
-	"errors"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 //go:embed descriptions/tem_domain_resource.md
 var domainResourceDescription string
 
-func ResourceDomain() *schema.Resource {
-	return &schema.Resource{
-		Description:   domainResourceDescription,
-		CreateContext: ResourceDomainCreate,
-		ReadContext:   ResourceDomainRead,
-		UpdateContext: ResourceDomainUpdate,
-		DeleteContext: ResourceDomainDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(DefaultDomainCreateTimeout),
-			Update:  schema.DefaultTimeout(DefaultDomainCreateTimeout),
-			Delete:  schema.DefaultTimeout(DefaultDomainTimeout),
-			Default: schema.DefaultTimeout(DefaultDomainCreateTimeout),
-		},
-		SchemaVersion: 0,
-		SchemaFunc:    domainSchema,
-		Identity:      identity.DefaultRegional(),
+var (
+	_ resource.Resource                = (*DomainResource)(nil)
+	_ resource.ResourceWithConfigure   = (*DomainResource)(nil)
+	_ resource.ResourceWithImportState = (*DomainResource)(nil)
+	_ resource.ResourceWithIdentity    = (*DomainResource)(nil)
+)
+
+func NewDomainResource() resource.Resource {
+	return &DomainResource{}
+}
+
+type DomainResource struct {
+	api  *tem.API
+	meta *meta.Meta
+}
+
+type domainModel struct {
+	Reputation           types.List     `tfsdk:"reputation"`
+	DmarcConfig          types.String   `tfsdk:"dmarc_config"`
+	DkimConfig           types.String   `tfsdk:"dkim_config"`
+	ProjectID            types.String   `tfsdk:"project_id"`
+	Region               types.String   `tfsdk:"region"`
+	Status               types.String   `tfsdk:"status"`
+	CreatedAt            types.String   `tfsdk:"created_at"`
+	NextCheckAt          types.String   `tfsdk:"next_check_at"`
+	LastValidAt          types.String   `tfsdk:"last_valid_at"`
+	RevokedAt            types.String   `tfsdk:"revoked_at"`
+	LastError            types.String   `tfsdk:"last_error"`
+	SpfConfig            types.String   `tfsdk:"spf_config"`
+	SmtpsAuthUser        types.String   `tfsdk:"smtps_auth_user"`
+	DmarcName            types.String   `tfsdk:"dmarc_name"`
+	Timeouts             timeouts.Value `tfsdk:"timeouts"`
+	Name                 types.String   `tfsdk:"name"`
+	MxConfig             types.String   `tfsdk:"mx_config"`
+	DkimName             types.String   `tfsdk:"dkim_name"`
+	ID                   types.String   `tfsdk:"id"`
+	SmtpHost             types.String   `tfsdk:"smtp_host"`
+	SpfValue             types.String   `tfsdk:"spf_value"`
+	MxBlackhole          types.String   `tfsdk:"mx_blackhole"`
+	SmtpPortUnsecure     types.Int64    `tfsdk:"smtp_port_unsecure"`
+	SmtpsPort            types.Int64    `tfsdk:"smtps_port"`
+	SmtpPortAlternative  types.Int64    `tfsdk:"smtp_port_alternative"`
+	SmtpsPortAlternative types.Int64    `tfsdk:"smtps_port_alternative"`
+	SmtpPort             types.Int64    `tfsdk:"smtp_port"`
+	MxPriority           types.Int64    `tfsdk:"mx_priority"`
+	Autoconfig           types.Bool     `tfsdk:"autoconfig"`
+	AcceptTos            types.Bool     `tfsdk:"accept_tos"`
+}
+
+type domainResourceIdentityModel = identityfw.RegionalIdentity
+
+func (r *DomainResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_tem_domain"
+}
+
+func (r *DomainResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: domainResourceDescription,
+		Description:         domainResourceDescription,
+		Attributes:          domainSchemaAttributes(ctx),
 	}
 }
 
-func domainSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"name": {
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
-			Description: "The domain name used when sending emails",
-		},
-		"accept_tos": {
-			Type:        schema.TypeBool,
-			Required:    true,
-			ForceNew:    true,
-			Description: "Accept the Scaleway Terms of Service",
-			ValidateFunc: func(i any, _ string) (warnings []string, errs []error) {
-				v := i.(bool)
-				if !v {
-					errs = append(errs, errors.New("you must accept the Scaleway Terms of Service to use this service"))
-
-					return warnings, errs
-				}
-
-				return warnings, errs
+func domainSchemaAttributes(ctx context.Context) map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"autoconfig": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			Description: "Enable automatic configuration options for the domain",
+		"name": schema.StringAttribute{
+			Required:            true,
+			MarkdownDescription: "The domain name used when sending emails",
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
 		},
-		"status": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Status of the domain",
+		"accept_tos": schema.BoolAttribute{
+			Required:            true,
+			MarkdownDescription: "Accept the Scaleway Terms of Service",
+			Validators: []validator.Bool{
+				boolvalidator.Equals(true),
+			},
+			PlanModifiers: []planmodifier.Bool{
+				boolplanmodifier.RequiresReplace(),
+			},
 		},
-		"created_at": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Date and time of domain's creation (RFC 3339 format)",
+		"autoconfig": schema.BoolAttribute{
+			Optional:            true,
+			Computed:            true,
+			Default:             booldefault.StaticBool(false),
+			MarkdownDescription: "Enable automatic configuration options for the domain",
 		},
-		"next_check_at": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Date and time of the next scheduled check (RFC 3339 format)",
+		"status": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "Status of the domain",
 		},
-		"last_valid_at": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Date and time the domain was last found to be valid (RFC 3339 format)",
+		"created_at": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "Date and time of domain's creation (RFC 3339 format)",
 		},
-		"revoked_at": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Date and time of the revocation of the domain (RFC 3339 format)",
+		"next_check_at": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "Date and time of the next scheduled check (RFC 3339 format)",
 		},
-		"last_error": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Error message if the last check failed",
-			Deprecated:  "last_error is deprecated",
+		"last_valid_at": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "Date and time the domain was last found to be valid (RFC 3339 format)",
 		},
-		"spf_config": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Snippet of the SPF record that should be registered in the DNS zone",
+		"revoked_at": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "Date and time of the revocation of the domain (RFC 3339 format)",
 		},
-		"dkim_config": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "DKIM public key, as should be recorded in the DNS zone",
+		"last_error": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "Error message if the last check failed",
+			DeprecationMessage:  "last_error is deprecated",
 		},
-		"dmarc_name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "DMARC name for the domain, as should be recorded in the DNS zone",
+		"spf_config": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "Snippet of the SPF record that should be registered in the DNS zone",
 		},
-		"dmarc_config": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "DMARC record for the domain, as should be recorded in the DNS zone",
+		"dkim_config": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "DKIM public key, as should be recorded in the DNS zone",
 		},
-		"dkim_name": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "DKIM name for the domain, as should be recorded in the DNS zone",
+		"dmarc_name": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "DMARC name for the domain, as should be recorded in the DNS zone",
 		},
-		"spf_value": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Complete SPF record value for the domain, as should be recorded in the DNS zone",
+		"dmarc_config": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "DMARC record for the domain, as should be recorded in the DNS zone",
 		},
-		"mx_config": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "MX exchange hostname for the domain blackhole (without priority), suitable for scaleway_domain_record.data",
+		"dkim_name": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "DKIM name for the domain, as should be recorded in the DNS zone",
 		},
-		"mx_priority": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "MX priority for the domain blackhole, suitable for scaleway_domain_record.priority",
+		"spf_value": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "Complete SPF record value for the domain, as should be recorded in the DNS zone",
 		},
-		"smtp_host": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "SMTP host to use to send emails",
+		"mx_config": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "MX exchange hostname for the domain blackhole (without priority), suitable for scaleway_domain_record.data",
 		},
-		"smtp_port_unsecure": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: fmt.Sprintf("SMTP port to use to send emails. (Port %d)", tem.SMTPPortUnsecure),
+		"mx_priority": schema.Int64Attribute{
+			Computed:            true,
+			MarkdownDescription: "MX priority for the domain blackhole, suitable for scaleway_domain_record.priority",
 		},
-		"smtp_port": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: fmt.Sprintf("SMTP port to use to send emails over TLS. (Port %d)", tem.SMTPPort),
+		"smtp_host": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "SMTP host to use to send emails",
 		},
-		"smtp_port_alternative": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: fmt.Sprintf("SMTP port to use to send emails over TLS. (Port %d)", tem.SMTPPortAlternative),
+		"smtp_port_unsecure": schema.Int64Attribute{
+			Computed:            true,
+			MarkdownDescription: fmt.Sprintf("SMTP port to use to send emails. (Port %d)", tem.SMTPPortUnsecure),
 		},
-		"smtps_port": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: fmt.Sprintf("SMTPS port to use to send emails over TLS Wrapper. (Port %d)", tem.SMTPSPort),
+		"smtp_port": schema.Int64Attribute{
+			Computed:            true,
+			MarkdownDescription: fmt.Sprintf("SMTP port to use to send emails over TLS. (Port %d)", tem.SMTPPort),
 		},
-		"smtps_auth_user": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "SMTPS auth user refers to the identifier for a user authorized to send emails via SMTPS, ensuring secure email transmission",
+		"smtp_port_alternative": schema.Int64Attribute{
+			Computed:            true,
+			MarkdownDescription: fmt.Sprintf("SMTP port to use to send emails over TLS. (Port %d)", tem.SMTPPortAlternative),
 		},
-		"smtps_port_alternative": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: fmt.Sprintf("SMTPS port to use to send emails over TLS Wrapper. (Port %d)", tem.SMTPSPortAlternative),
+		"smtps_port": schema.Int64Attribute{
+			Computed:            true,
+			MarkdownDescription: fmt.Sprintf("SMTPS port to use to send emails over TLS Wrapper. (Port %d)", tem.SMTPSPort),
 		},
-		"mx_blackhole": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The Scaleway's blackhole MX server to use",
+		"smtps_auth_user": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "SMTPS auth user refers to the identifier for a user authorized to send emails via SMTPS, ensuring secure email transmission",
 		},
-		"reputation": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "The domain's reputation",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"status": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "Status of the domain's reputation",
+		"smtps_port_alternative": schema.Int64Attribute{
+			Computed:            true,
+			MarkdownDescription: fmt.Sprintf("SMTPS port to use to send emails over TLS Wrapper. (Port %d)", tem.SMTPSPortAlternative),
+		},
+		"mx_blackhole": schema.StringAttribute{
+			Computed:            true,
+			MarkdownDescription: "The Scaleway's blackhole MX server to use",
+		},
+		"reputation": schema.ListNestedAttribute{
+			Computed:            true,
+			MarkdownDescription: "The domain's reputation",
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"status": schema.StringAttribute{
+						Computed:            true,
+						MarkdownDescription: "Status of the domain's reputation",
 					},
-					"score": {
-						Type:        schema.TypeInt,
-						Computed:    true,
-						Description: "A range from 0 to 100 that determines your domain's reputation score",
+					"score": schema.Int64Attribute{
+						Computed:            true,
+						MarkdownDescription: "A range from 0 to 100 that determines your domain's reputation score",
 					},
-					"scored_at": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "Time and date the score was calculated",
+					"scored_at": schema.StringAttribute{
+						Computed:            true,
+						MarkdownDescription: "Time and date the score was calculated",
 					},
-					"previous_score": {
-						Type:        schema.TypeInt,
-						Computed:    true,
-						Description: "The previously-calculated domain's reputation score",
+					"previous_score": schema.Int64Attribute{
+						Computed:            true,
+						MarkdownDescription: "The previously-calculated domain's reputation score",
 					},
-					"previous_scored_at": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "Time and date the previous reputation score was calculated",
+					"previous_scored_at": schema.StringAttribute{
+						Computed:            true,
+						MarkdownDescription: "Time and date the previous reputation score was calculated",
 					},
 				},
 			},
 		},
-		"region":     regional.Schema(),
-		"project_id": account.ProjectIDSchema(),
+		"region":     regional.SchemaAttributeComputed(),
+		"project_id": account.ProjectIDSchemaAttribute("The project_id you want to attach the resource to"),
+		"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+			Create: true,
+			Update: true,
+			Delete: true,
+		}),
 	}
 }
 
-func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, err := temAPIWithRegion(d, m)
-	if err != nil {
-		return diag.FromErr(err)
+func (r *DomainResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityfw.DefaultRegional()
+}
+
+func (r *DomainResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
 	}
 
-	domain, err := api.CreateDomain(&tem.CreateDomainRequest{
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.meta = m
+	r.api = tem.NewAPI(r.meta.ScwClient())
+}
+
+func (r *DomainResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan domainModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, err := meta.ExtractFrameworkRegion(plan.Region, r.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
+
+		return
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(plan.ProjectID, r.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
+
+		return
+	}
+
+	acceptTos := plan.AcceptTos.ValueBool()
+
+	domain, err := r.api.CreateDomain(&tem.CreateDomainRequest{
 		Region:     region,
-		ProjectID:  d.Get("project_id").(string),
-		DomainName: d.Get("name").(string),
-		AcceptTos:  types.ExpandBoolPtr(d.Get("accept_tos").(bool)), //nolint:staticcheck
-		Autoconfig: d.Get("autoconfig").(bool),
+		ProjectID:  projectID,
+		DomainName: plan.Name.ValueString(),
+		AcceptTos:  &acceptTos, //nolint:staticcheck
+		Autoconfig: plan.Autoconfig.ValueBool(),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to create TEM domain", err.Error())
+
+		return
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, domain.ID); err != nil {
-		return diag.FromErr(err)
+	timeout, diags := plan.Timeouts.Create(ctx, DefaultDomainCreateTimeout)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	_, err = WaitForDomain(ctx, api, region, domain.ID, d.Timeout(schema.TimeoutCreate))
+	// TEM Create can return the domain before Get is consistent; retry transient 404s.
+	domain, err = transport.RetryOnStatusValue(ctx, transport.NotFound, func(ctx context.Context) (*tem.Domain, error) {
+		return WaitForDomain(ctx, r.api, region, domain.ID, timeout)
+	})
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed waiting for TEM domain", err.Error())
+
+		return
 	}
 
-	return ResourceDomainRead(ctx, d, m)
+	state := flattenDomain(ctx, domain, region, &resp.Diagnostics)
+	state.Timeouts = plan.Timeouts
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(domain.Region, domain.ID))...)
 }
 
-func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func (r *DomainResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var (
+		state    domainModel
+		identity domainResourceIdentityModel
+	)
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
 	}
 
-	domain, err := api.GetDomain(&tem.GetDomainRequest{
-		Region:   region,
-		DomainID: id,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
-			return nil
-		}
-
-		return diag.FromErr(err)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, id); err != nil {
-		return diag.FromErr(err)
-	}
+	var (
+		id     string
+		region scw.Region
+		err    error
+	)
 
-	return setDomainState(d, domain, region)
-}
-
-// readDomainIntoState fetches the domain and sets state without calling identity.SetRegionalIdentity.
-// Use this for data sources which do not have Identity schema.
-func readDomainIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	domain, err := api.GetDomain(&tem.GetDomainRequest{
-		Region:   region,
-		DomainID: id,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	return setDomainState(d, domain, region)
-}
-
-func setDomainState(d *schema.ResourceData, domain *tem.Domain, region scw.Region) diag.Diagnostics {
-	_ = d.Set("name", domain.Name)
-	_ = d.Set("accept_tos", true)
-	_ = d.Set("autoconfig", domain.Autoconfig)
-	_ = d.Set("status", domain.Status)
-	_ = d.Set("created_at", types.FlattenTime(domain.CreatedAt))
-	_ = d.Set("next_check_at", types.FlattenTime(domain.NextCheckAt))
-	_ = d.Set("last_valid_at", types.FlattenTime(domain.LastValidAt))
-	_ = d.Set("revoked_at", types.FlattenTime(domain.RevokedAt))
-	_ = d.Set("last_error", domain.LastError) //nolint:staticcheck
-	_ = d.Set("spf_config", domain.SpfConfig)
-	_ = d.Set("dkim_config", domain.DkimConfig)
-
-	if domain.Records != nil {
-		// DMARC
-		if domain.Records.Dmarc != nil {
-			_ = d.Set("dmarc_name", domain.Records.Dmarc.Name)
-			_ = d.Set("dmarc_config", domain.Records.Dmarc.Value)
-		} else {
-			_ = d.Set("dmarc_name", "")
-			_ = d.Set("dmarc_config", "")
-		}
-
-		// DKIM
-		if domain.Records.Dkim != nil {
-			_ = d.Set("dkim_name", domain.Records.Dkim.Name)
-		} else {
-			_ = d.Set("dkim_name", "")
-		}
-
-		// SPF
-		if domain.Records.Spf != nil {
-			_ = d.Set("spf_value", domain.Records.Spf.Value)
-		} else {
-			_ = d.Set("spf_value", "")
-		}
-
-		// MX
-		if domain.Records.Mx != nil {
-			priority, exchange := FlattenMXRecordValue(domain.Records.Mx.Value)
-			_ = d.Set("mx_config", exchange)
-			_ = d.Set("mx_priority", priority)
-
-			if exchange != "" {
-				_ = d.Set("mx_blackhole", exchange)
-			} else {
-				_ = d.Set("mx_blackhole", tem.MXBlackhole)
-			}
-		} else {
-			_ = d.Set("mx_config", "")
-			_ = d.Set("mx_priority", 0)
-			_ = d.Set("mx_blackhole", tem.MXBlackhole)
-		}
+	if identityAvailable {
+		region, id = identityfw.ResolveRegionalIdentity(identity)
 	} else {
-		_ = d.Set("mx_config", "")
-		_ = d.Set("mx_priority", 0)
-		_ = d.Set("mx_blackhole", tem.MXBlackhole)
+		region, id, err = regional.ParseID(state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse TEM domain ID", err.Error())
+
+			return
+		}
 	}
 
-	_ = d.Set("smtp_host", tem.SMTPHost)
-	_ = d.Set("smtp_port_unsecure", tem.SMTPPortUnsecure)
-	_ = d.Set("smtp_port", tem.SMTPPort)
-	_ = d.Set("smtp_port_alternative", tem.SMTPPortAlternative)
-	_ = d.Set("smtps_port", tem.SMTPSPort)
-	_ = d.Set("smtps_port_alternative", tem.SMTPSPortAlternative)
-	_ = d.Set("reputation", flattenDomainReputation(domain.Reputation))
-	_ = d.Set("region", string(region))
-	_ = d.Set("project_id", domain.ProjectID)
-	_ = d.Set("smtps_auth_user", domain.ProjectID)
+	domain, err := r.api.GetDomain(&tem.GetDomainRequest{
+		Region:   region,
+		DomainID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			resp.State.RemoveResource(ctx)
 
-	return nil
+			return
+		}
+
+		resp.Diagnostics.AddError("Failed to read TEM domain", err.Error())
+
+		return
+	}
+
+	newState := flattenDomain(ctx, domain, region, &resp.Diagnostics)
+	newState.Timeouts = state.Timeouts
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(domain.Region, domain.ID))...)
 }
 
-func ResourceDomainUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func (r *DomainResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var (
+		plan  domainModel
+		state domainModel
+	)
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	if d.HasChange("autoconfig") {
-		autoconfig := d.Get("autoconfig").(bool)
+	region, id, err := regional.ParseID(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse TEM domain ID", err.Error())
 
-		_, err = api.UpdateDomain(&tem.UpdateDomainRequest{
+		return
+	}
+
+	if !plan.Autoconfig.Equal(state.Autoconfig) {
+		autoconfig := plan.Autoconfig.ValueBool()
+
+		_, err = r.api.UpdateDomain(&tem.UpdateDomainRequest{
 			Region:     region,
 			DomainID:   id,
 			Autoconfig: &autoconfig,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return diag.FromErr(err)
+			resp.Diagnostics.AddError("Failed to update TEM domain", err.Error())
+
+			return
 		}
 
-		err = WaitForDomainAutoconfig(ctx, api, region, id, autoconfig, d.Timeout(schema.TimeoutUpdate))
+		timeout, diags := plan.Timeouts.Update(ctx, DefaultDomainCreateTimeout)
+		resp.Diagnostics.Append(diags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		err = WaitForDomainAutoconfig(ctx, r.api, region, id, autoconfig, timeout)
 		if err != nil {
-			return diag.FromErr(err)
+			resp.Diagnostics.AddError("Failed waiting for TEM domain autoconfig", err.Error())
+
+			return
 		}
 	}
 
-	return ResourceDomainRead(ctx, d, m)
+	domain, err := r.api.GetDomain(&tem.GetDomainRequest{
+		Region:   region,
+		DomainID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read TEM domain after update", err.Error())
+
+		return
+	}
+
+	newState := flattenDomain(ctx, domain, region, &resp.Diagnostics)
+	newState.Timeouts = plan.Timeouts
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(domain.Region, domain.ID))...)
 }
 
-func ResourceDomainDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func (r *DomainResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var (
+		state    domainModel
+		identity domainResourceIdentityModel
+	)
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
 	}
 
-	_, err = WaitForDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var (
+		id     string
+		region scw.Region
+		err    error
+	)
+
+	if identityAvailable {
+		region, id = identityfw.ResolveRegionalIdentity(identity)
+	} else {
+		region, id, err = regional.ParseID(state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse TEM domain ID", err.Error())
+
+			return
+		}
+	}
+
+	timeout, diags := state.Timeouts.Delete(ctx, DefaultDomainTimeout)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, err = WaitForDomain(ctx, r.api, region, id, timeout)
 	if err != nil {
 		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
+			return
 		}
 
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed waiting for TEM domain before delete", err.Error())
+
+		return
 	}
 
-	_, err = api.RevokeDomain(&tem.RevokeDomainRequest{
+	_, err = r.api.RevokeDomain(&tem.RevokeDomainRequest{
 		Region:   region,
 		DomainID: id,
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to revoke TEM domain", err.Error())
+
+		return
 	}
 
-	_, err = WaitForDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	_, err = WaitForDomain(ctx, r.api, region, id, timeout)
 	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed waiting for TEM domain after revoke", err.Error())
+	}
+}
+
+func (r *DomainResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
+}
+
+func flattenDomain(ctx context.Context, domain *tem.Domain, region scw.Region, diags *diag.Diagnostics) domainModel {
+	model := domainModel{
+		ID:                   types.StringValue(regional.NewIDString(region, domain.ID)),
+		Name:                 types.StringValue(domain.Name),
+		AcceptTos:            types.BoolValue(true),
+		Autoconfig:           types.BoolValue(domain.Autoconfig),
+		Status:               types.StringValue(string(domain.Status)),
+		CreatedAt:            types.StringValue(scwtypes.FlattenTime(domain.CreatedAt).(string)),
+		NextCheckAt:          types.StringValue(scwtypes.FlattenTime(domain.NextCheckAt).(string)),
+		LastValidAt:          types.StringValue(scwtypes.FlattenTime(domain.LastValidAt).(string)),
+		RevokedAt:            types.StringValue(scwtypes.FlattenTime(domain.RevokedAt).(string)),
+		LastError:            types.StringValue(scwtypes.FlattenStringPtr(domain.LastError).(string)), //nolint:staticcheck
+		SpfConfig:            types.StringValue(domain.SpfConfig),
+		DkimConfig:           types.StringValue(domain.DkimConfig),
+		DmarcName:            types.StringValue(""),
+		DmarcConfig:          types.StringValue(""),
+		DkimName:             types.StringValue(""),
+		SpfValue:             types.StringValue(""),
+		MxConfig:             types.StringValue(""),
+		MxPriority:           types.Int64Value(0),
+		MxBlackhole:          types.StringValue(tem.MXBlackhole),
+		SmtpHost:             types.StringValue(tem.SMTPHost),
+		SmtpPortUnsecure:     types.Int64Value(int64(tem.SMTPPortUnsecure)),
+		SmtpPort:             types.Int64Value(int64(tem.SMTPPort)),
+		SmtpPortAlternative:  types.Int64Value(int64(tem.SMTPPortAlternative)),
+		SmtpsPort:            types.Int64Value(int64(tem.SMTPSPort)),
+		SmtpsPortAlternative: types.Int64Value(int64(tem.SMTPSPortAlternative)),
+		SmtpsAuthUser:        types.StringValue(domain.ProjectID),
+		Reputation:           flattenDomainReputation(ctx, domain.Reputation, diags),
+		Region:               types.StringValue(region.String()),
+		ProjectID:            types.StringValue(domain.ProjectID),
 	}
 
-	return nil
+	if domain.Records != nil {
+		if domain.Records.Dmarc != nil {
+			model.DmarcName = types.StringValue(domain.Records.Dmarc.Name)
+			model.DmarcConfig = types.StringValue(domain.Records.Dmarc.Value)
+		}
+
+		if domain.Records.Dkim != nil {
+			model.DkimName = types.StringValue(domain.Records.Dkim.Name)
+		}
+
+		if domain.Records.Spf != nil {
+			model.SpfValue = types.StringValue(domain.Records.Spf.Value)
+		}
+
+		if domain.Records.Mx != nil {
+			priority, exchange := FlattenMXRecordValue(domain.Records.Mx.Value)
+			model.MxConfig = types.StringValue(exchange)
+			model.MxPriority = types.Int64Value(int64(priority))
+
+			if exchange != "" {
+				model.MxBlackhole = types.StringValue(exchange)
+			}
+		}
+	}
+
+	return model
 }

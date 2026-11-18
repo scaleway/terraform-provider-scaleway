@@ -66,7 +66,7 @@ func TestAccDomain_Tos(t *testing.T) {
 						accept_tos = false
 					}
 				`, domainName),
-				ExpectError: regexp.MustCompile("you must accept"),
+				ExpectError: regexp.MustCompile(`(?i)must be`),
 			},
 		},
 	})
