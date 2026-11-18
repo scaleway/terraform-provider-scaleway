@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -196,8 +197,9 @@ func (s *ServerBaremetalAction) Invoke(ctx context.Context, request action.Invok
 
 	if data.Wait.ValueBool() {
 		_, err := s.baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
-			Zone:     scw.Zone(zone),
-			ServerID: serverID,
+			Zone:          scw.Zone(zone),
+			ServerID:      serverID,
+			RetryInterval: transport.DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			response.Diagnostics.AddError(

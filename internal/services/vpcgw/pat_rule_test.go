@@ -2,7 +2,6 @@ package vpcgw_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -85,7 +84,7 @@ func TestAccVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"scaleway_vpc_public_gateway_pat_rule.main", "gateway_id",
 						"scaleway_vpc_public_gateway.main", "id"),
-					resource.TestMatchResourceAttr("scaleway_vpc_public_gateway_pat_rule.main", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/pat-rules/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_vpc_public_gateway_pat_rule.main", "srn", acctest.CheckSRN("public-gateway", "pat-rules")),
 				),
 			},
 			{

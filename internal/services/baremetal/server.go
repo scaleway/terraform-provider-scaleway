@@ -24,6 +24,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -236,7 +237,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 		"options": {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "The options to enable on server",
+			Description: "The options to enable on server. Retrieving them using the scaleway_baremetal_option datasource is highly recommended.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
@@ -266,7 +267,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Set:         privateNetworkSetHash,
-			Description: "The private networks to attach to the server",
+			Description: "The private networks to attach to the server. Requires an option with the private_network attribute to be enabled.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
@@ -690,8 +691,9 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		}
 
 		_, err := api.WaitForServer(&baremetal.WaitForServerRequest{
-			Zone:     zonedID.Zone,
-			ServerID: ServerID.ID,
+			Zone:          zonedID.Zone,
+			ServerID:      ServerID.ID,
+			RetryInterval: transport.DefaultWaitRetryInterval,
 		})
 		if err != nil {
 			return diag.FromErr(err)

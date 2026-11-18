@@ -1,7 +1,6 @@
 package vpc_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -57,7 +56,7 @@ func TestAccDataSourceVPCIngressRule_ByID(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_ingress_rule.by_id", "nexthop_private_network_id",
 						"scaleway_vpc_ingress_rule.main", "nexthop_private_network_id"),
-					resource.TestMatchResourceAttr("data.scaleway_vpc_ingress_rule.by_id", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/ingress-rules/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_ingress_rule.by_id", "srn", acctest.CheckSRN("vpc", "ingress-rules")),
 				),
 			},
 		},
@@ -112,7 +111,7 @@ func TestAccDataSourceVPCIngressRule_ByFilters(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_ingress_rule.by_pn", "source",
 						"scaleway_vpc_ingress_rule.main", "source"),
-					resource.TestMatchResourceAttr("data.scaleway_vpc_ingress_rule.by_pn", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/ingress-rules/.+$`)),
+					resource.TestCheckResourceAttrWith("data.scaleway_vpc_ingress_rule.by_pn", "srn", acctest.CheckSRN("vpc", "ingress-rules")),
 				),
 			},
 		},

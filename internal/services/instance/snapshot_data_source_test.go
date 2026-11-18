@@ -2,6 +2,7 @@ package instance_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -61,7 +62,9 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					}`, snapshotName),
 				Check: resource.ComposeTestCheckFunc(
 					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_id"),
+					resource.TestMatchResourceAttr("data.scaleway_instance_snapshot.by_id", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/snapshots/.+$`)),
 					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_name"),
+					resource.TestMatchResourceAttr("data.scaleway_instance_snapshot.by_name", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/snapshots/.+$`)),
 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_id", "id", "scaleway_instance_snapshot.from_volume", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_id", "name", "scaleway_instance_snapshot.from_volume", "name"),
 

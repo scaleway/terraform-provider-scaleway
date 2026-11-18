@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -455,8 +456,9 @@ func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m 
 		// Wait for all stopped job runs to terminate
 		for _, jobRunID := range jobRunIDsToWait {
 			_, waitErr := api.WaitForJobRun(&jobs.WaitForJobRunRequest{
-				JobRunID: jobRunID,
-				Region:   region,
+				JobRunID:      jobRunID,
+				Region:        region,
+				RetryInterval: transport.DefaultWaitRetryInterval,
 			}, scw.WithContext(ctx))
 			if waitErr != nil && !httperrors.Is404(waitErr) {
 				return diag.FromErr(fmt.Errorf("failed to wait for job run %s: %w", jobRunID, waitErr))

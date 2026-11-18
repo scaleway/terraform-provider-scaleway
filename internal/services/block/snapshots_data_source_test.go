@@ -120,3 +120,121 @@ func TestAccDataSourceSnapshots_Basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceSnapshots_Basic_WithKMS(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			blocktestfuncs.IsSnapshotDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_key_manager_key" "my_key" {
+						name        = "tf-tests-ds-snapshots-basic-with-kms"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume main {
+						iops = 5000
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						size_in_gb = 10
+						kms_key_id = scaleway_key_manager_key.my_key.id
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-ds-block-snapshots-basic-with-kms-tf"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						volume_id = scaleway_block_volume.main.id
+						tags = ["test-ds-block-snapshots-basic-with-kms-tf", "first"]
+					}
+
+					resource scaleway_block_snapshot second {
+						name = "test-ds-block-snapshots-basic-with-kms-other-tf"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						volume_id = scaleway_block_volume.main.id
+						tags = ["test-ds-block-snapshots-basic-with-kms-tf", "second"]
+
+						# The Block API rejects concurrent snapshot creations on the same volume
+						depends_on = [scaleway_block_snapshot.main]
+					}
+
+					data scaleway_block_snapshots by_name {
+						name = scaleway_block_snapshot.main.name
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						depends_on = [scaleway_block_snapshot.main, scaleway_block_snapshot.second]
+					}
+
+					data scaleway_block_snapshots by_tags {
+						tags = ["test-ds-block-snapshots-basic-with-kms-tf"]
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						depends_on = [scaleway_block_snapshot.main, scaleway_block_snapshot.second]
+					}
+
+					data scaleway_block_snapshots by_volume_id {
+						volume_id = scaleway_block_volume.main.id
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						depends_on = [scaleway_block_snapshot.main, scaleway_block_snapshot.second]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.second"),
+
+					resource.TestCheckResourceAttr("data.scaleway_block_snapshots.by_name", "snapshots.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "id",
+						"data.scaleway_block_snapshots.by_name", "snapshots.0.id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_snapshot.main", "kms_key_id",
+						"data.scaleway_block_snapshots.by_name", "snapshots.0.kms_key_id",
+					),
+
+					resource.TestCheckResourceAttr("data.scaleway_block_snapshots.by_tags", "snapshots.#", "2"),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_block_snapshots.by_tags", "snapshots.*.id",
+						"scaleway_block_snapshot.main", "id",
+					),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_block_snapshots.by_tags", "snapshots.*.id",
+						"scaleway_block_snapshot.second", "id",
+					),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_block_snapshots.by_tags", "snapshots.*.kms_key_id",
+						"scaleway_block_snapshot.main", "kms_key_id",
+					),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_block_snapshots.by_tags", "snapshots.*.kms_key_id",
+						"scaleway_block_snapshot.second", "kms_key_id",
+					),
+
+					resource.TestCheckResourceAttr("data.scaleway_block_snapshots.by_volume_id", "snapshots.#", "2"),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_block_snapshots.by_volume_id", "snapshots.*.id",
+						"scaleway_block_snapshot.main", "id",
+					),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_block_snapshots.by_volume_id", "snapshots.*.id",
+						"scaleway_block_snapshot.second", "id",
+					),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_block_snapshots.by_volume_id", "snapshots.*.kms_key_id",
+						"scaleway_block_snapshot.main", "kms_key_id",
+					),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_block_snapshots.by_volume_id", "snapshots.*.kms_key_id",
+						"scaleway_block_snapshot.second", "kms_key_id",
+					),
+				),
+			},
+		},
+	})
+}

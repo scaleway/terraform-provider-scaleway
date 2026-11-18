@@ -1,7 +1,6 @@
 package acctest_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -22,12 +21,7 @@ func TestAccCassettes_IsCompressed(t *testing.T) {
 				errCompression error
 			)
 
-			folder := strings.Split(path, "/")[2]
-			if acctest.FolderUsesVCRv4(folder) {
-				report, errCompression = acctest.CompressCassetteV4(path, false)
-			} else {
-				report, errCompression = acctest.CompressCassetteV3(path, false)
-			}
+			report, errCompression = acctest.CompressCassetteV4(path, false)
 
 			require.NoError(t, errCompression)
 			require.Zero(t, report.SkippedInteraction, "Issue with cassette: %s", report.Path)
@@ -54,12 +48,7 @@ func TestAccCassettes_Compress(t *testing.T) {
 				errCompression error
 			)
 
-			folder := strings.Split(path, "/")[2]
-			if acctest.FolderUsesVCRv4(folder) {
-				report, errCompression = acctest.CompressCassetteV4(path, true)
-			} else {
-				report, errCompression = acctest.CompressCassetteV3(path, true)
-			}
+			report, errCompression = acctest.CompressCassetteV4(path, true)
 
 			require.NoError(t, errCompression)
 			require.Zero(t, report.SkippedInteraction, "Issue with cassette: %s", report.Path)

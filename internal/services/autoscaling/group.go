@@ -22,6 +22,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -567,8 +568,9 @@ func (r *AutoScalingGroupResource) Delete(ctx context.Context, req resource.Dele
 	}
 
 	_, err = r.api.WaitForGroup(&autoscaling.WaitForGroupRequest{
-		Zone:    zone,
-		GroupID: id,
+		Zone:          zone,
+		GroupID:       id,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {

@@ -2,6 +2,7 @@ package instance_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -34,6 +35,7 @@ func TestAccSnapshot_Server(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
+					resource.TestMatchResourceAttr("scaleway_instance_snapshot.main", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/snapshots/.+$`)),
 				),
 			},
 			{

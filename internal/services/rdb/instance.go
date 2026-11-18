@@ -26,6 +26,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -1334,9 +1335,10 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					tflog.Warn(ctx, fmt.Sprintf("Failed to delete old instance %s: %v", oldInstanceID, err))
 				} else {
 					_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-						Region:     region,
-						InstanceID: oldInstanceID,
-						Timeout:    new(d.Timeout(schema.TimeoutUpdate)),
+						Region:        region,
+						InstanceID:    oldInstanceID,
+						Timeout:       new(d.Timeout(schema.TimeoutUpdate)),
+						RetryInterval: transport.DefaultWaitRetryInterval,
 					}, scw.WithContext(ctx))
 					if err != nil && !httperrors.Is404(err) {
 						tflog.Warn(ctx, fmt.Sprintf("Error waiting for old instance %s deletion: %v", oldInstanceID, err))
