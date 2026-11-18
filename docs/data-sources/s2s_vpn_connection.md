@@ -5,6 +5,7 @@ page_title: "Scaleway: scaleway_s2s_vpn_connection"
 
 # scaleway_s2s_vpn_connection
 
+Gets information about a Site-to-Site VPN connection.
 
 
 For further information refer to the Site-to-Site VPN [API documentation](https://www.scaleway.com/en/developers/api/site-to-site-vpn/).

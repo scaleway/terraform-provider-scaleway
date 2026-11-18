@@ -257,10 +257,13 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 				}
 
 				if ok, _ := SecurityGroupRuleEquals(stateRule, apiRule); !ok {
-					stateRules[direction][index], err = securityGroupRuleFlatten(apiRule, ipFieldToSet)
+					flattenedRule, err := securityGroupRuleFlatten(apiRule, ipFieldToSet)
 					if err != nil {
 						return nil, nil, err
 					}
+
+					flattenedRule["priority"] = int(securityGroupRulePriority(stateRuleRaw))
+					stateRules[direction][index] = flattenedRule
 				}
 			} else {
 				rulesGroup, err := securityGroupRuleFlatten(apiRule, "")
@@ -268,6 +271,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 					return nil, nil, err
 				}
 
+				rulesGroup["priority"] = 0
 				stateRules[direction] = append(stateRules[direction], rulesGroup)
 			}
 		}
@@ -353,30 +357,12 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 		instanceSDK.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]any),
 	}
 
-	setGroupRules := []*instanceSDK.SetSecurityGroupRulesRequestRule{}
-
-	for direction := range stateRules {
-		// Loop for all state rules in this direction
-		for _, rawStateRule := range stateRules[direction] {
-			stateRule, err := securityGroupRuleExpand(rawStateRule)
-			if err != nil {
-				return err
-			}
-
-			// This happens when there is more rule in state than in the api. We create more rule in API.
-			setGroupRules = append(setGroupRules, &instanceSDK.SetSecurityGroupRulesRequestRule{
-				Zone:         &zone,
-				Protocol:     stateRule.Protocol,
-				IPRange:      stateRule.IPRange,
-				Action:       stateRule.Action,
-				DestPortTo:   stateRule.DestPortTo,
-				DestPortFrom: stateRule.DestPortFrom,
-				Direction:    direction,
-			})
-		}
+	setGroupRules, err := BuildSetSecurityGroupRulesRequest(stateRules, zone)
+	if err != nil {
+		return err
 	}
 
-	_, err := instanceAPI.SetSecurityGroupRules(&instanceSDK.SetSecurityGroupRulesRequest{
+	_, err = instanceAPI.SetSecurityGroupRules(&instanceSDK.SetSecurityGroupRulesRequest{
 		SecurityGroupID: securityGroupID,
 		Zone:            zone,
 		Rules:           setGroupRules,
@@ -386,6 +372,43 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 	}
 
 	return nil
+}
+
+func BuildSetSecurityGroupRulesRequest(stateRules map[instanceSDK.SecurityGroupRuleDirection][]any, zone scw.Zone) ([]*instanceSDK.SetSecurityGroupRulesRequestRule, error) {
+	setGroupRules := []*instanceSDK.SetSecurityGroupRulesRequestRule{}
+
+	for direction := range stateRules {
+		// Expand all the state rules of this direction first, so they can be sorted by priority.
+		expandedRules := make([]*instanceSDK.SecurityGroupRule, 0, len(stateRules[direction]))
+		for _, rawStateRule := range stateRules[direction] {
+			stateRule, err := securityGroupRuleExpand(rawStateRule)
+			if err != nil {
+				return nil, err
+			}
+
+			expandedRules = append(expandedRules, stateRule)
+		}
+
+		sort.SliceStable(expandedRules, func(i, j int) bool {
+			return expandedRules[i].Position < expandedRules[j].Position
+		})
+
+		for _, stateRule := range expandedRules {
+			// This happens when there is more rule in state than in the api. We create more rule in API.
+			setGroupRules = append(setGroupRules, &instanceSDK.SetSecurityGroupRulesRequestRule{
+				Zone:         &zone,
+				Protocol:     stateRule.Protocol,
+				IPRange:      stateRule.IPRange,
+				Action:       stateRule.Action,
+				DestPortTo:   stateRule.DestPortTo,
+				DestPortFrom: stateRule.DestPortFrom,
+				Direction:    direction,
+				Position:     stateRule.Position,
+			})
+		}
+	}
+
+	return setGroupRules, nil
 }
 
 func ResourceInstanceSecurityGroupDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -451,8 +474,24 @@ func securityGroupRuleSchema() *schema.Resource {
 				ValidateFunc: validation.IsCIDRNetwork(0, 128),
 				Description:  "Ip range for this rule (e.g: 192.168.1.0/24). Only one of ip or ip_range should be provided",
 			},
+			"priority": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      0,
+				ValidateFunc: validation.IntBetween(0, 65535),
+				Description:  "The priority of the rule. Rules with lower priority values are evaluated first (e.g: 0 is evaluated before 10). If the priority is not set, the rules order follows their order in the configuration",
+			},
 		},
 	}
+}
+
+func securityGroupRulePriority(rawRule map[string]any) uint32 {
+	priority, ok := rawRule["priority"].(int)
+	if !ok {
+		return 0
+	}
+
+	return uint32(priority)
 }
 
 // securityGroupRuleExpand transform a state rule to an api one.
@@ -491,6 +530,7 @@ func securityGroupRuleExpand(i any) (*instanceSDK.SecurityGroupRule, error) {
 		Protocol:     instanceSDK.SecurityGroupRuleProtocol(rawRule["protocol"].(string)),
 		IPRange:      ipnetRange,
 		Action:       instanceSDK.SecurityGroupRuleAction(action),
+		Position:     securityGroupRulePriority(rawRule),
 	}
 
 	if *rule.DestPortFrom == *rule.DestPortTo {

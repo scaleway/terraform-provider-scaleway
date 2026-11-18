@@ -126,6 +126,8 @@ The `inbound_rule` and `outbound_rule` block supports:
 
 - `ip_range`- (Optional) The ip range (e.g `192.168.1.0/24`) this rule applies to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
+- `priority` - (Defaults to `0`) The priority of the rule. Rules with lower priority values are evaluated first inside the security group (e.g: `10` is evaluated before `20`). If the priority is not set, the rules order follows their order in the configuration.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
