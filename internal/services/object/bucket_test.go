@@ -166,28 +166,17 @@ func TestAccObjectBucket_Disappears(t *testing.T) {
 	resourceName := "scaleway_object_bucket.bucket"
 	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-disappears")
 
-	deleteBucket := func(tt *acctest.TestTools, n string) resource.TestCheckFunc {
-		return func(s *terraform.State) error {
-			rs, ok := s.RootModule().Resources[n]
-			if !ok {
-				return fmt.Errorf("not found: %s", n)
-			}
+	deleteBucket := func() {
+		conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, objectTestsMainRegion)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-			bucketRegion := rs.Primary.Attributes["region"]
-
-			conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
-			if err != nil {
-				return err
-			}
-
-			_, err = conn.DeleteBucket(ctx, &s3.DeleteBucketInput{
-				Bucket: new(rs.Primary.Attributes["name"]),
-			})
-			if err != nil {
-				return fmt.Errorf("failed to delete bucket outside of Terraform: %w", err)
-			}
-
-			return nil
+		_, err = conn.DeleteBucket(ctx, &s3.DeleteBucketInput{
+			Bucket: new(bucketName),
+		})
+		if err != nil {
+			t.Fatalf("failed to delete bucket outside of Terraform: %s", err)
 		}
 	}
 
@@ -203,11 +192,10 @@ func TestAccObjectBucket_Disappears(t *testing.T) {
 					}`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, resourceName, true),
-					deleteBucket(tt, resourceName),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
+				PreConfig: deleteBucket,
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
