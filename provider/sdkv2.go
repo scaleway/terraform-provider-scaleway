@@ -49,7 +49,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/sdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
@@ -270,7 +269,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_s2s_vpn_customer_gateway":                           s2svpn.ResourceCustomerGateway(),
 				"scaleway_s2s_vpn_connection":                                 s2svpn.ResourceConnection(),
 				"scaleway_s2s_vpn_routing_policy":                             s2svpn.ResourceRoutingPolicy(),
-				"scaleway_sdb_sql_database":                                   sdb.ResourceDatabase(),
 				"scaleway_secret":                                             secret.ResourceSecret(),
 				"scaleway_secret_version":                                     secret.ResourceVersion(),
 				"scaleway_tem_domain":                                         tem.ResourceDomain(),
@@ -407,7 +405,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_s2s_vpn_routing_policy":                             s2svpn.DataSourceRoutingPolicy(),
 				"scaleway_secret":                                             secret.DataSourceSecret(),
 				"scaleway_secret_version":                                     secret.DataSourceVersion(),
-				"scaleway_sdb_sql_versions":                                   sdb.DataSourceVersions(),
 				"scaleway_tem_domain":                                         tem.DataSourceDomain(),
 				"scaleway_tem_offer_subscription":                             tem.DataSourceOfferSubscription(),
 				"scaleway_vpc":                                                vpc.DataSourceVPC(),
