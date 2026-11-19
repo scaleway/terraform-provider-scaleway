@@ -365,6 +365,7 @@ func (r *BucketPolicyResource) putPolicy(
 		projectID, err := projectIDFromACL(ctx, s3Client, bucket)
 		if err != nil {
 			diags.AddWarning("Failed to read bucket ACL", err.Error())
+
 			state.ProjectID = types.StringNull()
 		} else {
 			state.ProjectID = projectID
