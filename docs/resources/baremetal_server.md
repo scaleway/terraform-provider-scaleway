@@ -5,8 +5,6 @@ page_title: "Scaleway: scaleway_baremetal_server"
 
 # Resource: scaleway_baremetal_server
 
-Creates and manages Scaleway Bare Metal Servers.
-
 
 
 ## Example Usage
