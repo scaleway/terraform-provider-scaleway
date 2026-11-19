@@ -40,20 +40,22 @@ auto = true
 
 [tasks.'gen:doc']
 description = "generate the provider documentation"
-depends_post = ["fmt:markdown"]
 usage = '''
 flag "-q --quiet" negate="--verbose" {
   default #true
 }
 '''
-run = '''
+run = [
+  '''
 args=(generate -provider-name scaleway)
 output=(/dev/stdout)
 if [ "${usage_quiet}" == "true" ]; then
   output=(/dev/null)
 fi
 tfplugindocs "${args[@]}" > "${output[@]}"
-'''
+''',
+  { task = "fmt:markdown" },
+]
 
 [tasks.'check:doc']
 description = "check that the documentation is up to date"
@@ -192,7 +194,7 @@ ryl check .github .golangci.yml .goreleaser.yml
 
 [tasks.'lint:markdown']
 description = "lint the markdown files (documentation)"
-depends = ["fmt:markdown"]
+depends = ["gen:doc"]
 run = '''
 rumdl check --no-cache .
 '''
