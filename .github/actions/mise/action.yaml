@@ -1,5 +1,7 @@
 name: mise
 inputs:
+  cache:
+    default: true
   cache_save:
     default: false
 runs:
@@ -8,6 +10,6 @@ runs:
     - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
       with:
         version: 2026.11.7
-        cache: true
-        cache_save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        cache: ${{ inputs.cache }}
+        cache_save: ${{ inputs.cache_save }}
         experimental: true

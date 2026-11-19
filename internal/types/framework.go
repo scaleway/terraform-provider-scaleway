@@ -3,6 +3,7 @@ package types
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -258,19 +259,25 @@ func IDUsesLocalizedFormatInSet(ctx context.Context, reference any, attribute, i
 }
 
 // ListIsNullInReference checks if a List attribute is null (return true) or empty (return false).
+// The attribute path can be nested, with each level separated by a dot (e.g. "cron_config.startup_command").
 func ListIsNullInReference(ctx context.Context, attribute string, reference any) bool {
 	var (
 		diags   diag.Diagnostics
 		reflist basetypes.ListValue
 	)
 
+	attributePath := path.Empty()
+	for step := range strings.SplitSeq(attribute, ".") {
+		attributePath = attributePath.AtName(step)
+	}
+
 	switch req := reference.(type) {
 	case resource.CreateRequest:
-		diags = req.Config.GetAttribute(ctx, path.Root(attribute), &reflist)
+		diags = req.Config.GetAttribute(ctx, attributePath, &reflist)
 	case resource.ReadRequest:
-		diags = req.State.GetAttribute(ctx, path.Root(attribute), &reflist)
+		diags = req.State.GetAttribute(ctx, attributePath, &reflist)
 	case resource.UpdateRequest:
-		diags = req.Config.GetAttribute(ctx, path.Root(attribute), &reflist)
+		diags = req.Config.GetAttribute(ctx, attributePath, &reflist)
 	}
 
 	if diags.HasError() {

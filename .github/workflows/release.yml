@@ -13,12 +13,15 @@ permissions: {}
 jobs:
   release:
     runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
-    timeout-minutes: 20
     permissions:
       contents: write
     steps:
       - uses: $/.github/actions/checkout
+        with:
+          fetch-depth: 0
       - uses: $/.github/actions/mise
+        with:
+          cache: false
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
