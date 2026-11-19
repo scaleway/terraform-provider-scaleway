@@ -57,6 +57,7 @@ func (r *ObjectStoragePrivateAccessResource) Metadata(_ context.Context, req res
 func (r *ObjectStoragePrivateAccessResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: objectStoragePrivateAccessResourceDescription,
+		Description:         objectStoragePrivateAccessResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
