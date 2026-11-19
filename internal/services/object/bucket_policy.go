@@ -87,7 +87,7 @@ func (r *BucketPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Required:    true,
 				Description: "The bucket's name or regional ID.",
 				PlanModifiers: []planmodifier.String{
-					regional.LocalityPlanModifier{},
+					regional.LocalityPlanModifier(),
 				},
 			},
 			"policy": schema.StringAttribute{
