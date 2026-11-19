@@ -33,7 +33,7 @@ func TestAccVPC_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_routing", "true"),
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_custom_routes_propagation", "true"),
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_transitivity", "true"),
-					resource.TestMatchResourceAttr("scaleway_vpc.vpc01", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/vpcs/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_vpc.vpc01", "srn", acctest.CheckSRN("vpc", "vpcs")),
 				),
 			},
 			{

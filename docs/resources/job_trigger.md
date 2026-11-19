@@ -1,0 +1,100 @@
+---
+subcategory: "Jobs"
+page_title: "Scaleway: scaleway_job_trigger"
+---
+
+# Resource: scaleway_job_trigger
+
+Creates and manages a Scaleway Serverless Job Trigger. For more information, see the [Scaleway documentation](https://www.scaleway.com/en/docs/serverless-jobs/concepts/#job-trigger).
+
+## Example Usage
+
+### Minimal
+
+```terraform
+resource "scaleway_job_definition" "main" {
+  cpu_limit              = 140
+  memory_limit           = 256
+  local_storage_capacity = 5120
+  image_uri              = "docker.io/alpine:latest"
+}
+
+resource "scaleway_job_trigger" "main" {
+  name              = "job-trigger"
+  job_definition_id = scaleway_job_definition.main.id
+
+  cron_config = {
+    schedule = "5 4 1 * *" # cron at 04:05 on day-of-month 1
+    timezone = "Europe/Paris"
+  }
+}
+```
+
+### Multi-scheduling
+
+```terraform
+resource "scaleway_job_definition" "main" {
+  cpu_limit              = 120
+  memory_limit           = 256
+  local_storage_capacity = 5120
+  image_uri              = "docker.io/alpine:latest"
+}
+
+resource "scaleway_job_trigger" "main" {
+  name              = "job-trigger-main"
+  job_definition_id = scaleway_job_definition.main.id
+
+  cron_config = {
+    schedule        = "0 8 * * *" # cron at 8AM every day
+    timezone        = "Europe/Paris"
+    startup_command = ["echo"]
+    args            = ["starting", "daily", "job"]
+  }
+}
+
+resource "scaleway_job_trigger" "secondary" {
+  name              = "job-trigger-secondary"
+  job_definition_id = scaleway_job_definition.main.id
+
+  cron_config = {
+    schedule        = "0 17 * * *" # cron at 5PM every day
+    timezone        = "Europe/Paris"
+    startup_command = ["echo"]
+    args            = ["job", "done"]
+  }
+}
+```
+
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `job_definition_id` - (Required) The ID of the job definition to be triggered.
+- `name` - (Optional) The name of the trigger. If not provided, a random name will be generated.
+- `cron_config` - (Required) The configuration of the CRON trigger.
+    - `schedule` - (Required) The CRON schedule in UNIX format.
+    - `timezone` - (Required) The timezone for the CRON schedule, must be a canonical TZ identifier as found in this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+    - `startup_command` - (Optional) The startup command that will be used by the triggered job (in list of string format).
+    - `args` - (Optional) The arguments passed to the startup command used by the triggered job (in list of string format).
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the trigger exists.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the trigger.
+
+~> **Important:** Job Trigger's IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
+- `created_at` - The creation time of the trigger.
+- `updated_at` - The last update time of the trigger.
+- `srn` - The Scaleway Resource Name (SRN) of the trigger.
+
+## Import
+
+Job Triggers can be imported using the `{region}/{id}`, e.g.
+
+```bash
+terraform import scaleway_job_trigger.main fr-par/11111111-1111-1111-1111-111111111111
+```

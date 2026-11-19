@@ -3,7 +3,6 @@ package datawarehouse_test
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -48,7 +47,7 @@ resource "scaleway_datawarehouse_deployment" "main" {
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "cpu_max", "4"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "ram_per_cpu", "4"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "move_factor", "0.1"),
-					resource.TestMatchResourceAttr("scaleway_datawarehouse_deployment.main", "srn", regexp.MustCompile(`^srn://datawarehouse\..+/regions/.+/deployments/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_datawarehouse_deployment.main", "srn", acctest.CheckSRN("datawarehouse", "deployments")),
 
 					// Public endpoint is present
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "public_network.#", "1"),

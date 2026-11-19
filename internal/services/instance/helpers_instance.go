@@ -38,6 +38,26 @@ func newAPIWithZone(d *schema.ResourceData, m any) (*instance.API, scw.Zone, err
 	return instanceAPI, zone, nil
 }
 
+// BuildSRN returns the SRN for an instance v1 resource. It prefers the
+// server-provided value when non-empty; otherwise it constructs it from the
+// API metadata domain, the zone, and the id.
+func BuildSRN(client *scw.Client, product, resourceType string, zone scw.Zone, id, srn string) (string, error) {
+	if srn != "" {
+		return srn, nil
+	}
+
+	if zone == "" || id == "" {
+		return "", nil
+	}
+
+	apiMeta, err := client.GetAPIMetadata()
+	if err != nil {
+		return "", fmt.Errorf("could not fetch API metadata to build SRN: %w", err)
+	}
+
+	return fmt.Sprintf("srn://%s.%s/zones/%s/%s/%s", product, apiMeta.Domain, zone, resourceType, id), nil
+}
+
 // newAPIV2WithZone returns a new instance API v2 and the zone for a Create request
 func newAPIV2WithZone(d *schema.ResourceData, m any) (*instanceV2.API, scw.Zone, error) {
 	instanceAPI := instanceV2.NewAPI(meta.ExtractScwClient(m))
@@ -394,11 +414,16 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Du
 				return err
 			}
 
+			retryInterval := instancehelpers.DefaultInstanceRetryInterval
+			if transport.DefaultWaitRetryInterval != nil {
+				retryInterval = *transport.DefaultWaitRetryInterval
+			}
+
 			_, err = ph.instanceAPI.WaitForPrivateNetworkInterface(&instanceV2.WaitForPrivateNetworkInterfaceRequest{
 				PrivateNetworkInterfaceID: p.ID,
 				Zone:                      ph.zone,
 				Timeout:                   &timeout,
-				RetryInterval:             new(instancehelpers.DefaultInstanceRetryInterval),
+				RetryInterval:             &retryInterval,
 			})
 			if err != nil && !httperrors.Is404(err) {
 				return err
@@ -672,9 +697,10 @@ func DeleteASGServers(
 		}
 
 		_, err := api.WaitForServer(&instance.WaitForServerRequest{
-			Zone:     zone,
-			ServerID: srv.ID,
-			Timeout:  new(timeout),
+			Zone:          zone,
+			ServerID:      srv.ID,
+			Timeout:       new(timeout),
+			RetryInterval: transport.DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
 			return err

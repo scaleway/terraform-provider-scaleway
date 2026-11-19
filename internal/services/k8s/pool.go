@@ -22,6 +22,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -918,8 +919,9 @@ func ResourceK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	_, err = k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{
-		PoolID: poolID,
-		Region: region,
+		PoolID:        poolID,
+		Region:        region,
+		RetryInterval: transport.DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if !httperrors.Is404(err) {

@@ -758,9 +758,12 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 	diags := setBucketState(ctx, d, m, bucketName, region, s3Client)
 
-	err = identity.SetRegionalIdentity(d, region, bucketName)
-	if err != nil {
-		return diag.FromErr(err)
+	// Only set the identity if the bucket was not removed from the state
+	if d.Id() != "" {
+		err = identity.SetRegionalIdentity(d, region, bucketName)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return diags
@@ -774,6 +777,8 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, m any, bucketNa
 
 	diags, ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, diags)
 	if !ok {
+		d.SetId("")
+
 		return diags
 	}
 
@@ -805,16 +810,10 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, m any, bucketNa
 	// we do not read it, and it has a "private" default value.
 	// AWS has the same issue: https://github.com/terraform-providers/terraform-provider-aws/issues/6193
 
-	_, err = s3Client.ListObjects(ctx, &s3.ListObjectsInput{
-		Bucket: new(bucketName),
-	})
-	if err != nil {
-		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "objects", ""); !bucketFound {
-			d.SetId("")
-
-			return diags
-		}
-	}
+	// Note: the "ListObjects" call was removed from here to fix
+	// https://github.com/scaleway/terraform-provider-scaleway/issues/4530.
+	// The result was never used, and bucket existence is already established by
+	// GetBucketACL and GetObjectLockConfiguration, which both return 404 on a missing bucket.
 
 	var tagsSet []s3Types.Tag
 
@@ -842,9 +841,15 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, m any, bucketNa
 	corsResponse, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
 		Bucket: new(bucketName),
 	})
+	if err != nil {
+		bucketFound, _ := addReadBucketErrorDiagnostic(
+			&diags, err, "CORS configuration", ErrCodeNoSuchCORSConfiguration,
+		)
+		if !bucketFound {
+			d.SetId("")
 
-	if err != nil && !IsS3Err(err, ErrCodeNoSuchCORSConfiguration, "The CORS configuration does not exist") {
-		return diag.FromErr(err)
+			return diags
+		}
 	}
 
 	_ = d.Set("cors_rule", flattenBucketCORS(corsResponse))
@@ -1100,7 +1105,7 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m a
 		Bucket: new(bucketName),
 	})
 	if err != nil {
-		if _, ok := errors.AsType[*s3Types.NoSuchBucket](err); ok {
+		if IsS3Err(err, ErrCodeNoSuchBucket, "") {
 			return nil // Bucket does not exist, so consider it deleted
 		}
 

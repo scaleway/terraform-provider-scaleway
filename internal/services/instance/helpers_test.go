@@ -3,17 +3,23 @@ package instance_test
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"strings"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func arePrivateNICsPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
@@ -130,4 +136,146 @@ func imageIDMatchLabel(tt *acctest.TestTools, resourceWithImageID, resourceWithI
 
 		return nil
 	}
+}
+
+func IsOfferAvailable(offerName string, zone scw.Zone, tt *acctest.TestTools) bool {
+	api := instanceSDK.NewAPI(tt.Meta.ScwClient())
+
+	availabilities, err := api.GetServerTypesAvailability(&instanceSDK.GetServerTypesAvailabilityRequest{
+		Zone: zone,
+	})
+	if err != nil {
+		return false
+	}
+
+	availability, ok := availabilities.Servers[offerName]
+
+	return ok && availability.Availability == instanceSDK.ServerTypesAvailabilityAvailable
+}
+
+func newTestClientWithMetadata(t *testing.T, domain string) *scw.Client {
+	t.Helper()
+
+	metadata := `{"platform":"test","partition":"test","domain":"` + domain + `"}`
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/metadata" {
+			http.NotFound(w, r)
+
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(metadata))
+	}))
+	t.Cleanup(server.Close)
+
+	client, err := scw.NewClient(scw.WithAPIURL(server.URL))
+	require.NoError(t, err)
+
+	return client
+}
+
+func TestBuildSRN(t *testing.T) {
+	t.Parallel()
+
+	zone := scw.ZoneFrPar1
+	id := "11111111-2222-3333-4444-555555555555"
+
+	tests := []struct {
+		name         string
+		product      string
+		resourceType string
+		zone         scw.Zone
+		id           string
+		srn          string
+		want         string
+	}{
+		{
+			name:         "scaleway_instance_server",
+			product:      "instance",
+			resourceType: "servers",
+			zone:         zone,
+			id:           id,
+			want:         "srn://instance.scaleway.com/zones/fr-par-1/servers/" + id,
+		},
+		{
+			name:         "scaleway_instance_volume",
+			product:      "instance",
+			resourceType: "volumes",
+			zone:         zone,
+			id:           id,
+			want:         "srn://instance.scaleway.com/zones/fr-par-1/volumes/" + id,
+		},
+		{
+			name:         "scaleway_instance_snapshot",
+			product:      "instance",
+			resourceType: "snapshots",
+			zone:         zone,
+			id:           id,
+			want:         "srn://instance.scaleway.com/zones/fr-par-1/snapshots/" + id,
+		},
+		{
+			name:         "scaleway_instance_security_group",
+			product:      "instance",
+			resourceType: "security-groups",
+			zone:         zone,
+			id:           id,
+			want:         "srn://instance.scaleway.com/zones/fr-par-1/security-groups/" + id,
+		},
+		{
+			name:         "server provided srn is preferred",
+			product:      "instance",
+			resourceType: "servers",
+			zone:         zone,
+			id:           id,
+			srn:          "srn://instance.scaleway.cloud/zones/fr-par-1/servers/" + id,
+			want:         "srn://instance.scaleway.cloud/zones/fr-par-1/servers/" + id,
+		},
+		{
+			name:         "empty zone",
+			product:      "instance",
+			resourceType: "servers",
+			zone:         "",
+			id:           id,
+			want:         "",
+		},
+		{
+			name:         "empty id",
+			product:      "instance",
+			resourceType: "servers",
+			zone:         zone,
+			id:           "",
+			want:         "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			client := newTestClientWithMetadata(t, "scaleway.com")
+
+			got, err := instance.BuildSRN(client, tt.product, tt.resourceType, tt.zone, tt.id, tt.srn)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestBuildSRNMetadataError(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}))
+	t.Cleanup(server.Close)
+
+	client, err := scw.NewClient(scw.WithAPIURL(server.URL))
+	require.NoError(t, err)
+
+	got, err := instance.BuildSRN(client, "instance", "servers", scw.ZoneFrPar1, "11111111-2222-3333-4444-555555555555", "")
+	require.Error(t, err)
+	assert.Empty(t, got)
+	assert.Contains(t, err.Error(), "could not fetch API metadata to build SRN")
 }

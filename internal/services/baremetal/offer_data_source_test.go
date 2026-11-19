@@ -14,6 +14,10 @@ import (
 )
 
 var (
+	// OfferName to use for tests. The stock issues make it hard to have a single
+	// offer for the whole package because it forces you to re-record everything if you
+	// need to re-record when this particular offer is out-of-stock. Don't hesitate to
+	// override this constant with a localOfferName if needed.
 	OfferName            = getenv("OFFER_NAME", "EM-I215E-NVME")
 	OfferNameWrongFormat = getenv("OFFER_NAME_WRONG_FORMAT", "EM-I215E-NVMe")
 	Zone                 = getenv("ZONE", "fr-par-2")

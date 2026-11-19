@@ -27,6 +27,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datalab"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/dataorchestrator"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
@@ -47,6 +48,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/tem"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/webhosting"
@@ -276,16 +278,20 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		billing.NewBudgetAlertResource,
 		billing.NewBudgetResource,
 		block.NewSnapshotResource,
+		block.NewVolumeResource,
 		datalab.NewDatalabResource,
+		dataorchestrator.NewWorkflowResource,
 		file.NewFileSystemResource,
 		iam.NewSamlCertificateResource,
 		iam.NewSamlResource,
 		iam.NewScimResource,
 		iam.NewScimTokenResource,
 		instance.NewTemplateResource,
+		jobs.NewTriggerResource,
 		keymanager.NewKeyMaterialResource,
 		mailbox.NewAliasResource,
 		mailbox.NewDomainResource,
+		mailbox.NewForwardingResource,
 		mailbox.NewMailboxResource,
 		messageq.NewDeploymentResource,
 		messageq.NewUserResource,
@@ -318,10 +324,13 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		billing.NewBudgetAlertNotificationDataSource,
 		block.NewSnapshotDataSource,
 		block.NewSnapshotsDataSource,
+		block.NewVolumeDataSource,
 		cockpit.NewGrafanaProductDashboardDataSource,
 		cockpit.NewGrafanaProductDashboardsDataSource,
 		datalab.NewDatalabDataSource,
 		datalab.NewDatalabsDataSource,
+		dataorchestrator.NewWorkflowDataSource,
+		dataorchestrator.NewWorkflowRunDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
@@ -348,6 +357,10 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		block.NewExportSnapshot,
 		cockpit.NewGrafanaSyncDataSourcesAction,
 		cockpit.NewTriggerTestAlertAction,
+		dataorchestrator.NewPauseWorkflowRunAction,
+		dataorchestrator.NewResumeWorkflowRunAction,
+		dataorchestrator.NewStartWorkflowAction,
+		dataorchestrator.NewTerminateWorkflowRunAction,
 		iam.NewSamlConfigurationAction,
 		instance.NewCreateSnapshot,
 		instance.NewExportSnapshot,
@@ -370,6 +383,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		rdb.NewReadReplicaResetAction,
 		s2svpn.NewConnectionEnableRoutePropagationAction,
 		s2svpn.NewConnectionDisableRoutePropagationAction,
+		tem.NewOfferSubscriptionUpdateAction,
 		vpcgw.NewRefreshSSHKeysAction,
 	}
 }

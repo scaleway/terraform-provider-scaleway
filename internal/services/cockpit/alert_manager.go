@@ -155,6 +155,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 					ProjectID:          projectID,
 					PreconfiguredRules: alertIDs,
 					TargetStatus:       cockpit.AlertStatusEnabled,
+					RetryInterval:      transport.DefaultWaitRetryInterval,
 				}, scw.WithContext(ctx))
 			})
 			if err != nil {
@@ -331,6 +332,7 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 					ProjectID:          projectID,
 					PreconfiguredRules: toDisable,
 					TargetStatus:       cockpit.AlertStatusDisabled,
+					RetryInterval:      transport.DefaultWaitRetryInterval,
 				}, scw.WithContext(ctx))
 			})
 			if err != nil {
@@ -359,6 +361,7 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 					ProjectID:          projectID,
 					PreconfiguredRules: toEnable,
 					TargetStatus:       cockpit.AlertStatusEnabled,
+					RetryInterval:      transport.DefaultWaitRetryInterval,
 				}, scw.WithContext(ctx))
 			})
 			if err != nil {

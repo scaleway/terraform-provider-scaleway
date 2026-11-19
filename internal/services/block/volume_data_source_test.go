@@ -1,7 +1,6 @@
 package block_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -92,9 +91,64 @@ func TestAccDataSourceVolume_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"scaleway_block_volume.main", "id", "data.scaleway_block_volume.find_by_id", "volume_id",
 					),
-					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_block_volume.find_by_name", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
-					resource.TestMatchResourceAttr("data.scaleway_block_volume.find_by_id", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_block_volume.main", "srn", acctest.CheckSRN("block", "volumes")),
+					resource.TestCheckResourceAttrWith("data.scaleway_block_volume.find_by_name", "srn", acctest.CheckSRN("block", "volumes")),
+					resource.TestCheckResourceAttrWith("data.scaleway_block_volume.find_by_id", "srn", acctest.CheckSRN("block", "volumes")),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceVolume_WithKMS(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			blocktestfuncs.IsVolumeDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_key_manager_key" "my_key" {
+						name        = "tf-tests-volume-ds-with-kms"
+						region      = "fr-par"
+						usage       = "symmetric_encryption"
+						algorithm   = "aes_256_gcm"
+						description = "Key for encrypting my volume"
+						unprotected = true
+					}
+
+					resource scaleway_block_volume main {
+						name = "tf-test-block-volume-basic-with-kms"
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+						iops = 5000
+						size_in_gb = 20
+						kms_key_id = scaleway_key_manager_key.my_key.id
+					}
+
+					data scaleway_block_volume find_by_name {
+						name = scaleway_block_volume.main.name
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+					}
+
+					data scaleway_block_volume find_by_id {
+						volume_id = scaleway_block_volume.main.id
+						zone = "fr-par-3" # kms_key_id is not available everywhere yet
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_volume.main", "kms_key_id",
+						"data.scaleway_block_volume.find_by_name", "kms_key_id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_block_volume.main", "kms_key_id",
+						"data.scaleway_block_volume.find_by_id", "kms_key_id",
+					),
 				),
 			},
 		},

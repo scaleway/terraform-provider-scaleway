@@ -2,7 +2,6 @@ package container_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -397,7 +396,7 @@ func TestAccTrigger_Cron(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container_trigger.main", "cron.0.body", "{\"message\": \"This is the content to send to the container.\"}"),
 					resource.TestCheckResourceAttr("scaleway_container_trigger.main", "cron.0.headers.Content-Length", "45"),
 					resource.TestCheckResourceAttr("scaleway_container_trigger.main", "cron.0.headers.Content-Type", "application/json"),
-					resource.TestMatchResourceAttr("scaleway_container_trigger.main", "srn", regexp.MustCompile(`^srn://containers\..+/regions/.+/triggers/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_container_trigger.main", "srn", acctest.CheckSRN("containers", "triggers")),
 					isTriggerStatusReady(tt, "scaleway_container_trigger.main"),
 				),
 			},

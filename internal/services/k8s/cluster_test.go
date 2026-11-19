@@ -3,7 +3,6 @@ package k8s_test
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -71,7 +70,7 @@ resource "scaleway_k8s_cluster" "minimal" {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.2", "minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "description", "terraform basic test cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "pod_cidr", k8s.NetworkingDefaultValues["pod_cidr"]),
-					resource.TestMatchResourceAttr("scaleway_k8s_cluster.minimal", "srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/clusters/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_k8s_cluster.minimal", "srn", acctest.CheckSRN("k8s", "clusters")),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "service_cidr", k8s.NetworkingDefaultValues["service_cidr"]),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "service_dns_ip", k8s.NetworkingDefaultValues["service_dns_ip"]),
 				),

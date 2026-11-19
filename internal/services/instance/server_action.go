@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -151,8 +152,9 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 
 	if data.Wait.ValueBool() {
 		server, err := a.instanceAPI.WaitForServer(&instance.WaitForServerRequest{
-			ServerID: serverID,
-			Zone:     scw.Zone(zone),
+			ServerID:      serverID,
+			Zone:          scw.Zone(zone),
+			RetryInterval: transport.DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil && data.Action.ValueString() != instance.ServerActionTerminate.String() {
 			resp.Diagnostics.AddError(
@@ -163,8 +165,9 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 		if data.Action.ValueString() == instance.ServerActionBackup.String() && server != nil {
 			for _, volume := range server.Volumes {
 				_, err := a.instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
-					VolumeID: volume.ID,
-					Zone:     scw.Zone(zone),
+					VolumeID:      volume.ID,
+					Zone:          scw.Zone(zone),
+					RetryInterval: transport.DefaultWaitRetryInterval,
 				}, scw.WithContext(ctx))
 				if err != nil {
 					resp.Diagnostics.AddError(

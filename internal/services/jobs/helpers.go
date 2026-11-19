@@ -177,13 +177,13 @@ func expandJobDefinitionRetryPolicy(retryPolicyI any) *JobDefinitionRetryPolicy 
 }
 
 func (p *JobDefinitionRetryPolicy) ToCreateRequest() *jobs.RetryPolicy {
-	retryPolicyCreateReq := &jobs.RetryPolicy{}
-
-	if p != nil && p.MaxRetries != nil {
-		retryPolicyCreateReq.MaxRetries = *p.MaxRetries
+	if p == nil || p.MaxRetries == nil {
+		return nil
 	}
 
-	return retryPolicyCreateReq
+	return &jobs.RetryPolicy{
+		MaxRetries: *p.MaxRetries,
+	}
 }
 
 func (p *JobDefinitionRetryPolicy) ToUpdateRequest() *jobs.UpdateJobDefinitionRequestUpdateRetryPolicy {
@@ -191,11 +191,9 @@ func (p *JobDefinitionRetryPolicy) ToUpdateRequest() *jobs.UpdateJobDefinitionRe
 		return nil
 	}
 
-	retryPolicyUpdateReq := &jobs.UpdateJobDefinitionRequestUpdateRetryPolicy{
+	return &jobs.UpdateJobDefinitionRequestUpdateRetryPolicy{
 		MaxRetries: p.MaxRetries,
 	}
-
-	return retryPolicyUpdateReq
 }
 
 func flattenJobDefinitionRetryPolicy(policy *jobs.RetryPolicy) []map[string]any {

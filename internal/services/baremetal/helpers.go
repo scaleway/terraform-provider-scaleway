@@ -9,6 +9,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	baremetalV3 "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
@@ -168,30 +169,72 @@ func compareOptions(slice1, slice2 []*baremetal.ServerOption) []*baremetal.Serve
 	return diff
 }
 
+var errNoPrivateNetworkOption = errors.New("attaching a private network requires enabling an offer-compatible private network option")
+
 // customDiffPrivateNetworkOption checks that the private_network option has been set if there is a private_network
-func customDiffPrivateNetworkOption() func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
-		var isPrivateNetworkOption bool
+func customDiffPrivateNetworkOption() schema.CustomizeDiffFunc {
+	return func(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+		if _, ok := diff.GetOk("private_network"); !ok {
+			return nil
+		}
 
-		_, okPrivateNetwork := diff.GetOk("private_network")
+		raw, ok := diff.GetOk("options")
+		if !ok {
+			return errNoPrivateNetworkOption
+		}
 
-		options, optionsExist := diff.GetOk("options")
-		if optionsExist {
-			opSpecs, err := expandOptions(options)
-			if err != nil {
-				return err
+		diffOptions, err := expandOptions(raw)
+		if err != nil {
+			return err
+		}
+
+		api := baremetal.NewAPI(meta.ExtractScwClient(m))
+
+		zone, err := meta.ExtractZone(diff, m)
+		if err != nil {
+			return err
+		}
+
+		localizedOfferID, ok := diff.GetOk("offer")
+		if !ok {
+			return errors.New("listing options for offer: no offer attribute to retrieve options from")
+		}
+
+		offerID := locality.ExpandID(localizedOfferID)
+
+		offerOptions, err := api.ListOptions(&baremetal.ListOptionsRequest{
+			Zone:     zone,
+			OfferID:  new(offerID),
+			PageSize: new(uint32(100)),
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("listing options for offer %q: %w", localizedOfferID, err)
+		}
+
+		hasPrivateNetworkOptions := false
+
+		for _, diffOption := range diffOptions {
+			for _, offerOption := range offerOptions.Options {
+				tflog.Debug(ctx, "checking option", map[string]any{"id": offerOption.ID, "name": offerOption.Name, "private_network": offerOption.PrivateNetwork})
+
+				if offerOption.ID != diffOption.ID {
+					continue
+				}
+
+				if offerOption.PrivateNetwork != nil {
+					hasPrivateNetworkOptions = true
+				}
+
+				break
 			}
 
-			for j := range opSpecs {
-				// private network option ID
-				if opSpecs[j].ID == "cd4158d7-2d65-49be-8803-c4b8ab6f760c" {
-					isPrivateNetworkOption = true
-				}
+			if hasPrivateNetworkOptions {
+				break
 			}
 		}
 
-		if okPrivateNetwork && !isPrivateNetworkOption {
-			return errors.New("private network option needs to be enabled in order to attach a private network")
+		if !hasPrivateNetworkOptions {
+			return errNoPrivateNetworkOption
 		}
 
 		return nil

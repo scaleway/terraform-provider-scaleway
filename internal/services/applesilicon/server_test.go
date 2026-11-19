@@ -3,7 +3,6 @@ package applesilicon_test
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -47,7 +46,7 @@ func TestAccServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
-					resource.TestMatchResourceAttr("scaleway_apple_silicon_server.main", "srn", regexp.MustCompile(`^srn://apple-silicon\..+/zones/.+/servers/.+$`)),
+					resource.TestCheckResourceAttrWith("scaleway_apple_silicon_server.main", "srn", acctest.CheckSRN("apple-silicon", "servers")),
 				),
 			},
 			// TODO: "M2-L-ASAHI" is the only type currently in stock, but it does not support

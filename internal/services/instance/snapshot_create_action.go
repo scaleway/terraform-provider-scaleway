@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 var (
@@ -175,8 +176,9 @@ func (c *CreateSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 
 		if data.Wait.ValueBool() {
 			_, errWait := c.blockAndInstanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
-				SnapshotID: snapshot.Snapshot.ID,
-				Zone:       scw.Zone(zone),
+				SnapshotID:    snapshot.Snapshot.ID,
+				Zone:          scw.Zone(zone),
+				RetryInterval: transport.DefaultWaitRetryInterval,
 			}, scw.WithContext(ctx))
 			if errWait != nil {
 				resp.Diagnostics.AddError(
@@ -218,8 +220,9 @@ func (c *CreateSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 
 		if data.Wait.ValueBool() {
 			_, errWait := api.WaitForSnapshot(&block.WaitForSnapshotRequest{
-				SnapshotID: snapshot.ID,
-				Zone:       scw.Zone(zone),
+				SnapshotID:    snapshot.ID,
+				Zone:          scw.Zone(zone),
+				RetryInterval: transport.DefaultWaitRetryInterval,
 			}, scw.WithContext(ctx))
 			if errWait != nil {
 				resp.Diagnostics.AddError(
