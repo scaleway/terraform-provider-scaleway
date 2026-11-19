@@ -21,6 +21,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
 // appendProjectIDFromACL refreshes projectID from the bucket ACL owner.
@@ -96,16 +97,8 @@ func (r *BucketPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 					policyEquivalentPlanModifier{},
 				},
 			},
-			"region": regional.SchemaAttributeComputed("The region you want to attach the resource to"),
-			"project_id": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The project ID the bucket belongs to.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
+			"region":     regional.SchemaAttributeComputed("The region you want to attach the resource to"),
+			"project_id": account.ProjectIDSchemaFw("The project ID the bucket belongs to."),
 		},
 	}
 }
