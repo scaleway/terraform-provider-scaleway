@@ -104,7 +104,7 @@ func TestAccAction_InstanceExportSnapshot_Local(t *testing.T) {
 			
 					resource "scaleway_instance_snapshot" "main" {
 						volume_id = scaleway_instance_server.to_snapshot.root_volume.0.volume_id
-						
+
 						lifecycle {
 							action_trigger {
 						  		events  = [after_create]

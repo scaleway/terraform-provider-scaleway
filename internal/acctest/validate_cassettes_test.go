@@ -118,15 +118,6 @@ func fileNameWithoutExtSuffix(fileName string) string {
 
 // isTransientStateError checks if the interaction response is a transient error that
 // the provider retries and that succeeds later in the same cassette.
-//
-// Three shapes are treated as transient:
-//   - 409 transient_state: a resource is in a transient state during creation (e.g.
-//     creating a gateway_network puts its public gateway in a transient state, so a
-//     parallel creation fails and is retried).
-//   - 412 precondition_failed: project DELETE before the API finishes garbage-collecting
-//     the project's resources; the provider retries and the project is deleted once empty.
-//   - 409 BucketNotEmpty: S3 bucket DELETE while objects still exist; the provider clears
-//     them and retries the DELETE.
 func isTransientStateError(i *cassette.Interaction) bool {
 	switch i.Response.Code {
 	case 409:
