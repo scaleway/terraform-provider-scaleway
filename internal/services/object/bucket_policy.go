@@ -24,22 +24,20 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
-// appendProjectIDFromACL refreshes projectID from the bucket ACL owner.
-func appendProjectIDFromACL(ctx context.Context, s3Client *s3.Client, bucket string, diags diag.Diagnostics) (types.String, diag.Diagnostics) {
+// projectIDFromACL returns the project ID derived from the bucket ACL owner.
+func projectIDFromACL(ctx context.Context, s3Client *s3.Client, bucket string) (types.String, error) {
 	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		diags.AddWarning("Failed to read bucket ACL", err.Error())
-
-		return types.StringNull(), diags
+		return types.StringNull(), fmt.Errorf("couldn't read bucket acl: %w", err)
 	}
 
 	if acl != nil && acl.Owner != nil && acl.Owner.ID != nil {
-		return types.StringValue(aws.ToString(NormalizeOwnerID(acl.Owner.ID))), diags
+		return types.StringValue(aws.ToString(NormalizeOwnerID(acl.Owner.ID))), nil
 	}
 
-	return types.StringNull(), diags
+	return types.StringNull(), nil
 }
 
 //go:embed descriptions/object_bucket_policy_resource.md
@@ -261,7 +259,14 @@ func (r *BucketPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	state.Bucket = types.StringValue(regional.NewIDString(region, bucketName))
 	state.Region = types.StringValue(region.String())
 
-	state.ProjectID, resp.Diagnostics = appendProjectIDFromACL(ctx, s3Client, bucketName, resp.Diagnostics)
+	if state.ProjectID.IsNull() {
+		projectID, err := projectIDFromACL(ctx, s3Client, bucketName)
+		if err != nil {
+			resp.Diagnostics.AddWarning("Failed to read bucket ACL", err.Error())
+		} else {
+			state.ProjectID = projectID
+		}
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -356,7 +361,15 @@ func (r *BucketPolicyResource) putPolicy(
 		ProjectID: plan.ProjectID,
 	}
 
-	state.ProjectID, diags = appendProjectIDFromACL(ctx, s3Client, bucket, diags)
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		projectID, err := projectIDFromACL(ctx, s3Client, bucket)
+		if err != nil {
+			diags.AddWarning("Failed to read bucket ACL", err.Error())
+			state.ProjectID = types.StringNull()
+		} else {
+			state.ProjectID = projectID
+		}
+	}
 
 	return state, diags
 }

@@ -169,7 +169,12 @@ func (d *BucketPolicyDataSource) Read(ctx context.Context, req datasource.ReadRe
 	config.Region = types.StringValue(region.String())
 	config.Policy = types.StringValue(policyJSON)
 
-	config.ProjectID, resp.Diagnostics = appendProjectIDFromACL(ctx, s3Client, bucket, resp.Diagnostics)
+	config.ProjectID, err = projectIDFromACL(ctx, s3Client, bucket)
+	if err != nil {
+		resp.Diagnostics.AddError("couldn't read bucket acl", err.Error())
+
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }
