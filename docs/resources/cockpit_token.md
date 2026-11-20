@@ -5,11 +5,76 @@ page_title: "Scaleway: scaleway_cockpit_token"
 
 # Resource: scaleway_cockpit_token
 
+~> **Important:** The resource `scaleway_cockpit_token` is deprecated.
+Please use IAM authentication instead. You will find an implementation example in the [IAM authentication](#authenticating-to-cockpit-with-iam) section below.
+
 The `scaleway_cockpit_token` resource allows you to create and manage your Cockpit [tokens](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#tokens).
 
 Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
 ## Example Usage
+
+### Authenticating to Cockpit with IAM
+
+Prefer an IAM application and API key over `scaleway_cockpit_token`. Use the secret key in the `X-Auth-Token` header when pushing metrics/logs or querying Loki.
+
+```terraform
+data "scaleway_account_project" "default" {
+  name = "default"
+}
+
+resource "scaleway_iam_application" "cockpit_auth" {
+  name = "cockpit-auth"
+}
+
+resource "scaleway_iam_policy" "observability" {
+  application_id = scaleway_iam_application.cockpit_auth.id
+  rule {
+    project_ids          = [data.scaleway_account_project.default.id]
+    permission_set_names = ["ObservabilityFullAccess"]
+  }
+}
+
+resource "scaleway_iam_api_key" "api_key" {
+  application_id = scaleway_iam_application.cockpit_auth.id
+}
+
+resource "scaleway_cockpit_source" "metrics" {
+  name           = "my-metrics"
+  type           = "metrics"
+  retention_days = 31
+}
+
+resource "scaleway_cockpit_source" "logs" {
+  name           = "my-logs"
+  type           = "logs"
+  retention_days = 7
+}
+
+output "secret_key" {
+  value     = scaleway_iam_api_key.api_key.secret_key
+  sensitive = true
+}
+
+output "metrics_push_url" {
+  value = scaleway_cockpit_source.metrics.push_url
+}
+
+output "logs_url" {
+  value = scaleway_cockpit_source.logs.url
+}
+
+output "logs_push_url" {
+  value = scaleway_cockpit_source.logs.push_url
+}
+```
+
+Use the IAM secret key in the `X-Auth-Token` header (not `Authorization: Bearer`) when calling Cockpit endpoints — for example querying Loki, or configuring Prometheus remote write / Loki push agents against `push_url`:
+
+```shell
+curl -H "X-Auth-Token: $(terraform output -raw secret_key)" \
+  "$(terraform output -raw logs_url)/loki/api/v1/labels"
+```
 
 ### Use a Cockpit token
 

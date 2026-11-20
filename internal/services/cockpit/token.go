@@ -22,10 +22,11 @@ var tokenResourceDescription string
 
 func ResourceToken() *schema.Resource {
 	return &schema.Resource{
-		Description:   tokenResourceDescription,
-		CreateContext: ResourceCockpitTokenCreate,
-		ReadContext:   ResourceCockpitTokenRead,
-		DeleteContext: ResourceCockpitTokenDelete,
+		Description:        tokenResourceDescription,
+		CreateContext:      ResourceCockpitTokenCreate,
+		ReadContext:        ResourceCockpitTokenRead,
+		DeleteContext:      ResourceCockpitTokenDelete,
+		DeprecationMessage: "The \"scaleway_cockpit_token\" resource is deprecated in favor of IAM authentication",
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
 			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
