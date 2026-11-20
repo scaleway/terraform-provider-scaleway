@@ -1,6 +1,7 @@
 package account
 
 import (
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -19,6 +20,18 @@ func ProjectIDSchemaFw(description string) *schema.StringAttribute {
 		PlanModifiers: []planmodifier.String{
 			stringplanmodifier.RequiresReplace(),
 			stringplanmodifier.UseStateForUnknown(),
+		},
+	}
+}
+
+// ProjectIDSchemaAttributeOptional is the Optional+Computed project_id attribute for Framework data sources (no RequiresReplace).
+func ProjectIDSchemaAttributeOptional(description string) dsschema.StringAttribute {
+	return dsschema.StringAttribute{
+		Optional:            true,
+		Computed:            true,
+		MarkdownDescription: description,
+		Validators: []validator.String{
+			verify.IsStringUUID(),
 		},
 	}
 }
