@@ -15,7 +15,14 @@ func ExpandFrameworkID(val types.String) *string {
 	return new(ExpandID(val.ValueString()))
 }
 
-func ExpandFrameworkIDs(ctx context.Context, val types.List) ([]string, diag.Diagnostics) {
+// frameworkCollection is implemented by both types.List and types.Set
+type frameworkCollection interface {
+	IsNull() bool
+	IsUnknown() bool
+	ElementsAs(ctx context.Context, target any, allowUnhandled bool) diag.Diagnostics
+}
+
+func ExpandFrameworkIDs(ctx context.Context, val frameworkCollection) ([]string, diag.Diagnostics) {
 	if val.IsNull() || val.IsUnknown() {
 		return nil, nil
 	}
