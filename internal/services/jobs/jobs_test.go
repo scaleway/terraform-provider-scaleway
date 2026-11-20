@@ -533,7 +533,7 @@ func testAccCheckJobDefinitionDestroy(tt *acctest.TestTools) resource.TestCheckF
 				Region:          region,
 			})
 			if err == nil {
-				return fmt.Errorf("jobs jobdefinition (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("job definition (%s) still exists", rs.Primary.ID)
 			}
 
 			if !httperrors.Is404(err) {

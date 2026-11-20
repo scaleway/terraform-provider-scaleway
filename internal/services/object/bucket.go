@@ -758,9 +758,12 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 	diags := setBucketState(ctx, d, m, bucketName, region, s3Client)
 
-	err = identity.SetRegionalIdentity(d, region, bucketName)
-	if err != nil {
-		return diag.FromErr(err)
+	// Only set the identity if the bucket was not removed from the state
+	if d.Id() != "" {
+		err = identity.SetRegionalIdentity(d, region, bucketName)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return diags
@@ -774,6 +777,8 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, m any, bucketNa
 
 	diags, ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, diags)
 	if !ok {
+		d.SetId("")
+
 		return diags
 	}
 
@@ -836,9 +841,15 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, m any, bucketNa
 	corsResponse, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
 		Bucket: new(bucketName),
 	})
+	if err != nil {
+		bucketFound, _ := addReadBucketErrorDiagnostic(
+			&diags, err, "CORS configuration", ErrCodeNoSuchCORSConfiguration,
+		)
+		if !bucketFound {
+			d.SetId("")
 
-	if err != nil && !IsS3Err(err, ErrCodeNoSuchCORSConfiguration, "The CORS configuration does not exist") {
-		return diag.FromErr(err)
+			return diags
+		}
 	}
 
 	_ = d.Set("cors_rule", flattenBucketCORS(corsResponse))
@@ -1094,7 +1105,7 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m a
 		Bucket: new(bucketName),
 	})
 	if err != nil {
-		if _, ok := errors.AsType[*s3Types.NoSuchBucket](err); ok {
+		if IsS3Err(err, ErrCodeNoSuchBucket, "") {
 			return nil // Bucket does not exist, so consider it deleted
 		}
 
