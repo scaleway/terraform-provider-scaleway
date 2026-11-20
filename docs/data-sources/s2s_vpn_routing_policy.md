@@ -5,6 +5,7 @@ page_title: "Scaleway: scaleway_s2s_vpn_routing_policy"
 
 # scaleway_s2s_vpn_routing_policy
 
+Gets information about a Site-to-Site VPN routing policy.
 
 
 For further information refer to the Site-to-Site VPN [API documentation](https://www.scaleway.com/en/developers/api/site-to-site-vpn/).

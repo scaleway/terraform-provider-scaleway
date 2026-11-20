@@ -40,19 +40,33 @@ auto = true
 
 [tasks.'gen:doc']
 description = "generate the provider documentation"
-depends_post = ["fmt:markdown"]
 usage = '''
 flag "-q --quiet" negate="--verbose" {
   default #true
 }
 '''
-run = '''
+run = [
+  '''
 args=(generate -provider-name scaleway)
 output=(/dev/stdout)
 if [ "${usage_quiet}" == "true" ]; then
   output=(/dev/null)
 fi
 tfplugindocs "${args[@]}" > "${output[@]}"
+''',
+  { task = "fmt:markdown" },
+]
+
+[tasks.'check:doc']
+description = "check that the documentation is up to date"
+depends = ["gen:doc"]
+run = '''
+status=$(git status --porcelain -- ./docs)
+if [ -n "$status" ]; then
+  echo "error: ./docs is out of date, run 'mise run gen:doc' and commit the generated files"
+  echo "$status"
+  exit 1
+fi
 '''
 
 [tasks.'build:provider']
@@ -101,7 +115,7 @@ go "${args[@]}"
 [tasks.'fmt:markdown']
 description = "format the markdown files (documentation)"
 run = '''
-rumdl fmt -s ./docs
+rumdl fmt -s --no-cache .
 '''
 
 [tasks.'fmt:go']
@@ -180,8 +194,9 @@ ryl check .github .golangci.yml .goreleaser.yml
 
 [tasks.'lint:markdown']
 description = "lint the markdown files (documentation)"
+depends = ["gen:doc"]
 run = '''
-rumdl check .
+rumdl check --no-cache .
 '''
 
 [tasks.'lint:examples']
@@ -439,6 +454,7 @@ flag "--coverprofile <file>" {
 '''
 depends = [
   "build:*",
+  "check:*",
   "lint:*",
   { task = "test:provider", args = [
     "--acceptance",
