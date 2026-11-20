@@ -21,28 +21,27 @@ func TestAccDataSourceMessageQCertificateAuthority_Basic_WithProject(t *testing.
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "scaleway_account_project" "project" {
-  name = "tf-tests-data-source-message-qcert-authority-basic-w-project"
-}
+					resource "scaleway_account_project" "project" {
+					  name = "tf-tests-data-source-message-qcert-authority-basic-w-project"
+					}
 
-resource "scaleway_messageq_deployment" "main" {
-  project_id = scaleway_account_project.project.id
-  name       = "tf-test-ds-messageq-ca"
-  version    = "%s"
-  node_count = 1
-  node_type  = "%s"
-  user_name  = "%s"
-  password   = "ThisIsASecurePassword123!"
-  volume = {
-    type       = "sbs_5k"
-    size_in_gb = 5
-  }
-}
+					resource "scaleway_messageq_deployment" "main" {
+					  project_id = scaleway_account_project.project.id
+					  name       = "tf-test-ds-messageq-ca"
+					  version    = "%s"
+					  node_count = 1
+					  node_type  = "%s"
+					  user_name  = "%s"
+					  password   = "ThisIsASecurePassword123!"
+					  volume = {
+					    type       = "sbs_5k"
+					    size_in_gb = 5
+					  }
+					}
 
-data "scaleway_messageq_certificate_authority" "main" {
-  deployment_id = scaleway_messageq_deployment.main.id
-}
-`, latestVersion, nodeType, deploymentTestUserName),
+					data "scaleway_messageq_certificate_authority" "main" {
+					  deployment_id = scaleway_messageq_deployment.main.id
+					}`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					resource.TestCheckResourceAttrSet("data.scaleway_messageq_certificate_authority.main", "pem"),
@@ -71,23 +70,22 @@ func TestAccDataSourceMessageQCertificateAuthority_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "scaleway_messageq_deployment" "main" {
-  name       = "tf-test-ds-messageq-ca"
-  version    = "%s"
-  node_count = 1
-  node_type  = "%s"
-  user_name  = "%s"
-  password   = "ThisIsASecurePassword123!"
-  volume = {
-    type       = "sbs_5k"
-    size_in_gb = 5
-  }
-}
+					resource "scaleway_messageq_deployment" "main" {
+					  name       = "tf-test-ds-messageq-ca"
+					  version    = "%s"
+					  node_count = 1
+					  node_type  = "%s"
+					  user_name  = "%s"
+					  password   = "ThisIsASecurePassword123!"
+					  volume = {
+					    type       = "sbs_5k"
+					    size_in_gb = 5
+					  }
+					}
 
-data "scaleway_messageq_certificate_authority" "main" {
-  deployment_id = scaleway_messageq_deployment.main.id
-}
-`, latestVersion, nodeType, deploymentTestUserName),
+					data "scaleway_messageq_certificate_authority" "main" {
+					  deployment_id = scaleway_messageq_deployment.main.id
+					}`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					resource.TestCheckResourceAttrSet("data.scaleway_messageq_certificate_authority.main", "pem"),
