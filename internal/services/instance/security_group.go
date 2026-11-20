@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"math"
 	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -270,10 +271,15 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 				}
 
 				if ok, _ := SecurityGroupRuleEquals(stateRule, apiRule); !ok {
-					stateRules[direction][index], err = securityGroupRuleFlatten(apiRule, ipFieldToSet)
+					flattenedRule, err := securityGroupRuleFlatten(apiRule, ipFieldToSet)
 					if err != nil {
 						return nil, nil, err
 					}
+
+					// The API may renumber rule positions (e.g. 10 -> 1) so keep the
+					// position set in the configuration to avoid an infinite drift.
+					flattenedRule["position"] = int(securityGroupRulePosition(stateRuleRaw))
+					stateRules[direction][index] = flattenedRule
 				}
 			} else {
 				rulesGroup, err := securityGroupRuleFlatten(apiRule, "")
@@ -281,6 +287,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 					return nil, nil, err
 				}
 
+				rulesGroup["position"] = 0
 				stateRules[direction] = append(stateRules[direction], rulesGroup)
 			}
 		}
@@ -366,30 +373,12 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 		instanceSDK.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]any),
 	}
 
-	setGroupRules := []*instanceSDK.SetSecurityGroupRulesRequestRule{}
-
-	for direction := range stateRules {
-		// Loop for all state rules in this direction
-		for _, rawStateRule := range stateRules[direction] {
-			stateRule, err := securityGroupRuleExpand(rawStateRule)
-			if err != nil {
-				return err
-			}
-
-			// This happens when there is more rule in state than in the api. We create more rule in API.
-			setGroupRules = append(setGroupRules, &instanceSDK.SetSecurityGroupRulesRequestRule{
-				Zone:         &zone,
-				Protocol:     stateRule.Protocol,
-				IPRange:      stateRule.IPRange,
-				Action:       stateRule.Action,
-				DestPortTo:   stateRule.DestPortTo,
-				DestPortFrom: stateRule.DestPortFrom,
-				Direction:    direction,
-			})
-		}
+	setGroupRules, err := BuildSetSecurityGroupRulesRequest(stateRules, zone)
+	if err != nil {
+		return err
 	}
 
-	_, err := instanceAPI.SetSecurityGroupRules(&instanceSDK.SetSecurityGroupRulesRequest{
+	_, err = instanceAPI.SetSecurityGroupRules(&instanceSDK.SetSecurityGroupRulesRequest{
 		SecurityGroupID: securityGroupID,
 		Zone:            zone,
 		Rules:           setGroupRules,
@@ -399,6 +388,45 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 	}
 
 	return nil
+}
+
+// BuildSetSecurityGroupRulesRequest expands the state rules and orders them by
+// position so that the highest priority rule (lowest position) is sent first.
+func BuildSetSecurityGroupRulesRequest(stateRules map[instanceSDK.SecurityGroupRuleDirection][]any, zone scw.Zone) ([]*instanceSDK.SetSecurityGroupRulesRequestRule, error) {
+	setGroupRules := []*instanceSDK.SetSecurityGroupRulesRequestRule{}
+
+	for direction := range stateRules {
+		// Expand all the state rules of this direction first, so they can be sorted by position.
+		expandedRules := make([]*instanceSDK.SecurityGroupRule, 0, len(stateRules[direction]))
+		for _, rawStateRule := range stateRules[direction] {
+			stateRule, err := securityGroupRuleExpand(rawStateRule)
+			if err != nil {
+				return nil, err
+			}
+
+			expandedRules = append(expandedRules, stateRule)
+		}
+
+		sort.SliceStable(expandedRules, func(i, j int) bool {
+			return expandedRules[i].Position < expandedRules[j].Position
+		})
+
+		for _, stateRule := range expandedRules {
+			// This happens when there is more rule in state than in the api. We create more rule in API.
+			setGroupRules = append(setGroupRules, &instanceSDK.SetSecurityGroupRulesRequestRule{
+				Zone:         &zone,
+				Protocol:     stateRule.Protocol,
+				IPRange:      stateRule.IPRange,
+				Action:       stateRule.Action,
+				DestPortTo:   stateRule.DestPortTo,
+				DestPortFrom: stateRule.DestPortFrom,
+				Direction:    direction,
+				Position:     stateRule.Position,
+			})
+		}
+	}
+
+	return setGroupRules, nil
 }
 
 func ResourceInstanceSecurityGroupDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -450,6 +478,12 @@ func securityGroupRuleSchema() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Computed port range for this rule (e.g: 1-1024, 22-22)",
+			},
+			"position": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "Position of the rule. Start at 1 (Rule with the highest priority)",
+				ValidateFunc: validation.IntBetween(1, math.MaxUint32),
 			},
 			"ip": {
 				Type:         schema.TypeString,
@@ -504,6 +538,7 @@ func securityGroupRuleExpand(i any) (*instanceSDK.SecurityGroupRule, error) {
 		Protocol:     instanceSDK.SecurityGroupRuleProtocol(rawRule["protocol"].(string)),
 		IPRange:      ipnetRange,
 		Action:       instanceSDK.SecurityGroupRuleAction(action),
+		Position:     securityGroupRulePosition(rawRule),
 	}
 
 	if *rule.DestPortFrom == *rule.DestPortTo {
@@ -563,6 +598,17 @@ func securityGroupRuleFlatten(rule *instanceSDK.SecurityGroupRule, ipFieldToSet 
 	}
 
 	return res, nil
+}
+
+// securityGroupRulePosition returns the position of a state rule, or 0 when the
+// rule has no position set in the configuration.
+func securityGroupRulePosition(rawRule map[string]any) uint32 {
+	position, ok := rawRule["position"].(int)
+	if !ok {
+		return 0
+	}
+
+	return uint32(position)
 }
 
 // SecurityGroupRuleEquals compares two security group rule.
