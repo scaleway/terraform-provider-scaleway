@@ -631,12 +631,18 @@ func (r *AlertManagerResource) disableAlertRules(ctx context.Context, region scw
 }
 
 func (r *AlertManagerResource) waitForPreconfiguredAlerts(ctx context.Context, region scw.Region, projectID string, ruleIDs []string, target cockpit.AlertStatus) error {
+	retryInterval := defaultCockpitRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
 	_, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) ([]*cockpit.Alert, error) {
 		return r.api.WaitForPreconfiguredAlerts(&cockpit.WaitForPreconfiguredAlertsRequest{
 			Region:             region,
 			ProjectID:          projectID,
 			PreconfiguredRules: ruleIDs,
 			TargetStatus:       target,
+			RetryInterval:      &retryInterval,
 		}, scw.WithContext(ctx))
 	})
 
