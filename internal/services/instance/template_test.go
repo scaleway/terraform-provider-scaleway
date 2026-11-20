@@ -110,12 +110,9 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	templateID := ""
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
-	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
-	if !projectIDExists {
-		t.Skip("no default project ID")
-	}
+	templateID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -126,9 +123,8 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_instance_template" "main" {
-						project_id  = %q
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "GP1-L"
@@ -140,7 +136,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							size_in_gb  = 20
 							tags        = [ "local", "volume" ]
 						}]
-					}`, projectID),
+					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-2"),
@@ -159,7 +155,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_block_volume" "sbs" {
 						size_in_gb = 15
 						iops       = 5000
@@ -171,7 +167,6 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
-						project_id  = %q
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "GP1-L"
@@ -189,7 +184,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							size_in_gb       = 30
 							perf_iops        = 15000
 						}]
-					}`, projectID),
+					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.snap"),
@@ -211,7 +206,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_block_volume" "sbs" {
 						size_in_gb = 15
 						iops       = 5000
@@ -223,7 +218,6 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
-						project_id  = %q
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "L40S-1-48G"
@@ -238,7 +232,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							volume_type = "scratch"
 							size_in_gb  = 300
 						}]
-					}`, projectID),
+					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "L40S-1-48G"),
