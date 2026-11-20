@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	keymanagertestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager/testfuncs"
 )
 
 func createKeyMaterial() string {
@@ -28,7 +29,7 @@ func TestAccKeyMaterialResource_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -87,7 +88,7 @@ func TestAccKeyMaterialResource_WithSalt(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -140,7 +141,7 @@ func TestAccKeyMaterialResource_WithSaltWO(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -193,7 +194,7 @@ func TestAccKeyMaterialResource_WithRegionalID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -241,7 +242,7 @@ func TestAccKeyMaterialResource_RawBytes(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -294,7 +295,7 @@ func TestAccKeyMaterialResource_RawBytesWithSalt(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -347,7 +348,7 @@ func TestAccKeyMaterialResource_ValidationError(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -389,7 +390,7 @@ func TestAccKeyMaterialResource_NoKeyMaterial(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -429,7 +430,7 @@ func TestAccKeyMaterialResource_SaltConflict(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -472,7 +473,7 @@ func TestAccKeyMaterialResource_MissingSaltWoVersion(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -514,7 +515,7 @@ func TestAccKeyMaterialResource_MissingKeyMaterialWoVersion(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

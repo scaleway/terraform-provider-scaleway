@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -11,11 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/list"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -55,9 +58,10 @@ import (
 )
 
 var (
-	_ provider.Provider                  = (*ScalewayProvider)(nil)
-	_ provider.ProviderWithActions       = (*ScalewayProvider)(nil)
-	_ provider.ProviderWithListResources = (*ScalewayProvider)(nil)
+	_ provider.Provider                   = (*ScalewayProvider)(nil)
+	_ provider.ProviderWithActions        = (*ScalewayProvider)(nil)
+	_ provider.ProviderWithListResources  = (*ScalewayProvider)(nil)
+	_ provider.ProviderWithValidateConfig = (*ScalewayProvider)(nil)
 )
 
 type ScalewayProvider struct {
@@ -79,16 +83,17 @@ func (p *ScalewayProvider) Metadata(_ context.Context, _ provider.MetadataReques
 }
 
 type ScalewayProviderModel struct {
-	AccessKey      types.String `tfsdk:"access_key"`
-	SecretKey      types.String `tfsdk:"secret_key"`
-	Profile        types.String `tfsdk:"profile"`
-	ProjectID      types.String `tfsdk:"project_id"`
-	OrganizationID types.String `tfsdk:"organization_id"`
-	APIURL         types.String `tfsdk:"api_url"`
-	Region         types.String `tfsdk:"region"`
-	Zone           types.String `tfsdk:"zone"`
-	Endpoints      types.Set    `tfsdk:"endpoints"`
-	S3UsePathStyle types.Bool   `tfsdk:"s3_use_path_style"`
+	AccessKey          types.String `tfsdk:"access_key"`
+	SecretKey          types.String `tfsdk:"secret_key"`
+	Profile            types.String `tfsdk:"profile"`
+	ProjectID          types.String `tfsdk:"project_id"`
+	OrganizationID     types.String `tfsdk:"organization_id"`
+	APIURL             types.String `tfsdk:"api_url"`
+	Region             types.String `tfsdk:"region"`
+	Zone               types.String `tfsdk:"zone"`
+	Endpoints          types.Set    `tfsdk:"endpoints"`
+	DefaultAnnotations types.Map    `tfsdk:"default_annotations"`
+	S3UsePathStyle     types.Bool   `tfsdk:"s3_use_path_style"`
 }
 
 func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
@@ -130,6 +135,12 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Optional:    true,
 				Description: "Whether to enable the request to use path-style addressing.",
 			},
+			"default_annotations": schema.MapAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Description: "Default annotations to apply to every resource, as a map of annotation key name to annotation value name. " +
+					"The keys and values must exist beforehand (for example created with the scaleway_annotations_key and scaleway_annotations_value resources).",
+			},
 		},
 		Blocks: map[string]schema.Block{
 			"endpoints": schema.SetNestedBlock{
@@ -150,6 +161,52 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				},
 			},
 		},
+	}
+}
+
+func (p *ScalewayProvider) ValidateConfig(ctx context.Context, req provider.ValidateConfigRequest, resp *provider.ValidateConfigResponse) {
+	var data ScalewayProviderModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Validate default annotations namings
+	if data.DefaultAnnotations.IsNull() || data.DefaultAnnotations.IsUnknown() {
+		return
+	}
+
+	elements := make(map[string]types.String)
+	resp.Diagnostics.Append(data.DefaultAnnotations.ElementsAs(ctx, &elements, false)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	for key, value := range elements {
+		attrPath := path.Root("default_annotations").AtMapKey(key)
+
+		if err := annotations.ValidateAnnotationKeyName(key); err != nil {
+			resp.Diagnostics.Append(diag.NewAttributeErrorDiagnostic(
+				attrPath,
+				"Invalid default annotation key",
+				err.Error(),
+			))
+		}
+
+		if value.IsUnknown() {
+			continue
+		}
+
+		if err := annotations.ValidateAnnotationValueName(value.ValueString()); err != nil {
+			resp.Diagnostics.Append(diag.NewAttributeErrorDiagnostic(
+				attrPath,
+				"Invalid default annotation value",
+				err.Error(),
+			))
+		}
 	}
 }
 
@@ -206,6 +263,21 @@ func modelToFrameworkConfig(ctx context.Context, model *ScalewayProviderModel) *
 	if !model.S3UsePathStyle.IsNull() && !model.S3UsePathStyle.IsUnknown() {
 		s3UsePathStyle := model.S3UsePathStyle.ValueBool()
 		config.S3UsePathStyle = &s3UsePathStyle
+	}
+
+	if !model.DefaultAnnotations.IsNull() && !model.DefaultAnnotations.IsUnknown() {
+		elements := make(map[string]types.String)
+		if diags := model.DefaultAnnotations.ElementsAs(ctx, &elements, false); diags.HasError() {
+			tflog.Warn(ctx, fmt.Sprintf("ignoring default_annotations: unable to read the provider configuration value: %s", diags))
+		} else {
+			defaultAnnotations := make(map[string]string, len(elements))
+
+			for key, value := range elements {
+				defaultAnnotations[key] = value.ValueString()
+			}
+
+			config.DefaultAnnotations = defaultAnnotations
+		}
 	}
 
 	return config
@@ -269,10 +341,18 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 }
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
-	return []func() resource.Resource{
+	// Do not wrap annotations resources with annotations defaults
+	plain := []func() resource.Resource{
 		annotations.NewAnnotationsBindingResource,
 		annotations.NewAnnotationsKeyResource,
 		annotations.NewAnnotationsValueResource,
+	}
+
+	// Every other resource is wrapped so that its default annotation bindings
+	// are reconciled after Create, Update, and Delete.
+	// Wrapper is a no-op for resources without a Computed "srn" attribute or
+	// when no default annotations are configured.
+	wrapped := []func() resource.Resource{
 		autoscaling.NewAutoScalingGroupResource,
 		billing.NewBudgetAlertNotificationResource,
 		billing.NewBudgetAlertResource,
@@ -299,6 +379,15 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		partner.NewPartnerOrganizationResource,
 		webhosting.NewWebhostingResource,
 	}
+
+	resources := make([]func() resource.Resource, 0, len(plain)+len(wrapped))
+	resources = append(resources, plain...)
+
+	for _, factory := range wrapped {
+		resources = append(resources, annotations.WithDefaultBindingsFramework(factory))
+	}
+
+	return resources
 }
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {

@@ -106,7 +106,7 @@ func TestSetBucketState_ListObjects500DoesNotFailRead(t *testing.T) {
 		SecretKey:     new("866f4a9a-d058-4d3c-a39f-86930849ccc0"),
 		DefaultRegion: new(scw.RegionFrPar.String()),
 		DefaultZone:   new(scw.ZoneFrPar1.String()),
-	}, nil, nil, nil, "test", &http.Client{})
+	}, nil, nil, nil, "test", &http.Client{}, nil)
 	require.NoError(t, err)
 
 	d := schema.TestResourceDataRaw(t, object.BucketSchema(), map[string]any{

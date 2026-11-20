@@ -12,8 +12,11 @@ import (
 	ephemeralFramework "github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	providerFramework "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func extractActionDescriptions(ctx context.Context, a actionFramework.Action) (string, string) {
@@ -158,4 +161,96 @@ func TestProviderActionNameDoesNotContainAction(t *testing.T) {
 			assert.NotContains(t, resp.TypeName, "action")
 		}
 	}
+}
+
+func validateDefaultAnnotationsConfig(t *testing.T, values map[string]tftypes.Value) []string {
+	t.Helper()
+
+	ctx := t.Context()
+
+	p := provider.NewFrameworkProvider(nil)().(providerFramework.ProviderWithValidateConfig)
+
+	var schemaResp providerFramework.SchemaResponse
+
+	p.Schema(ctx, providerFramework.SchemaRequest{}, &schemaResp)
+	require.False(t, schemaResp.Diagnostics.HasError())
+
+	terraformType, ok := schemaResp.Schema.Type().TerraformType(ctx).(tftypes.Object)
+	require.True(t, ok)
+
+	attrs := make(map[string]tftypes.Value, len(terraformType.AttributeTypes))
+
+	for name, attrType := range terraformType.AttributeTypes {
+		attrs[name] = tftypes.NewValue(attrType, nil)
+	}
+
+	if values != nil {
+		attrs["default_annotations"] = tftypes.NewValue(tftypes.Map{ElementType: tftypes.String}, values)
+	}
+
+	var resp providerFramework.ValidateConfigResponse
+
+	p.ValidateConfig(ctx, providerFramework.ValidateConfigRequest{
+		Config: tfsdk.Config{
+			Raw:    tftypes.NewValue(terraformType, attrs),
+			Schema: schemaResp.Schema,
+		},
+	}, &resp)
+
+	summary := make([]string, 0, len(resp.Diagnostics))
+
+	for _, diagnostic := range resp.Diagnostics {
+		summary = append(summary, diagnostic.Summary())
+	}
+
+	return summary
+}
+
+func TestProviderValidateDefaultAnnotationsConfig(t *testing.T) {
+	t.Parallel()
+
+	t.Run("null default_annotations is valid", func(t *testing.T) {
+		t.Parallel()
+
+		assert.Empty(t, validateDefaultAnnotationsConfig(t, nil))
+	})
+
+	t.Run("valid default_annotations", func(t *testing.T) {
+		t.Parallel()
+
+		summary := validateDefaultAnnotationsConfig(t, map[string]tftypes.Value{
+			"team": tftypes.NewValue(tftypes.String, "platform"),
+			"env":  tftypes.NewValue(tftypes.String, "production"),
+		})
+
+		assert.Empty(t, summary)
+	})
+
+	t.Run("invalid key names are reported", func(t *testing.T) {
+		t.Parallel()
+
+		summary := validateDefaultAnnotationsConfig(t, map[string]tftypes.Value{
+			"2bad":  tftypes.NewValue(tftypes.String, "value"),
+			"team!": tftypes.NewValue(tftypes.String, "value"),
+		})
+
+		assert.ElementsMatch(t, []string{
+			"Invalid default annotation key",
+			"Invalid default annotation key",
+		}, summary)
+	})
+
+	t.Run("invalid value names are reported", func(t *testing.T) {
+		t.Parallel()
+
+		summary := validateDefaultAnnotationsConfig(t, map[string]tftypes.Value{
+			"team": tftypes.NewValue(tftypes.String, ""),
+			"env":  tftypes.NewValue(tftypes.String, "2value"),
+		})
+
+		assert.ElementsMatch(t, []string{
+			"Invalid default annotation value",
+			"Invalid default annotation value",
+		}, summary)
+	})
 }

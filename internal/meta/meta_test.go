@@ -5,6 +5,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -46,4 +47,24 @@ SCW_SECRET_KEY             Active Profile in config.yaml, Environment variable  
 SCW_DEFAULT_PROJECT_ID     Active Profile in config.yaml, Environment variable     Environment variable
 `
 	assert.Equal(t, expectedMessage, message)
+}
+
+func TestDefaultAnnotations(t *testing.T) {
+	t.Parallel()
+
+	accessKey := "SCWXXXXXXXXXXXXXXXXX"
+	secretKey := "866F4A9A-D058-4D3C-A39F-86930849CCC0"
+
+	profile := &scw.Profile{
+		AccessKey: &accessKey,
+		SecretKey: &secretKey,
+	}
+
+	m, err := meta.NewMetaFromProfile(t.Context(), profile, &meta.CredentialsSource{}, nil, nil, "test", nil, map[string]string{"team": "product"})
+	require.NoError(t, err)
+
+	assert.Equal(t, map[string]string{"team": "product"}, m.DefaultAnnotations())
+
+	m.SetDefaultAnnotations(map[string]string{"env": "production"})
+	assert.Equal(t, map[string]string{"env": "production"}, m.DefaultAnnotations())
 }
