@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -193,8 +194,8 @@ func (r *TokenResource) Configure(_ context.Context, req resource.ConfigureReque
 
 // ModifyPlan forces a replacement when the scopes change: every attribute of a token is immutable.
 // Terraform requires the planned block count to match the configuration, so an omitted block is
-// planned (and stored) empty. Dropping the block of a token that already has the default scopes
-// (e.g. a state written by the SDKv2 resource) is not a change, so it is updated in place.
+// planned (and stored) empty. Omitting the block never replaces the token — including after
+// import, when Read hydrated custom scopes from the API into state.
 func (r *TokenResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
 		return
@@ -209,22 +210,16 @@ func (r *TokenResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanR
 		return
 	}
 
-	defaults, diags := flattenTokenScopes(defaultCockpitTokenScopes())
-	resp.Diagnostics.Append(diags...)
-
 	planEmpty := plan.Scopes.IsNull() || len(plan.Scopes.Elements()) == 0
 	stateEmpty := state.Scopes.IsNull() || len(state.Scopes.Elements()) == 0
 
-	// Omitted plan + empty state: normalize null→empty so Terraform sees no drift.
-	if planEmpty && stateEmpty {
-		empty := types.ListValueMust(tokenScopesObjectType(), []attr.Value{})
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("scopes"), empty)...)
+	if planEmpty {
+		// Omitted block: keep the token; Update drops scopes from state when needed.
+		if stateEmpty {
+			empty := types.ListValueMust(tokenScopesObjectType(), []attr.Value{})
+			resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("scopes"), empty)...)
+		}
 
-		return
-	}
-
-	// Omitted plan + SDKv2 defaults still in state: update in place (drop the block from state).
-	if planEmpty && state.Scopes.Equal(defaults) {
 		return
 	}
 
