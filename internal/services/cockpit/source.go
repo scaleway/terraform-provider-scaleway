@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	identityfw "github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -133,7 +134,11 @@ func (r *SourceResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			"project_id": account.ProjectIDSchemaFw(
 				"The project_id you want to attach the resource to",
 			),
-			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+		},
+		// Block (not Attributes) keeps SDKv2 HCL: timeouts { create = "20m" }.
+		// framework-timeouts has no `default` key; configs using timeouts.default must set create/read/delete.
+		Blocks: map[string]schema.Block{
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true,
 				Read:   true,
 				Delete: true,
@@ -300,27 +305,16 @@ func (r *SourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	updateRequest := &cockpit.RegionalAPIUpdateDataSourceRequest{
-		DataSourceID: id,
-		Region:       region,
-	}
-	hasChanges := false
-
-	if !plan.Name.Equal(state.Name) {
-		updateRequest.Name = new(plan.Name.ValueString())
-		hasChanges = true
-	}
-
-	if !plan.RetentionDays.Equal(state.RetentionDays) {
-		updateRequest.RetentionDays = new(uint32(plan.RetentionDays.ValueInt64()))
-		hasChanges = true
-	}
-
 	var res *cockpit.DataSource
 
-	if hasChanges {
+	// name is RequiresReplace; Update only ever changes retention_days (or timeouts in state).
+	if !plan.RetentionDays.Equal(state.RetentionDays) {
 		res, err = transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.DataSource, error) {
-			return r.api.UpdateDataSource(updateRequest, scw.WithContext(ctx))
+			return r.api.UpdateDataSource(&cockpit.RegionalAPIUpdateDataSourceRequest{
+				DataSourceID:  id,
+				Region:        region,
+				RetentionDays: new(uint32(plan.RetentionDays.ValueInt64())),
+			}, scw.WithContext(ctx))
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to update Cockpit source", err.Error())
