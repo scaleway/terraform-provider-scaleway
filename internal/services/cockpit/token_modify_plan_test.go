@@ -1,3 +1,4 @@
+//nolint:testpackage // Tests need access to unexported token model and scope helpers.
 package cockpit
 
 import (
@@ -47,10 +48,12 @@ func TestTokenModifyPlan_OmittedScopesAfterImport(t *testing.T) {
 	planModel.Scopes = types.ListNull(tokenScopesObjectType())
 
 	var state tfsdk.State
+
 	state.Schema = schemaResp.Schema
 	require.False(t, state.Set(ctx, &stateModel).HasError())
 
 	var plan tfsdk.Plan
+
 	plan.Schema = schemaResp.Schema
 	require.False(t, plan.Set(ctx, &planModel).HasError())
 
@@ -93,10 +96,12 @@ func TestTokenModifyPlan_ExplicitScopesChangeRequiresReplace(t *testing.T) {
 	planModel.Scopes = newScopes
 
 	var state tfsdk.State
+
 	state.Schema = schemaResp.Schema
 	require.False(t, state.Set(ctx, &stateModel).HasError())
 
 	var plan tfsdk.Plan
+
 	plan.Schema = schemaResp.Schema
 	require.False(t, plan.Set(ctx, &planModel).HasError())
 
