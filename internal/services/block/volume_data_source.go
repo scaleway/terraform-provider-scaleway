@@ -184,9 +184,8 @@ func (d *VolumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	case hasName:
 		volumeName := config.Name.ValueString()
 		listReq := &block.ListVolumesRequest{
-			Zone:      zone,
-			Name:      &volumeName,
-			ProjectID: new(config.ProjectID.String()),
+			Zone: zone,
+			Name: &volumeName,
 		}
 
 		if !config.ProjectID.IsNull() {
