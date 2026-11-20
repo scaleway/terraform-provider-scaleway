@@ -26,6 +26,7 @@ resource "scaleway_instance_security_group_rules" "sgrs01" {
     action   = "accept"
     port     = 80
     ip_range = "0.0.0.0/0"
+    position = 1
   }
 }
 ```
@@ -120,6 +121,8 @@ The `inbound_rule` and `outbound_rule` block supports:
 - `port_range`- Need terraform >= 0.13.0 (Optional) The port range (e.g `22-23`) this rule applies to.
   If no `port` nor `port_range` are specified, rule will apply to all port.
   Only one of `port` and `port_range` should be specified.
+
+- `position` - (Optional) Position of the rule. Start at 1 (Rule with the highest priority).
 
 - `ip`- (Deprecated) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
