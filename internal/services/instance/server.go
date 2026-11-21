@@ -775,25 +775,9 @@ func setServerState(ctx context.Context, d *schema.ResourceData, m any, api *ins
 	////
 	// Read server's volumes
 	////
-	rootVolume := make(map[string]any, 1)
-	additionalVolumesIDs := make([]string, 0, len(server.Volumes)-1)
-
-	for i, serverVolume := range sortVolumeServer(server.Volumes) {
-		if i == 0 {
-			rootVolume, err = flattenServerVolume(api, serverVolume, zone)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
-			rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
-		} else {
-			additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, serverVolume.ID).String())
-		}
+	if err := setServerVolumesState(d, api, zone, server.Volumes); err != nil {
+		return diag.FromErr(err)
 	}
-
-	_ = d.Set("root_volume", []map[string]any{rootVolume})
-	_ = d.Set("additional_volume_ids", additionalVolumesIDs)
 
 	////
 	// Read server user data
@@ -1784,4 +1768,44 @@ func renameRootVolumeIfNeeded(d *schema.ResourceData, api *instancehelpers.Block
 
 func errorCheck(err error, message string) bool {
 	return strings.Contains(err.Error(), message)
+}
+
+func setServerVolumesState(d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, serverVolumes map[string]*instanceSDK.VolumeServer) error {
+	rootVolumes := make([]map[string]any, 0, 1)
+	additionalVolumesIDs := make([]string, 0)
+
+	var rootVolumeServer *instanceSDK.VolumeServer
+	if vol0, ok := serverVolumes["0"]; ok {
+		rootVolumeServer = vol0
+	} else {
+		for _, vol := range serverVolumes {
+			if vol != nil && vol.Boot {
+				rootVolumeServer = vol
+				break
+			}
+		}
+	}
+
+	if rootVolumeServer != nil {
+		rootVolume, err := flattenServerVolume(api, rootVolumeServer, zone)
+		if err != nil {
+			return err
+		}
+
+		_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
+		rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
+		rootVolumes = append(rootVolumes, rootVolume)
+	}
+
+	for _, serverVolume := range sortVolumeServer(serverVolumes) {
+		if serverVolume != nil && serverVolume == rootVolumeServer {
+			continue
+		}
+		additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, serverVolume.ID).String())
+	}
+
+	_ = d.Set("root_volume", rootVolumes)
+	_ = d.Set("additional_volume_ids", additionalVolumesIDs)
+
+	return nil
 }
