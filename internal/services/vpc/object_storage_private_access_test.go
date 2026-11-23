@@ -3,6 +3,7 @@ package vpc_test
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -130,6 +131,75 @@ func TestAccVPCObjectStoragePrivateAccess_Update(t *testing.T) {
 						"scaleway_vpc_object_storage_private_access.main", "private_network_ids.#", "2",
 					),
 				),
+			},
+		},
+	})
+}
+
+func TestAccVPCObjectStoragePrivateAccess_UUIDs(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isObjectStoragePrivateAccessDestroyed(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+			vpcchecks.CheckVPCDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				// IDs given without the region prefix must be kept as is in the state.
+				Config: `
+					resource "scaleway_vpc" "main" {
+						name = "tf-vpc-object-storage-private-access-bare-uuids"
+					}
+
+					resource "scaleway_vpc_private_network" "pn01" {
+						name   = "tf-vpc-object-storage-private-access-bare-uuids-pn"
+						vpc_id = scaleway_vpc.main.id
+					}
+
+					resource "scaleway_vpc_object_storage_private_access" "main" {
+						vpc_id              = split("/", scaleway_vpc.main.id)[1]
+						private_network_ids = [split("/", scaleway_vpc_private_network.pn01.id)[1]]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isObjectStoragePrivateAccessPresent(tt, "scaleway_vpc_object_storage_private_access.main"),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_object_storage_private_access.main", "private_network_ids.#", "1",
+					),
+					resource.TestCheckResourceAttrWith(
+						"scaleway_vpc_object_storage_private_access.main", "vpc_id",
+						func(value string) error {
+							if strings.Contains(value, "/") {
+								return fmt.Errorf("expected a bare UUID, got %q", value)
+							}
+
+							return nil
+						},
+					),
+				),
+			},
+			{
+				// switching to regional IDs must not produce a diff
+				Config: `
+					resource "scaleway_vpc" "main" {
+						name = "tf-vpc-object-storage-private-access-bare-uuids"
+					}
+
+					resource "scaleway_vpc_private_network" "pn01" {
+						name   = "tf-vpc-object-storage-private-access-bare-uuids-pn"
+						vpc_id = scaleway_vpc.main.id
+					}
+
+					resource "scaleway_vpc_object_storage_private_access" "main" {
+						vpc_id              = scaleway_vpc.main.id
+						private_network_ids = [scaleway_vpc_private_network.pn01.id]
+					}
+				`,
+				PlanOnly: true,
 			},
 		},
 	})

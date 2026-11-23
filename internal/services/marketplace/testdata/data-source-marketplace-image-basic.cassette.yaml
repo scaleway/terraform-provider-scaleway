@@ -1,158 +1,158 @@
 ---
 version: 2
 interactions:
-- id: 0
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    form:
-      image_label:
-      - ubuntu_focal
-      order_by:
-      - type_asc
-      type:
-      - instance_local
-      zone:
-      - fr-par-1
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_focal&order_by=type_asc&type=instance_local&zone=fr-par-1
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 423
-    body: "{\"local_images\":[{\"id\":\"a02f91b9-de8a-4bd5-8f95-d79cb7d39806\", \"arch\":\"x86_64\", \"zone\":\"fr-par-1\", \"compatible_commercial_types\":[\"DEV1-L\", \"DEV1-M\", \"DEV1-S\", \"DEV1-XL\", \"GP1-L\", \"GP1-M\", \"GP1-S\", \"GP1-XL\", \"GP1-XS\", \"STARDUST1-S\", \"START1-L\", \"START1-M\", \"START1-S\", \"START1-XS\", \"VC1L\", \"VC1M\", \"VC1S\", \"X64-120GB\", \"X64-15GB\", \"X64-30GB\", \"X64-60GB\"], \"label\":\"ubuntu_focal\", \"type\":\"instance_local\"}], \"total_count\":1}"
-    headers:
-      Content-Length:
-      - "423"
-      Content-Type:
-      - application/json
-      Date:
-      - Fri, 31 Oct 2025 15:53:48 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-3;edge01)
-      X-Request-Id:
-      - 85a91ad3-9b05-40e8-8a0e-0ee65a9dace6
-    status: 200 OK
-    code: 200
-    duration: 142.757311ms
-- id: 1
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/a02f91b9-de8a-4bd5-8f95-d79cb7d39806
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 610
-    body: "{\"image\": {\"id\": \"a02f91b9-de8a-4bd5-8f95-d79cb7d39806\", \"name\": \"Ubuntu 20.04 Focal Fossa\", \"organization\": \"51b656e3-4865-41e8-adbc-0c45bdd780db\", \"project\": \"51b656e3-4865-41e8-adbc-0c45bdd780db\", \"root_volume\": {\"id\": \"e4e93065-045d-4e87-a627-068300e27a10\", \"name\": \"Ubuntu 20.04 Focal Fossa\", \"volume_type\": \"l_ssd\", \"size\": 10000000000}, \"extra_volumes\": {}, \"public\": true, \"arch\": \"x86_64\", \"creation_date\": \"2025-09-12T09:19:27.841572+00:00\", \"modification_date\": \"2025-09-12T09:19:27.841572+00:00\", \"default_bootscript\": null, \"from_server\": \"\", \"state\": \"available\", \"tags\": [], \"zone\": \"fr-par-1\"}}"
-    headers:
-      Content-Length:
-      - "610"
-      Content-Type:
-      - application/json
-      Date:
-      - Fri, 31 Oct 2025 15:53:48 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-3;edge01)
-      X-Request-Id:
-      - 763ba66c-5af9-472c-9faa-07dd2e9506a9
-    status: 200 OK
-    code: 200
-    duration: 40.224659ms
-- id: 2
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    form:
-      image_label:
-      - ubuntu_focal
-      order_by:
-      - type_asc
-      type:
-      - instance_local
-      zone:
-      - fr-par-1
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_focal&order_by=type_asc&type=instance_local&zone=fr-par-1
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 423
-    body: "{\"local_images\":[{\"id\":\"a02f91b9-de8a-4bd5-8f95-d79cb7d39806\", \"arch\":\"x86_64\", \"zone\":\"fr-par-1\", \"compatible_commercial_types\":[\"DEV1-L\", \"DEV1-M\", \"DEV1-S\", \"DEV1-XL\", \"GP1-L\", \"GP1-M\", \"GP1-S\", \"GP1-XL\", \"GP1-XS\", \"STARDUST1-S\", \"START1-L\", \"START1-M\", \"START1-S\", \"START1-XS\", \"VC1L\", \"VC1M\", \"VC1S\", \"X64-120GB\", \"X64-15GB\", \"X64-30GB\", \"X64-60GB\"], \"label\":\"ubuntu_focal\", \"type\":\"instance_local\"}], \"total_count\":1}"
-    headers:
-      Content-Length:
-      - "423"
-      Content-Type:
-      - application/json
-      Date:
-      - Fri, 31 Oct 2025 15:53:49 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-3;edge01)
-      X-Request-Id:
-      - 98c34025-5502-49d2-9c0a-f9d734e28e0d
-    status: 200 OK
-    code: 200
-    duration: 58.139606ms
-- id: 3
-  request:
-    proto: HTTP/1.1
-    proto_major: 1
-    proto_minor: 1
-    content_length: 0
-    host: api.scaleway.com
-    form:
-      image_label:
-      - ubuntu_focal
-      order_by:
-      - type_asc
-      type:
-      - instance_local
-      zone:
-      - fr-par-1
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
-    url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_focal&order_by=type_asc&type=instance_local&zone=fr-par-1
-    method: GET
-  response:
-    proto: HTTP/2.0
-    proto_major: 2
-    proto_minor: 0
-    content_length: 423
-    body: "{\"local_images\":[{\"id\":\"a02f91b9-de8a-4bd5-8f95-d79cb7d39806\", \"arch\":\"x86_64\", \"zone\":\"fr-par-1\", \"compatible_commercial_types\":[\"DEV1-L\", \"DEV1-M\", \"DEV1-S\", \"DEV1-XL\", \"GP1-L\", \"GP1-M\", \"GP1-S\", \"GP1-XL\", \"GP1-XS\", \"STARDUST1-S\", \"START1-L\", \"START1-M\", \"START1-S\", \"START1-XS\", \"VC1L\", \"VC1M\", \"VC1S\", \"X64-120GB\", \"X64-15GB\", \"X64-30GB\", \"X64-60GB\"], \"label\":\"ubuntu_focal\", \"type\":\"instance_local\"}], \"total_count\":1}"
-    headers:
-      Content-Length:
-      - "423"
-      Content-Type:
-      - application/json
-      Date:
-      - Fri, 31 Oct 2025 15:53:49 GMT
-      Server:
-      - Scaleway API Gateway (fr-par-3;edge01)
-      X-Request-Id:
-      - d4154524-6164-46a8-8cee-c287facf3f4a
-    status: 200 OK
-    code: 200
-    duration: 48.629622ms
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            image_label:
+                - ubuntu_focal
+            order_by:
+                - type_asc
+            type:
+                - instance_local
+            zone:
+                - fr-par-1
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_focal&order_by=type_asc&type=instance_local&zone=fr-par-1
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 423
+        body: '{"local_images":[{"id":"a02f91b9-de8a-4bd5-8f95-d79cb7d39806", "arch":"x86_64", "zone":"fr-par-1", "compatible_commercial_types":["DEV1-L", "DEV1-M", "DEV1-S", "DEV1-XL", "GP1-L", "GP1-M", "GP1-S", "GP1-XL", "GP1-XS", "STARDUST1-S", "START1-L", "START1-M", "START1-S", "START1-XS", "VC1L", "VC1M", "VC1S", "X64-120GB", "X64-15GB", "X64-30GB", "X64-60GB"], "label":"ubuntu_focal", "type":"instance_local"}], "total_count":1}'
+        headers:
+            Content-Length:
+                - "423"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 31 Oct 2025 15:53:48 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge01)
+            X-Request-Id:
+                - 85a91ad3-9b05-40e8-8a0e-0ee65a9dace6
+        status: 200 OK
+        code: 200
+        duration: 142.757311ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/a02f91b9-de8a-4bd5-8f95-d79cb7d39806
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 610
+        body: '{"image": {"id": "a02f91b9-de8a-4bd5-8f95-d79cb7d39806", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "e4e93065-045d-4e87-a627-068300e27a10", "name": "Ubuntu 20.04 Focal Fossa", "volume_type": "l_ssd", "size": 10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2025-09-12T09:19:27.841572+00:00", "modification_date": "2025-09-12T09:19:27.841572+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "610"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 31 Oct 2025 15:53:48 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge01)
+            X-Request-Id:
+                - 763ba66c-5af9-472c-9faa-07dd2e9506a9
+        status: 200 OK
+        code: 200
+        duration: 40.224659ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            image_label:
+                - ubuntu_focal
+            order_by:
+                - type_asc
+            type:
+                - instance_local
+            zone:
+                - fr-par-1
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_focal&order_by=type_asc&type=instance_local&zone=fr-par-1
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 423
+        body: '{"local_images":[{"id":"a02f91b9-de8a-4bd5-8f95-d79cb7d39806", "arch":"x86_64", "zone":"fr-par-1", "compatible_commercial_types":["DEV1-L", "DEV1-M", "DEV1-S", "DEV1-XL", "GP1-L", "GP1-M", "GP1-S", "GP1-XL", "GP1-XS", "STARDUST1-S", "START1-L", "START1-M", "START1-S", "START1-XS", "VC1L", "VC1M", "VC1S", "X64-120GB", "X64-15GB", "X64-30GB", "X64-60GB"], "label":"ubuntu_focal", "type":"instance_local"}], "total_count":1}'
+        headers:
+            Content-Length:
+                - "423"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 31 Oct 2025 15:53:49 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge01)
+            X-Request-Id:
+                - 98c34025-5502-49d2-9c0a-f9d734e28e0d
+        status: 200 OK
+        code: 200
+        duration: 58.139606ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            image_label:
+                - ubuntu_focal
+            order_by:
+                - type_asc
+            type:
+                - instance_local
+            zone:
+                - fr-par-1
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_focal&order_by=type_asc&type=instance_local&zone=fr-par-1
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 423
+        body: '{"local_images":[{"id":"a02f91b9-de8a-4bd5-8f95-d79cb7d39806", "arch":"x86_64", "zone":"fr-par-1", "compatible_commercial_types":["DEV1-L", "DEV1-M", "DEV1-S", "DEV1-XL", "GP1-L", "GP1-M", "GP1-S", "GP1-XL", "GP1-XS", "STARDUST1-S", "START1-L", "START1-M", "START1-S", "START1-XS", "VC1L", "VC1M", "VC1S", "X64-120GB", "X64-15GB", "X64-30GB", "X64-60GB"], "label":"ubuntu_focal", "type":"instance_local"}], "total_count":1}'
+        headers:
+            Content-Length:
+                - "423"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 31 Oct 2025 15:53:49 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge01)
+            X-Request-Id:
+                - d4154524-6164-46a8-8cee-c287facf3f4a
+        status: 200 OK
+        code: 200
+        duration: 48.629622ms
