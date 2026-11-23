@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 )
 
-func TestAccMongoDBSnapshot_Basic(t *testing.T) {
+func TestAccMongoDBSnapshot_Lifecycle(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -25,7 +25,7 @@ func TestAccMongoDBSnapshot_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isSnapshotDestroyed(tt),
+		CheckDestroy:             resource.ComposeTestCheckFunc(isSnapshotDestroyed(tt), IsInstanceDestroyed(tt)),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -45,45 +45,15 @@ func TestAccMongoDBSnapshot_Basic(t *testing.T) {
 					}
 				`, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-instance"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_type", "mgdb-play2-nano"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "7.0"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_number", "1"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "tls_certificate"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "name", "test-snapshot"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccMongoDBSnapshot_Update(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	expiresAt := time.Now().AddDate(0, 6, 0).UTC().Format(time.RFC3339)
-	if !*acctest.UpdateCassettes {
-		// Hardcoded value must match expires_at in the cassette request body.
-		expiresAt = "2027-03-10T23:59:59Z"
-	}
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isSnapshotDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_mongodb_instance" "main" {
-						name       = "test-mongodb-instance"
-						version    = "7.0.12"
-						node_type  = "MGDB-PLAY2-NANO"
-						node_number = 1
-						user_name  = "my_initial_user"
-						password   = "thiZ_is_v&ry_s3cret"
-					}
-
-					resource "scaleway_mongodb_snapshot" "main" {
-						instance_id = scaleway_mongodb_instance.main.id
-						name        = "test-snapshot"
-						expires_at  = %q
-					}
-				`, expiresAt),
-				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", expiresAt),
 				),
 			},
