@@ -406,32 +406,13 @@ func (r *ObjectStoragePrivateAccessResource) readObjectStoragePrivateAccess(ctx 
 		)}
 	}
 
-	knownIDs := map[string]string{}
-
-	if !current.PrivateNetworkIDs.IsNull() && !current.PrivateNetworkIDs.IsUnknown() {
-		var currentIDs []string
-
-		diags := current.PrivateNetworkIDs.ElementsAs(ctx, &currentIDs, false)
-		if diags.HasError() {
-			return nil, diags
-		}
-
-		for _, id := range currentIDs {
-			knownIDs[locality.ExpandID(id)] = id
-		}
-	}
-
 	ids := make([]string, 0, len(listResp.PrivateNetworks))
 	for _, pn := range listResp.PrivateNetworks {
 		if pn == nil {
 			continue
 		}
 
-		if id, ok := knownIDs[pn.ID]; ok {
-			ids = append(ids, id)
-		} else {
-			ids = append(ids, regional.NewIDString(region, pn.ID))
-		}
+		ids = append(ids, regional.NewIDString(region, pn.ID))
 	}
 
 	privateNetworkIDs, diags := types.SetValueFrom(ctx, types.StringType, ids)
@@ -441,11 +422,8 @@ func (r *ObjectStoragePrivateAccessResource) readObjectStoragePrivateAccess(ctx 
 
 	current.ID = types.StringValue(regional.NewIDString(region, vpcID))
 	current.Region = types.StringValue(region.String())
+	current.VpcID = types.StringValue(regional.NewIDString(region, vpcID))
 	current.PrivateNetworkIDs = privateNetworkIDs
-
-	if current.VpcID.IsNull() || current.VpcID.IsUnknown() || locality.ExpandID(current.VpcID.ValueString()) != vpcID {
-		current.VpcID = types.StringValue(regional.NewIDString(region, vpcID))
-	}
 
 	return &current, nil
 }
