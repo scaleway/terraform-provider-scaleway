@@ -132,21 +132,21 @@ func ExpandContact(contactMap map[string]any) *domain.Contact {
 		contact.WhoisOptIn = v
 	}
 
-	if extFr, ok := contactMap["extension_fr"].(map[string]any); ok && len(extFr) > 0 {
+	if extFr, ok := nestedMap(contactMap["extension_fr"]); ok {
 		extension := expandContactExtension(extFr, "fr")
 		if extension != nil {
 			contact.ExtensionFr = extension.(*domain.ContactExtensionFR)
 		}
 	}
 
-	if extEu, ok := contactMap["extension_eu"].(map[string]any); ok && len(extEu) > 0 {
+	if extEu, ok := nestedMap(contactMap["extension_eu"]); ok {
 		extension := expandContactExtension(extEu, "eu")
 		if extension != nil {
 			contact.ExtensionEu = extension.(*domain.ContactExtensionEU)
 		}
 	}
 
-	if extNl, ok := contactMap["extension_nl"].(map[string]any); ok && len(extNl) > 0 {
+	if extNl, ok := nestedMap(contactMap["extension_nl"]); ok {
 		extension := expandContactExtension(extNl, "nl")
 		if extension != nil {
 			contact.ExtensionNl = extension.(*domain.ContactExtensionNL)
@@ -263,21 +263,21 @@ func ExpandNewContact(contactMap map[string]any) *domain.NewContact {
 		contact.State = new(v)
 	}
 
-	if extFr, ok := contactMap["extension_fr"].(map[string]any); ok && len(extFr) > 0 {
+	if extFr, ok := nestedMap(contactMap["extension_fr"]); ok {
 		extension := expandContactExtension(extFr, "fr")
 		if extension != nil {
 			contact.ExtensionFr = extension.(*domain.ContactExtensionFR)
 		}
 	}
 
-	if extEu, ok := contactMap["extension_eu"].(map[string]any); ok && len(extEu) > 0 {
+	if extEu, ok := nestedMap(contactMap["extension_eu"]); ok {
 		extension := expandContactExtension(extEu, "eu")
 		if extension != nil {
 			contact.ExtensionEu = extension.(*domain.ContactExtensionEU)
 		}
 	}
 
-	if extNl, ok := contactMap["extension_nl"].(map[string]any); ok && len(extNl) > 0 {
+	if extNl, ok := nestedMap(contactMap["extension_nl"]); ok {
 		extension := expandContactExtension(extNl, "nl")
 		if extension != nil {
 			contact.ExtensionNl = extension.(*domain.ContactExtensionNL)
@@ -285,6 +285,25 @@ func ExpandNewContact(contactMap map[string]any) *domain.NewContact {
 	}
 
 	return contact
+}
+
+// nestedMap unwraps a MaxItems:1 TypeList block from Terraform ( []any{map} )
+// or accepts a bare map (unit tests / already-unwrapped values).
+func nestedMap(v any) (map[string]any, bool) {
+	switch t := v.(type) {
+	case map[string]any:
+		return t, len(t) > 0
+	case []any:
+		if len(t) == 0 || t[0] == nil {
+			return nil, false
+		}
+
+		m, ok := t[0].(map[string]any)
+
+		return m, ok && len(m) > 0
+	default:
+		return nil, false
+	}
 }
 
 func parseEnum(data map[string]any, key string, defaultValue string) string {
@@ -296,15 +315,16 @@ func parseEnum(data map[string]any, key string, defaultValue string) string {
 }
 
 func parseStruct[T any](data map[string]any, key string) *T {
-	if nested, ok := data[key].(map[string]any); ok {
-		var result T
-
-		mapToStruct(nested, &result)
-
-		return &result
+	nested, ok := nestedMap(data[key])
+	if !ok {
+		return nil
 	}
 
-	return nil
+	var result T
+
+	mapToStruct(nested, &result)
+
+	return &result
 }
 
 func mapToStruct(data map[string]any, target any) {

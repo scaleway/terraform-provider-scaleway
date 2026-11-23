@@ -22,17 +22,20 @@ resource "scaleway_instance_security_group" "web" {
     action   = "accept"
     port     = 22
     ip_range = "212.47.225.64/32"
+    position = 1
   }
 
   inbound_rule {
-    action = "accept"
-    port   = 80
+    action   = "accept"
+    port     = 80
+    position = 2
   }
 
   inbound_rule {
     action     = "accept"
     protocol   = "UDP"
     port_range = "22-23"
+    position   = 3
   }
 }
 ```
@@ -133,6 +136,8 @@ The `inbound_rule` and `outbound_rule` block supports:
   If no `port` nor `port_range` are specified, rule will apply to all port.
   Only one of `port` and `port_range` should be specified.
 
+- `position` - (Optional) Position of the rule. Start at 1 (Rule with the highest priority).
+
 - `ip`- (Deprecated) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
 - `ip_range`- (Optional) The ip range (e.g `192.168.1.0/24`) this rule applies to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
@@ -146,6 +151,8 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** Instance security groups' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `organization_id` - The organization ID the security group is associated with.
+
+- `srn` - The Scaleway Resource Name (SRN) of the security group.
 
 ## Import
 

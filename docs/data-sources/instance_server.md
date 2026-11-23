@@ -83,3 +83,5 @@ attached to the server.
 - `private_ips` - The list of private IPs of the server.
     - `id` - The ID of the IP address resource.
     - `address` - The private IP address.
+
+- `srn` - The Scaleway Resource Name (SRN) of the server.

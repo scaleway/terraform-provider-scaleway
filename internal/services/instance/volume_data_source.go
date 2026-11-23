@@ -97,5 +97,5 @@ func DataSourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return setVolumeState(d, volume)
+	return setVolumeState(d, volume, m)
 }

@@ -6,9 +6,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
+)
+
+const (
+	OfferName = "L40S-1-48G"
+	Zone      = "fr-par-2"
 )
 
 func TestAccServer_RootVolume_Size(t *testing.T) {
@@ -691,6 +697,10 @@ func TestAccServer_ScratchStorage(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
+		t.Skip("Offer is out of stock")
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -699,26 +709,26 @@ func TestAccServer_ScratchStorage(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_volume" "main" {
 						size_in_gb = 1600
 						type = "scratch"
-						zone = "fr-par-2"
+						zone = "%s"
 					}
 					resource "scaleway_instance_server" "main" {
 						name = "tf-acc-server-scratch-storage"
-						type = "L40S-1-48G"
+						type = "%s"
 						image = "ubuntu_jammy_gpu_os_12"
 						state = "stopped"
-						zone = "fr-par-2"
+						zone = "%s"
 					    tags  = [ "terraform-test", "scaleway_instance_server", "scratch_storage" ]
 						additional_volume_ids = [scaleway_instance_volume.main.id]
-					}`,
+					}`, Zone, OfferName, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
 					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "name", "tf-acc-server-scratch-storage"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "L40S-1-48G"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", OfferName),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy_gpu_os_12"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_instance_volume.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "1600"),

@@ -41,6 +41,8 @@ In addition to all above arguments, the following attributes are exported:
 
 - `organization_id` - The ID of the organization the security group is associated with.
 
+- `srn` - The Scaleway Resource Name (SRN) of the security group.
+
 - `inbound_default_policy` - The default policy on incoming traffic. Possible values are: `accept` or `drop`.
 
 - `outbound_default_policy` - The default policy on outgoing traffic. Possible values are: `accept` or `drop`.
@@ -60,6 +62,8 @@ The `inbound_rule` and `outbound_rule` block supports:
 - `port_range`- The port range (e.g `22-23`) this rule applies to.
   If no `port` nor `port_range` are specified, rule will apply to all port.
   Only one of `port` and `port_range` should be specified.
+
+- `position` - Position of the rule. Start at 1 (Rule with the highest priority).
 
 - `ip`- The ip this rule apply to.
 
