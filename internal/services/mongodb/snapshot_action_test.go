@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -21,11 +22,13 @@ func TestAccActionMongoDBInstanceSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	expiresAt := time.Now().UTC().Add(24 * time.Hour).Format(time.RFC3339)
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_mongodb_instance" "main" {
 						name        = "test-mongodb-action-snapshot"
 						version     = "7.0"
@@ -46,14 +49,14 @@ func TestAccActionMongoDBInstanceSnapshot_Basic(t *testing.T) {
 						config {
 							instance_id = scaleway_mongodb_instance.main.id
 							name        = "tf-acc-mongodb-instance-snapshot-action"
-							expires_at  = "2026-11-01T00:00:00Z"
+							expires_at  = %q
 							wait        = true
 						}
 					}
-				`,
+				`, expiresAt),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_mongodb_instance" "main" {
 						name        = "test-mongodb-action-snapshot"
 						version     = "7.0"
@@ -74,11 +77,11 @@ func TestAccActionMongoDBInstanceSnapshot_Basic(t *testing.T) {
 						config {
 							instance_id = scaleway_mongodb_instance.main.id
 							name        = "tf-acc-mongodb-instance-snapshot-action"
-							expires_at  = "2026-11-01T00:00:00Z"
+							expires_at  = %q
 							wait        = true
 						}
 					}
-				`,
+				`, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
 					isSnapshotCreated(tt, "scaleway_mongodb_instance.main", "tf-acc-mongodb-instance-snapshot-action"),
 				),
