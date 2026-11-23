@@ -63,6 +63,8 @@ The `inbound_rule` and `outbound_rule` block supports:
   If no `port` nor `port_range` are specified, rule will apply to all port.
   Only one of `port` and `port_range` should be specified.
 
+- `position` - Position of the rule. Start at 1 (Rule with the highest priority).
+
 - `ip`- The ip this rule apply to.
 
 - `ip_range`- The ip range (e.g `192.168.1.0/24`) this rule apply to.
