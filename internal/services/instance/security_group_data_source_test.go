@@ -2,6 +2,7 @@ package instance_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -38,8 +39,10 @@ func TestAccDataSourceSecurityGroup_Basic(t *testing.T) {
 					}`, securityGroupName),
 				Check: resource.ComposeTestCheckFunc(
 					isSecurityGroupPresent(tt, "data.scaleway_instance_security_group.prod"),
+					resource.TestMatchResourceAttr("data.scaleway_instance_security_group.prod", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/security-groups/.+$`)),
 					resource.TestCheckResourceAttr("data.scaleway_instance_security_group.prod", "name", securityGroupName),
 					isSecurityGroupPresent(tt, "data.scaleway_instance_security_group.stg"),
+					resource.TestMatchResourceAttr("data.scaleway_instance_security_group.stg", "srn", regexp.MustCompile(`^srn://instance\..+/zones/.+/security-groups/.+$`)),
 					resource.TestCheckResourceAttr("data.scaleway_instance_security_group.stg", "name", securityGroupName),
 				),
 			},
