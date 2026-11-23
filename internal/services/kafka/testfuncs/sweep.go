@@ -1,9 +1,6 @@
 package testfuncs
 
 import (
-	"fmt"
-	"slices"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	kafkaSDK "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -18,19 +15,8 @@ func AddTestSweepers() {
 	})
 }
 
-func testSweepCluster(region string) error {
-	regions := (&kafkaSDK.API{}).Regions()
-
-	if region != "all_regions" {
-		requestedRegion := scw.Region(region)
-		if !slices.Contains(regions, requestedRegion) {
-			return fmt.Errorf("unsupported Kafka sweep region %q", region)
-		}
-
-		regions = []scw.Region{requestedRegion}
-	}
-
-	return acctest.SweepRegions(regions, func(scwClient *scw.Client, region scw.Region) error {
+func testSweepCluster(_ string) error {
+	return acctest.SweepRegions((&kafkaSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		api := kafkaSDK.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: deleting kafka clusters in (%s)", region)
