@@ -1,12 +1,13 @@
 package secret_test
 
 import (
+	"encoding/base64"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
@@ -105,14 +106,14 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
 					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_v1", "secret_id", "scaleway_secret.main", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v1", "data", secret.Base64Encoded([]byte(secretVersionData))),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v1", "data", base64.StdEncoding.EncodeToString([]byte(secretVersionData))),
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v1", "revision", "1"),
 
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v2"),
 					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_v2", "secret_id", "scaleway_secret.main", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v2", "data", secret.Base64Encoded([]byte(secretVersionDataV2))),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v2", "data", base64.StdEncoding.EncodeToString([]byte(secretVersionDataV2))),
 					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_latest", "secret_id", "scaleway_secret.main", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_latest", "data", secret.Base64Encoded([]byte(secretVersionDataV2))),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_latest", "data", base64.StdEncoding.EncodeToString([]byte(secretVersionDataV2))),
 
 					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_v1", "srn", acctest.CheckSRN("secret-manager", "versions")),
 					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_v2", "srn", acctest.CheckSRN("secret-manager", "versions")),
@@ -157,7 +158,7 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v3"),
 					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_v3", "secret_id", "scaleway_secret.main", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v3", "data", secret.Base64Encoded([]byte(secretVersionDataV3))),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v3", "data", base64.StdEncoding.EncodeToString([]byte(secretVersionDataV3))),
 					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_v3", "srn", acctest.CheckSRN("secret-manager", "versions")),
 				),
 			},
@@ -222,13 +223,134 @@ func TestAccDataSourceSecretVersion_ByNameSecret(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.main"),
 					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_by_name", "secret_id", "scaleway_secret.main", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name", "data", secret.Base64Encoded([]byte(secretVersionData))),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name", "data", base64.StdEncoding.EncodeToString([]byte(secretVersionData))),
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name", "revision", "1"),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name_latest", "data", secret.Base64Encoded([]byte(secretVersionData))),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name_latest", "data", base64.StdEncoding.EncodeToString([]byte(secretVersionData))),
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_by_name_latest", "revision", "1"),
 					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_by_name", "srn", acctest.CheckSRN("secret-manager", "versions")),
 					resource.TestCheckResourceAttrWith("data.scaleway_secret_version.data_by_name_latest", "srn", acctest.CheckSRN("secret-manager", "versions")),
 				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceSecretVersion_Type(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	const (
+		secretName        = "dataSourceSecretVersionType"
+		secretDescription = "secret description"
+		secretVersionData = "my_super_secret_string"
+	)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%[1]s"
+				  description = "%[2]s"
+				  tags        = ["devtools", "provider", "terraform"]
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = "%[3]s"
+				  depends_on  = [scaleway_secret.main]
+				}
+
+				data "scaleway_secret_version" "data_default" {
+				  secret_id  = scaleway_secret.main.id
+				  revision   = "1"
+				  depends_on = [scaleway_secret_version.v1]
+				}
+
+				data "scaleway_secret_version" "data_base64" {
+				  secret_id  = scaleway_secret.main.id
+				  revision   = "1"
+				  type       = "base64"
+				  depends_on = [scaleway_secret_version.v1]
+				}
+
+				data "scaleway_secret_version" "data_string" {
+				  secret_id  = scaleway_secret.main.id
+				  revision   = "1"
+				  type       = "string"
+				  depends_on = [scaleway_secret_version.v1]
+				}
+				`, secretName, secretDescription, secretVersionData),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_default", "data", base64.StdEncoding.EncodeToString([]byte(secretVersionData))),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_base64", "data", base64.StdEncoding.EncodeToString([]byte(secretVersionData))),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_string", "data", secretVersionData),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceSecretVersion_TypeInvalidUTF8(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	const (
+		secretName        = "dataSourceSecretVersionTypeInvalidUTF8"
+		secretDescription = "secret description"
+	)
+
+	invalidUTF8Payload := base64.StdEncoding.EncodeToString([]byte{0xff, 0xfe})
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%[1]s"
+				  description = "%[2]s"
+				  tags        = ["devtools", "provider", "terraform"]
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = "%[3]s"
+				  type        = "base64"
+				  depends_on  = [scaleway_secret.main]
+				}
+				`, secretName, secretDescription, invalidUTF8Payload),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%[1]s"
+				  description = "%[2]s"
+				  tags        = ["devtools", "provider", "terraform"]
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = "%[3]s"
+				  type        = "base64"
+				  depends_on  = [scaleway_secret.main]
+				}
+
+				data "scaleway_secret_version" "data_string" {
+				  secret_id  = scaleway_secret.main.id
+				  revision   = "1"
+				  type       = "string"
+				  depends_on = [scaleway_secret_version.v1]
+				}
+				`, secretName, secretDescription, invalidUTF8Payload),
+				ExpectError: regexp.MustCompile(`not a valid UTF-8 string`),
 			},
 		},
 	})

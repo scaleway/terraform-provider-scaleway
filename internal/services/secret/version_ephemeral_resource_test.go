@@ -1,6 +1,7 @@
 package secret_test
 
 import (
+	"encoding/base64"
 	"fmt"
 	"regexp"
 	"testing"
@@ -10,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
@@ -63,7 +63,7 @@ func TestAccEphemeralResourceSecretVersion_Basic(t *testing.T) {
 					resource "echo" "v1" {}
 				`, secretName, secretDescription, secretVersionData),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("echo.v1", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionData)))),
+					statecheck.ExpectKnownValue("echo.v1", dataPath.AtMapKey("data"), knownvalue.StringExact(base64.StdEncoding.EncodeToString([]byte(secretVersionData)))),
 				},
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.latest"),
@@ -101,7 +101,7 @@ func TestAccEphemeralResourceSecretVersion_Basic(t *testing.T) {
 					resource "echo" "v2" {}
 				`, secretName, secretDescription, secretVersionDataV2),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("echo.v2", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionDataV2)))),
+					statecheck.ExpectKnownValue("echo.v2", dataPath.AtMapKey("data"), knownvalue.StringExact(base64.StdEncoding.EncodeToString([]byte(secretVersionDataV2)))),
 				},
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.latest"),
@@ -139,7 +139,7 @@ func TestAccEphemeralResourceSecretVersion_Basic(t *testing.T) {
 					resource "echo" "latest" {}
 				`, secretName, secretDescription, secretVersionDataV2),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("echo.latest", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionDataV2)))),
+					statecheck.ExpectKnownValue("echo.latest", dataPath.AtMapKey("data"), knownvalue.StringExact(base64.StdEncoding.EncodeToString([]byte(secretVersionDataV2)))),
 				},
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.latest"),
@@ -220,8 +220,8 @@ func TestAccEphemeralResourceSecretVersion_ByNameSecret(t *testing.T) {
 				}
 				`, secretName, secretVersionData),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("echo.test_by_name", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionData)))),
-					statecheck.ExpectKnownValue("echo.test_by_name_latest", dataPath.AtMapKey("data"), knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionData)))),
+					statecheck.ExpectKnownValue("echo.test_by_name", dataPath.AtMapKey("data"), knownvalue.StringExact(base64.StdEncoding.EncodeToString([]byte(secretVersionData)))),
+					statecheck.ExpectKnownValue("echo.test_by_name_latest", dataPath.AtMapKey("data"), knownvalue.StringExact(base64.StdEncoding.EncodeToString([]byte(secretVersionData)))),
 				},
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
@@ -231,6 +231,140 @@ func TestAccEphemeralResourceSecretVersion_ByNameSecret(t *testing.T) {
 					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_by_name"),
 					acctest.CheckEphemeralResourceNotInState("ephemeral.scaleway_secret_version.data_by_name_latest"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccEphemeralResourceSecretVersion_Type(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccEphemeralResourceSecretVersion_Type because testing Ephemeral Resources is not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	const (
+		secretName        = "ephemeralSecretVersionType"
+		secretDescription = "secret description"
+		secretVersionData = "my_super_secret_v1"
+	)
+
+	dataPath := tfjsonpath.New("data")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
+				Config: fmt.Sprintf(`
+					resource "scaleway_secret" "main" {
+						name        = "%[1]s"
+						description = "%[2]s"
+						tags        = ["devtools", "provider", "terraform"]
+					}
+
+					resource "scaleway_secret_version" "v1" {
+						description     = "version1"
+						secret_id       = scaleway_secret.main.id
+						data_wo         = "%[3]s"
+						data_wo_version = 1
+						depends_on      = [scaleway_secret.main]
+					}
+
+					ephemeral "scaleway_secret_version" "data_string" {
+						secret_id  = scaleway_secret.main.id
+						type       = "string"
+						depends_on = [scaleway_secret_version.v1]
+					}
+
+					provider "echo" {
+						data  = ephemeral.scaleway_secret_version.data_string
+					}
+
+					resource "echo" "test_string" {}
+				`, secretName, secretDescription, secretVersionData),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue("echo.test_string",
+						dataPath.AtMapKey("data"),
+						knownvalue.StringExact(secretVersionData)),
+					statecheck.ExpectKnownValue("echo.test_string",
+						dataPath.AtMapKey("type"),
+						knownvalue.StringExact("string")),
+				},
+			},
+		},
+	})
+}
+
+func TestAccEphemeralResourceSecretVersion_TypeInvalidUTF8(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccEphemeralResourceSecretVersion_TypeInvalidUTF8 because testing Ephemeral Resources is not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	const (
+		secretName        = "ephemeralSecretVersionTypeInvalidUTF8"
+		secretDescription = "secret description"
+	)
+
+	invalidUTF8Payload := base64.StdEncoding.EncodeToString([]byte{0xff, 0xfe})
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%[1]s"
+				  description = "%[2]s"
+				  tags        = ["devtools", "provider", "terraform"]
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = "%[3]s"
+				  type        = "base64"
+				  depends_on  = [scaleway_secret.main]
+				}
+				`, secretName, secretDescription, invalidUTF8Payload),
+			},
+			{
+				// lintignore:AT004 // the "echo" provider block is required to capture ephemeral data
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%[1]s"
+				  description = "%[2]s"
+				  tags        = ["devtools", "provider", "terraform"]
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = "%[3]s"
+				  type        = "base64"
+				  depends_on  = [scaleway_secret.main]
+				}
+
+				ephemeral "scaleway_secret_version" "data_string" {
+				  secret_id  = scaleway_secret.main.id
+				  revision   = "1"
+				  type       = "string"
+				  depends_on = [scaleway_secret_version.v1]
+				}
+
+				provider "echo" {
+				  data  = ephemeral.scaleway_secret_version.data_string
+				}
+
+				resource "echo" "test_string" {}
+				`, secretName, secretDescription, invalidUTF8Payload),
+				ExpectError: regexp.MustCompile(`not a valid UTF-8 string`),
 			},
 		},
 	})
@@ -311,7 +445,7 @@ func TestAccEphemeralResourceSecretVersion_ComputedAttributes(t *testing.T) {
 						knownvalue.NotNull()),
 					statecheck.ExpectKnownValue("echo.test_computed_attributes",
 						dataPath.AtMapKey("data"),
-						knownvalue.StringExact(secret.Base64Encoded([]byte(secretVersionData)))),
+						knownvalue.StringExact(base64.StdEncoding.EncodeToString([]byte(secretVersionData)))),
 				},
 			},
 		},

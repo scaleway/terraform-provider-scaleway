@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"unicode/utf8"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -128,20 +130,6 @@ func CreateSecretVersion(ctx context.Context, m any, secretID string, value stri
 	}
 
 	return version, nil
-}
-
-func isBase64Encoded(data []byte) bool {
-	_, err := base64.StdEncoding.DecodeString(string(data))
-
-	return err == nil
-}
-
-func Base64Encoded(data []byte) string {
-	if isBase64Encoded(data) {
-		return string(data)
-	}
-
-	return base64.StdEncoding.EncodeToString(data)
 }
 
 // updateSecretProtection sets the protected value of a secret to requested one.
@@ -269,4 +257,58 @@ func setVersionState(d *schema.ResourceData, version *secret.SecretVersion) {
 	_ = d.Set("status", version.Status.String())
 	_ = d.Set("region", string(version.Region))
 	_ = d.Set("srn", version.Srn)
+}
+
+func secretVersionUpgradeV1SchemaType() cty.Type {
+	return cty.Object(map[string]cty.Type{
+		"id":              cty.String,
+		"secret_id":       cty.String,
+		"data":            cty.String,
+		"data_wo_version": cty.Number,
+		"description":     cty.String,
+		"status":          cty.String,
+		"revision":        cty.String,
+		"created_at":      cty.String,
+		"updated_at":      cty.String,
+		"srn":             cty.String,
+		"region":          cty.String,
+	})
+}
+
+// VersionV1SchemaUpgradeFunc migrates a V0 state to V1.
+//
+// Before the `type` attribute existed, the value stored in state for `data`
+// was the result of the Base64Encoded helper, which base64-encodes its input
+// unless it is already a valid base64 string:
+//   - a raw (non-base64) configuration value was stored as base64(config);
+//   - a configuration value that was itself a valid base64 string was stored
+//     verbatim.
+//
+// In the first (common) case, decoding the state value recovers the exact
+// configuration value, so no ForceNew-based replacement occurs on upgrade. In
+// the second case, decoding yields a value different from the configuration,
+// so the first plan after the upgrade may recreate the secret version (the
+// secret payload itself is preserved). The two cases are indistinguishable
+// from the stored state alone and the upgrader cannot access the
+// configuration, so we decode by default to keep the common case correct.
+//
+// If the state value decodes to bytes that are not valid UTF-8, storing the
+// decoded value would corrupt the state, so we keep the value as-is and set
+// `type` to "base64" to preserve the payload sent to the API.
+func VersionV1SchemaUpgradeFunc(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
+	rawState["type"] = "string"
+
+	raw, ok := rawState["data"].(string)
+	if !ok || raw == "" {
+		return rawState, nil
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(raw)
+	if err == nil && utf8.Valid(decoded) {
+		rawState["data"] = string(decoded)
+	} else if err == nil {
+		rawState["type"] = "base64"
+	}
+
+	return rawState, nil
 }

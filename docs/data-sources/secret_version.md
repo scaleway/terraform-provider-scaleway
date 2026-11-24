@@ -74,9 +74,11 @@ This section lists the arguments that you can provide to the `scaleway_secret_ve
 
 - `project_id` - (Optional) The ID of the Scaleway Project associated with the secret version.
 
+- `type` - (Optional, Defaults to `base64`) The encoding of the `data` attribute. Can be either `base64` or `string`. The `string` type is only available if the payload is a valid UTF-8 string.
+
 ## Data
 
-Note: This data source provides you with access to the secret payload, which is encoded in base64.
+Note: This data source provides you with access to the secret payload. By default (`type = "base64"`), the payload is encoded in base64. Set `type = "string"` to get the raw payload as a string, if the payload is a valid UTF-8 string.
 
 Keep in mind that this is a sensitive attribute. For more information,
 see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).

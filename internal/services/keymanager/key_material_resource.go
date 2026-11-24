@@ -24,7 +24,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/utils"
 )
 
 var (
@@ -211,7 +211,7 @@ func (r *KeyMaterialResource) Configure(ctx context.Context, req resource.Config
 
 // decodeKeyMaterialField decodes a key material or salt field that can be provided as raw bytes or base64-encoded.
 func decodeKeyMaterialField(value string, fieldName string) ([]byte, error) {
-	normalized := secret.Base64Encoded([]byte(value))
+	normalized := utils.Base64Encoded([]byte(value))
 
 	decoded, err := base64.StdEncoding.DecodeString(normalized)
 	if err != nil {

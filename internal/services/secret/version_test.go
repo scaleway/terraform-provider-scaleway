@@ -1,6 +1,7 @@
 package secret_test
 
 import (
+	"encoding/base64"
 	"fmt"
 	"regexp"
 	"testing"
@@ -46,7 +47,7 @@ func TestAccSecretVersion_Basic(t *testing.T) {
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
 					resource.TestCheckResourceAttrPair("scaleway_secret_version.v1", "secret_id", "scaleway_secret.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "description", "version1"),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", secret.Base64Encoded([]byte(secretVersionData))),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", secretVersionData),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "status", secretSDK.SecretVersionStatusEnabled.String()),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "revision", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "updated_at"),
@@ -72,7 +73,7 @@ func TestAccSecretVersion_Basic(t *testing.T) {
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
 					resource.TestCheckResourceAttrPair("scaleway_secret_version.v1", "secret_id", "scaleway_secret.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "description", secretVersionDescription),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", secret.Base64Encoded([]byte(secretVersionData))),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", secretVersionData),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "status", secretSDK.SecretVersionStatusEnabled.String()),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "revision", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "updated_at"),
@@ -90,7 +91,7 @@ func TestAccSecretVersion_Basic(t *testing.T) {
 				resource "scaleway_secret_version" "v1" {
 				  description = "%s"
 				  secret_id   = scaleway_secret.main.id
-				  data        = base64encode("%s")
+				  data        = "%s"
 				}
 
 				resource "scaleway_secret_version" "v2" {
@@ -104,7 +105,7 @@ func TestAccSecretVersion_Basic(t *testing.T) {
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
 					resource.TestCheckResourceAttrPair("scaleway_secret_version.v1", "secret_id", "scaleway_secret.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "description", secretVersionDescription),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", secret.Base64Encoded([]byte(secretVersionData))),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", secretVersionData),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "status", secretSDK.SecretVersionStatusEnabled.String()),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "revision", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "updated_at"),
@@ -113,7 +114,7 @@ func TestAccSecretVersion_Basic(t *testing.T) {
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v2"),
 					resource.TestCheckResourceAttrPair("scaleway_secret_version.v2", "secret_id", "scaleway_secret.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v2", "description", "version2"),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v2", "data", secret.Base64Encoded([]byte("another_secret"))),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v2", "data", "another_secret"),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v2", "status", secretSDK.SecretVersionStatusEnabled.String()),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v2", "revision", "2"),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v2", "updated_at"),
@@ -159,7 +160,7 @@ func TestAccSecretVersion_Type(t *testing.T) {
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
 					resource.TestCheckResourceAttrPair("scaleway_secret_version.v1", "secret_id", "scaleway_secret.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "description", "version1"),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", secret.Base64Encoded([]byte(SecretVersionDataValid))),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", SecretVersionDataValid),
 					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "status", secretSDK.SecretVersionStatusEnabled.String()),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "created_at"),
@@ -320,6 +321,159 @@ func TestAccSecretVersion_DataError(t *testing.T) {
 				}
 				`, secretName, secretDescription),
 				ExpectError: regexp.MustCompile("one of `data,data_wo` must be specified"),
+			},
+		},
+	})
+}
+
+func TestAccSecretVersion_TypeInvalidBase64(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	const (
+		secretName        = "secretVersionNameTypeInvalidBase64"
+		secretDescription = "secret description"
+	)
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%[1]s"
+				  description = "%[2]s"
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  secret_id = scaleway_secret.main.id
+				  data      = "this is not base64"
+				  type      = "base64"
+				}
+				`, secretName, secretDescription),
+				ExpectError: regexp.MustCompile("data must be a valid base64-encoded string when `type` is set to \"base64\""),
+			},
+		},
+	})
+}
+
+func TestAccSecretVersion_DataType(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	const (
+		secretName        = "secretVersionNameDataType"
+		secretDescription = "secret description"
+		secretPayload     = "base64_payload_value"
+	)
+
+	b64Payload := base64.StdEncoding.EncodeToString([]byte(secretPayload))
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%s"
+				  description = "%s"
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = %q
+				  type        = "base64"
+				}
+
+				data "scaleway_secret_version" "v1" {
+				  secret_id  = scaleway_secret.main.id
+				  revision   = 1
+				  depends_on = [scaleway_secret_version.v1]
+				}
+				`, secretName, secretDescription, b64Payload),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
+					// The stored payload must equal the raw (decoded) bytes: reading it back
+					// as base64 (the data source default) must reproduce the original string.
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.v1", "data", b64Payload),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSecretVersion_DataTypeUpdate(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	const (
+		secretName        = "secretVersionNameDataTypeUpdate"
+		secretDescription = "secret description"
+		plainDataV1       = "plain_secret_v1"
+		plainDataV2       = "plain_secret_v2"
+	)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%[1]s"
+				  description = "%[2]s"
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = "%[3]s"
+				  type        = "string"
+				}
+
+				data "scaleway_secret_version" "check" {
+				  secret_id  = scaleway_secret.main.id
+				  revision   = scaleway_secret_version.v1.revision
+				  type       = "string"
+				  depends_on = [scaleway_secret_version.v1]
+				}
+				`, secretName, secretDescription, plainDataV1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", plainDataV1),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "type", "string"),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.check", "data", plainDataV1),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%[1]s"
+				  description = "%[2]s"
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = "%[3]s"
+				  type        = "base64"
+				}
+
+				data "scaleway_secret_version" "check" {
+				  secret_id  = scaleway_secret.main.id
+				  revision   = scaleway_secret_version.v1.revision
+				  type       = "string"
+				  depends_on = [scaleway_secret_version.v1]
+				}
+				`, secretName, secretDescription, base64.StdEncoding.EncodeToString([]byte(plainDataV2))),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", base64.StdEncoding.EncodeToString([]byte(plainDataV2))),
+					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "type", "base64"),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.check", "data", plainDataV2),
+				),
 			},
 		},
 	})

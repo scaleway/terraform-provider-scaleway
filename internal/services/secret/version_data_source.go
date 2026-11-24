@@ -6,9 +6,11 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
@@ -46,7 +48,14 @@ func DataSourceVersion() *schema.Resource {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Sensitive:   true,
-		Description: "The payload of the secret version",
+		Description: "The payload of the secret version, encoded as defined by the `type` attribute",
+	}
+	dsSchema["type"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Default:      "base64",
+		Description:  "The encoding of the `data` attribute. Can be either `base64` (default) or `string`. The `string` type is only available if the payload is a valid UTF-8 string.",
+		ValidateFunc: validation.StringInSlice([]string{"base64", "string"}, false),
 	}
 	dsSchema["organization_id"] = account.OrganizationIDOptionalSchema()
 	dsSchema["project_id"] = &schema.Schema{
@@ -129,8 +138,20 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 
 	d.SetId(secretVersionIDStr)
 
-	err = d.Set("data", base64.StdEncoding.EncodeToString(payloadSecretRaw))
-	if err != nil {
+	var dataValue string
+
+	switch d.Get("type").(string) {
+	case "string":
+		if !utf8.Valid(payloadSecretRaw) {
+			return diag.Errorf("the payload of this secret version is not a valid UTF-8 string, use `type = \"base64\"` (the default) to get the payload base64-encoded")
+		}
+
+		dataValue = string(payloadSecretRaw)
+	default: // "base64"
+		dataValue = base64.StdEncoding.EncodeToString(payloadSecretRaw)
+	}
+
+	if err = d.Set("data", dataValue); err != nil {
 		return diag.FromErr(err)
 	}
 

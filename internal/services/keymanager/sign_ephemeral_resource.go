@@ -15,7 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/utils"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -165,7 +165,7 @@ func (r *SignEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRequ
 		return
 	}
 
-	data.Signature = types.StringValue(secret.Base64Encoded(signResp.Signature))
+	data.Signature = types.StringValue(utils.Base64Encoded(signResp.Signature))
 
 	resp.Result.Set(ctx, &data)
 }

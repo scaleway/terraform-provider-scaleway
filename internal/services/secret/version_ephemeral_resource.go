@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"unicode/utf8"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
@@ -68,6 +69,8 @@ type VersionEphemeralResourceModel struct {
 	SecretName     types.String `tfsdk:"secret_name"`
 	OrganizationID types.String `tfsdk:"organization_id"`
 	ProjectID      types.String `tfsdk:"project_id"`
+	Type           types.String `tfsdk:"type"`
+
 	// Output
 	Description types.String `tfsdk:"description"`
 	Status      types.String `tfsdk:"status"`
@@ -129,6 +132,14 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 					verify.IsStringUUID(),
 				},
 			},
+			"type": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The encoding of the `data` attribute. Can be either `base64` (default) or `string`. The `string` type is only available if the payload is a valid UTF-8 string.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("base64", "string"),
+				},
+			},
 			"description": schema.StringAttribute{
 				Computed:    true,
 				Description: "Description of the secret version",
@@ -147,7 +158,7 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 			},
 			"data": schema.StringAttribute{
 				Computed:    true,
-				Description: "The payload of the secret version (base64 encoded)",
+				Description: "The payload of the secret version, encoded as defined by the `type` attribute",
 				Sensitive:   true,
 			},
 			"srn": schema.StringAttribute{
@@ -319,7 +330,28 @@ func (r *VersionEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 		data.UpdatedAt = types.StringValue(getResponse.UpdatedAt.Format(time.RFC3339))
 	}
 
-	data.Data = types.StringValue(base64.StdEncoding.EncodeToString(accessResponse.Data))
+	encoding := data.Type.ValueString()
+	if encoding == "" {
+		encoding = "base64"
+	}
+
+	switch encoding {
+	case "string":
+		if !utf8.Valid(accessResponse.Data) {
+			resp.Diagnostics.AddError(
+				"Invalid secret version payload",
+				"the payload of this secret version is not a valid UTF-8 string, use `type = \"base64\"` (the default) to get the payload base64-encoded",
+			)
+
+			return
+		}
+
+		data.Data = types.StringValue(string(accessResponse.Data))
+	default: // "base64"
+		data.Data = types.StringValue(base64.StdEncoding.EncodeToString(accessResponse.Data))
+	}
+
+	data.Type = types.StringValue(encoding)
 	data.Revision = types.StringValue(revision)
 	data.SRN = types.StringValue(getResponse.Srn)
 

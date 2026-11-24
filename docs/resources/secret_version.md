@@ -40,25 +40,42 @@ resource "scaleway_secret_version" "v1" {
 The following arguments are supported:
 
 - `secret_id` - (Required) The ID of the secret associated with the version.
-- `data` - (Optional) The raw data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data).
-- `data_wo` - (Optional) The raw data payload of your secret version in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data).
+- `data` - (Optional) The data payload of the secret version, encoded as defined by the `type` attribute. Must not exceed 64KiB in size. Find out more on the [data section](#data).
+- `data_wo` - (Optional) The data payload of your secret version in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode, encoded as defined by the `type` attribute. Must not exceed 64KiB in size. Find out more on the [data section](#data).
+- `type` - (Optional, Defaults to `string`) The encoding of the `data` or `data_wo` attribute. Can be either `string` or `base64`. Find out more on the [data section](#data).
 - `data_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) data. To update the `data_wo`, you must also update the `data_wo_version`.
 - `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
 - `region` - (Optional, Computed, Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)). The [region](../guides/regions_and_zones.md#regions) where the resource exists.
 
 ### Data
 
-Only one of `data` or `data_wo` should be specified. If both are provided, Terraform will return an error.
+Only one of `data` or `data_wo` should be specified. If several are provided, Terraform will return an error.
 
-Note: The `data` (or `data_wo`) should be a raw string. **The provider handles encoding this string to base64 before sending it to the API so you do not need to encode the data yourself.** The maximum size for either field is 64KiB.
+The encoding of the payload is controlled by the `type` attribute:
+
+- `string` (default): `data` (or `data_wo`) is used as-is. This is the recommended option for text secrets.
+- `base64`: `data` (or `data_wo`) must be the base64 encoding of the payload. The provider decodes it before creating the secret version. This is required for data that is not a valid UTF-8 string (e.g. binary files).
+
+The maximum size for the payload is 64KiB.
 
 #### data
-Updating `data` will force the creation of a new secret version.
+Updating `data` (or changing its `type`) will force the creation of a new secret version.
 
-Keep in mind that this is a sensitive attribute. For more information, see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
+The value of `data` stored in the Terraform state is the value provided in the configuration (the raw string, or its base64 encoding when `type = "base64"`). Keep in mind that this is a sensitive attribute. For more information, see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
+
+~> **Breaking change for existing secret versions:**
+In previous provider versions, the `data` value was stored in the Terraform state as its **base64 encoding** — except when the configuration value was itself already a valid base64 string, in which case it was stored verbatim. Since this version, it is stored exactly as provided in the configuration (raw for `type = "string"`, base64 for `type = "base64"`). Existing versions are upgraded automatically in the state by decoding the legacy value back to the raw configuration value, so in most cases **no secret version is recreated**. Exception: if your configuration `data` was itself a valid base64 string, the upgrade stores its decoded value in the state, which differs from your configuration, so the first plan after the upgrade recreates the secret version. The recreated version carries the same payload as before.
+
+As a result, the value of the `scaleway_secret_version.X.data` expression changes from the base64 form to the raw form for existing versions. If you reference it in your configuration (for example to feed another resource), adjust accordingly:
+
+- You previously relied on the **base64** value → wrap it: `base64encode(scaleway_secret_version.X.data)`.
+- You used `base64decode(scaleway_secret_version.X.data)` to obtain the raw secret → remove the `base64decode(...)` and use `scaleway_secret_version.X.data` directly.
+
+#### type
+The encoding of the `data` or `data_wo` attribute. Defaults to `string`. Set it to `base64` to store data that is not a valid UTF-8 string (e.g. binary files): the provided value is then expected to be the base64 encoding of the payload and is decoded before being sent to the API. Changing `type` will force the creation of a new secret version.
 
 #### data_wo
-`data_wo` is a [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) argument, ideal for sensitive secrets that should not be stored in Terraform state. As such, its value is ephemeral and **will not be stored in the state** or displayed in plans.
+`data_wo` is a [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) argument, ideal for sensitive secrets that should not be stored in Terraform state. As such, its value is ephemeral and **will not be stored in the state** or displayed in plans. It follows the same `type` encoding rules as `data`.
 
 To update the `data_wo` and trigger a new version creation, you must also update the `data_wo_version` attribute.
 
