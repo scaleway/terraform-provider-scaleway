@@ -45,14 +45,6 @@ func TestAccMongoDBSnapshot_Lifecycle(t *testing.T) {
 					}
 				`, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
-					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-instance"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_type", "mgdb-play2-nano"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "7.0"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_number", "1"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "user_name", "my_initial_user"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
-					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "tls_certificate"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "name", "test-snapshot"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", expiresAt),
 				),
