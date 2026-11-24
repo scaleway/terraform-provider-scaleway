@@ -30,7 +30,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -228,33 +227,6 @@ func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData
 	}
 
 	return s3Client, region, outerID, innerID, err
-}
-
-func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, m any, name string) (*s3.Client, scw.Region, string, string, error) {
-	region, name, outerID, err := locality.ParseLocalizedNestedOwnerID(name)
-	if err != nil {
-		return nil, "", name, "", err
-	}
-
-	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
-	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
-		accessKey = accessKeyWithProjectID(accessKey, projectID)
-	}
-
-	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
-	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
-
-	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region)
-	if err != nil {
-		return nil, "", name, "", err
-	}
-
-	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
-	if err != nil {
-		return nil, "", "", "", err
-	}
-
-	return s3Client, scw.Region(region), name, outerID, err
 }
 
 func s3ClientForceRegion(ctx context.Context, d *schema.ResourceData, m any, region string) (*s3.Client, error) {
