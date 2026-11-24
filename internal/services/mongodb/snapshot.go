@@ -91,6 +91,11 @@ func snapshotSchema() map[string]*schema.Schema {
 			Required:         true,
 			ValidateDiagFunc: verify.IsDate(),
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the snapshot",
+		},
 		"region": regional.Schema(),
 	}
 }
@@ -160,6 +165,7 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("created_at", types.FlattenTime(snapshot.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(snapshot.UpdatedAt))
 	_ = d.Set("region", snapshot.Region.String())
+	_ = d.Set("srn", snapshot.Srn)
 
 	return nil
 }
