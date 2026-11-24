@@ -110,14 +110,9 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	templateID := ""
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
-	// For now, we need to explicitly define the project_id for the CI's Acceptance Tests to pass.
-	// We should find a more appropriate solution in the future.
-	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
-	if !projectIDExists {
-		projectID = "105bdce1-64c0-48ab-899d-868455867ecf"
-	}
+	templateID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -128,9 +123,8 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_instance_template" "main" {
-						project_id  = %q
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "GP1-L"
@@ -142,7 +136,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							size_in_gb  = 20
 							tags        = [ "local", "volume" ]
 						}]
-					}`, projectID),
+					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-2"),
@@ -161,7 +155,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_block_volume" "sbs" {
 						size_in_gb = 15
 						iops       = 5000
@@ -173,7 +167,6 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
-						project_id  = %q
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "GP1-L"
@@ -191,7 +184,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							size_in_gb       = 30
 							perf_iops        = 15000
 						}]
-					}`, projectID),
+					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.snap"),
@@ -213,7 +206,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_block_volume" "sbs" {
 						size_in_gb = 15
 						iops       = 5000
@@ -225,7 +218,6 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
-						project_id  = %q
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "L40S-1-48G"
@@ -240,7 +232,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							volume_type = "scratch"
 							size_in_gb  = 300
 						}]
-					}`, projectID),
+					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "L40S-1-48G"),
@@ -729,9 +721,72 @@ func TestAccInstanceTemplateResource_PrivateNetworks(t *testing.T) {
 	})
 }
 
+func TestAccInstanceTemplateResource_Filesystems_WithProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			instancetestfuncs.IsTemplateDestroyed(tt),
+			filetestfuncs.CheckFileDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf-tests-instance-template-filesystems-with-project"
+					}
+
+					resource "scaleway_file_filesystem" "fs0" {
+						project_id = scaleway_account_project.project.id
+						size_in_gb = 25
+						tags = [ "scaleway_instance_template", "filesystems", "fs0" ]
+					}
+					resource "scaleway_file_filesystem" "fs1" {
+						project_id = scaleway_account_project.project.id
+						size_in_gb = 30
+						tags = [ "scaleway_instance_template", "filesystems", "fs1" ]
+					}
+					resource "scaleway_file_filesystem" "fs2" {
+						project_id = scaleway_account_project.project.id
+						size_in_gb = 40
+						tags = [ "scaleway_instance_template", "filesystems", "fs2" ]
+					}
+
+					resource "scaleway_instance_template" "main" {
+						project_id        = scaleway_file_filesystem.fs0.project_id
+						name              = "tf-test-acc-instance-tmpl-filesystems"
+						tags              = [ "terraform-test", "scaleway_instance_template", "filesystems" ]
+						server_type       = "POP2-8C-32G"
+						public_ipv4_count = 1
+						public_ipv6_count = 2
+
+						filesystem_ids = [
+							scaleway_file_filesystem.fs0.id,
+							scaleway_file_filesystem.fs1.id,
+						]
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isTemplatePresent(tt, "scaleway_instance_template.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "POP2-8C-32G"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "filesystem_ids.#", "2"),
+					acctest.CheckResourceAttrPairInSet("scaleway_instance_template.main", "filesystem_ids", "scaleway_file_filesystem.fs0", "id", false),
+					acctest.CheckResourceAttrPairInSet("scaleway_instance_template.main", "filesystem_ids", "scaleway_file_filesystem.fs1", "id", false),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "public_ipv4_count", "1"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "public_ipv6_count", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
