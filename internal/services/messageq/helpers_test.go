@@ -3,6 +3,7 @@ package messageq_test
 import (
 	"context"
 	"fmt"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -11,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/messageq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/stretchr/testify/assert"
 )
 
 const deploymentTestUserName = "my_initial_user"
@@ -50,15 +52,53 @@ func fetchAvailableNodeType(tt *acctest.TestTools) string {
 		tt.T.Fatalf("unable to fetch messageq node types: %s", err)
 	}
 
-	for _, nodeType := range nodeTypesResp.NodeTypes {
-		if nodeType.StockStatus == messageqSDK.NodeTypeStockStatusAvailable && !nodeType.Disabled {
-			return nodeType.Name
+	nodeType := selectNodeType(nodeTypesResp.NodeTypes)
+	if nodeType == "" {
+		tt.T.Fatalf("no enabled MessageQ node type in %s has stock status available or low_stock", scw.RegionFrPar)
+	}
+
+	return nodeType
+}
+
+func selectNodeType(nodeTypes []*messageqSDK.NodeType) string {
+	for _, stockStatus := range []messageqSDK.NodeTypeStockStatus{
+		messageqSDK.NodeTypeStockStatusAvailable,
+		messageqSDK.NodeTypeStockStatusLowStock,
+	} {
+		for _, nodeType := range nodeTypes {
+			if !nodeType.Disabled && nodeType.StockStatus == stockStatus {
+				return nodeType.Name
+			}
 		}
 	}
 
-	tt.T.Fatal("no available messageq node types found")
-
 	return ""
+}
+
+func TestSelectNodeType(t *testing.T) {
+	t.Parallel()
+
+	available := &messageqSDK.NodeType{Name: "available", StockStatus: messageqSDK.NodeTypeStockStatusAvailable}
+	lowStock := &messageqSDK.NodeType{Name: "low-stock", StockStatus: messageqSDK.NodeTypeStockStatusLowStock}
+	disabled := &messageqSDK.NodeType{Name: "disabled", StockStatus: messageqSDK.NodeTypeStockStatusAvailable, Disabled: true}
+	outOfStock := &messageqSDK.NodeType{Name: "out-of-stock", StockStatus: messageqSDK.NodeTypeStockStatusOutOfStock}
+
+	tests := []struct {
+		name      string
+		want      string
+		nodeTypes []*messageqSDK.NodeType
+	}{
+		{"prefer available", available.Name, []*messageqSDK.NodeType{lowStock, available}},
+		{"fall back to low stock", lowStock.Name, []*messageqSDK.NodeType{outOfStock, disabled, lowStock}},
+		{"no eligible node type", "", []*messageqSDK.NodeType{disabled, outOfStock}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tt.want, selectNodeType(tt.nodeTypes))
+		})
+	}
 }
 
 func isDeploymentPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
