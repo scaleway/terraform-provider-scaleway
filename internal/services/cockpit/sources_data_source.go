@@ -4,125 +4,133 @@ import (
 	"context"
 	_ "embed"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 //go:embed descriptions/cockpit_sources_data_source.md
 var cockpitSourcesDataSourceDescription string
 
-func DataSourceCockpitSources() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpitSource().SchemaFunc())
+var (
+	_ datasource.DataSource              = (*SourcesDataSource)(nil)
+	_ datasource.DataSourceWithConfigure = (*SourcesDataSource)(nil)
+)
 
-	sourceElementSchema := datasource.SchemaFromResourceSchema(ResourceCockpitSource().SchemaFunc())
-	delete(sourceElementSchema, "sources")
+func NewSourcesDataSource() datasource.DataSource {
+	return &SourcesDataSource{}
+}
 
-	sourceElementSchema["id"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "The ID of the data source.",
-		Computed:    true,
-	}
+type SourcesDataSource struct {
+	dataSourceBase
+}
 
-	dsSchema["sources"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Description: "List of cockpit sources.",
-		Computed:    true,
-		Elem: &schema.Resource{
-			Schema: sourceElementSchema,
+type sourcesDataSourceModel struct {
+	ID        types.String            `tfsdk:"id"`
+	Name      types.String            `tfsdk:"name"`
+	Type      types.String            `tfsdk:"type"`
+	Origin    types.String            `tfsdk:"origin"`
+	Region    types.String            `tfsdk:"region"`
+	ProjectID types.String            `tfsdk:"project_id"`
+	Sources   []sourceDataSourceModel `tfsdk:"sources"`
+}
+
+func (d *SourcesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_cockpit_sources"
+}
+
+func (d *SourcesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	element := sourceDataSourceComputedAttributes()
+	element["id"] = schema.StringAttribute{Computed: true, MarkdownDescription: "The ID of the data source."}
+	element["name"] = schema.StringAttribute{Computed: true, MarkdownDescription: "Name of the datasource"}
+	element["type"] = schema.StringAttribute{Computed: true, MarkdownDescription: "The type of the datasource"}
+	element["origin"] = schema.StringAttribute{Computed: true, MarkdownDescription: "The origin of the datasource"}
+	element["region"] = schema.StringAttribute{Computed: true, MarkdownDescription: "The region you want to attach the resource to"}
+	element["project_id"] = schema.StringAttribute{Computed: true, MarkdownDescription: "The project_id you want to attach the resource to"}
+
+	resp.Schema = schema.Schema{
+		MarkdownDescription: cockpitSourcesDataSourceDescription,
+		Description:         cockpitSourcesDataSourceDescription,
+		Attributes: map[string]schema.Attribute{
+			"id":         schema.StringAttribute{Computed: true, MarkdownDescription: "The region of the data sources."},
+			"name":       schema.StringAttribute{Optional: true, MarkdownDescription: "Name of the datasource"},
+			"type":       schema.StringAttribute{Optional: true, MarkdownDescription: "The type of the datasource"},
+			"origin":     schema.StringAttribute{Optional: true, MarkdownDescription: "The origin of the datasource"},
+			"region":     regional.SchemaAttributeOptionalComputed(),
+			"project_id": account.ProjectIDSchemaAttributeOptional("The project_id you want to attach the resource to"),
+			"sources": schema.ListNestedAttribute{
+				Computed:            true,
+				MarkdownDescription: "List of cockpit sources.",
+				NestedObject:        schema.NestedAttributeObject{Attributes: element},
+			},
 		},
-	}
-
-	datasource.FixDatasourceSchemaFlags(dsSchema, false, "name", "project_id")
-	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "type", "origin")
-
-	return &schema.Resource{
-		Description: cockpitSourcesDataSourceDescription,
-		ReadContext: dataSourceCockpitSourcesRead,
-		Schema:      dsSchema,
 	}
 }
 
-func dataSourceCockpitSourcesRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	var region scw.Region
+func (d *SourcesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data sourcesDataSourceModel
 
-	var err error
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
-	if v, ok := d.GetOk("region"); ok && v.(string) != "" {
-		region, err = scw.ParseRegion(v.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	} else {
-		_, region, err = cockpitAPIWithRegion(d, m)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
+	api, region, err := d.regionalAPI(data.Region)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
 
-	req := &cockpit.RegionalAPIListDataSourcesRequest{
+		return
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(data.ProjectID, d.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve project_id", err.Error())
+
+		return
+	}
+
+	listReq := &cockpit.RegionalAPIListDataSourcesRequest{
 		Region:    region,
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 	}
 
-	if v, ok := d.GetOk("type"); ok {
-		req.Types = []cockpit.DataSourceType{cockpit.DataSourceType(v.(string))}
+	if data.Type.ValueString() != "" {
+		listReq.Types = []cockpit.DataSourceType{cockpit.DataSourceType(data.Type.ValueString())}
 	}
 
-	if v, ok := d.GetOk("origin"); ok {
-		req.Origin = cockpit.DataSourceOrigin(v.(string))
+	if data.Origin.ValueString() != "" {
+		listReq.Origin = cockpit.DataSourceOrigin(data.Origin.ValueString())
 	}
 
 	res, err := transport.RetryOnStatusValue(ctx, transport.IAMPropagation, func(ctx context.Context) (*cockpit.ListDataSourcesResponse, error) {
-		return api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
+		return api.ListDataSources(listReq, scw.WithContext(ctx), scw.WithAllPages())
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to list Cockpit sources", err.Error())
+
+		return
 	}
 
-	sources := []any(nil)
+	data.Sources = make([]sourceDataSourceModel, 0, len(res.DataSources))
 
 	for _, ds := range res.DataSources {
-		if name, ok := d.GetOk("name"); ok {
-			if ds.Name != name.(string) {
-				continue
-			}
+		if data.Name.ValueString() != "" && ds.Name != data.Name.ValueString() {
+			continue
 		}
 
-		rawSource := flattenDataSourceToMap(ds)
-		sources = append(sources, rawSource)
+		data.Sources = append(data.Sources, flattenSourceDataSource(ds))
 	}
 
-	d.SetId(region.String())
-	_ = d.Set("sources", sources)
+	data.ID = types.StringValue(region.String())
+	data.Region = types.StringValue(region.String())
+	data.ProjectID = types.StringValue(projectID)
 
-	return nil
-}
-
-func flattenDataSourceToMap(ds *cockpit.DataSource) map[string]any {
-	pushURL, _ := createCockpitPushURL(ds.Type, ds.URL)
-
-	return map[string]any{
-		"id":                        regional.NewIDString(ds.Region, ds.ID),
-		"project_id":                ds.ProjectID,
-		"name":                      ds.Name,
-		"url":                       ds.URL,
-		"type":                      ds.Type.String(),
-		"origin":                    ds.Origin.String(),
-		"created_at":                types.FlattenTime(ds.CreatedAt),
-		"updated_at":                types.FlattenTime(ds.UpdatedAt),
-		"synchronized_with_grafana": ds.SynchronizedWithGrafana,
-		"retention_days":            int(ds.RetentionDays),
-		"region":                    ds.Region.String(),
-		"push_url":                  pushURL,
-		"srn":                       ds.Srn,
-	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
