@@ -178,8 +178,6 @@ func (r *BucketACLResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"region":     regional.SchemaAttributeComputed("The region you want to attach the resource to"),
 			"project_id": account.ProjectIDSchemaFw("The project ID the bucket belongs to."),
 		},
-		// Blocks are used instead of nested attributes to preserve the SDKv2
-		// configuration syntax (`access_control_policy { grant { ... } }`).
 		// Blocks cannot be Computed, so the access_control_policy is stored in
 		// state only when configured (see findBucketACL).
 		Blocks: map[string]schema.Block{
@@ -285,10 +283,9 @@ func (r *BucketACLResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 	}
 }
 
-// ConfigValidators reports an error when both `acl` and `access_control_policy`
-// are configured. It replaces the SDKv2 `ConflictsWith` behavior.
-// It also enforces the SDKv2 `Required` semantics of the `owner` block, which
-// Framework blocks (always optional) cannot express on their own.
+// ConfigValidators enforces incompatibility between `acl` and `access_control_policy`,
+// and the `Required` semantics of the `owner` block, which cannot be configured
+// within Framework blocks (always optional).
 func (r *BucketACLResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.Conflicting(

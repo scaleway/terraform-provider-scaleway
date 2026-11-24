@@ -73,6 +73,40 @@ func TestAccObjectBucketACL_Basic(t *testing.T) {
 	})
 }
 
+func TestAccObjectBucketACL_Conflict(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-basic")
+	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf" // scaleway-dev-tools-org
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main" {
+						name = "%s"
+						region = "%s"
+					}
+
+					resource "scaleway_object_bucket_acl" "main" {
+						bucket = scaleway_object_bucket.main.id
+						acl = "private"
+						access_control_policy {
+							owner {
+								id = "%s"
+							}
+						}
+					}
+					`, testBucketName, objectTestsMainRegion, ownerID),
+				ExpectError: regexp.MustCompile(`These attributes cannot be configured together: \[acl,access_control_policy\]`),
+			},
+		},
+	})
+}
+
 func TestAccObjectBucketACL_Grantee(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
