@@ -88,7 +88,7 @@ ephemeral "scaleway_secret_version" "cockpit_auth" {
 ```shell
 # secret_key = ephemeral.scaleway_secret_version.cockpit_auth.data (from apply / write-only consumers)
 curl -H "X-Auth-Token: $SECRET_KEY" \
-  "$(terraform output -raw logs_url)/loki/api/v1/labels"
+	"$(terraform output -raw logs_url)/loki/api/v1/labels"
 ```
 
 ### Use a Cockpit token
