@@ -136,7 +136,7 @@ func TestAccVPCObjectStoragePrivateAccess_Update(t *testing.T) {
 	})
 }
 
-func TestAccVPCObjectStoragePrivateAccess_UUIDs(t *testing.T) {
+func TestAccVPCObjectStoragePrivateAccess_RawID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
