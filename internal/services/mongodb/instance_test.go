@@ -592,7 +592,7 @@ func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	}
 }
 
-func TestAccMongoDBInstanceAndUser_PasswordWO(t *testing.T) {
+func TestAccMongoDBInstance_PasswordWOWithUser(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
