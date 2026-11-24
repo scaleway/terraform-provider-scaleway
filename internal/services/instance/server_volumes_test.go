@@ -772,6 +772,7 @@ func TestAccServer_NoAttachedVolumes(t *testing.T) {
 				PreConfig: func() {
 					api := instanceSDK.NewAPI(tt.Meta.ScwClient())
 					emptyVolumes := make(map[string]*instanceSDK.VolumeServerTemplate)
+
 					_, err := api.UpdateServer(&instanceSDK.UpdateServerRequest{
 						ServerID: serverID,
 						Zone:     scw.ZoneFrPar1,
@@ -790,4 +791,3 @@ func TestAccServer_NoAttachedVolumes(t *testing.T) {
 		},
 	})
 }
-

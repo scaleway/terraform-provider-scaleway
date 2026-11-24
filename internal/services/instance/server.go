@@ -1781,6 +1781,7 @@ func setServerVolumesState(d *schema.ResourceData, api *instancehelpers.BlockAnd
 		for _, vol := range serverVolumes {
 			if vol != nil && vol.Boot {
 				rootVolumeServer = vol
+
 				break
 			}
 		}
@@ -1801,6 +1802,7 @@ func setServerVolumesState(d *schema.ResourceData, api *instancehelpers.BlockAnd
 		if serverVolume != nil && serverVolume == rootVolumeServer {
 			continue
 		}
+
 		additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, serverVolume.ID).String())
 	}
 
