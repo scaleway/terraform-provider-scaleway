@@ -82,8 +82,8 @@ func TestAccCockpitAlertManager_CreateWithMultipleContacts(t *testing.T) {
 					}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "project_id"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "initial1@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email", "initial2@example.com"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
@@ -97,8 +97,8 @@ func TestAccCockpitAlertManager_CreateWithMultipleContacts(t *testing.T) {
 						{"email": "updated2@example.com"},
 					}),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email"),
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.0.email", "updated1@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.alert_manager", "contact_points.1.email", "updated2@example.com"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.alert_manager", "alert_manager_url"),
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),

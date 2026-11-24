@@ -1,10 +1,12 @@
 package cockpit
 
 import (
+	"cmp"
 	"context"
 	_ "embed"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -295,7 +297,25 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	_ = d.Set("contact_points", contactPointsList)
+	// Cockpit does not guarantee response order. Keep the order from the
+	// applied plan or prior state for contacts still present in the API.
+	previousContacts := d.Get("contact_points").([]any)
+	positions := make(map[string]int, len(previousContacts))
+
+	for i, contact := range previousContacts {
+		if contact != nil {
+			positions[contact.(map[string]any)["email"].(string)] = len(previousContacts) - i
+		}
+	}
+
+	slices.SortStableFunc(contactPointsList, func(a, b map[string]any) int {
+		// Unmatched contacts follow the known contacts.
+		return cmp.Compare(positions[b["email"].(string)], positions[a["email"].(string)])
+	})
+
+	if err := d.Set("contact_points", contactPointsList); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
