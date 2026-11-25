@@ -16,7 +16,9 @@ Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/obse
 
 ### Authenticating to Cockpit with IAM
 
-Prefer an IAM application and an ephemeral API key over `scaleway_cockpit_token`. Keep the secret out of Terraform state (ephemeral + Secret Manager), then use it in the `X-Auth-Token` header when pushing metrics/logs or querying Loki.
+Prefer an IAM application and an ephemeral API key over `scaleway_cockpit_token`. The secret never lands in state; with `delete_on_close = true` the key is removed when Terraform finishes the run. Use `ephemeral.scaleway_iam_api_key.api_key.secret_key` in the `X-Auth-Token` header (not `Authorization: Bearer`) when pushing metrics/logs or querying Loki during that run.
+
+For a long-lived key that must outlive apply without storing `secret_key` in state, use a regular [`scaleway_iam_api_key`](iam_api_key.md) with [`secret_id`](iam_api_key.md#with-secret-secret_key-stored-in-secret-manager) instead.
 
 ```terraform
 data "scaleway_account_project" "default" {
@@ -35,21 +37,9 @@ resource "scaleway_iam_policy" "observability" {
   }
 }
 
-resource "scaleway_secret" "cockpit_auth" {
-  name = "cockpit-auth"
-}
-
-# Ephemeral so secret_key never lands in state. delete_on_close = false keeps the key
-# for long-running agents after apply; prefer setting expires_at as a safety net.
 ephemeral "scaleway_iam_api_key" "api_key" {
   application_id  = scaleway_iam_application.cockpit_auth.id
-  delete_on_close = false
-}
-
-resource "scaleway_secret_version" "cockpit_auth" {
-  secret_id       = scaleway_secret.cockpit_auth.id
-  data_wo         = ephemeral.scaleway_iam_api_key.api_key.secret_key
-  data_wo_version = 1
+  delete_on_close = true
 }
 
 resource "scaleway_cockpit_source" "metrics" {
@@ -77,16 +67,8 @@ output "logs_push_url" {
 }
 ```
 
-Read the secret back with the ephemeral secret version (still not stored in state), then pass it in `X-Auth-Token` (not `Authorization: Bearer`) when calling Cockpit endpoints:
-
-```terraform
-ephemeral "scaleway_secret_version" "cockpit_auth" {
-  secret_id = scaleway_secret.cockpit_auth.id
-}
-```
-
 ```shell
-# secret_key = ephemeral.scaleway_secret_version.cockpit_auth.data (from apply / write-only consumers)
+# secret_key = ephemeral.scaleway_iam_api_key.api_key.secret_key (apply-time / write-only consumers only)
 curl -H "X-Auth-Token: $SECRET_KEY" \
 	"$(terraform output -raw logs_url)/loki/api/v1/labels"
 ```
