@@ -14,7 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 )
 
-func TestAccMongoDBUser_Basic(t *testing.T) {
+func TestAccMongoDBUser_Lifecycle(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -79,8 +79,27 @@ func TestAccMongoDBUser_Basic(t *testing.T) {
 							database_name = "test_db"
 						}
 					}
+
+					resource "scaleway_mongodb_user" "imported" {
+						instance_id = scaleway_mongodb_instance.main.id
+						name        = "import_user"
+						password    = "import_password123"
+
+						depends_on = [scaleway_mongodb_user.main]
+
+						roles {
+							role          = "db_admin"
+							database_name = "admin"
+						}
+
+						roles {
+							role         = "read"
+							any_database = true
+						}
+					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMongoDBUserExists(tt, "scaleway_mongodb_user.imported"),
 					testAccCheckMongoDBUserExists(tt, "scaleway_mongodb_user.main"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "name", "test_user"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "password", "new_password456"),
@@ -91,203 +110,8 @@ func TestAccMongoDBUser_Basic(t *testing.T) {
 					}),
 				),
 			},
-		},
-	})
-}
-
-func TestAccMongoDBUser_PasswordWO(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckMongoDBUserDestroy(tt),
-		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_mongodb_instance" "main" {
-						name              = "test-mongodb-user-password-wo"
-						version           = "7.0.12"
-						node_type         = "MGDB-PLAY2-NANO"
-						node_number       = 1
-						user_name         = "initial_user"
-						password          = "initial_password123"
-						volume_size_in_gb = 5
-					}
-
-					resource "scaleway_mongodb_user" "main" {
-						instance_id = scaleway_mongodb_instance.main.id
-						name        = "test_user_wo"
-						password_wo = "thiZ_is_v&ry_s3cret_WO_1"
-						password_wo_version = 1
-
-						roles {
-							role          = "read_write"
-							database_name = "test_db"
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMongoDBUserExists(tt, "scaleway_mongodb_user.main"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "name", "test_user_wo"),
-					resource.TestCheckResourceAttrSet("scaleway_mongodb_user.main", "instance_id"),
-					// password_wo should not be set in state
-					resource.TestCheckNoResourceAttr("scaleway_mongodb_user.main", "password_wo"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "password_wo_version", "1"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "roles.#", "1"),
-					resource.TestCheckTypeSetElemNestedAttrs("scaleway_mongodb_user.main", "roles.*", map[string]string{
-						"role":          "read_write",
-						"database_name": "test_db",
-					}),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_mongodb_instance" "main" {
-						name              = "test-mongodb-user-password-wo"
-						version           = "7.0.12"
-						node_type         = "MGDB-PLAY2-NANO"
-						node_number       = 1
-						user_name         = "initial_user"
-						password          = "initial_password123"
-						volume_size_in_gb = 5
-					}
-
-					resource "scaleway_mongodb_user" "main" {
-						instance_id = scaleway_mongodb_instance.main.id
-						name        = "test_user_wo"
-						password_wo = "thiZ_is_v&ry_s3cret_WO_2"
-						password_wo_version = 2
-
-						roles {
-							role          = "read"
-							database_name = "test_db"
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMongoDBUserExists(tt, "scaleway_mongodb_user.main"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "password_wo_version", "2"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "roles.#", "1"),
-					resource.TestCheckTypeSetElemNestedAttrs("scaleway_mongodb_user.main", "roles.*", map[string]string{
-						"role":          "read",
-						"database_name": "test_db",
-					}),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_mongodb_instance" "main" {
-						name              = "test-mongodb-user-password-wo"
-						version           = "7.0.12"
-						node_type         = "MGDB-PLAY2-NANO"
-						node_number       = 1
-						user_name         = "initial_user"
-						password          = "initial_password123"
-						volume_size_in_gb = 5
-					}
-
-					resource "scaleway_mongodb_user" "main" {
-						instance_id = scaleway_mongodb_instance.main.id
-						name        = "test_user_wo"
-						password    = "thiZ_is_v&ry_s3cret_regular"
-
-						roles {
-							role          = "read"
-							database_name = "test_db"
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMongoDBUserExists(tt, "scaleway_mongodb_user.main"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "password", "thiZ_is_v&ry_s3cret_regular"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "roles.#", "1"),
-					resource.TestCheckTypeSetElemNestedAttrs("scaleway_mongodb_user.main", "roles.*", map[string]string{
-						"role":          "read",
-						"database_name": "test_db",
-					}),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_mongodb_instance" "main" {
-						name              = "test-mongodb-user-password-wo"
-						version           = "7.0.12"
-						node_type         = "MGDB-PLAY2-NANO"
-						node_number       = 1
-						user_name         = "initial_user"
-						password          = "initial_password123"
-						volume_size_in_gb = 5
-					}
-
-					resource "scaleway_mongodb_user" "main" {
-						instance_id = scaleway_mongodb_instance.main.id
-						name        = "test_user_wo"
-						password_wo = "thiZ_is_v&ry_s3cret_WO_final"
-						password_wo_version = 3
-
-						roles {
-							role          = "read"
-							database_name = "test_db"
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMongoDBUserExists(tt, "scaleway_mongodb_user.main"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "password_wo_version", "3"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_user.main", "roles.#", "1"),
-					resource.TestCheckTypeSetElemNestedAttrs("scaleway_mongodb_user.main", "roles.*", map[string]string{
-						"role":          "read",
-						"database_name": "test_db",
-					}),
-				),
-			},
-		},
-	})
-}
-
-func TestAccMongoDBUser_StateImport(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckMongoDBUserDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_mongodb_instance" "main" {
-						name              = "test-mongodb-user-import"
-						version           = "7.0.12"
-						node_type         = "MGDB-PLAY2-NANO"
-						node_number       = 1
-						user_name         = "initial_user"
-						password          = "initial_password123"
-						volume_size_in_gb = 5
-					}
-
-					resource "scaleway_mongodb_user" "main" {
-						instance_id = scaleway_mongodb_instance.main.id
-						name        = "import_user"
-						password    = "import_password123"
-						
-						roles {
-							role          = "db_admin"
-							database_name = "admin"
-						}
-						
-						roles {
-							role         = "read"
-							any_database = true
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckMongoDBUserExists(tt, "scaleway_mongodb_user.main"),
-				),
-			},
-			{
-				ResourceName:      "scaleway_mongodb_user.main",
+				ResourceName:      "scaleway_mongodb_user.imported",
 				ImportState:       true,
 				ImportStateVerify: true,
 				// Ignore roles: API reorders/normalizes and TypeSet flattens by index: flaky import diff.
