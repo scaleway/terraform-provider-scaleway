@@ -126,7 +126,6 @@ In addition to all arguments above, the following attributes are exported:
 
 - `srn` - The Scaleway Resource Name (SRN) of the snapshot.
 - `kms_key_id` - The UUID of the KMS key used to protect the parent volume's encryption. Empty if the parent volume is not encrypted.
-
 - `status` - The current status of the snapshot (`available`, `in_use`, `error`, ...).
 
 ## Import
