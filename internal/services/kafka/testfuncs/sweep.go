@@ -6,7 +6,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 )
 
 func AddTestSweepers() {
@@ -16,9 +15,9 @@ func AddTestSweepers() {
 	})
 }
 
-func testSweepCluster(region string) error {
-	return acctest.SweepRegions([]scw.Region{scw.Region(region)}, func(scwClient *scw.Client, region scw.Region) error {
-		api := kafka.NewAPI(scwClient)
+func testSweepCluster(_ string) error {
+	return acctest.SweepRegions((&kafkaSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
+		api := kafkaSDK.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: deleting kafka clusters in (%s)", region)
 
@@ -32,6 +31,10 @@ func testSweepCluster(region string) error {
 		}
 
 		for _, cluster := range listClusters.Clusters {
+			if !acctest.IsTestResource(cluster.Name) {
+				continue
+			}
+
 			_, err := api.DeleteCluster(&kafkaSDK.DeleteClusterRequest{
 				Region:    region,
 				ClusterID: cluster.ID,
