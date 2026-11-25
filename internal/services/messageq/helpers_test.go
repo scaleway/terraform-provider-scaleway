@@ -40,7 +40,7 @@ func fetchLatestVersion(tt *acctest.TestTools) string {
 	return ""
 }
 
-func fetchAvailableNodeType(tt *acctest.TestTools) string {
+func fetchEligibleNodeType(tt *acctest.TestTools) string {
 	tt.T.Helper()
 
 	api := messageq.NewAPI(tt.Meta)
@@ -88,9 +88,21 @@ func TestSelectNodeType(t *testing.T) {
 		want      string
 		nodeTypes []*messageqSDK.NodeType
 	}{
-		{"prefer available", available.Name, []*messageqSDK.NodeType{lowStock, available}},
-		{"fall back to low stock", lowStock.Name, []*messageqSDK.NodeType{outOfStock, disabled, lowStock}},
-		{"no eligible node type", "", []*messageqSDK.NodeType{disabled, outOfStock}},
+		{
+			name:      "prefer available",
+			want:      available.Name,
+			nodeTypes: []*messageqSDK.NodeType{lowStock, available},
+		},
+		{
+			name:      "fall back to low stock",
+			want:      lowStock.Name,
+			nodeTypes: []*messageqSDK.NodeType{outOfStock, disabled, lowStock},
+		},
+		{
+			name:      "no eligible node type",
+			want:      "",
+			nodeTypes: []*messageqSDK.NodeType{disabled, outOfStock},
+		},
 	}
 
 	for _, tt := range tests {
