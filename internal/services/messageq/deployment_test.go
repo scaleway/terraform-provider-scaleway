@@ -25,7 +25,7 @@ func TestAccDeployment_Basic(t *testing.T) {
 	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
-	nodeType := fetchAvailableNodeType(tt)
+	nodeType := fetchEligibleNodeType(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -97,7 +97,7 @@ func TestAccDeployment_Upgrade(t *testing.T) {
 	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
-	nodeType := fetchAvailableNodeType(tt)
+	nodeType := fetchEligibleNodeType(tt)
 	resourceID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -157,7 +157,7 @@ func TestAccDeployment_WithPrivateNetwork(t *testing.T) {
 	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
-	nodeType := fetchAvailableNodeType(tt)
+	nodeType := fetchEligibleNodeType(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -289,7 +289,7 @@ func TestAccDeployment_UpdatePrivateNetwork(t *testing.T) {
 	acctest.SkipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
-	nodeType := fetchAvailableNodeType(tt)
+	nodeType := fetchEligibleNodeType(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
