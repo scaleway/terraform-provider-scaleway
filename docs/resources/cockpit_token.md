@@ -16,9 +16,9 @@ Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/obse
 
 ### Authenticating to Cockpit with IAM
 
-Prefer an IAM application and an ephemeral API key over `scaleway_cockpit_token`. The secret never lands in state; with `delete_on_close = true` the key is removed when Terraform finishes the run. Use `ephemeral.scaleway_iam_api_key.api_key.secret_key` in the `X-Auth-Token` header (not `Authorization: Bearer`) when pushing metrics/logs or querying Loki during that run.
+Prefer an IAM application and API key over `scaleway_cockpit_token`. Use the secret key in the `X-Auth-Token` header (not `Authorization: Bearer`) when pushing metrics/logs or querying Loki.
 
-For a long-lived key that must outlive apply without storing `secret_key` in state, use a regular [`scaleway_iam_api_key`](iam_api_key.md) with [`secret_id`](iam_api_key.md#with-secret-secret_key-stored-in-secret-manager) instead.
+Shared IAM + Cockpit setup:
 
 ```terraform
 data "scaleway_account_project" "default" {
@@ -35,11 +35,6 @@ resource "scaleway_iam_policy" "observability" {
     project_ids          = [data.scaleway_account_project.default.id]
     permission_set_names = ["ObservabilityFullAccess"]
   }
-}
-
-ephemeral "scaleway_iam_api_key" "api_key" {
-  application_id  = scaleway_iam_application.cockpit_auth.id
-  delete_on_close = true
 }
 
 resource "scaleway_cockpit_source" "metrics" {
@@ -67,8 +62,44 @@ output "logs_push_url" {
 }
 ```
 
+#### Apply-scoped key (ephemeral)
+
+Use when the key is only needed during the Terraform run. `delete_on_close = true` removes it when Terraform finishes, so nothing is left behind and `secret_key` never lands in state.
+
+```terraform
+ephemeral "scaleway_iam_api_key" "api_key" {
+  application_id  = scaleway_iam_application.cockpit_auth.id
+  delete_on_close = true
+}
+```
+
 ```shell
 # secret_key = ephemeral.scaleway_iam_api_key.api_key.secret_key (apply-time / write-only consumers only)
+curl -H "X-Auth-Token: $SECRET_KEY" \
+	"$(terraform output -raw logs_url)/loki/api/v1/labels"
+```
+
+#### Long-lived key (resource + Secret Manager)
+
+Use when agents (Prometheus remote write, Loki push, …) need a durable credential. Store the secret with [`secret_id`](iam_api_key.md#with-secret-secret_key-stored-in-secret-manager) so `secret_key` is not in Terraform state; Terraform still manages the API key lifecycle.
+
+```terraform
+resource "scaleway_secret" "cockpit_auth" {
+  name = "cockpit-auth"
+}
+
+resource "scaleway_iam_api_key" "api_key" {
+  application_id = scaleway_iam_application.cockpit_auth.id
+  secret_id      = scaleway_secret.cockpit_auth.id
+}
+
+ephemeral "scaleway_secret_version" "cockpit_auth" {
+  secret_id = scaleway_secret.cockpit_auth.id
+}
+```
+
+```shell
+# secret_key = ephemeral.scaleway_secret_version.cockpit_auth.data
 curl -H "X-Auth-Token: $SECRET_KEY" \
 	"$(terraform output -raw logs_url)/loki/api/v1/labels"
 ```
