@@ -2,6 +2,7 @@ package baremetal_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -42,6 +43,26 @@ func TestAccDataSourceOption_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_baremetal_option.by_id", "option_id"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_option.by_id", "manageable", "true"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceOption_Error(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					data "scaleway_baremetal_option" "by_name" {
+						name = "Balthazar's best dog ever"
+					}
+				`,
+				ExpectError: regexp.MustCompile("no option found with the name Balthazar's best dog ever"),
 			},
 		},
 	})
