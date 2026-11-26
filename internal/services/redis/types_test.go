@@ -1,20 +1,20 @@
-//nolint:testpackage // Tests need access to unexported redis connection helpers.
-package redis
+package redis_test
 
 import (
 	"net"
 	"net/url"
 	"testing"
 
-	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
+	redisSDK "github.com/scaleway/scaleway-sdk-go/api/redis/v1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 )
 
-func assertRedisConnectionString(t *testing.T, endpoints []*redis.Endpoint, userName, password string, tlsEnabled bool, want string) {
+func assertRedisConnectionString(t *testing.T, endpoints []*redisSDK.Endpoint, userName, password string, tlsEnabled bool, want string) {
 	t.Helper()
 
-	got := redisConnectionString(endpoints, userName, password, tlsEnabled)
+	got := redis.ConnectionString(endpoints, userName, password, tlsEnabled)
 	if got != want {
-		t.Fatalf("redisConnectionString() = %q, want %q", got, want)
+		t.Fatalf("ConnectionString() = %q, want %q", got, want)
 	}
 }
 
@@ -35,15 +35,15 @@ func TestRedisConnectionString(t *testing.T) {
 	t.Run("public preferred over private", func(t *testing.T) {
 		t.Parallel()
 
-		endpoints := []*redis.Endpoint{
+		endpoints := []*redisSDK.Endpoint{
 			{
 				Port:           6379,
-				PrivateNetwork: &redis.PrivateNetwork{},
+				PrivateNetwork: &redisSDK.PrivateNetwork{},
 				IPs:            []net.IP{privIP},
 			},
 			{
 				Port:          6379,
-				PublicNetwork: &redis.PublicNetwork{},
+				PublicNetwork: &redisSDK.PublicNetwork{},
 				IPs:           []net.IP{pubIP},
 			},
 		}
@@ -53,10 +53,10 @@ func TestRedisConnectionString(t *testing.T) {
 	t.Run("private only", func(t *testing.T) {
 		t.Parallel()
 
-		endpoints := []*redis.Endpoint{
+		endpoints := []*redisSDK.Endpoint{
 			{
 				Port:           6380,
-				PrivateNetwork: &redis.PrivateNetwork{},
+				PrivateNetwork: &redisSDK.PrivateNetwork{},
 				IPs:            []net.IP{privIP},
 			},
 		}
@@ -66,10 +66,10 @@ func TestRedisConnectionString(t *testing.T) {
 	t.Run("password with ampersand (escaped in userinfo per url.URL)", func(t *testing.T) {
 		t.Parallel()
 
-		endpoints := []*redis.Endpoint{
+		endpoints := []*redisSDK.Endpoint{
 			{
 				Port:          6379,
-				PublicNetwork: &redis.PublicNetwork{},
+				PublicNetwork: &redisSDK.PublicNetwork{},
 				IPs:           []net.IP{pubIP},
 			},
 		}
@@ -85,10 +85,10 @@ func TestRedisConnectionString(t *testing.T) {
 	t.Run("no password", func(t *testing.T) {
 		t.Parallel()
 
-		endpoints := []*redis.Endpoint{
+		endpoints := []*redisSDK.Endpoint{
 			{
 				Port:          6379,
-				PublicNetwork: &redis.PublicNetwork{},
+				PublicNetwork: &redisSDK.PublicNetwork{},
 				IPs:           []net.IP{pubIP},
 			},
 		}
