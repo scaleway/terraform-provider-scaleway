@@ -52,6 +52,38 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 	})
 }
 
+func TestAccS3BucketServerSideEncryptionConfiguration_BucketID(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-sse-config-bucket-id")
+	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketServerSideEncryptionConfigurationConfig_BucketID(bucketName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
+					resource.TestCheckResourceAttrPair(resourceName, "project_id", "scaleway_object_bucket.test", "project_id"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccS3BucketServerSideEncryptionConfiguration_sideProject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -336,6 +368,26 @@ resource "scaleway_object_bucket" "test" {
 
 resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   bucket = scaleway_object_bucket.test.name
+  region = "%[2]s"
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+`, rName, objectTestsMainRegion)
+}
+
+func testAccBucketServerSideEncryptionConfigurationConfig_BucketID(rName string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "test" {
+  name = %[1]q
+  region = "%[2]s"
+}
+
+resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
+  bucket = scaleway_object_bucket.test.id
   region = "%[2]s"
 
   rule {
