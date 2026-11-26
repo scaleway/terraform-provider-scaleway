@@ -79,9 +79,10 @@ func aclSchema() map[string]*schema.Schema {
 						Description: "Starting port of the source port range to which this rule applies (inclusive)",
 					},
 					"src_port_high": {
-						Type:        schema.TypeInt,
-						Optional:    true,
-						Description: "Ending port of the source port range to which this rule applies (inclusive)",
+						Type:             schema.TypeInt,
+						Optional:         true,
+						Description:      "Ending port of the source port range to which this rule applies (inclusive). A 0-0 range matches all ports and is returned as 0-65535",
+						DiffSuppressFunc: diffSuppressFuncACLPortHigh,
 					},
 					"destination": {
 						Type:        schema.TypeString,
@@ -94,9 +95,10 @@ func aclSchema() map[string]*schema.Schema {
 						Description: "Starting port of the destination port range to which this rule applies (inclusive)",
 					},
 					"dst_port_high": {
-						Type:        schema.TypeInt,
-						Optional:    true,
-						Description: "Ending port of the destination port range to which this rule applies (inclusive)",
+						Type:             schema.TypeInt,
+						Optional:         true,
+						Description:      "Ending port of the destination port range to which this rule applies (inclusive). A 0-0 range matches all ports and is returned as 0-65535",
+						DiffSuppressFunc: diffSuppressFuncACLPortHigh,
 					},
 					"action": {
 						Type:             schema.TypeString,
