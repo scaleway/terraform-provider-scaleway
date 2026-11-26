@@ -2,12 +2,10 @@ package secret
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"strconv"
 	"time"
-	"unicode/utf8"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -277,38 +275,21 @@ func secretVersionUpgradeV1SchemaType() cty.Type {
 
 // VersionV1SchemaUpgradeFunc migrates a V0 state to V1.
 //
-// Before the `type` attribute existed, the value stored in state for `data`
-// was the result of the Base64Encoded helper, which base64-encodes its input
-// unless it is already a valid base64 string:
-//   - a raw (non-base64) configuration value was stored as base64(config);
-//   - a configuration value that was itself a valid base64 string was stored
-//     verbatim.
+// Before the `type` attribute existed, V0 sent the configured value verbatim
+// to the API but stored it in state as Base64Encoded(value), which is the
+// value itself when it is already a valid base64 string and its base64
+// encoding otherwise. That transformation is not invertible, so the
+// configured value cannot always be recovered from the stored one.
 //
-// In the first (common) case, decoding the state value recovers the exact
-// configuration value, so no ForceNew-based replacement occurs on upgrade. In
-// the second case, decoding yields a value different from the configuration,
-// so the first plan after the upgrade may recreate the secret version (the
-// secret payload itself is preserved). The two cases are indistinguishable
-// from the stored state alone and the upgrader cannot access the
-// configuration, so we decode by default to keep the common case correct.
-//
-// If the state value decodes to bytes that are not valid UTF-8, storing the
-// decoded value would corrupt the state, so we keep the value as-is and set
-// `type` to "base64" to preserve the payload sent to the API.
+// The upgrader therefore keeps the stored value verbatim and only adds
+// `type = "string"`. When the stored value still matches the configuration,
+// which is the case where the original `data` was already a valid base64
+// string, the upgrade is transparent. Otherwise, which is always the case
+// when the original `data` was not a valid base64 string, the first plan
+// after the upgrade shows a one-time replacement. The recreated version is
+// created with the configured value, so the payload in the API is unchanged.
 func VersionV1SchemaUpgradeFunc(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
 	rawState["type"] = "string"
-
-	raw, ok := rawState["data"].(string)
-	if !ok || raw == "" {
-		return rawState, nil
-	}
-
-	decoded, err := base64.StdEncoding.DecodeString(raw)
-	if err == nil && utf8.Valid(decoded) {
-		rawState["data"] = string(decoded)
-	} else if err == nil {
-		rawState["type"] = "base64"
-	}
 
 	return rawState, nil
 }

@@ -16,9 +16,9 @@ func TestVersionV1SchemaUpgradeFunc(t *testing.T) {
 		in   map[string]any
 		want map[string]any
 	}{
-		"decodes legacy base64 data and adds type": {
+		"legacy base64 data is kept verbatim and type is added": {
 			in:   map[string]any{"data": encoded, "revision": "1", "region": "fr-par"},
-			want: map[string]any{"data": raw, "revision": "1", "region": "fr-par", "type": "string"},
+			want: map[string]any{"data": encoded, "revision": "1", "region": "fr-par", "type": "string"},
 		},
 		"empty data is left untouched and type is added": {
 			in:   map[string]any{"data": "", "revision": "1"},
@@ -27,14 +27,6 @@ func TestVersionV1SchemaUpgradeFunc(t *testing.T) {
 		"absent data is left untouched and type is added": {
 			in:   map[string]any{"revision": "1"},
 			want: map[string]any{"revision": "1", "type": "string"},
-		},
-		"non-base64 data is left untouched and type is added": {
-			in:   map[string]any{"data": "this is not base64", "revision": "1"},
-			want: map[string]any{"data": "this is not base64", "revision": "1", "type": "string"},
-		},
-		"base64 data decoding to invalid UTF-8 is kept verbatim and marked base64": {
-			in:   map[string]any{"data": "//4=", "revision": "1"},
-			want: map[string]any{"data": "//4=", "revision": "1", "type": "base64"},
 		},
 	}
 
