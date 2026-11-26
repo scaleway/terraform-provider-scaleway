@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -181,10 +182,11 @@ func poolSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"max_unavailable": {
-						Type:        schema.TypeInt,
-						Optional:    true,
-						Default:     1,
-						Description: "The maximum number of nodes that can be not ready at the same time",
+						Type:         schema.TypeInt,
+						Optional:     true,
+						Default:      1,
+						ValidateFunc: validation.IntAtLeast(1),
+						Description:  "The maximum number of nodes that can be not ready at the same time",
 					},
 					"max_surge": {
 						Type:        schema.TypeInt,
