@@ -42,6 +42,7 @@ type snapshotDataSourceModel struct {
 	Tags       types.List   `tfsdk:"tags"`
 	Srn        types.String `tfsdk:"srn"`
 	KmsKeyID   types.String `tfsdk:"kms_key_id"`
+	Status     types.String `tfsdk:"status"`
 	Zone       types.String `tfsdk:"zone"`
 	ProjectID  types.String `tfsdk:"project_id"`
 }
@@ -88,6 +89,10 @@ func (d *SnapshotDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"srn": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The Scaleway Resource Name (SRN) of the snapshot",
+			},
+			"status": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The current status of the snapshot (available, in_use, error, ...)",
 			},
 			"zone": schema.StringAttribute{
 				Optional:            true,
@@ -213,6 +218,7 @@ func (d *SnapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 		Name:       flat.Name,
 		Tags:       flat.Tags,
 		Srn:        flat.Srn,
+		Status:     flat.Status,
 		Zone:       flat.Zone,
 		ProjectID:  flat.ProjectID,
 		SnapshotID: types.StringValue(zonal.NewIDString(snapshot.Zone, snapshot.ID)),
