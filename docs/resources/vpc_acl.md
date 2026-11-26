@@ -45,10 +45,10 @@ The following arguments are supported:
     - `protocol` - (Optional) The protocol to which this rule applies. Default value: ANY.
     - `source` - (Optional) The Source IP range to which this rule applies (CIDR notation with subnet mask).
     - `src_port_low` - (Optional) The starting port of the source port range to which this rule applies (inclusive).
-    - `src_port_high` - (Optional) The ending port of the source port range to which this rule applies (inclusive).
+    - `src_port_high` - (Optional) The ending port of the source port range to which this rule applies (inclusive). A `0`-`0` range matches all ports and is stored as `0`-`65535`.
     - `destination` - (Optional) The destination IP range to which this rule applies (CIDR notation with subnet mask).
     - `dst_port_low` - (Optional) The starting port of the destination port range to which this rule applies (inclusive).
-    - `dst_port_high` - (Optional) The ending port of the destination port range to which this rule applies (inclusive).
+    - `dst_port_high` - (Optional) The ending port of the destination port range to which this rule applies (inclusive). A `0`-`0` range matches all ports and is stored as `0`-`65535`.
     - `action` - (Optional) The policy to apply to the packet.
     - `description` - (Optional) The rule description.
 - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the ACL.
