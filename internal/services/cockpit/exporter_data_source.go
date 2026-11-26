@@ -68,7 +68,7 @@ func (d *ExporterDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"updated_at":        schema.StringAttribute{Computed: true, MarkdownDescription: "Date and time of the last update of the data export (RFC 3339 format)"},
 			"srn":               schema.StringAttribute{Computed: true, MarkdownDescription: "The Scaleway Resource Name (SRN) of the data export"},
 			"project_id":        account.ProjectIDSchemaAttributeOptional("The project_id you want to attach the resource to"),
-			"region":            regional.SchemaAttributeOptionalComputed(),
+			"region":            regional.SchemaAttributeOptionalComputed("The region you want to attach the resource to"),
 			"datadog_destination": schema.ListNestedAttribute{
 				Computed:            true,
 				MarkdownDescription: "Datadog destination configuration",

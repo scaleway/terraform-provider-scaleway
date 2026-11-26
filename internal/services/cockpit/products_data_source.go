@@ -52,7 +52,7 @@ func (d *ProductsDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 		Description:         cockpitProductsDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id":     schema.StringAttribute{Computed: true, MarkdownDescription: "The region of the products."},
-			"region": regional.SchemaAttributeOptionalComputed(),
+			"region": regional.SchemaAttributeOptionalComputed("The region you want to attach the resource to"),
 			"products": schema.ListNestedAttribute{
 				Computed:            true,
 				MarkdownDescription: "List of Cockpit products available for exported_products in scaleway_cockpit_exporter.",

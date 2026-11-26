@@ -68,7 +68,7 @@ func (d *PreconfiguredAlertDataSource) Schema(_ context.Context, _ datasource.Sc
 		Attributes: map[string]schema.Attribute{
 			"id":         schema.StringAttribute{Computed: true, MarkdownDescription: "The ID of the data source, in the `{region}/{project_id}` format."},
 			"project_id": account.ProjectIDSchemaAttributeOptional("The project_id you want to attach the resource to"),
-			"region":     regional.SchemaAttributeOptionalComputed(),
+			"region":     regional.SchemaAttributeOptionalComputed("The region you want to attach the resource to"),
 			"data_source_id": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: "Filter alerts by data source ID",

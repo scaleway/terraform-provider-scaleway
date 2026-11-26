@@ -62,7 +62,7 @@ func (d *SourcesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 			"name":       schema.StringAttribute{Optional: true, MarkdownDescription: "Name of the datasource"},
 			"type":       schema.StringAttribute{Optional: true, MarkdownDescription: "The type of the datasource"},
 			"origin":     schema.StringAttribute{Optional: true, MarkdownDescription: "The origin of the datasource"},
-			"region":     regional.SchemaAttributeOptionalComputed(),
+			"region":     regional.SchemaAttributeOptionalComputed("The region you want to attach the resource to"),
 			"project_id": account.ProjectIDSchemaAttributeOptional("The project_id you want to attach the resource to"),
 			"sources": schema.ListNestedAttribute{
 				Computed:            true,

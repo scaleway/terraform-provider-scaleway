@@ -59,16 +59,11 @@ func SchemaAttributeComputed(description ...string) schema.StringAttribute {
 }
 
 // SchemaAttributeOptionalComputed is the Optional+Computed region attribute for Framework data sources (no RequiresReplace).
-func SchemaAttributeOptionalComputed(description ...string) dsschema.StringAttribute {
-	desc := "The region you want to attach the resource to"
-	if len(description) > 0 {
-		desc = description[0]
-	}
-
+func SchemaAttributeOptionalComputed(description string) dsschema.StringAttribute {
 	return dsschema.StringAttribute{
 		Optional:            true,
 		Computed:            true,
-		MarkdownDescription: desc,
+		MarkdownDescription: description,
 		Validators: []validator.String{
 			verify.IsStringOneOfWithWarning(AllRegions()),
 		},

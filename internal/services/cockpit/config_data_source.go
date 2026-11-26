@@ -55,7 +55,7 @@ func (d *ConfigDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 		Description:         cockpitConfigDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id":                        schema.StringAttribute{Computed: true, MarkdownDescription: "The region of the configuration."},
-			"region":                    regional.SchemaAttributeOptionalComputed(),
+			"region":                    regional.SchemaAttributeOptionalComputed("The region you want to attach the resource to"),
 			"custom_metrics_retention":  retentionAttribute("Retention limits and default for custom metrics data sources."),
 			"custom_logs_retention":     retentionAttribute("Retention limits and default for custom logs data sources."),
 			"custom_traces_retention":   retentionAttribute("Retention limits and default for custom traces data sources."),
