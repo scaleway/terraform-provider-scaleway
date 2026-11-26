@@ -436,6 +436,7 @@ func setClusterState(ctx context.Context, d *schema.ResourceData, redisAPI *redi
 	_ = d.Set("project_id", cluster.ProjectID)
 	_ = d.Set("version", cluster.Version)
 	_ = d.Set("cluster_size", int(cluster.ClusterSize))
+	_ = d.Set("tls_enabled", cluster.TLSEnabled)
 	_ = d.Set("created_at", cluster.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", cluster.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("srn", cluster.Srn)
