@@ -106,7 +106,7 @@ func TestAccVPCRoute_Basic(t *testing.T) {
 					}
 					
 					resource "scaleway_instance_private_nic" "pnic02" {
-					  private_network_id = scaleway_vpc_private_network.pn01.id
+					  private_network_id = scaleway_vpc_private_network.pn02.id
 					  server_id          = scaleway_instance_server.server02.id
 					}
 					

@@ -138,6 +138,17 @@ func diffSuppressFuncRouteResourceID(_, oldValue, newValue string, _ *schema.Res
 	return oldResourceID == newResourceID
 }
 
+// diffSuppressFuncACLPortHigh suppresses the diff when a 0-0 port range is returned by the API as 0-65535
+func diffSuppressFuncACLPortHigh(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	if oldValue != "65535" || newValue != "0" {
+		return false
+	}
+
+	low, ok := d.Get(strings.TrimSuffix(k, "_high") + "_low").(int)
+
+	return ok && low == 0
+}
+
 func customDiffCheckFeatureNotDisabled(diff *schema.ResourceDiff, key string, errMsg string) error {
 	if diff.Id() == "" {
 		rawConfig := diff.GetRawConfig()

@@ -377,6 +377,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 	readReplicaID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -387,7 +388,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_vpc_private_network" "different_zone" {
 						name = "test-rdb-rr-different-zone"
 					}
@@ -395,7 +396,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 					resource "scaleway_rdb_instance" "different_zone" {
 						name = "test-rdb-rr-different-zone"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-14"
+						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
@@ -410,7 +411,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 							private_network_id = scaleway_vpc_private_network.different_zone.id
 							enable_ipam = true
 						}
-					}`,
+					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.different_zone"),
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.different_zone"),
@@ -420,7 +421,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_vpc_private_network" "different_zone" {
 						name = "test-rdb-rr-different-zone"
 					}
@@ -428,7 +429,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 					resource "scaleway_rdb_instance" "different_zone" {
 						name = "test-rdb-rr-different-zone"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-14"
+						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
@@ -444,7 +445,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 							private_network_id = scaleway_vpc_private_network.different_zone.id
 							enable_ipam = true
 						}
-					}`,
+					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.different_zone"),
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.different_zone"),
@@ -454,7 +455,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_vpc_private_network" "different_zone" {
 						name = "test-rdb-rr-different-zone"
 					}
@@ -462,7 +463,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 					resource "scaleway_rdb_instance" "different_zone" {
 						name = "test-rdb-rr-different-zone"
 						node_type = "db-dev-s"
-						engine = "PostgreSQL-14"
+						engine = %q
 						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
@@ -478,7 +479,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 							private_network_id = scaleway_vpc_private_network.different_zone.id
 							enable_ipam = true
 						}
-					}`,
+					}`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					isReadReplicaPresent(tt, "scaleway_rdb_read_replica.different_zone"),
 					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.different_zone"),

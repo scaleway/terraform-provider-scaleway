@@ -2,6 +2,8 @@ package acctest
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
@@ -38,9 +40,18 @@ func SweepZones(zones []scw.Zone, f func(scwClient *scw.Client, zone scw.Zone) e
 }
 
 func SweepRegions(regions []scw.Region, f func(scwClient *scw.Client, region scw.Region) error) error {
+	if len(regions) == 0 {
+		return errors.New("cannot sweep an empty region list")
+	}
+
 	zones := make([]scw.Zone, len(regions))
 	for i, region := range regions {
-		zones[i] = region.GetZones()[0]
+		regionZones := region.GetZones()
+		if len(regionZones) == 0 {
+			return fmt.Errorf("cannot sweep region %q: no zones found", region)
+		}
+
+		zones[i] = regionZones[0]
 	}
 
 	return SweepZones(zones, func(scwClient *scw.Client, zone scw.Zone) error {

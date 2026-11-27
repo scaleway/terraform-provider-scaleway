@@ -98,6 +98,8 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrWith("scaleway_block_snapshot.main", "srn", acctest.CheckSRN("block", "snapshots")),
 					resource.TestCheckResourceAttrWith("data.scaleway_block_snapshot.find_by_name", "srn", acctest.CheckSRN("block", "snapshots")),
 					resource.TestCheckResourceAttrWith("data.scaleway_block_snapshot.find_by_id", "srn", acctest.CheckSRN("block", "snapshots")),
+					resource.TestCheckResourceAttr("data.scaleway_block_snapshot.find_by_name", "status", "available"),
+					resource.TestCheckResourceAttr("data.scaleway_block_snapshot.find_by_id", "status", "available"),
 				),
 			},
 		},

@@ -12,7 +12,7 @@ func TestAccDataSourceMessageQNodeType_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	nodeType := fetchAvailableNodeType(tt)
+	nodeType := fetchEligibleNodeType(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,

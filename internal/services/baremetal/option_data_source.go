@@ -55,24 +55,17 @@ func dataSourceOptionRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	var optionName string
-
-	var optionManageable bool
+	var match *baremetal.Option
 
 	optionID, ok := d.GetOk("option_id")
 	if ok {
-		optionID = d.Get("option_id")
-
-		res, err := api.GetOption(&baremetal.GetOptionRequest{
+		match, err = api.GetOption(&baremetal.GetOptionRequest{
 			Zone:     zone,
 			OptionID: optionID.(string),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		optionManageable = res.Manageable
-		optionName = res.Name
 	} else {
 		res, err := api.ListOptions(&baremetal.ListOptionsRequest{
 			Zone: zone,
@@ -87,20 +80,22 @@ func dataSourceOptionRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 		for _, option := range res.Options {
 			if option.Name == d.Get("name") {
-				optionID, optionManageable, optionName = option.ID, option.Manageable, option.Name
-
-				break
+				match = option
 			}
+		}
+
+		if match == nil {
+			return diag.FromErr(fmt.Errorf("no option found with the name %s", d.Get("name")))
 		}
 	}
 
-	zoneID := datasource.NewZonedID(optionID, zone)
+	zoneID := datasource.NewZonedID(match.ID, zone)
 	d.SetId(zoneID)
 
 	_ = d.Set("option_id", zoneID)
 	_ = d.Set("zone", zone)
-	_ = d.Set("name", optionName)
-	_ = d.Set("manageable", optionManageable)
+	_ = d.Set("name", match.Name)
+	_ = d.Set("manageable", match.Manageable)
 
 	return nil
 }

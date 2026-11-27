@@ -86,6 +86,7 @@ func (r *TokenEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaReq
 	resp.Schema = schema.Schema{
 		Description:         tokenEphemeralResourceDescription,
 		MarkdownDescription: tokenEphemeralResourceDescription,
+		DeprecationMessage:  "The \"scaleway_cockpit_token\" ephemeral resource is deprecated in favor of IAM authentication",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Required:    true,

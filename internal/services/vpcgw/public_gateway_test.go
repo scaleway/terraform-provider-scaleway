@@ -87,9 +87,10 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "scaleway_vpc_public_gateway.main",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "scaleway_vpc_public_gateway.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at"},
 			},
 		},
 	})
