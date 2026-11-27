@@ -56,3 +56,55 @@ func (m localityPlanModifier) PlanModifyString(
 		}
 	}
 }
+
+// LocalitySetPlanModifier suppresses diffs on a set of IDs when both sides
+// reference the same UUIDs, regardless of the region prefix
+func LocalitySetPlanModifier() planmodifier.Set {
+	return localitySetPlanModifier{}
+}
+
+type localitySetPlanModifier struct{}
+
+func (m localitySetPlanModifier) Description(_ context.Context) string {
+	return "Suppresses diffs between sets of bare UUIDs and regional IDs."
+}
+
+func (m localitySetPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (m localitySetPlanModifier) PlanModifySet(
+	ctx context.Context, req planmodifier.SetRequest, resp *planmodifier.SetResponse,
+) {
+	if req.StateValue.IsNull() || req.PlanValue.IsNull() || req.PlanValue.IsUnknown() {
+		return
+	}
+
+	stateIDs, diags := locality.ExpandFrameworkIDs(ctx, req.StateValue)
+	if diags.HasError() {
+		return
+	}
+
+	// Fails when some elements are still unknown, in which case there is nothing to suppress
+	planIDs, diags := locality.ExpandFrameworkIDs(ctx, req.PlanValue)
+	if diags.HasError() {
+		return
+	}
+
+	if len(stateIDs) != len(planIDs) {
+		return
+	}
+
+	inState := make(map[string]struct{}, len(stateIDs))
+	for _, id := range stateIDs {
+		inState[id] = struct{}{}
+	}
+
+	for _, id := range planIDs {
+		if _, ok := inState[id]; !ok {
+			return
+		}
+	}
+
+	resp.PlanValue = req.StateValue
+}
