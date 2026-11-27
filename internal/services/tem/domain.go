@@ -97,12 +97,6 @@ func domainSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Date and time of the revocation of the domain (RFC 3339 format)",
 		},
-		"last_error": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Error message if the last check failed",
-			Deprecated:  "last_error is deprecated",
-		},
 		"spf_config": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -312,7 +306,6 @@ func setDomainState(d *schema.ResourceData, domain *tem.Domain, region scw.Regio
 	_ = d.Set("next_check_at", types.FlattenTime(domain.NextCheckAt))
 	_ = d.Set("last_valid_at", types.FlattenTime(domain.LastValidAt))
 	_ = d.Set("revoked_at", types.FlattenTime(domain.RevokedAt))
-	_ = d.Set("last_error", domain.LastError) //nolint:staticcheck
 	_ = d.Set("spf_config", domain.SpfConfig)
 	_ = d.Set("dkim_config", domain.DkimConfig)
 
