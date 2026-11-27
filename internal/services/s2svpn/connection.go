@@ -84,8 +84,7 @@ func connectionSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Computed:    true,
 			Optional:    true,
-			ForceNew:    true,
-			Description: "Defines whether route propagation is enabled or not",
+			Description: "Defines whether route propagation is enabled or not. Do not set it when managing route propagation with the `scaleway_s2s_vpn_connection_enable_route_propagation` / `scaleway_s2s_vpn_connection_disable_route_propagation` actions",
 		},
 		"vpn_gateway_id": {
 			Type:        schema.TypeString,
@@ -141,7 +140,7 @@ func connectionSchema() map[string]*schema.Schema {
 		},
 		"route_propagation_enabled": {
 			Type:        schema.TypeBool,
-			Description: "Defines whether route propagation is enabled or not",
+			Description: "Current route propagation state as reported by the API (read-only mirror of enable_route_propagation)",
 			Computed:    true,
 		},
 		"created_at": {
@@ -353,6 +352,7 @@ func setConnectionState(d *schema.ResourceData, connection *s2s_vpn.Connection) 
 	_ = d.Set("status", connection.Status.String())
 	_ = d.Set("is_ipv6", connection.IsIPv6)
 	_ = d.Set("initiation_policy", connection.InitiationPolicy.String())
+	_ = d.Set("enable_route_propagation", connection.RoutePropagationEnabled)
 	_ = d.Set("route_propagation_enabled", connection.RoutePropagationEnabled)
 	_ = d.Set("vpn_gateway_id", regional.NewIDString(connection.Region, connection.VpnGatewayID))
 	_ = d.Set("customer_gateway_id", regional.NewIDString(connection.Region, connection.CustomerGatewayID))
@@ -427,6 +427,29 @@ func ResourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m any
 
 	if hasChanged {
 		_, err = api.UpdateConnection(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("enable_route_propagation") {
+		_, err = waitForVPNGateway(ctx, api, region, regional.ExpandID(d.Get("vpn_gateway_id").(string)).ID, defaulVPNGatewayTimeout)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if d.Get("enable_route_propagation").(bool) {
+			_, err = api.EnableRoutePropagation(&s2s_vpn.EnableRoutePropagationRequest{
+				Region:       region,
+				ConnectionID: id,
+			}, scw.WithContext(ctx))
+		} else {
+			_, err = api.DisableRoutePropagation(&s2s_vpn.DisableRoutePropagationRequest{
+				Region:       region,
+				ConnectionID: id,
+			}, scw.WithContext(ctx))
+		}
+
 		if err != nil {
 			return diag.FromErr(err)
 		}

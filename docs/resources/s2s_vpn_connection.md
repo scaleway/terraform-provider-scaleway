@@ -90,7 +90,7 @@ The following arguments are supported:
 - `vpn_gateway_id` - (Required) The ID of the VPN gateway to attach to the connection.
 - `customer_gateway_id` - (Required) The ID of the customer gateway to attach to the connection.
 - `initiation_policy` - (Optional) Defines who initiates the IPSec tunnel. Possible values are `vpn_gateway`, `customer_gateway` or `unknown_initiation_policy`. Defaults to `unknown_initiation_policy`.
-- `enable_route_propagation` - (Optional) Defines whether route propagation is enabled or not.
+- `enable_route_propagation` - (Optional) Defines whether route propagation is enabled or not. Do not set this attribute when managing route propagation with the `scaleway_s2s_vpn_connection_enable_route_propagation` / `scaleway_s2s_vpn_connection_disable_route_propagation` actions, or add it to `lifecycle.ignore_changes`.
 - `bgp_config_ipv4` - (Optional) BGP configuration for IPv4. See [BGP Config](#bgp-config) below.
 - `bgp_config_ipv6` - (Optional) BGP configuration for IPv6. See [BGP Config](#bgp-config) below.
 - `ikev2_ciphers` - (Optional) IKEv2 cipher configuration for Phase 1 (tunnel establishment). See [Cipher Config](#cipher-config) below.
@@ -130,7 +130,7 @@ In addition to all arguments above, the following attributes are exported:
 - `bgp_status_ipv6` - The status of the BGP IPv6 session.
 - `bgp_session_ipv4` - The BGP IPv4 session information. See [BGP Session](#bgp-session) below.
 - `bgp_session_ipv6` - The BGP IPv6 session information. See [BGP Session](#bgp-session) below.
-- `route_propagation_enabled` - Whether route propagation is enabled.
+- `route_propagation_enabled` - Current route propagation state as reported by the API (read-only mirror of `enable_route_propagation`).
 - `created_at` - The date and time of the creation of the connection (RFC 3339 format).
 - `updated_at` - The date and time of the last update of the connection (RFC 3339 format).
 - `organization_id` - The Organization ID the connection is associated with.

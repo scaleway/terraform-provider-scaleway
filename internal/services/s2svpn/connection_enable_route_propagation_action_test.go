@@ -80,6 +80,8 @@ func TestAccActionS2SVPNConnectionEnableRoutePropagation_Basic(t *testing.T) {
 						region                    = "fr-par"
 
 						lifecycle {
+							ignore_changes = [enable_route_propagation]
+
 							action_trigger {
 								events  = [after_create]
 								actions = [action.scaleway_s2s_vpn_connection_enable_route_propagation.main]

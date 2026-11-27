@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -133,7 +134,7 @@ func TestAccConnection_Basic(t *testing.T) {
 				ResourceName:            "scaleway_s2s_vpn_connection.main",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"enable_route_propagation", "bgp_config_ipv4.#", "bgp_config_ipv4.0.%", "bgp_config_ipv4.0.private_ip", "bgp_config_ipv4.0.peer_private_ip", "bgp_config_ipv4.0.peer_public_ip", "bgp_config_ipv4.0.routing_policy_id"},
+				ImportStateVerifyIgnore: []string{"bgp_config_ipv4.#", "bgp_config_ipv4.0.%", "bgp_config_ipv4.0.private_ip", "bgp_config_ipv4.0.peer_private_ip", "bgp_config_ipv4.0.peer_public_ip", "bgp_config_ipv4.0.routing_policy_id"},
 			},
 		},
 	})
@@ -575,6 +576,146 @@ func TestAccConnection_UpdateSecret(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccConnection_UpdateRoutePropagation(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	connectionID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckConnectionDestroy(tt),
+			testAccCheckVPNGatewayDestroy(tt),
+			testAccCheckCustomerGatewayDestroy(tt),
+			testAccCheckRoutingPolicyDestroy(tt),
+			secrettestfuncs.CheckSecretDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccConnectionRoutePropagationConfig(true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckConnectionExists(tt, "scaleway_s2s_vpn_connection.main"),
+					testAccCheckConnectionIDStable(&connectionID),
+					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "enable_route_propagation", "true"),
+					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "route_propagation_enabled", "true"),
+				),
+			},
+			{
+				// Disable route propagation out of band: the drift must be detected and reconciled in place
+				PreConfig: func() {
+					api, region, id, err := s2svpn.NewAPIWithRegionAndID(tt.Meta, connectionID)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					_, err = api.DisableRoutePropagation(&s2s_vpn.DisableRoutePropagationRequest{
+						Region:       region,
+						ConnectionID: id,
+					})
+					if err != nil {
+						t.Fatal(err)
+					}
+				},
+				Config: testAccConnectionRoutePropagationConfig(true),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("scaleway_s2s_vpn_connection.main", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckConnectionIDStable(&connectionID),
+					isRoutePropagationEnabled(tt, "scaleway_s2s_vpn_connection.main"),
+					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "enable_route_propagation", "true"),
+					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "route_propagation_enabled", "true"),
+				),
+			},
+			{
+				Config: testAccConnectionRoutePropagationConfig(false),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("scaleway_s2s_vpn_connection.main", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckConnectionIDStable(&connectionID),
+					isRoutePropagationDisabled(tt, "scaleway_s2s_vpn_connection.main"),
+					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "enable_route_propagation", "false"),
+					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "route_propagation_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+func testAccConnectionRoutePropagationConfig(enableRoutePropagation bool) string {
+	return testAccConnectionPSKSecretConfig("tf-test-connection-route-prop-psk") + fmt.Sprintf(`
+					resource "scaleway_vpc" "main" {
+						name = "tf-test-vpc-connection-route-prop"
+					}
+
+					resource "scaleway_vpc_private_network" "main" {
+						vpc_id = scaleway_vpc.main.id
+						ipv4_subnet {
+							subnet = "10.0.0.0/24"
+						}
+					}
+
+					resource "scaleway_instance_ip" "customer_ip" {}
+
+					resource "scaleway_s2s_vpn_gateway" "main" {
+						name               = "tf-test-vpn-gateway-connection-route-prop"
+						gateway_type       = "VGW-S"
+						private_network_id = scaleway_vpc_private_network.main.id
+						region             = "fr-par"
+						zone               = "fr-par-1"
+					}
+
+					resource "scaleway_s2s_vpn_customer_gateway" "main" {
+						name        = "tf-test-customer-gateway-connection-route-prop"
+						ipv4_public = scaleway_instance_ip.customer_ip.address
+						asn         = 65000
+						region      = "fr-par"
+					}
+
+					resource "scaleway_s2s_vpn_routing_policy" "main" {
+						name              = "tf-test-routing-policy-connection-route-prop"
+						prefix_filter_in  = ["10.0.1.0/24"]
+						prefix_filter_out = ["10.0.0.0/24"]
+						region            = "fr-par"
+					}
+
+					resource "scaleway_s2s_vpn_connection" "main" {
+						name                     = "tf-test-connection-route-prop"
+						vpn_gateway_id           = scaleway_s2s_vpn_gateway.main.id
+						customer_gateway_id      = scaleway_s2s_vpn_customer_gateway.main.id
+						initiation_policy        = "customer_gateway"
+						enable_route_propagation = %t
+						secret_id                = scaleway_secret.psk.id
+						secret_version           = scaleway_secret_version.psk.revision
+						region                   = "fr-par"
+
+						bgp_config_ipv4 {
+							routing_policy_id = scaleway_s2s_vpn_routing_policy.main.id
+							private_ip        = "169.254.5.1/30"
+							peer_private_ip   = "169.254.5.2/30"
+						}
+
+						ikev2_ciphers {
+							encryption = "aes256"
+							integrity  = "sha256"
+							dh_group   = "modp2048"
+						}
+
+						esp_ciphers {
+							encryption = "aes256"
+							integrity  = "sha256"
+							dh_group   = "modp2048"
+						}
+					}
+`, enableRoutePropagation)
 }
 
 func testAccCheckConnectionIDStable(connectionID *string) resource.TestCheckFunc {
