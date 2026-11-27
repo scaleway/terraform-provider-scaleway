@@ -49,7 +49,7 @@ The following arguments are supported:
 
 ### Data
 
-Only one of `data` or `data_wo` should be specified. If several are provided, Terraform will return an error.
+Only one of `data` or `data_wo` should be specified. If both are provided, Terraform will return an error.
 
 The encoding of the payload is controlled by the `type` attribute:
 
@@ -67,6 +67,14 @@ The value of `data` stored in the Terraform state is the value provided in the c
 Before this version, the state stored `data` as its **base64 encoding** (or verbatim if it was already a valid base64 string), while the API stored the configured value itself. The state now stores the value exactly as provided in the configuration.
 
 Existing states keep their legacy value (with `type = "string"` added), so the upgrade itself recreates nothing. However, if your configuration no longer matches the legacy value — which is always the case when your original `data` was not a valid base64 string — the first plan after the upgrade recreates the version, which then stores the value as declared.
+
+To avoid the one-time recreation, you can fix the state manually before the first apply: set the resource's `data` to the value from your configuration.
+
+```bash
+terraform state pull >state.json
+# edit the resource's attributes.data to the value from your configuration (e.g. "aGVsbG8=" to "hello")
+terraform state push state.json
+```
 
 After such a recreation, the payload in the API and the `scaleway_secret_version.X.data` expression return the raw configured value. If you reference it in your configuration (for example to feed another resource):
 
