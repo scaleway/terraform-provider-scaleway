@@ -306,7 +306,9 @@ func (bucketACLOwnerRequiredValidator) MarkdownDescription(_ context.Context) st
 	return "owner is required inside access_control_policy"
 }
 
-func (bucketACLOwnerRequiredValidator) ValidateResource(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+func (bucketACLOwnerRequiredValidator) ValidateResource(
+	ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse,
+) {
 	var config bucketACLResourceModel
 	if req.Config.Get(ctx, &config).HasError() {
 		return
@@ -600,7 +602,9 @@ func (r *BucketACLResource) Delete(ctx context.Context, req resource.DeleteReque
 
 	resp.Diagnostics.AddWarning(
 		"Deleting Object Bucket ACL resource resets ACL to private",
-		"Deleting Object Bucket ACL resource resets the bucket's ACL to its default value: private.\nIf you wish to set it to something else, you should recreate a Bucket ACL resource with the `acl` field filled accordingly.",
+		"Deleting Object Bucket ACL resource resets the bucket's ACL to its default "+
+			"value: private.\nIf you wish to set it to something else, you should "+
+			"recreate a Bucket ACL resource with the `acl` field filled accordingly.",
 	)
 }
 
@@ -623,7 +627,9 @@ func (bucketACLIDPlanModifier) MarkdownDescription(_ context.Context) string {
 	return "Keeps the prior ID unless the acl attribute changes."
 }
 
-func (bucketACLIDPlanModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+func (bucketACLIDPlanModifier) PlanModifyString(
+	ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse,
+) {
 	if req.StateValue.IsNull() {
 		return
 	}
@@ -645,7 +651,9 @@ func (bucketACLIDPlanModifier) PlanModifyString(ctx context.Context, req planmod
 
 // findBucketACL reads the bucket ACL and updates the given state with the result.
 // It returns false when the bucket does not exist.
-func (r *BucketACLResource) findBucketACL(ctx context.Context, state *bucketACLResourceModel, isNewResource bool) (region, bucket string, found bool, diags diag.Diagnostics) {
+func (r *BucketACLResource) findBucketACL(
+	ctx context.Context, state *bucketACLResourceModel, isNewResource bool,
+) (region, bucket string, found bool, diags diag.Diagnostics) {
 	region, bucket, acl, err := locality.ParseLocalizedNestedOwnerID(state.ID.ValueString())
 	if err != nil {
 		diags.AddError("Failed to parse bucket ACL ID", err.Error())
