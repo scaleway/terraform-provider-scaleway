@@ -251,7 +251,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_opensearch_deployment":                              opensearch.ResourceDeployment(),
 				"scaleway_opensearch_user":                                    opensearch.ResourceUser(),
 				"scaleway_object_bucket":                                      object.ResourceBucket(),
-				"scaleway_object_bucket_acl":                                  object.ResourceBucketACL(),
 				"scaleway_object_bucket_lock_configuration":                   object.ResourceLockConfiguration(),
 				"scaleway_object_bucket_server_side_encryption_configuration": object.ResourceBucketServerSideEncryptionConfiguration(),
 				"scaleway_object_bucket_website_configuration":                object.ResourceBucketWebsiteConfiguration(),

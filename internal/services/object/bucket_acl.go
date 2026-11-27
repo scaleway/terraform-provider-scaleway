@@ -10,14 +10,23 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -33,107 +42,237 @@ const (
 	AllUsersURI           = "http://acs.amazonaws.com/groups/global/AllUsers"
 )
 
-func ResourceBucketACL() *schema.Resource {
-	return &schema.Resource{
-		Description:   bucketACLResourceDescription,
-		CreateContext: resourceBucketACLCreate,
-		ReadContext:   resourceBucketACLRead,
-		UpdateContext: resourceBucketACLUpdate,
-		DeleteContext: resourceBucketACLDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+var (
+	_ resource.Resource                = (*BucketACLResource)(nil)
+	_ resource.ResourceWithConfigure   = (*BucketACLResource)(nil)
+	_ resource.ResourceWithImportState = (*BucketACLResource)(nil)
+)
+
+func NewBucketACLResource() resource.Resource {
+	return &BucketACLResource{}
+}
+
+type BucketACLResource struct {
+	meta *meta.Meta
+}
+
+type bucketACLResourceModel struct {
+	ID                  types.String `tfsdk:"id"`
+	Bucket              types.String `tfsdk:"bucket"`
+	Region              types.String `tfsdk:"region"`
+	ProjectID           types.String `tfsdk:"project_id"`
+	ACL                 types.String `tfsdk:"acl"`
+	ExpectedBucketOwner types.String `tfsdk:"expected_bucket_owner"`
+	AccessControlPolicy types.List   `tfsdk:"access_control_policy"`
+}
+
+type bucketACLAccessControlPolicyModel struct {
+	Grant types.Set  `tfsdk:"grant"`
+	Owner types.List `tfsdk:"owner"`
+}
+
+type bucketACLGrantModel struct {
+	Grantee    types.List   `tfsdk:"grantee"`
+	Permission types.String `tfsdk:"permission"`
+}
+
+type bucketACLGranteeModel struct {
+	DisplayName types.String `tfsdk:"display_name"`
+	URI         types.String `tfsdk:"uri"`
+	ID          types.String `tfsdk:"id"`
+	Type        types.String `tfsdk:"type"`
+}
+
+type bucketACLOwnerModel struct {
+	DisplayName types.String `tfsdk:"display_name"`
+	ID          types.String `tfsdk:"id"`
+}
+
+func bucketACLGranteeObjectType() types.ObjectType {
+	return types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"display_name": types.StringType,
+			"uri":          types.StringType,
+			"id":           types.StringType,
+			"type":         types.StringType,
 		},
-		SchemaFunc: bucketAclSchema,
 	}
 }
 
-func bucketAclSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"access_control_policy": {
-			Type:          schema.TypeList,
-			Optional:      true,
-			Computed:      true,
-			MaxItems:      1,
-			ConflictsWith: []string{"acl"},
-			Description:   "A configuration block that sets the ACL permissions for an object per grantee.",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"grant": {
-						Type:        schema.TypeSet,
-						Description: "Grant",
-						Optional:    true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"grantee": {
-									Type:        schema.TypeList,
-									Optional:    true,
-									MaxItems:    1,
-									Description: "Configuration block for the project being granted permissions.",
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"display_name": {
-												Type:        schema.TypeString,
-												Description: "Display name of the grantee to grant access to.",
-												Computed:    true,
-											},
-											"uri": {
-												Type:        schema.TypeString,
-												Optional:    true,
-												Description: "The uri of the grantee if you are granting permissions to a predefined group.",
-												ValidateFunc: validation.StringInSlice([]string{
-													AuthenticatedUsersURI,
-													AllUsersURI,
-												}, false),
-											},
-											"id": {
-												Type:             schema.TypeString,
-												Optional:         true,
-												Description:      "The project ID owner of the grantee.",
-												ValidateDiagFunc: verify.IsUUID(),
-											},
-											"type": {
-												Type:         schema.TypeString,
-												Optional:     true,
-												Description:  "Type of grantee. Valid values: `CanonicalUser`, `Group`",
-												ValidateFunc: validation.StringInSlice([]string{string(s3Types.TypeCanonicalUser), string(s3Types.TypeGroup)}, false),
+func bucketACLGrantObjectType() types.ObjectType {
+	return types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"grantee":    types.ListType{ElemType: bucketACLGranteeObjectType()},
+			"permission": types.StringType,
+		},
+	}
+}
+
+func bucketACLOwnerObjectType() types.ObjectType {
+	return types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"display_name": types.StringType,
+			"id":           types.StringType,
+		},
+	}
+}
+
+func bucketACLAccessControlPolicyObjectType() types.ObjectType {
+	return types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"grant": types.SetType{ElemType: bucketACLGrantObjectType()},
+			"owner": types.ListType{ElemType: bucketACLOwnerObjectType()},
+		},
+	}
+}
+
+func (r *BucketACLResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_object_bucket_acl"
+}
+
+func (r *BucketACLResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: bucketACLResourceDescription,
+		Description:         bucketACLResourceDescription, // Required for "TestProviderResourceDescriptionsAreNotEmpty"
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The regional ID of the bucket ACL, in the `{region}/{bucket}` or `{region}/{bucket}/{acl}` format.",
+				PlanModifiers: []planmodifier.String{
+					bucketACLIDPlanModifier{},
+				},
+			},
+			"bucket": schema.StringAttribute{
+				Required:    true,
+				Description: "The bucket's name or regional ID.",
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, 127),
+				},
+				PlanModifiers: []planmodifier.String{
+					regional.LocalityPlanModifier(),
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"acl": schema.StringAttribute{
+				Optional:    true,
+				Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						string(s3Types.ObjectCannedACLPrivate),
+						string(s3Types.ObjectCannedACLPublicRead),
+						string(s3Types.ObjectCannedACLPublicReadWrite),
+						string(s3Types.ObjectCannedACLAuthenticatedRead),
+					),
+				},
+			},
+			"expected_bucket_owner": schema.StringAttribute{
+				Optional:    true,
+				Description: "The project ID as owner.",
+				Validators: []validator.String{
+					verify.IsStringUUID(),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"region":     regional.SchemaAttributeComputed("The region you want to attach the resource to"),
+			"project_id": account.ProjectIDSchemaFw("The project ID the bucket belongs to."),
+		},
+		// Blocks cannot be Computed, so the access_control_policy is stored in
+		// state only when configured (see findBucketACL).
+		Blocks: map[string]schema.Block{
+			"access_control_policy": schema.ListNestedBlock{
+				Description: "A configuration block that sets the ACL permissions for an object per grantee.",
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(1),
+				},
+				NestedObject: schema.NestedBlockObject{
+					Blocks: map[string]schema.Block{
+						"grant": schema.SetNestedBlock{
+							Description: "Grant",
+							NestedObject: schema.NestedBlockObject{
+								Blocks: map[string]schema.Block{
+									"grantee": schema.ListNestedBlock{
+										Description: "Configuration block for the project being granted permissions.",
+										Validators: []validator.List{
+											listvalidator.SizeAtMost(1),
+										},
+										NestedObject: schema.NestedBlockObject{
+											Attributes: map[string]schema.Attribute{
+												"display_name": schema.StringAttribute{
+													Computed:    true,
+													Description: "Display name of the grantee to grant access to.",
+												},
+												"uri": schema.StringAttribute{
+													Optional:    true,
+													Description: "The uri of the grantee if you are granting permissions to a predefined group.",
+													Validators: []validator.String{
+														stringvalidator.OneOf(
+															AuthenticatedUsersURI,
+															AllUsersURI,
+														),
+													},
+												},
+												"id": schema.StringAttribute{
+													Optional:    true,
+													Description: "The project ID owner of the grantee.",
+													Validators: []validator.String{
+														verify.IsStringUUID(),
+													},
+												},
+												"type": schema.StringAttribute{
+													Optional:    true,
+													Description: "Type of grantee. Valid values: `CanonicalUser`, `Group`",
+													Validators: []validator.String{
+														stringvalidator.OneOf(
+															string(s3Types.TypeCanonicalUser),
+															string(s3Types.TypeGroup),
+														),
+													},
+												},
 											},
 										},
 									},
 								},
-								"permission": {
-									Type:     schema.TypeString,
-									Required: true,
-									ValidateFunc: validation.StringInSlice([]string{
-										string(s3Types.PermissionFullControl),
-										string(s3Types.PermissionRead),
-										string(s3Types.PermissionWrite),
-										string(s3Types.PermissionReadAcp),
-										string(s3Types.PermissionWriteAcp),
-									}, false),
-									Description: "Logging permissions assigned to the grantee for the bucket.",
+								Attributes: map[string]schema.Attribute{
+									"permission": schema.StringAttribute{
+										Required:    true,
+										Description: "Logging permissions assigned to the grantee for the bucket.",
+										Validators: []validator.String{
+											stringvalidator.OneOf(
+												string(s3Types.PermissionFullControl),
+												string(s3Types.PermissionRead),
+												string(s3Types.PermissionWrite),
+												string(s3Types.PermissionReadAcp),
+												string(s3Types.PermissionWriteAcp),
+											),
+										},
+									},
 								},
 							},
 						},
-					},
-					"owner": {
-						Type:        schema.TypeList,
-						Required:    true,
-						MaxItems:    1,
-						Description: "Configuration block of the bucket project owner's display organization ID.",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"display_name": {
-									Type:             schema.TypeString,
-									Computed:         true,
-									Optional:         true,
-									Description:      "The project ID of the grantee.",
-									ValidateDiagFunc: verify.IsUUID(),
-								},
-								"id": {
-									Type:             schema.TypeString,
-									Required:         true,
-									Description:      "The display ID of the project.",
-									ValidateDiagFunc: verify.IsUUID(),
+						"owner": schema.ListNestedBlock{
+							Description: "Configuration block of the bucket project owner's display organization ID.",
+							Validators: []validator.List{
+								listvalidator.SizeBetween(1, 1),
+							},
+							NestedObject: schema.NestedBlockObject{
+								Attributes: map[string]schema.Attribute{
+									"display_name": schema.StringAttribute{
+										Optional:    true,
+										Computed:    true,
+										Description: "The project ID of the grantee.",
+										Validators: []validator.String{
+											verify.IsStringUUID(),
+										},
+									},
+									"id": schema.StringAttribute{
+										Required:    true,
+										Description: "The display ID of the project.",
+										Validators: []validator.String{
+											verify.IsStringUUID(),
+										},
+									},
 								},
 							},
 						},
@@ -141,344 +280,467 @@ func bucketAclSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"acl": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
-			ValidateFunc: validation.StringInSlice([]string{
-				string(s3Types.ObjectCannedACLPrivate),
-				string(s3Types.ObjectCannedACLPublicRead),
-				string(s3Types.ObjectCannedACLPublicReadWrite),
-				string(s3Types.ObjectCannedACLAuthenticatedRead),
-			}, false),
-		},
-		"bucket": {
-			Type:             schema.TypeString,
-			Required:         true,
-			ForceNew:         true,
-			ValidateFunc:     validation.StringLenBetween(1, 127),
-			Description:      "The bucket's name or regional ID.",
-			DiffSuppressFunc: dsf.Locality,
-		},
-		"expected_bucket_owner": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			ForceNew:         true,
-			Description:      "The project ID as owner.",
-			ValidateDiagFunc: verify.IsUUID(),
-		},
-		"region":     regional.Schema(),
-		"project_id": account.ProjectIDSchema(),
 	}
 }
 
-func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, region, err := s3ClientWithRegion(ctx, d, m)
+// ConfigValidators enforces incompatibility between `acl` and `access_control_policy`,
+// and the `Required` semantics of the `owner` block, which cannot be configured
+// within Framework blocks (always optional).
+func (r *BucketACLResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.Conflicting(
+			path.MatchRoot("acl"),
+			path.MatchRoot("access_control_policy"),
+		),
+		bucketACLOwnerRequiredValidator{},
+	}
+}
+
+type bucketACLOwnerRequiredValidator struct{}
+
+func (bucketACLOwnerRequiredValidator) Description(_ context.Context) string {
+	return "owner is required inside access_control_policy"
+}
+
+func (bucketACLOwnerRequiredValidator) MarkdownDescription(_ context.Context) string {
+	return "owner is required inside access_control_policy"
+}
+
+func (bucketACLOwnerRequiredValidator) ValidateResource(
+	ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse,
+) {
+	var config bucketACLResourceModel
+	if req.Config.Get(ctx, &config).HasError() {
+		return
+	}
+
+	if config.AccessControlPolicy.IsNull() || len(config.AccessControlPolicy.Elements()) == 0 {
+		return
+	}
+
+	var acps []bucketACLAccessControlPolicyModel
+	if config.AccessControlPolicy.ElementsAs(ctx, &acps, false).HasError() {
+		return
+	}
+
+	if len(acps) > 0 && acps[0].Owner.IsNull() {
+		resp.Diagnostics.AddError(
+			"Missing required owner block",
+			"owner must be configured inside access_control_policy.",
+		)
+	}
+}
+
+func (r *BucketACLResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.meta = m
+}
+
+func (r *BucketACLResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan bucketACLResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, err := meta.ExtractFrameworkRegion(plan.Region, r.meta.ScwClient())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
+
+		return
 	}
 
-	regionalID := regional.ExpandID(d.Get("bucket"))
+	projectID, err := meta.ExtractFrameworkProjectID(plan.ProjectID, r.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
+
+		return
+	}
+
+	regionalID := regional.ExpandID(plan.Bucket.ValueString())
 	bucket := regionalID.ID
-	bucketRegion := regionalID.Region
 
-	if bucketRegion != "" && bucketRegion != region {
-		conn, err = s3ClientForceRegion(ctx, d, m, bucketRegion.String())
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		region = bucketRegion
+	if regionalID.Region != "" && regionalID.Region != region {
+		region = regionalID.Region
 	}
 
-	expectedBucketOwner := d.Get("expected_bucket_owner").(string)
-	acl := d.Get("acl").(string)
+	s3Client, err := NewS3ClientFromMetaWithProjectID(ctx, r.meta, region.String(), projectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to create S3 client", err.Error())
+
+		return
+	}
 
 	input := &s3.PutBucketAclInput{
 		Bucket: aws.String(bucket),
 	}
 
-	if acl != "" {
+	acl := ""
+
+	if !plan.ACL.IsNull() && plan.ACL.ValueString() != "" {
+		acl = plan.ACL.ValueString()
 		input.ACL = s3Types.BucketCannedACL(acl)
 	}
 
-	if expectedBucketOwner != "" {
-		input.ExpectedBucketOwner = aws.String(expectedBucketOwner)
+	if !plan.ExpectedBucketOwner.IsNull() && plan.ExpectedBucketOwner.ValueString() != "" {
+		input.ExpectedBucketOwner = aws.String(plan.ExpectedBucketOwner.ValueString())
 	}
 
-	if v, ok := d.GetOk("access_control_policy"); ok && len(v.([]any)) > 0 && v.([]any)[0] != nil {
-		accessControlPolicy, err := expandAndValidateBucketACLAccessControlPolicy(v.([]any))
-		if err != nil {
-			return diag.FromErr(err)
+	if !plan.AccessControlPolicy.IsNull() && len(plan.AccessControlPolicy.Elements()) > 0 {
+		accessControlPolicy, diags := expandBucketACLAccessControlPolicy(ctx, plan.AccessControlPolicy)
+		resp.Diagnostics.Append(diags...)
+
+		if resp.Diagnostics.HasError() {
+			return
 		}
 
 		input.AccessControlPolicy = accessControlPolicy
 	}
 
-	out, err := conn.PutBucketAcl(ctx, input)
+	out, err := s3Client.PutBucketAcl(ctx, input)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error putting Object Storage ACL: %w", err))
+		resp.Diagnostics.AddError("error putting Object Storage ACL", err.Error())
+
+		return
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("output: %v", out))
 
-	d.SetId(BucketACLCreateResourceID(region, bucket, acl))
+	plan.ID = types.StringValue(bucketACLCreateResourceID(region, bucket, acl))
 
-	return resourceBucketACLRead(ctx, d, m)
+	_, _, found, diags := r.findBucketACL(ctx, &plan, true)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !found {
+		resp.Diagnostics.AddError(
+			"Object Bucket ACL not found",
+			fmt.Sprintf("Object Bucket ACL (%s) not found after creation", plan.ID.ValueString()),
+		)
+
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func expandAndValidateBucketACLAccessControlPolicy(l []any) (*s3Types.AccessControlPolicy, error) {
-	if len(l) == 0 || l[0] == nil {
-		return nil, nil
+func (r *BucketACLResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state bucketACLResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	tfMap, ok := l[0].(map[string]any)
-	if !ok {
-		return nil, nil
+	region, bucketName, found, diags := r.findBucketACL(ctx, &state, false)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	result := &s3Types.AccessControlPolicy{}
+	if !found {
+		resp.State.RemoveResource(ctx)
 
-	if v, ok := tfMap["grant"].(*schema.Set); ok && v.Len() > 0 {
-		grants, err := expandAndValidateBucketACLAccessControlPolicyGrants(v.List())
-		if err != nil {
-			return nil, err
-		}
-
-		result.Grants = grants
+		return
 	}
 
-	if v, ok := tfMap["owner"].([]any); ok && len(v) > 0 && v[0] != nil {
-		result.Owner = expandBucketACLAccessControlPolicyOwner(v)
-	}
+	// The bucket attribute keeps the value from the configuration during create
+	// and update; reads normalize it to a regional ID.
+	state.Bucket = types.StringValue(regional.NewIDString(scw.Region(region), bucketName))
 
-	return result, nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func expandAndValidateBucketACLAccessControlPolicyGrants(l []any) ([]s3Types.Grant, error) {
-	grants := make([]s3Types.Grant, 0, len(l))
+func (r *BucketACLResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan, state bucketACLResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
-	for _, tfMapRaw := range l {
-		tfMap, ok := tfMapRaw.(map[string]any)
-		if !ok {
-			continue
-		}
-
-		grant := s3Types.Grant{}
-
-		if v, ok := tfMap["grantee"].([]any); ok && len(v) > 0 && v[0] != nil {
-			grantee, err := expandAndValidateBucketACLAccessControlPolicyGrantsGrantee(v)
-			if err != nil {
-				return nil, err
-			}
-
-			grant.Grantee = grantee
-		}
-
-		if v, ok := tfMap["permission"].(string); ok && v != "" {
-			grant.Permission = s3Types.Permission(v)
-		}
-
-		grants = append(grants, grant)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	return grants, nil
-}
-
-func expandAndValidateBucketACLAccessControlPolicyGrantsGrantee(l []any) (*s3Types.Grantee, error) {
-	if len(l) == 0 || l[0] == nil {
-		return nil, nil
-	}
-
-	tfMap, ok := l[0].(map[string]any)
-	if !ok {
-		return nil, nil
-	}
-
-	result := &s3Types.Grantee{}
-
-	if v, ok := tfMap["id"].(string); ok && v != "" {
-		result.ID = buildBucketOwnerID(aws.String(v))
-	}
-
-	if v, ok := tfMap["uri"].(string); ok && v != "" {
-		result.URI = aws.String(v)
-	}
-
-	if v, ok := tfMap["type"].(string); ok && v != "" {
-		result.Type = s3Types.Type(v)
-	}
-
-	if result.Type == s3Types.TypeCanonicalUser && result.ID == nil {
-		return nil, errors.New("id is required when grantee type is CanonicalUser")
-	}
-
-	if result.Type == s3Types.TypeGroup && result.URI == nil {
-		return nil, errors.New("uri is required when grantee type is Group")
-	}
-
-	return result, nil
-}
-
-func expandBucketACLAccessControlPolicyOwner(l []any) *s3Types.Owner {
-	if len(l) == 0 || l[0] == nil {
-		return nil
-	}
-
-	tfMap, ok := l[0].(map[string]any)
-	if !ok {
-		return nil
-	}
-
-	owner := &s3Types.Owner{}
-
-	if v, ok := tfMap["display_name"].(string); ok && v != "" {
-		owner.DisplayName = buildBucketOwnerID(aws.String(v))
-	}
-
-	if v, ok := tfMap["id"].(string); ok && v != "" {
-		owner.ID = buildBucketOwnerID(aws.String(v))
-	}
-
-	return owner
-}
-
-func flattenBucketACLAccessControlPolicy(output *s3.GetBucketAclOutput) []any {
-	if output == nil {
-		return []any{}
-	}
-
-	m := make(map[string]any)
-
-	if len(output.Grants) > 0 {
-		m["grant"] = flattenBucketACLAccessControlPolicyGrants(output.Grants)
-	}
-
-	if output.Owner != nil {
-		m["owner"] = flattenBucketACLAccessControlPolicyOwner(output.Owner)
-	}
-
-	return []any{m}
-}
-
-func flattenBucketACLAccessControlPolicyGrants(grants []s3Types.Grant) []any {
-	results := make([]any, 0, len(grants))
-
-	for _, grant := range grants {
-		if grant.Grantee == nil && grant.Permission == "" {
-			continue
-		}
-
-		m := make(map[string]any)
-
-		if grant.Grantee != nil {
-			m["grantee"] = flattenBucketACLAccessControlPolicyGrantsGrantee(grant.Grantee)
-		}
-
-		if grant.Permission != "" {
-			m["permission"] = grant.Permission
-		}
-
-		results = append(results, m)
-	}
-
-	return results
-}
-
-func flattenBucketACLAccessControlPolicyGrantsGrantee(grantee *s3Types.Grantee) []any {
-	if grantee == nil {
-		return []any{}
-	}
-
-	m := make(map[string]any)
-
-	if grantee.DisplayName != nil {
-		m["display_name"] = NormalizeOwnerID(grantee.DisplayName)
-	}
-
-	if grantee.URI != nil {
-		m["uri"] = *grantee.URI
-	}
-
-	if grantee.ID != nil {
-		m["id"] = NormalizeOwnerID(grantee.ID)
-	}
-
-	if grantee.Type != "" {
-		m["type"] = grantee.Type
-	}
-
-	return []any{m}
-}
-
-func flattenBucketACLAccessControlPolicyOwner(owner *s3Types.Owner) []any {
-	if owner == nil {
-		return []any{}
-	}
-
-	m := make(map[string]any)
-
-	if owner.DisplayName != nil {
-		m["display_name"] = NormalizeOwnerID(owner.DisplayName)
-	}
-
-	if owner.ID != nil {
-		m["id"] = NormalizeOwnerID(owner.ID)
-	}
-
-	return []any{m}
-}
-
-func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	expectedBucketOwner := d.Get("expected_bucket_owner")
-
-	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
+	region, bucket, acl, err := locality.ParseLocalizedNestedOwnerID(state.ID.ValueString())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to parse bucket ACL ID", err.Error())
+
+		return
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(state.ProjectID, r.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
+
+		return
+	}
+
+	s3Client, err := NewS3ClientFromMetaWithProjectID(ctx, r.meta, region, projectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to create S3 client", err.Error())
+
+		return
+	}
+
+	input := &s3.PutBucketAclInput{
+		Bucket: aws.String(bucket),
+	}
+
+	if !plan.ACL.Equal(state.ACL) {
+		acl = ""
+
+		if !plan.ACL.IsNull() && plan.ACL.ValueString() != "" {
+			acl = plan.ACL.ValueString()
+			input.ACL = s3Types.BucketCannedACL(acl)
+		}
+	}
+
+	// Only re-send the access control policy when it is configured: blocks
+	// cannot be Computed, so dropping it from state (e.g. when refreshing a
+	// state written by the SDKv2 provider with only `acl` set) must not
+	// touch the API.
+	if !plan.AccessControlPolicy.IsNull() {
+		accessControlPolicy, diags := expandBucketACLAccessControlPolicy(ctx, plan.AccessControlPolicy)
+		resp.Diagnostics.Append(diags...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		input.AccessControlPolicy = accessControlPolicy
+	}
+
+	if input.ACL != "" || input.AccessControlPolicy != nil {
+		_, err = s3Client.PutBucketAcl(ctx, input)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"error updating object bucket ACL",
+				fmt.Sprintf("error updating object bucket ACL (%s): %s", state.ID.ValueString(), err),
+			)
+
+			return
+		}
+	}
+
+	// Set the new ACL value back in the resource ID.
+	plan.ID = types.StringValue(bucketACLCreateResourceID(scw.Region(region), bucket, acl))
+
+	_, _, found, diags := r.findBucketACL(ctx, &plan, true)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !found {
+		resp.Diagnostics.AddError(
+			"Object Bucket ACL not found",
+			fmt.Sprintf("Object Bucket ACL (%s) not found after update", plan.ID.ValueString()),
+		)
+
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+func (r *BucketACLResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state bucketACLResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, bucket, _, err := locality.ParseLocalizedNestedOwnerID(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse bucket ACL ID", err.Error())
+
+		return
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(state.ProjectID, r.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
+
+		return
+	}
+
+	s3Client, err := NewS3ClientFromMetaWithProjectID(ctx, r.meta, region, projectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to create S3 client", err.Error())
+
+		return
+	}
+
+	_, err = s3Client.PutBucketAcl(ctx, &s3.PutBucketAclInput{
+		Bucket: aws.String(bucket),
+		ACL:    s3Types.BucketCannedACL(s3Types.ObjectCannedACLPrivate),
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("error putting bucket ACL", err.Error())
+
+		return
+	}
+
+	resp.Diagnostics.AddWarning(
+		"Deleting Object Bucket ACL resource resets ACL to private",
+		"Deleting Object Bucket ACL resource resets the bucket's ACL to its default "+
+			"value: private.\nIf you wish to set it to something else, you should "+
+			"recreate a Bucket ACL resource with the `acl` field filled accordingly.",
+	)
+}
+
+func (r *BucketACLResource) ImportState(
+	ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse,
+) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+// bucketACLIDPlanModifier keeps the prior ID in the plan when the `acl`
+// attribute is unchanged. When `acl` changes, the ID must be recomputed
+// (it embeds the ACL value), so the plan value stays unknown.
+type bucketACLIDPlanModifier struct{}
+
+func (bucketACLIDPlanModifier) Description(_ context.Context) string {
+	return "Keeps the prior ID unless the acl attribute changes."
+}
+
+func (bucketACLIDPlanModifier) MarkdownDescription(_ context.Context) string {
+	return "Keeps the prior ID unless the acl attribute changes."
+}
+
+func (bucketACLIDPlanModifier) PlanModifyString(
+	ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse,
+) {
+	if req.StateValue.IsNull() {
+		return
+	}
+
+	var planACL, stateACL types.String
+
+	if req.Plan.GetAttribute(ctx, path.Root("acl"), &planACL).HasError() {
+		return
+	}
+
+	if req.State.GetAttribute(ctx, path.Root("acl"), &stateACL).HasError() {
+		return
+	}
+
+	if planACL.Equal(stateACL) {
+		resp.PlanValue = req.StateValue
+	}
+}
+
+// findBucketACL reads the bucket ACL and updates the given state with the result.
+// It returns false when the bucket does not exist.
+func (r *BucketACLResource) findBucketACL(
+	ctx context.Context, state *bucketACLResourceModel, isNewResource bool,
+) (region, bucket string, found bool, diags diag.Diagnostics) {
+	region, bucket, acl, err := locality.ParseLocalizedNestedOwnerID(state.ID.ValueString())
+	if err != nil {
+		diags.AddError("Failed to parse bucket ACL ID", err.Error())
+
+		return "", "", false, diags
+	}
+
+	projectID, err := meta.ExtractFrameworkProjectID(state.ProjectID, r.meta.ScwClient())
+	if err != nil {
+		diags.AddError("Failed to resolve project ID", err.Error())
+
+		return "", "", false, diags
+	}
+
+	s3Client, err := NewS3ClientFromMetaWithProjectID(ctx, r.meta, region, projectID)
+	if err != nil {
+		diags.AddError("Failed to create S3 client", err.Error())
+
+		return "", "", false, diags
 	}
 
 	input := &s3.GetBucketAclInput{
 		Bucket: aws.String(bucket),
 	}
 
-	if v, ok := d.GetOk("expected_bucket_owner"); ok {
-		input.ExpectedBucketOwner = aws.String(v.(string))
+	if !state.ExpectedBucketOwner.IsNull() && state.ExpectedBucketOwner.ValueString() != "" {
+		input.ExpectedBucketOwner = aws.String(state.ExpectedBucketOwner.ValueString())
 	}
 
-	output, err := conn.GetBucketAcl(ctx, input)
+	output, err := s3Client.GetBucketAcl(ctx, input)
 
-	if !d.IsNewResource() && errors.As(err, new(*s3Types.NoSuchBucket)) {
-		tflog.Warn(ctx, fmt.Sprintf("[WARN] Object Bucket ACL (%s) not found, removing from state", d.Id()))
-		d.SetId("")
+	if !isNewResource && errors.As(err, new(*s3Types.NoSuchBucket)) {
+		tflog.Warn(ctx, fmt.Sprintf("[WARN] Object Bucket ACL (%s) not found, removing from state", state.ID.ValueString()))
 
-		return nil
+		return "", "", false, nil
 	}
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error getting object storage bucket ACL (%s): %w", d.Id(), err))
+		diags.AddError(
+			"error getting object storage bucket ACL",
+			fmt.Sprintf("error getting object storage bucket ACL (%s): %s", state.ID.ValueString(), err),
+		)
+
+		return "", "", false, diags
 	}
 
 	if output == nil {
-		return diag.FromErr(fmt.Errorf("error getting object bucket ACL (%s): empty output", d.Id()))
+		diags.AddError(
+			"error getting object bucket ACL",
+			fmt.Sprintf("error getting object bucket ACL (%s): empty output", state.ID.ValueString()),
+		)
+
+		return "", "", false, diags
 	}
 
-	_ = d.Set("acl", acl)
-	_ = d.Set("expected_bucket_owner", expectedBucketOwner)
-
-	if err := d.Set("access_control_policy", flattenBucketACLAccessControlPolicy(output)); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting access_control_policy: %w", err))
+	if acl != "" {
+		state.ACL = types.StringValue(acl)
+	} else {
+		state.ACL = types.StringNull()
 	}
 
-	_ = d.Set("region", region)
-	_ = d.Set("project_id", NormalizeOwnerID(output.Owner.ID))
-	_ = d.Set("bucket", locality.ExpandID(bucket))
+	accessControlPolicy, flattenDiags := flattenBucketACLAccessControlPolicy(ctx, output)
+	diags.Append(flattenDiags...)
 
-	return nil
+	if diags.HasError() {
+		return "", "", false, diags
+	}
+
+	// Blocks cannot be Computed: store the access_control_policy only when it
+	// is configured, or when importing (only the ID is known at that point).
+	// An acl-only resource therefore does not keep the ACL grants in state,
+	// unlike the previous SDKv2 implementation.
+	if !state.AccessControlPolicy.IsNull() || state.Bucket.IsNull() {
+		state.AccessControlPolicy = accessControlPolicy
+	}
+
+	if (state.ProjectID.IsNull() || state.ProjectID.IsUnknown()) && output.Owner != nil && output.Owner.ID != nil {
+		state.ProjectID = types.StringValue(aws.ToString(NormalizeOwnerID(output.Owner.ID)))
+	}
+
+	state.Region = types.StringValue(region)
+
+	return region, bucket, true, diags
 }
 
-// BucketACLCreateResourceID is a method for creating an ID string
-// with the bucket name and optional organizationID and/or ACL.
-func BucketACLCreateResourceID(region scw.Region, bucket, acl string) string {
+// bucketACLCreateResourceID creates an ID string with the bucket name and optional ACL.
+func bucketACLCreateResourceID(region scw.Region, bucket, acl string) string {
 	if acl == "" {
 		return regional.NewIDString(region, bucket)
 	}
@@ -486,66 +748,309 @@ func BucketACLCreateResourceID(region scw.Region, bucket, acl string) string {
 	return regional.NewIDString(region, strings.Join([]string{bucket, acl}, BucketACLSeparator))
 }
 
-func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func expandBucketACLAccessControlPolicy(ctx context.Context, l types.List) (*s3Types.AccessControlPolicy, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var acps []bucketACLAccessControlPolicyModel
+	diags.Append(l.ElementsAs(ctx, &acps, false)...)
+
+	if diags.HasError() {
+		return nil, diags
 	}
 
-	input := &s3.PutBucketAclInput{
-		Bucket: aws.String(bucket),
+	if len(acps) == 0 {
+		return nil, diags
 	}
 
-	if d.HasChange("acl") {
-		acl = d.Get("acl").(string)
-		input.ACL = s3Types.BucketCannedACL(acl)
-	}
+	acp := acps[0]
+	result := &s3Types.AccessControlPolicy{}
 
-	if ok := d.HasChange("expected_bucket_owner"); ok {
-		input.ExpectedBucketOwner = aws.String(d.Get("expected_bucket_owner").(string))
-	}
+	if !acp.Grant.IsNull() && len(acp.Grant.Elements()) > 0 {
+		grants, grantDiags := expandBucketACLGrants(ctx, acp.Grant)
+		diags.Append(grantDiags...)
 
-	if d.HasChange("access_control_policy") {
-		accessControlPolicy, err := expandAndValidateBucketACLAccessControlPolicy(d.Get("access_control_policy").([]any))
-		if err != nil {
-			return diag.FromErr(err)
+		if diags.HasError() {
+			return nil, diags
 		}
 
-		input.AccessControlPolicy = accessControlPolicy
+		result.Grants = grants
 	}
 
-	_, err = conn.PutBucketAcl(ctx, input)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error updating object bucket ACL (%s): %w", d.Id(), err))
+	if !acp.Owner.IsNull() && len(acp.Owner.Elements()) > 0 {
+		owner, ownerDiags := expandBucketACLOwner(ctx, acp.Owner)
+		diags.Append(ownerDiags...)
+
+		if diags.HasError() {
+			return nil, diags
+		}
+
+		result.Owner = owner
 	}
 
-	if d.HasChange("acl") {
-		// Set new ACL value back in resource ID
-		d.SetId(BucketACLCreateResourceID(region, bucket, acl))
-	}
-
-	return resourceBucketACLRead(ctx, d, m)
+	return result, diags
 }
 
-func resourceBucketACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, _, bucket, _, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+func expandBucketACLGrants(ctx context.Context, s types.Set) ([]s3Types.Grant, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var grants []bucketACLGrantModel
+	diags.Append(s.ElementsAs(ctx, &grants, false)...)
+
+	if diags.HasError() {
+		return nil, diags
 	}
 
-	_, err = conn.PutBucketAcl(ctx, &s3.PutBucketAclInput{
-		Bucket: &bucket,
-		ACL:    s3Types.BucketCannedACL(s3Types.ObjectCannedACLPrivate),
-	})
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error putting bucket ACL: %w", err))
+	results := make([]s3Types.Grant, 0, len(grants))
+
+	for _, grant := range grants {
+		g := s3Types.Grant{}
+
+		if !grant.Grantee.IsNull() && len(grant.Grantee.Elements()) > 0 {
+			grantee, granteeDiags := expandBucketACLGrantee(ctx, grant.Grantee)
+			diags.Append(granteeDiags...)
+
+			if diags.HasError() {
+				return nil, diags
+			}
+
+			g.Grantee = grantee
+		}
+
+		if !grant.Permission.IsNull() && !grant.Permission.IsUnknown() {
+			g.Permission = s3Types.Permission(grant.Permission.ValueString())
+		}
+
+		results = append(results, g)
 	}
 
-	return diag.Diagnostics{
-		diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Deleting Object Bucket ACL resource resets ACL to private",
-			Detail:   "Deleting Object Bucket ACL resource resets the bucket's ACL to its default value: private.\nIf you wish to set it to something else, you should recreate a Bucket ACL resource with the `acl` field filled accordingly.",
-		},
+	return results, diags
+}
+
+func expandBucketACLGrantee(ctx context.Context, l types.List) (*s3Types.Grantee, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var grantees []bucketACLGranteeModel
+	diags.Append(l.ElementsAs(ctx, &grantees, false)...)
+
+	if diags.HasError() {
+		return nil, diags
 	}
+
+	if len(grantees) == 0 {
+		return nil, diags
+	}
+
+	grantee := grantees[0]
+	result := &s3Types.Grantee{}
+
+	if !grantee.ID.IsNull() && !grantee.ID.IsUnknown() {
+		result.ID = buildBucketOwnerID(aws.String(grantee.ID.ValueString()))
+	}
+
+	if !grantee.URI.IsNull() && !grantee.URI.IsUnknown() {
+		result.URI = aws.String(grantee.URI.ValueString())
+	}
+
+	if !grantee.Type.IsNull() && !grantee.Type.IsUnknown() {
+		result.Type = s3Types.Type(grantee.Type.ValueString())
+	}
+
+	if result.Type == s3Types.TypeCanonicalUser && result.ID == nil {
+		diags.AddError("Invalid grantee", "id is required when grantee type is CanonicalUser")
+
+		return nil, diags
+	}
+
+	if result.Type == s3Types.TypeGroup && result.URI == nil {
+		diags.AddError("Invalid grantee", "uri is required when grantee type is Group")
+
+		return nil, diags
+	}
+
+	return result, diags
+}
+
+func expandBucketACLOwner(ctx context.Context, l types.List) (*s3Types.Owner, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var owners []bucketACLOwnerModel
+	diags.Append(l.ElementsAs(ctx, &owners, false)...)
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	if len(owners) == 0 {
+		return nil, diags
+	}
+
+	owner := owners[0]
+	result := &s3Types.Owner{}
+
+	if !owner.DisplayName.IsNull() && !owner.DisplayName.IsUnknown() {
+		result.DisplayName = buildBucketOwnerID(aws.String(owner.DisplayName.ValueString()))
+	}
+
+	if !owner.ID.IsNull() && !owner.ID.IsUnknown() {
+		result.ID = buildBucketOwnerID(aws.String(owner.ID.ValueString()))
+	}
+
+	return result, diags
+}
+
+func flattenBucketACLAccessControlPolicy(ctx context.Context, output *s3.GetBucketAclOutput) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attrs := map[string]attr.Value{
+		"grant": types.SetNull(bucketACLGrantObjectType()),
+		"owner": types.ListNull(bucketACLOwnerObjectType()),
+	}
+
+	if len(output.Grants) > 0 {
+		grants, grantDiags := flattenBucketACLGrants(ctx, output.Grants)
+		diags.Append(grantDiags...)
+
+		if diags.HasError() {
+			return types.ListNull(bucketACLAccessControlPolicyObjectType()), diags
+		}
+
+		attrs["grant"] = grants
+	}
+
+	if output.Owner != nil {
+		owner, ownerDiags := flattenBucketACLOwner(ctx, output.Owner)
+		diags.Append(ownerDiags...)
+
+		if diags.HasError() {
+			return types.ListNull(bucketACLAccessControlPolicyObjectType()), diags
+		}
+
+		attrs["owner"] = owner
+	}
+
+	acpObject, d := types.ObjectValue(bucketACLAccessControlPolicyObjectType().AttrTypes, attrs)
+	diags.Append(d...)
+
+	if diags.HasError() {
+		return types.ListNull(bucketACLAccessControlPolicyObjectType()), diags
+	}
+
+	acpList, d := types.ListValueFrom(ctx, bucketACLAccessControlPolicyObjectType(), []attr.Value{acpObject})
+	diags.Append(d...)
+
+	return acpList, diags
+}
+
+func flattenBucketACLGrants(ctx context.Context, grants []s3Types.Grant) (types.Set, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	elems := make([]attr.Value, 0, len(grants))
+
+	for _, grant := range grants {
+		if grant.Grantee == nil && grant.Permission == "" {
+			continue
+		}
+
+		attrs := map[string]attr.Value{
+			"grantee":    types.ListNull(bucketACLGranteeObjectType()),
+			"permission": types.StringNull(),
+		}
+
+		if grant.Grantee != nil {
+			grantee, d := flattenBucketACLGrantee(ctx, grant.Grantee)
+			diags.Append(d...)
+
+			if diags.HasError() {
+				return types.SetNull(bucketACLGrantObjectType()), diags
+			}
+
+			attrs["grantee"] = grantee
+		}
+
+		if grant.Permission != "" {
+			attrs["permission"] = types.StringValue(string(grant.Permission))
+		}
+
+		grantObject, d := types.ObjectValue(bucketACLGrantObjectType().AttrTypes, attrs)
+		diags.Append(d...)
+
+		if diags.HasError() {
+			return types.SetNull(bucketACLGrantObjectType()), diags
+		}
+
+		elems = append(elems, grantObject)
+	}
+
+	set, d := types.SetValue(bucketACLGrantObjectType(), elems)
+	diags.Append(d...)
+
+	return set, diags
+}
+
+func flattenBucketACLGrantee(ctx context.Context, grantee *s3Types.Grantee) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attrs := map[string]attr.Value{
+		"display_name": types.StringNull(),
+		"uri":          types.StringNull(),
+		"id":           types.StringNull(),
+		"type":         types.StringNull(),
+	}
+
+	if grantee.DisplayName != nil {
+		attrs["display_name"] = types.StringValue(aws.ToString(NormalizeOwnerID(grantee.DisplayName)))
+	}
+
+	if grantee.URI != nil {
+		attrs["uri"] = types.StringValue(*grantee.URI)
+	}
+
+	if grantee.ID != nil {
+		attrs["id"] = types.StringValue(aws.ToString(NormalizeOwnerID(grantee.ID)))
+	}
+
+	if grantee.Type != "" {
+		attrs["type"] = types.StringValue(string(grantee.Type))
+	}
+
+	granteeObject, d := types.ObjectValue(bucketACLGranteeObjectType().AttrTypes, attrs)
+	diags.Append(d...)
+
+	if diags.HasError() {
+		return types.ListNull(bucketACLGranteeObjectType()), diags
+	}
+
+	granteeList, d := types.ListValueFrom(ctx, bucketACLGranteeObjectType(), []attr.Value{granteeObject})
+	diags.Append(d...)
+
+	return granteeList, diags
+}
+
+func flattenBucketACLOwner(ctx context.Context, owner *s3Types.Owner) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attrs := map[string]attr.Value{
+		"display_name": types.StringNull(),
+		"id":           types.StringNull(),
+	}
+
+	if owner.DisplayName != nil {
+		attrs["display_name"] = types.StringValue(aws.ToString(NormalizeOwnerID(owner.DisplayName)))
+	}
+
+	if owner.ID != nil {
+		attrs["id"] = types.StringValue(aws.ToString(NormalizeOwnerID(owner.ID)))
+	}
+
+	ownerObject, d := types.ObjectValue(bucketACLOwnerObjectType().AttrTypes, attrs)
+	diags.Append(d...)
+
+	if diags.HasError() {
+		return types.ListNull(bucketACLOwnerObjectType()), diags
+	}
+
+	ownerList, d := types.ListValueFrom(ctx, bucketACLOwnerObjectType(), []attr.Value{ownerObject})
+	diags.Append(d...)
+
+	return ownerList, diags
 }
