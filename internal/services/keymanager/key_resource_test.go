@@ -1,17 +1,11 @@
 package keymanager_test
 
 import (
-	"context"
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	keymanagertestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager/testfuncs"
 )
 
 func TestAccKeyManagerKey_Basic(t *testing.T) {
@@ -20,7 +14,7 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -56,7 +50,7 @@ func TestAccKeyManagerKey_ProtectionLevel(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -91,7 +85,7 @@ func TestAccKeyManagerKey_Update(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -134,48 +128,13 @@ func TestAccKeyManagerKey_Update(t *testing.T) {
 	})
 }
 
-func IsKeyManagerKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_key_manager_key" {
-				continue
-			}
-
-			client, region, keyID, err := keymanager.NewKeyManagerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			key, err := transport.RetryOnStatusValue(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) (*key_manager.Key, error) {
-				return client.GetKey(&key_manager.GetKeyRequest{
-					Region: region,
-					KeyID:  keyID,
-				})
-			})
-			if err == nil {
-				if key.DeletionRequestedAt != nil {
-					continue
-				}
-
-				return fmt.Errorf("Key (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
-	}
-}
-
 func TestAccKeyManagerKey_WithRotationPolicy(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -225,7 +184,7 @@ func TestAccKeyManagerKey_RotationPolicyDrift(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -303,7 +262,7 @@ func TestAccKeyManagerKey_WithCustomAlgorithm(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -333,7 +292,7 @@ func TestAccKeyManagerKey_KeyEncapsulation(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -364,7 +323,7 @@ func TestAccKeyManagerKey_DefaultAlgorithm(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		CheckDestroy:             keymanagertestfuncs.IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

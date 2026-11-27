@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"text/tabwriter"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	annotationsSDK "github.com/scaleway/scaleway-sdk-go/api/annotations/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -55,6 +57,14 @@ type Meta struct {
 	// It is a pointer so that we can distinguish between "not set" (nil)
 	// and "explicitly set to false".
 	s3UsePathStyle *bool
+	// defaultAnnotations are annotation key name -> value name pairs defined
+	// in the provider configuration.
+	defaultAnnotations map[string]string
+	// annotationsAll is the cached listing of the annotation keys and values
+	// of the default organization.
+	annotationsAll *annotationsSDK.ListAllKeysAndValuesResponse
+	// annotationsMu guards annotationsAll.
+	annotationsMu sync.Mutex
 }
 
 // NewMeta creates the Meta object containing the SDK client.
@@ -99,7 +109,7 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	// Return scaleway client
 	////
 
-	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, config.TerraformVersion, config.HTTPClient)
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, config.TerraformVersion, config.HTTPClient, config.DefaultAnnotations)
 }
 
 // NewMetaFromFrameworkConfig creates a Meta object from FrameworkProviderConfig
@@ -109,10 +119,10 @@ func NewMetaFromFrameworkConfig(ctx context.Context, config *FrameworkProviderCo
 		return nil, err
 	}
 
-	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, terraformVersion, nil)
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, terraformVersion, nil, config.DefaultAnnotations)
 }
 
-func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, endpoints map[string]string, s3UsePathStyle *bool, terraformVersion string, httpClient *http.Client) (*Meta, error) {
+func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, endpoints map[string]string, s3UsePathStyle *bool, terraformVersion string, httpClient *http.Client, defaultAnnotations map[string]string) (*Meta, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
 	}
@@ -129,51 +139,52 @@ func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSo
 	}
 
 	return &Meta{
-		scwClient:         scwClient,
-		httpClient:        httpClient,
-		credentialsSource: credentialsSource,
-		endpoints:         endpoints,
-		s3UsePathStyle:    s3UsePathStyle,
+		scwClient:          scwClient,
+		httpClient:         httpClient,
+		credentialsSource:  credentialsSource,
+		endpoints:          endpoints,
+		s3UsePathStyle:     s3UsePathStyle,
+		defaultAnnotations: defaultAnnotations,
 	}, nil
 }
 
-func (m Meta) ScwClient() *scw.Client {
+func (m *Meta) ScwClient() *scw.Client {
 	return m.scwClient
 }
 
-func (m Meta) HTTPClient() *http.Client {
+func (m *Meta) HTTPClient() *http.Client {
 	return m.httpClient
 }
 
-func (m Meta) AccessKeySource() string {
+func (m *Meta) AccessKeySource() string {
 	return m.credentialsSource.AccessKey
 }
 
-func (m Meta) SecretKeySource() string {
+func (m *Meta) SecretKeySource() string {
 	return m.credentialsSource.SecretKey
 }
 
-func (m Meta) ProjectIDSource() string {
+func (m *Meta) ProjectIDSource() string {
 	return m.credentialsSource.ProjectID
 }
 
-func (m Meta) RegionSource() string {
+func (m *Meta) RegionSource() string {
 	return m.credentialsSource.DefaultRegion
 }
 
-func (m Meta) ZoneSource() string {
+func (m *Meta) ZoneSource() string {
 	return m.credentialsSource.DefaultZone
 }
 
-func (m Meta) OrganizationIDSource() string {
+func (m *Meta) OrganizationIDSource() string {
 	return m.credentialsSource.OrganizationID
 }
 
-func (m Meta) Endpoints() map[string]string {
+func (m *Meta) Endpoints() map[string]string {
 	return m.endpoints
 }
 
-func (m Meta) S3UsePathStyle() bool {
+func (m *Meta) S3UsePathStyle() bool {
 	if m.s3UsePathStyle == nil {
 		return false
 	}
@@ -183,12 +194,74 @@ func (m Meta) S3UsePathStyle() bool {
 
 // S3UsePathStyleOk returns the s3_use_path_style value and whether it was
 // explicitly set in the provider configuration.
-func (m Meta) S3UsePathStyleOk() (bool, bool) {
+func (m *Meta) S3UsePathStyleOk() (bool, bool) {
 	if m.s3UsePathStyle == nil {
 		return false, false
 	}
 
 	return *m.s3UsePathStyle, true
+}
+
+// DefaultAnnotations returns the provider-level default annotations as a map
+// of key name to value name, or nil when default_annotations is not set.
+func (m *Meta) DefaultAnnotations() map[string]string {
+	return m.defaultAnnotations
+}
+
+// SetDefaultAnnotations sets the provider-level default annotations.
+// This is primarily used in acceptance tests to inject default annotations
+// without going through the provider configuration.
+func (m *Meta) SetDefaultAnnotations(annotations map[string]string) {
+	m.defaultAnnotations = annotations
+}
+
+// ListAllAnnotationKeysAndValues returns the annotation keys and values of the
+// default organization. The listing is cached for the lifetime of the Meta, so
+// that every resource of a single Terraform run shares one org-wide API call
+// instead of each issuing its own. The cache is invalidated by
+// InvalidateAnnotationCache, which the annotation key and value resources call
+// after a change, so that default annotations referencing newly created keys
+// and values are resolved within the same run.
+func (m *Meta) ListAllAnnotationKeysAndValues(ctx context.Context) (*annotationsSDK.ListAllKeysAndValuesResponse, error) {
+	orgID, exists := m.ScwClient().GetDefaultOrganizationID()
+	if !exists {
+		return nil, errors.New("no default organization ID found, cannot resolve default annotations")
+	}
+
+	m.annotationsMu.Lock()
+
+	if m.annotationsAll != nil {
+		all := m.annotationsAll
+
+		m.annotationsMu.Unlock()
+
+		return all, nil
+	}
+
+	m.annotationsMu.Unlock()
+
+	api := annotationsSDK.NewAPI(m.ScwClient())
+
+	all, err := api.ListAllKeysAndValues(&annotationsSDK.ListAllKeysAndValuesRequest{
+		OrganizationID: orgID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("listing annotation keys and values: %w", err)
+	}
+
+	m.annotationsMu.Lock()
+	m.annotationsAll = all
+	m.annotationsMu.Unlock()
+
+	return all, nil
+}
+
+func (m *Meta) InvalidateAnnotationCache() {
+	m.annotationsMu.Lock()
+
+	m.annotationsAll = nil
+
+	m.annotationsMu.Unlock()
 }
 
 // HasMultipleVariableSources return an informative message during the Provider initialization
@@ -197,7 +270,7 @@ func (m Meta) S3UsePathStyleOk() (bool, bool) {
 // Variable           Available sources	                                      Currently using
 // SCW_ACCESS_KEY     Active Profile in config.yaml, Environment variable     Environment variable
 // SCW_SECRET_KEY     Active Profile in config.yaml, Environment variable     Environment variable
-func (m Meta) HasMultipleVariableSources() (bool, string, error) {
+func (m *Meta) HasMultipleVariableSources() (bool, string, error) {
 	multiple := false
 
 	variables := []string{
@@ -245,6 +318,7 @@ type Config struct {
 	HTTPClient          *http.Client
 	Endpoints           map[string]string
 	S3UsePathStyle      *bool
+	DefaultAnnotations  map[string]string
 	TerraformVersion    string
 	ForceZone           scw.Zone
 	ForceProjectID      string
@@ -264,16 +338,17 @@ func customizeUserAgent(providerVersion string, terraformVersion string) string 
 }
 
 type FrameworkProviderConfig struct {
-	Endpoints      map[string]string
-	S3UsePathStyle *bool
-	AccessKey      string
-	SecretKey      string
-	ProfileName    string
-	ProjectID      string
-	OrganizationID string
-	Region         string
-	Zone           string
-	APIURL         string
+	Endpoints          map[string]string
+	S3UsePathStyle     *bool
+	DefaultAnnotations map[string]string
+	AccessKey          string
+	SecretKey          string
+	ProfileName        string
+	ProjectID          string
+	OrganizationID     string
+	Region             string
+	Zone               string
+	APIURL             string
 }
 
 func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {

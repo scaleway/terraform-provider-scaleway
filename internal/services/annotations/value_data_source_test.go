@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	annotationstestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations/testfuncs"
 )
 
 func TestAccDataSourceAnnotationsValue_Basic(t *testing.T) {
@@ -19,7 +20,10 @@ func TestAccDataSourceAnnotationsValue_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             IsAnnotationsValueDestroyed(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			annotationstestfuncs.IsAnnotationsKeyDestroyed(tt),
+			annotationstestfuncs.IsAnnotationsValueDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
