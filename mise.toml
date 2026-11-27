@@ -206,11 +206,13 @@ editorconfig-checker
 '''
 
 [tasks.'lint:tfproviderdocs']
+depends = ["gen:doc"]
 run = '''
 tfproviderdocs check -provider-name scaleway -enable-contents-check
 '''
 
 [tasks.'lint:tfplugindocs']
+depends = ["gen:doc"]
 usage = '''
 flag "-q --quiet" negate="--verbose" {
   default #true
