@@ -50,6 +50,11 @@ func TestAccRdbSnapshot_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_snapshot.test", "created_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_rdb_snapshot.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

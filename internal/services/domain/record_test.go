@@ -159,6 +159,11 @@ func TestAccDomainRecord_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_domain_record.tf_MX", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_domain_record.tf_A",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

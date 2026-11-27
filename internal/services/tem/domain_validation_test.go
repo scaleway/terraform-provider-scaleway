@@ -50,6 +50,13 @@ func TestAccDomainValidation_Validation(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_tem_domain_validation.valid",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// The validation timeout is a local wait setting.
+				ImportStateVerifyIgnore: []string{"timeout"},
+			},
 		},
 	})
 }

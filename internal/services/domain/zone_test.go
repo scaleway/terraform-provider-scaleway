@@ -53,6 +53,11 @@ func TestAccDomainZone_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_zone.test", "status", "active"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_domain_zone.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

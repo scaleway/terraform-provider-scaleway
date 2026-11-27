@@ -78,6 +78,12 @@ resource "scaleway_datawarehouse_user" "test_user" {
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_user.test_user", "is_admin", "true"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_datawarehouse_user.test_user",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password"},
+			},
 		},
 	})
 }

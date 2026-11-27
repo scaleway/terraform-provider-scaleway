@@ -249,6 +249,11 @@ func TestAccPrivilege_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_foo_03", "permission", "none"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_rdb_privilege.priv_admin",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

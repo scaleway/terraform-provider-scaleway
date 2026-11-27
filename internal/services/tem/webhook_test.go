@@ -152,6 +152,11 @@ func TestAccWebhook_BasicAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "event_types.#", "1"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_tem_webhook.webhook",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

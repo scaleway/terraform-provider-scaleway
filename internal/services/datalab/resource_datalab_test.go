@@ -143,7 +143,9 @@ func TestAccDatalabResource_Update(t *testing.T) {
 }
 
 func TestAccDatalabResource_StateImport(t *testing.T) {
-	t.Skip("datalab: skipping until SPK-936 is fixed")
+	if *acctest.UpdateCassettes {
+		t.Skip("datalab: skipping recording until SPK-936 is fixed")
+	}
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

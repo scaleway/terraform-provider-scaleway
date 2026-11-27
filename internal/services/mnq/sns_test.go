@@ -36,6 +36,11 @@ func TestAccSNS_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_mnq_sns.main", "endpoint"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_mnq_sns.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

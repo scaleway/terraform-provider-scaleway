@@ -40,6 +40,12 @@ func TestAccNatsCredentials_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_credentials.main", "file"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_mnq_nats_credentials.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"file"},
+			},
 		},
 	})
 }

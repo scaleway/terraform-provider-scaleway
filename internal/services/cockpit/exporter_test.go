@@ -81,6 +81,13 @@ func TestAccCockpitExporter_Basic_Datadog(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_cockpit_exporter.main", "project_id", "data.scaleway_account_project.project", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_cockpit_exporter.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// The API redacts the key and updates exporter status asynchronously.
+				ImportStateVerifyIgnore: []string{"datadog_destination.0.api_key", "status"},
+			},
 		},
 	})
 }

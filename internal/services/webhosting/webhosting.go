@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -484,7 +485,11 @@ func (r *WebhostingResource) Read(
 
 	newState := flattenWebhosting(ctx, r.meta, hostingResponse, &resp.Diagnostics)
 	newState.OptionIDs = state.OptionIDs
-	newState.Email = state.Email
+	// Preserve the configured email on refresh; on import keep the API value from flatten.
+	if !state.Email.IsNull() && !state.Email.IsUnknown() && state.Email.ValueString() != "" {
+		newState.Email = state.Email
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, identityfw.SetRegionalIdentity(hostingResponse.Region, hostingResponse.ID))...)
 }
@@ -729,6 +734,11 @@ func flattenHostingOptionsList(
 			Name: types.StringValue(string(option.Name)),
 		})
 	}
+
+	// Stable order so Create+Read and Import converge.
+	slices.SortFunc(models, func(a, b webhostingOptionsModel) int {
+		return strings.Compare(a.ID.ValueString(), b.ID.ValueString())
+	})
 
 	list, d := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: hostingOptionsAttrTypes()}, models)
 	diags.Append(d...)

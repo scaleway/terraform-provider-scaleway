@@ -706,6 +706,12 @@ func TestAccCluster_Certificate(t *testing.T) {
 					testCheckRedisConnectionString("scaleway_redis_cluster.main", "rediss", "thiZ_is_v&ry_s3cret"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_redis_cluster.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password", "connection_string"},
+			},
 		},
 	})
 }

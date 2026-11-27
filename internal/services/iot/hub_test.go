@@ -62,6 +62,11 @@ func TestAccHub_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "mqtt_ca", ""),
 				),
 			},
+			{
+				ResourceName:      "scaleway_iot_hub.minimal",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

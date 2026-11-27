@@ -137,6 +137,8 @@ func TestAccSNSTopic_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_mnq_sns_topic.main", "arn"),
 				),
 			},
+			// Import is not covered: Read needs access_key/secret_key, which are absent
+			// from state after a bare terraform import (same for SNS subscription / SQS queue).
 		},
 	})
 }

@@ -62,6 +62,16 @@ func TestAccWebhosting_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_webhosting.main", "name_servers.0.is_default"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_webhosting.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// API may append the managed "internal" tag and bump updated_at between refreshes.
+				ImportStateVerifyIgnore: []string{
+					"tags.#", "tags.0", "tags.1", "tags.2", "tags.3",
+					"updated_at",
+				},
+			},
 		},
 	})
 }

@@ -79,6 +79,8 @@ func TestAccSNSTopicSubscription_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_topic_subscription.by_arn", "endpoint", "http://scaleway.com"),
 				),
 			},
+			// Import is not covered: Read needs access_key/secret_key, which are absent
+			// from state after a bare terraform import.
 		},
 	})
 }

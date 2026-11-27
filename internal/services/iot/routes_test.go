@@ -75,6 +75,12 @@ func TestAccRoute_RDB(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iot_route.default", "database.0.dbname", "rdb"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_iot_route.default",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"database.0.password"},
+			},
 		},
 	})
 }

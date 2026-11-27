@@ -58,6 +58,11 @@ func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
 					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.alert_manager"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_cockpit_alert_manager.alert_manager",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

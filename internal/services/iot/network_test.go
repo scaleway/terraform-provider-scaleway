@@ -45,6 +45,12 @@ func TestAccNetwork_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_iot_network.default", "created_at"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_iot_network.default",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret"},
+			},
 		},
 	})
 }
