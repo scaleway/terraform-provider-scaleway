@@ -37,8 +37,8 @@ resource "scaleway_iot_route" "main" {
 				($PAYLOAD::jsonb->'humidity'):decimal:
 			);
 			EOT
-    host     = scaleway_rdb_instance.iot.endpoint_ip
-    port     = scaleway_rdb_instance.iot.endpoint_port
+    host     = scaleway_rdb_instance.iot.load_balancer.0.ip
+    port     = scaleway_rdb_instance.iot.load_balancer.0.port
     dbname   = "rdb"
     username = scaleway_rdb_instance.iot.user_name
     password = scaleway_rdb_instance.iot.password

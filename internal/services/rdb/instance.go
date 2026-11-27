@@ -267,18 +267,6 @@ func instanceSchema() map[string]*schema.Schema {
 			},
 		},
 		// Computed
-		"endpoint_ip": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Endpoint IP of the database instance",
-			Deprecated:  "Please use the private_network or the load_balancer attribute",
-		},
-		"endpoint_port": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Endpoint port of the database instance",
-			Deprecated:  "Please use the private_network or the load_balancer attribute",
-		},
 		"read_replicas": {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -900,32 +888,6 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
 	_ = d.Set("tags", types.FlattenSliceString(res.Tags))
-
-	var loadBalancerEndpoint *rdb.Endpoint
-
-	for _, endpoint := range res.Endpoints {
-		if endpoint.LoadBalancer != nil {
-			loadBalancerEndpoint = endpoint
-
-			break
-		}
-	}
-
-	if loadBalancerEndpoint != nil {
-		switch {
-		case loadBalancerEndpoint.IP != nil:
-			_ = d.Set("endpoint_ip", types.FlattenIPPtr(loadBalancerEndpoint.IP))
-		case loadBalancerEndpoint.Hostname != nil:
-			_ = d.Set("endpoint_ip", loadBalancerEndpoint.Hostname)
-		default:
-			_ = d.Set("endpoint_ip", "")
-		}
-
-		_ = d.Set("endpoint_port", int(loadBalancerEndpoint.Port))
-	} else {
-		_ = d.Set("endpoint_ip", "")
-		_ = d.Set("endpoint_port", 0)
-	}
 
 	if res.Volume != nil {
 		_ = d.Set("volume_type", res.Volume.Type)
