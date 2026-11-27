@@ -2,6 +2,7 @@ package lb_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -27,6 +28,7 @@ func TestAccIP_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_lb_ip.ipZone", "srn", regexp.MustCompile(`^srn://lb\..+/zones/.+/ips/.+$`)),
 					isIPPresent(tt, "scaleway_lb_ip.ipZone"),
 					acctest.CheckResourceAttrIPv4("scaleway_lb_ip.ipZone", "ip_address"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_ip.ipZone", "reverse"),

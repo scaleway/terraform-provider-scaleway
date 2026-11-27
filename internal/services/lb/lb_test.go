@@ -38,6 +38,7 @@ func TestAccLB_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_lb.main", "srn", regexp.MustCompile(`^srn://lb\..+/zones/.+/lbs/.+$`)),
 					isLbPresent(tt, "scaleway_lb.main"),
 					acctest.CheckResourceAttrUUID("scaleway_lb.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-basic"),

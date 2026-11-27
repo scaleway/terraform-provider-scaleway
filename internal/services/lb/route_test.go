@@ -2,6 +2,7 @@ package lb_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -46,6 +47,7 @@ func TestAccRoute_WithSNI(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("scaleway_lb_route.rt01", "srn", regexp.MustCompile(`^srn://lb\..+/zones/.+/routes/.+$`)),
 					isRoutePresent(tt, "scaleway_lb_route.rt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_sni", "sni.scaleway.com"),
 					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_subdomains", "false"),
