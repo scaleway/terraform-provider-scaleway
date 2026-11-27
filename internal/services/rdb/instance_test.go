@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	rdbSDK "github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -2002,13 +2003,32 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 					},
 				),
 			},
-			// Step 2: Attempt upgrade to invalid version (should fail)
+			// Step 2: Attempt upgrade without allow_major_version_upgrade (should fail at plan)
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-engine-upgrade"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "engine-upgrade"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, newVersion),
+				ExpectError: regexp.MustCompile(`set allow_major_version_upgrade = true to change engine`),
+			},
+			// Step 3: Attempt upgrade to invalid version (should fail)
 			{
 				Config: `
 					resource "scaleway_rdb_instance" "main" {
 						name           = "test-rdb-engine-upgrade"
 						node_type      = "db-dev-s"
 						engine         = "PostgreSQL-99.99"
+						allow_major_version_upgrade = true
 						is_ha_cluster  = false
 						disable_backup = true
 						user_name      = "test_user"
@@ -2020,13 +2040,14 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 				`,
 				ExpectError: regexp.MustCompile(`engine version PostgreSQL-99\.99 is not available for upgrade`),
 			},
-			// Step 3: Upgrade to valid new version and verify old instance destroyed
+			// Step 4: Upgrade to valid new version and verify old instance destroyed
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "main" {
 						name           = "test-rdb-engine-upgrade"
 						node_type      = "db-dev-s"
 						engine         = %q
+						allow_major_version_upgrade = true
 						is_ha_cluster  = false
 						disable_backup = true
 						user_name      = "test_user"
@@ -2056,23 +2077,22 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
 						}
 
-						err = transport.RetryOnStatus(tt.T.Context(), transport.IAMPropagation, func(ctx context.Context) error {
+						// Wait until the previous instance is gone (delete is eventually consistent).
+						return retry.RetryContext(tt.T.Context(), rdbchecks.DestroyWaitTimeout, func() *retry.RetryError {
 							_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
 								Region:     region,
 								InstanceID: oldInstanceID,
 							})
 
-							return err
+							switch {
+							case err == nil:
+								return retry.RetryableError(fmt.Errorf("old instance %s still exists", oldInstanceID))
+							case httperrors.Is404(err):
+								return nil
+							default:
+								return retry.NonRetryableError(err)
+							}
 						})
-						if err == nil {
-							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
-						}
-
-						if !httperrors.Is404(err) {
-							return fmt.Errorf("expected 404 error for old instance %s, got: %w", oldInstanceID, err)
-						}
-
-						return nil
 					},
 				),
 			},
@@ -2134,16 +2154,17 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "main" {
-						name              = "test-rdb-engine-upgrade-ha"
-						node_type         = "db-dev-s"
-						engine            = %q
-						is_ha_cluster     = true
-						disable_backup    = true
-						user_name         = "test_user"
-						password          = "thiZ_is_v&ry_s3cret"
-						tags              = ["terraform-test", "engine-upgrade-ha"]
-						volume_type       = "sbs_5k"
-						volume_size_in_gb = 10
+						name                        = "test-rdb-engine-upgrade-ha"
+						node_type                   = "db-dev-s"
+						engine                      = %q
+						allow_major_version_upgrade = true
+						is_ha_cluster               = true
+						disable_backup              = true
+						user_name                   = "test_user"
+						password                    = "thiZ_is_v&ry_s3cret"
+						tags                        = ["terraform-test", "engine-upgrade-ha"]
+						volume_type                 = "sbs_5k"
+						volume_size_in_gb           = 10
 					}
 				`, newVersion),
 				Check: resource.ComposeTestCheckFunc(
@@ -2229,6 +2250,7 @@ func TestAccInstance_EngineUpgrade_WithACL(t *testing.T) {
 				name               = "test-rdb-engine-upgrade-acl"
 				node_type          = "db-dev-s"
 				engine             = %q
+				allow_major_version_upgrade = true
 				is_ha_cluster      = false
 				disable_backup     = true
 				user_name          = "test_user"
