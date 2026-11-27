@@ -41,7 +41,6 @@ func TestAccDomain_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "spf_value", "v=spf1 include:_spf.tem.scaleway.com -all"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_config", "blackhole.tem.scaleway.com."),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_priority", "10"),
-					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 				),
 			},
@@ -114,7 +113,6 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "spf_value", "v=spf1 include:_spf.tem.scaleway.com -all"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_config", "blackhole.tem.scaleway.com."),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_priority", "10"),
-					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
 				),
@@ -158,7 +156,6 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "spf_value", "v=spf1 include:_spf.tem.scaleway.com -all"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_config", "blackhole.tem.scaleway.com."),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_priority", "10"),
-					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 				),
 			},
