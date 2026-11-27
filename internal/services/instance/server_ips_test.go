@@ -1,6 +1,7 @@
 package instance_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -442,6 +443,124 @@ func TestAccServer_Ipv6(t *testing.T) {
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server01"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "public_ips.#", "0"),
 				),
+			},
+		},
+	})
+}
+
+// Importing a server sets both ip_id and ip_ids, as the import cannot know which one the configuration uses.
+// Whichever attribute the configuration uses, the import must not plan an IP update (it would detach every
+// public IP) and the plan after a refresh must stay empty. See issue #4394.
+func TestAccServer_IPsImport(t *testing.T) {
+	ips := `
+		resource "scaleway_instance_ip" "ip1" {
+			type = "routed_ipv4"
+		}
+
+		# Different types keep the two create requests distinguishable in the cassette.
+		resource "scaleway_instance_ip" "ip2" {
+			type = "routed_ipv6"
+		}
+	`
+	server := `
+		resource "scaleway_instance_server" "main" {
+			name   = "tf-acc-server-ips-import"
+			ip_ids = [scaleway_instance_ip.ip1.id, scaleway_instance_ip.ip2.id]
+			image  = "ubuntu_jammy"
+			type   = "PRO2-XXS"
+			state  = "stopped"
+			tags   = [ "terraform-test", "scaleway_instance_server", "ips-import" ]
+
+			# Not read back on import, like ImportStateVerifyIgnore in the other tests.
+			lifecycle {
+				ignore_changes = [image, replace_on_type_change]
+			}
+		}
+	`
+
+	testAccServerImportThenPlan(t, "tf-acc-server-ips-import", ips, server, "2")
+}
+
+func TestAccServer_IPImport(t *testing.T) {
+	ips := `
+		resource "scaleway_instance_ip" "main" {
+			type = "routed_ipv4"
+		}
+	`
+	server := `
+		resource "scaleway_instance_server" "main" {
+			name  = "tf-acc-server-ip-import"
+			ip_id = scaleway_instance_ip.main.id
+			image = "ubuntu_jammy"
+			type  = "PRO2-XXS"
+			state = "stopped"
+			tags  = [ "terraform-test", "scaleway_instance_server", "ip-import" ]
+
+			# Not read back on import, like ImportStateVerifyIgnore in the other tests.
+			lifecycle {
+				ignore_changes = [image, replace_on_type_change]
+			}
+		}
+	`
+
+	testAccServerImportThenPlan(t, "tf-acc-server-ip-import", ips, server, "1")
+}
+
+// testAccServerImportThenPlan creates the server, removes it from the state, imports it back with an
+// import block, then checks that the import is a no-op and that a later plan is empty.
+func testAccServerImportThenPlan(t *testing.T, serverName, ips, server, publicIPsCount string) {
+	t.Helper()
+
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping: OpenTofu refreshes a resource targeted by a removed block before forgetting it and Terraform does not, so the recorded interactions do not match")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	forget := `
+		removed {
+			from = scaleway_instance_server.main
+
+			lifecycle {
+				destroy = false
+			}
+		}
+	`
+	importBlock := fmt.Sprintf(`
+		data "scaleway_instance_server" "main" {
+			name = %q
+		}
+
+		import {
+			to = scaleway_instance_server.main
+			id = data.scaleway_instance_server.main.id
+		}
+	`, serverName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: ips + server,
+				Check:  resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", publicIPsCount),
+			},
+			{
+				Config: ips + forget,
+			},
+			{
+				Config: ips + server + importBlock,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("scaleway_instance_server.main", plancheck.ResourceActionNoop),
+					},
+				},
+				Check: resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", publicIPsCount),
+			},
+			{
+				Config:   ips + server,
+				PlanOnly: true,
 			},
 		},
 	})
