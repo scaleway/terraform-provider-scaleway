@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -39,10 +40,11 @@ func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
 func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"bucket": {
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
-			Description: "The bucket's name or regional ID.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The bucket's name or regional ID.",
+			DiffSuppressFunc: dsf.Locality,
 		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
@@ -97,10 +99,11 @@ func resourceBucketServerSideEncryptionConfigurationCreate(ctx context.Context, 
 		return diag.FromErr(err)
 	}
 
-	bucketName := d.Get("bucket").(string)
+	regionalID := regional.ExpandID(d.Get("bucket").(string))
+	bucket := regionalID.ID
 
 	input := s3.PutBucketEncryptionInput{
-		Bucket: &bucketName,
+		Bucket: &bucket,
 		ServerSideEncryptionConfiguration: &awstypes.ServerSideEncryptionConfiguration{
 			Rules: expandServerSideEncryptionRules(d.Get("rule").(*schema.Set).List()),
 		},
@@ -108,15 +111,15 @@ func resourceBucketServerSideEncryptionConfigurationCreate(ctx context.Context, 
 
 	_, err = conn.PutBucketEncryption(ctx, &input)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("creating S3 Bucket (%s) Server-side Encryption Configuration: %w", bucketName, err))
+		return diag.FromErr(fmt.Errorf("creating S3 Bucket (%s) Server-side Encryption Configuration: %w", bucket, err))
 	}
 
-	err = identity.SetRegionalIdentity(d, region, bucketName)
+	err = identity.SetRegionalIdentity(d, region, bucket)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = findServerSideEncryptionConfiguration(ctx, conn, bucketName)
+	_, err = findServerSideEncryptionConfiguration(ctx, conn, bucket)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("waiting for S3 Bucket Server-side Encryption Configuration (%s) create: %w", d.Id(), err))
 	}

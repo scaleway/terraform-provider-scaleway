@@ -31,7 +31,7 @@ func TestAccDomainZone_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := "test-zone"
+	testDNSZone := "tf-test-domain-zone-basic"
 	logging.L.Debugf("TestAccScalewayDomainZone_Basic: test dns zone: %s, with domain: %s", testDNSZone, acctest.TestDomain)
 
 	resource.ParallelTest(t, resource.TestCase{

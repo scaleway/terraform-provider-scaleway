@@ -17,7 +17,7 @@ func TestAccListDomainZones_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := "test-zone"
+	testDNSZone := "tf-test-domain-zone-list"
 	projectID := testAccDomainZoneProjectID(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
