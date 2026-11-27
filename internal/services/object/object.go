@@ -7,6 +7,7 @@ import (
 	_ "embed"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -187,28 +188,9 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.SSECustomerKey = encryption
 	}
 
-	if filePath, hasFile := d.GetOk("file"); hasFile {
-		file, err := os.Open(filePath.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		req.Body = file
-	} else if content, hasContent := d.GetOk("content"); hasContent {
-		contentString := []byte(content.(string))
-		req.Body = bytes.NewReader(contentString)
-	} else if content, hasContent := d.GetOk("content_base64"); hasContent {
-		contentString := []byte(content.(string))
-		decoded := make([]byte, base64.StdEncoding.DecodedLen(len(contentString)))
-
-		_, err = base64.StdEncoding.Decode(decoded, contentString)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		req.Body = bytes.NewReader(decoded)
-	} else {
-		req.Body = bytes.NewReader([]byte{})
+	req.Body, err = objectBody(d)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	if err := uploadObject(ctx, s3Client, req); err != nil {
@@ -231,6 +213,34 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	d.SetId(regional.NewIDString(region, objectID(bucket, key)))
 
 	return resourceObjectRead(ctx, d, m)
+}
+
+// objectBody returns the content to upload: the file, the content or the decoded content_base64, else nothing.
+func objectBody(d *schema.ResourceData) (io.Reader, error) {
+	if filePath, hasFile := d.GetOk("file"); hasFile {
+		return os.Open(filePath.(string))
+	}
+
+	if content, hasContent := d.GetOk("content"); hasContent {
+		return bytes.NewReader([]byte(content.(string))), nil
+	}
+
+	if content, hasContent := d.GetOk("content_base64"); hasContent {
+		// DecodeString avoids uploading unused bytes from a buffer sized by DecodedLen.
+		decoded, err := base64.StdEncoding.DecodeString(content.(string))
+		if err != nil {
+			return nil, err
+		}
+
+		return bytes.NewReader(decoded), nil
+	}
+
+	return bytes.NewReader([]byte{}), nil
+}
+
+// objectBodyChanged reports whether an update must upload the content again: its source or its hash changed.
+func objectBodyChanged(d *schema.ResourceData) bool {
+	return d.HasChanges("file", "hash", "content", "content_base64")
 }
 
 func EncryptCustomerKey(encryptionKeyStr string) (string, *string, error) {
@@ -261,7 +271,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	bucketUpdated := regional.ExpandID(d.Get("bucket")).ID
 	keyUpdated := d.Get("key").(string)
 
-	if d.HasChanges("file", "hash") {
+	if objectBodyChanged(d) {
 		req := &s3.PutObjectInput{
 			Bucket:       types.ExpandStringPtr(bucketUpdated),
 			Key:          types.ExpandStringPtr(keyUpdated),
@@ -285,15 +295,9 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			req.SSECustomerKey = encryption
 		}
 
-		if filePath, hasFile := d.GetOk("file"); hasFile {
-			file, err := os.Open(filePath.(string))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			req.Body = file
-		} else {
-			req.Body = bytes.NewReader([]byte{})
+		req.Body, err = objectBody(d)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
 		err = uploadObject(ctx, s3Client, req)
