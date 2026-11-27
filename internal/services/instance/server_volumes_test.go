@@ -743,3 +743,51 @@ func TestAccServer_ScratchStorage(t *testing.T) {
 		},
 	})
 }
+
+func TestAccServer_NoAttachedVolumes(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	serverID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "base" {
+						name  = "tf-acc-server-no-volumes"
+						type  = "DEV1-S"
+						image = "ubuntu_focal"
+						state = "stopped"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
+				),
+			},
+			{
+				PreConfig: func() {
+					api := instanceSDK.NewAPI(tt.Meta.ScwClient())
+					emptyVolumes := make(map[string]*instanceSDK.VolumeServerTemplate)
+
+					_, err := api.UpdateServer(&instanceSDK.UpdateServerRequest{
+						ServerID: serverID,
+						Zone:     scw.ZoneFrPar1,
+						Volumes:  &emptyVolumes,
+					})
+					if err != nil {
+						t.Fatalf("failed to detach all volumes from server: %s", err)
+					}
+				},
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "additional_volume_ids.#", "0"),
+				),
+			},
+		},
+	})
+}
