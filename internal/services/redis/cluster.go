@@ -541,7 +541,7 @@ func setClusterState(ctx context.Context, d *schema.ResourceData, redisAPI *redi
 		connPassword = d.Get("password").(string)
 	}
 
-	_ = d.Set("connection_string", redisConnectionString(cluster.Endpoints, userName, connPassword, cluster.TLSEnabled))
+	_ = d.Set("connection_string", ConnectionString(cluster.Endpoints, userName, connPassword, cluster.TLSEnabled))
 
 	return diags
 }
