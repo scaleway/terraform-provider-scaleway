@@ -53,8 +53,8 @@ func TestAccRoute_RDB(t *testing.T) {
 							topic  = "#"
 							database {
 								query  = "SELECT NOW()"
-								host   = scaleway_rdb_instance.minimal.endpoint_ip
-								port   = scaleway_rdb_instance.minimal.endpoint_port
+								host   = scaleway_rdb_instance.minimal.load_balancer.0.ip
+								port   = scaleway_rdb_instance.minimal.load_balancer.0.port
 								dbname = "rdb"
 								username = scaleway_rdb_instance.minimal.user_name
 								password = scaleway_rdb_instance.minimal.password
