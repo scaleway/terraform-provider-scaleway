@@ -96,6 +96,8 @@ func TestAccSQSQueue_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "message_max_age", "720"),
 				),
 			},
+			// Import is not covered: Read needs access_key/secret_key, which are absent
+			// from state after a bare terraform import.
 		},
 	})
 }

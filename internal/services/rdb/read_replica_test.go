@@ -54,6 +54,11 @@ func TestAccReadReplica_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "direct_access.0.endpoint_id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_rdb_read_replica.replica",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

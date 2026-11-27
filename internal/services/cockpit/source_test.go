@@ -55,6 +55,11 @@ func TestAccCockpitSource_Basic_metrics(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_cockpit_source.main", "project_id", "scaleway_account_project.project", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_cockpit_source.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

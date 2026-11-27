@@ -78,6 +78,13 @@ resource "scaleway_opensearch_deployment" "main" {
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "tags.1", "tag2"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_opensearch_deployment.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// The deployment API does not return the initial credentials.
+				ImportStateVerifyIgnore: []string{"user_name", "password"},
+			},
 		},
 	})
 }

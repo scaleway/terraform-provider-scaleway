@@ -37,6 +37,11 @@ func TestAccSQS_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_mnq_sqs.main", "endpoint"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_mnq_sqs.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

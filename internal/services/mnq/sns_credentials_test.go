@@ -97,6 +97,12 @@ func TestAccSNSCredentials_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_mnq_sns_credentials.main", "permissions.0.can_publish", "false"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_mnq_sns_credentials.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"access_key", "secret_key"},
+			},
 		},
 	})
 }

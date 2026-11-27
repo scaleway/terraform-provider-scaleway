@@ -111,6 +111,13 @@ resource "scaleway_kafka_cluster" "main" {
 					resource.TestCheckResourceAttr("scaleway_kafka_cluster.main", "private_network.#", "1"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_kafka_cluster.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// The cluster API does not return the initial credentials.
+				ImportStateVerifyIgnore: []string{"user_name", "password"},
+			},
 		},
 	})
 }

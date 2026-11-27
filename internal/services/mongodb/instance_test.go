@@ -58,6 +58,13 @@ func TestAccMongoDBInstance_VersionUpgrade(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "8.0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_mongodb_instance.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// The instance API does not return the initial credentials.
+				ImportStateVerifyIgnore: []string{"user_name", "password"},
+			},
 		},
 	})
 }

@@ -64,6 +64,13 @@ func TestAccDevice_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iot_device.default-1", "allow_multiple_connections", "false"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_iot_device.default-1",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// The generated device credentials are only available at creation.
+				ImportStateVerifyIgnore: []string{"certificate"},
+			},
 		},
 	})
 }

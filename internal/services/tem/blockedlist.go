@@ -3,7 +3,6 @@ package tem
 import (
 	"context"
 	_ "embed"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -99,16 +98,30 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m an
 }
 
 func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, domainID, err := NewAPIWithRegionAndID(m, d.Get("domain_id").(string))
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	blocklists, err := api.ListBlocklists(&tem.ListBlocklistsRequest{
-		Region:   region,
-		Email:    new(d.Get("email").(string)),
-		DomainID: domainID,
-	}, scw.WithContext(ctx))
+	req := &tem.ListBlocklistsRequest{
+		Region: region,
+	}
+
+	// Narrow the search on refresh when domain/email are already in state.
+	if domainIDAttr, ok := d.Get("domain_id").(string); ok && domainIDAttr != "" {
+		_, domainID, parseErr := regional.ParseID(domainIDAttr)
+		if parseErr != nil {
+			return diag.FromErr(parseErr)
+		}
+
+		req.DomainID = domainID
+	}
+
+	if email, ok := d.Get("email").(string); ok && email != "" {
+		req.Email = &email
+	}
+
+	blocklists, err := api.ListBlocklists(req, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -119,20 +132,30 @@ func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	if len(blocklists.Blocklists) == 0 {
+	var found *tem.Blocklist
+
+	for _, blocklist := range blocklists.Blocklists {
+		if blocklist.ID == id {
+			found = blocklist
+
+			break
+		}
+	}
+
+	if found == nil {
 		d.SetId("")
 
 		return nil
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, blocklists.Blocklists[0].ID); err != nil {
+	if err := identity.SetRegionalIdentity(d, region, found.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("email", blocklists.Blocklists[0].Email)
-	_ = d.Set("reason", blocklists.Blocklists[0].Reason)
-	_ = d.Set("domain_id", fmt.Sprintf("%s/%s", region, blocklists.Blocklists[0].DomainID))
-	_ = d.Set("type", blocklists.Blocklists[0].Type)
+	_ = d.Set("email", found.Email)
+	_ = d.Set("reason", found.Reason)
+	_ = d.Set("domain_id", regional.NewIDString(region, found.DomainID))
+	_ = d.Set("type", found.Type)
 
 	return nil
 }

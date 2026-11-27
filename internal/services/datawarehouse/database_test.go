@@ -50,6 +50,11 @@ resource "scaleway_datawarehouse_database" "mydb" {
 					resource.TestCheckResourceAttrWith("scaleway_datawarehouse_database.mydb", "srn", acctest.CheckSRN("datawarehouse", "databases")),
 				),
 			},
+			{
+				ResourceName:      "scaleway_datawarehouse_database.mydb",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

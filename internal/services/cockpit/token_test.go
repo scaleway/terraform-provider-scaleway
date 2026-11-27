@@ -55,6 +55,13 @@ func TestAccToken_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.write_traces", "false"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_cockpit_token.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// The token secret is only returned at creation.
+				ImportStateVerifyIgnore: []string{"secret_key"},
+			},
 		},
 	})
 }

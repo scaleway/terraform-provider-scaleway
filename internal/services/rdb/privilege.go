@@ -231,12 +231,18 @@ func readPrivilegeIntoState(ctx context.Context, d *schema.ResourceData, m any) 
 	setPrivilegeState(d, region, instanceID, privilege)
 	_ = d.Set("effective_permission", effectivePermission)
 
-	var diags diag.Diagnostics
+	// On import, permission is absent from state until setPrivilegeState runs above.
+	// Treat that as synced: there is no configured value to drift from yet.
+	if configuredPermission == "" || effectivePermission == configuredPermission {
+		_ = d.Set("permission_status", "synced")
 
-	if effectivePermission != configuredPermission {
-		_ = d.Set("permission_status", "drifted")
+		return nil
+	}
 
-		diags = append(diags, diag.Diagnostic{
+	_ = d.Set("permission_status", "drifted")
+
+	return diag.Diagnostics{
+		diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  "Database privilege drift detected",
 			Detail: fmt.Sprintf(
@@ -256,12 +262,8 @@ func readPrivilegeIntoState(ctx context.Context, d *schema.ResourceData, m any) 
 				effectivePermission,
 			),
 			AttributePath: cty.GetAttrPath("permission"),
-		})
-	} else {
-		_ = d.Set("permission_status", "synced")
+		},
 	}
-
-	return diags
 }
 
 func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

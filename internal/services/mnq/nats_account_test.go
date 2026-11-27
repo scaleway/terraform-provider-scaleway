@@ -37,6 +37,11 @@ func TestAccNatsAccount_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_account.main", "endpoint"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_mnq_nats_account.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

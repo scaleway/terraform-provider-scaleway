@@ -45,6 +45,13 @@ func TestAccDomain_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_tem_domain.cr01",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// The service recalculates reputation between reads.
+				ImportStateVerifyIgnore: []string{"reputation.0.scored_at"},
+			},
 		},
 	})
 }

@@ -5297,6 +5297,153 @@ interactions:
             Content-Type:
                 - application/json
             Date:
+                - Wed, 26 Nov 2025 14:46:16 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 050d923c-f392-4661-968b-c1610b5d61dd
+        status: 200 OK
+        code: 200
+        duration: 114.204875ms
+    - id: 108
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/a5bda98a-0287-47aa-8992-c926eae35a37/users?name=user_01&order_by=name_asc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 62
+        uncompressed: false
+        body: '{"total_count":1,"users":[{"is_admin":true,"name":"user_01"}]}'
+        headers:
+            Content-Length:
+                - "62"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Nov 2025 14:46:16 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 100df285-d7b7-42b4-9dab-4655b957c144
+        status: 200 OK
+        code: 200
+        duration: 102.023917ms
+    - id: 109
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/a5bda98a-0287-47aa-8992-c926eae35a37/privileges?database_name=foo&order_by=user_name_asc&user_name=user_01
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 97
+        uncompressed: false
+        body: '{"privileges":[{"database_name":"foo","permission":"all","user_name":"user_01"}],"total_count":1}'
+        headers:
+            Content-Length:
+                - "97"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 26 Nov 2025 14:46:17 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 54e6c3d1-cd93-406e-afca-810120b15f01
+        status: 200 OK
+        code: 200
+        duration: 192.809292ms
+    - id: 110
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances/a5bda98a-0287-47aa-8992-c926eae35a37
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1297
+        uncompressed: false
+        body: '{"backup_same_region":false,"backup_schedule":{"disabled":false,"frequency":24,"next_run_at":"2025-11-27T14:43:28.004512Z","retention":7},"created_at":"2025-11-26T14:43:28.004512Z","encryption":{"enabled":false},"endpoint":{"id":"5995a4cd-29fe-470a-861e-452f07f5c8ff","ip":"51.158.56.63","load_balancer":{},"name":null,"port":19592},"endpoints":[{"id":"5995a4cd-29fe-470a-861e-452f07f5c8ff","ip":"51.158.56.63","load_balancer":{},"name":null,"port":19592}],"engine":"PostgreSQL-17","id":"a5bda98a-0287-47aa-8992-c926eae35a37","init_settings":[],"is_ha_cluster":false,"logs_policy":{"max_age_retention":30,"total_disk_retention":null},"maintenances":[],"name":"TestAccScalewayRdbPrivilege_Basic","node_type":"db-dev-s","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","read_replicas":[],"region":"fr-par","settings":[{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"},{"name":"max_connections","value":"100"},{"name":"max_parallel_workers","value":"0"},{"name":"max_parallel_workers_per_gather","value":"0"},{"name":"work_mem","value":"4"}],"status":"ready","tags":["terraform-test","scaleway_rdb_user","minimal"],"upgradable_version":[],"volume":{"class":"lssd","size":5000000000,"type":"lssd"}}'
+        headers:
+            Content-Length:
+                - "1297"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
                 - Wed, 26 Nov 2025 14:46:17 GMT
             Server:
                 - Scaleway API Gateway (fr-par-2;edge02)
@@ -5311,7 +5458,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 97.991958ms
-    - id: 108
+    - id: 111
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5360,7 +5507,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 128.28625ms
-    - id: 109
+    - id: 112
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5409,7 +5556,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 128.407791ms
-    - id: 110
+    - id: 113
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5458,7 +5605,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 108.469833ms
-    - id: 111
+    - id: 114
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5507,7 +5654,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 113.288834ms
-    - id: 112
+    - id: 115
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5556,7 +5703,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 141.64325ms
-    - id: 113
+    - id: 116
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5605,7 +5752,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 115.883042ms
-    - id: 114
+    - id: 117
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5654,7 +5801,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 124.633ms
-    - id: 115
+    - id: 118
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5703,7 +5850,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 125.922792ms
-    - id: 116
+    - id: 119
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5754,7 +5901,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 197.593917ms
-    - id: 117
+    - id: 120
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5803,7 +5950,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 121.214167ms
-    - id: 118
+    - id: 121
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5854,7 +6001,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 320.109542ms
-    - id: 119
+    - id: 122
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5905,7 +6052,7 @@ interactions:
         status: 409 Conflict
         code: 409
         duration: 315.017042ms
-    - id: 120
+    - id: 123
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -5954,7 +6101,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 108.327625ms
-    - id: 121
+    - id: 124
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6003,7 +6150,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 100.857834ms
-    - id: 122
+    - id: 125
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6052,7 +6199,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 109.36525ms
-    - id: 123
+    - id: 126
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6101,7 +6248,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 118.417875ms
-    - id: 124
+    - id: 127
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6148,7 +6295,7 @@ interactions:
         status: 204 No Content
         code: 204
         duration: 163.058875ms
-    - id: 125
+    - id: 128
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6195,7 +6342,7 @@ interactions:
         status: 204 No Content
         code: 204
         duration: 172.82175ms
-    - id: 126
+    - id: 129
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6244,7 +6391,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 105.848208ms
-    - id: 127
+    - id: 130
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6295,7 +6442,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 175.289209ms
-    - id: 128
+    - id: 131
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6344,7 +6491,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 104.49775ms
-    - id: 129
+    - id: 132
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6393,7 +6540,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 112.601125ms
-    - id: 130
+    - id: 133
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6442,7 +6589,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 139.225792ms
-    - id: 131
+    - id: 134
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6489,7 +6636,7 @@ interactions:
         status: 204 No Content
         code: 204
         duration: 186.27325ms
-    - id: 132
+    - id: 135
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6536,7 +6683,7 @@ interactions:
         status: 204 No Content
         code: 204
         duration: 280.747209ms
-    - id: 133
+    - id: 136
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6585,7 +6732,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 112.419625ms
-    - id: 134
+    - id: 137
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6634,7 +6781,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 164.311958ms
-    - id: 135
+    - id: 138
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6683,7 +6830,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 234.595167ms
-    - id: 136
+    - id: 139
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6732,7 +6879,7 @@ interactions:
         status: 200 OK
         code: 200
         duration: 105.080166ms
-    - id: 137
+    - id: 140
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -6781,7 +6928,7 @@ interactions:
         status: 404 Not Found
         code: 404
         duration: 294.534959ms
-    - id: 138
+    - id: 141
       request:
         proto: HTTP/1.1
         proto_major: 1

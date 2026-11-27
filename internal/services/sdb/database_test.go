@@ -80,6 +80,11 @@ func TestAccServerlessSQLDBDatabase_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_sdb_sql_database.main", "version"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_sdb_sql_database.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

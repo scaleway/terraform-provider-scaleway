@@ -81,6 +81,11 @@ func TestAccACL_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_rdb_acl.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance main {
 						name = "%s"

@@ -65,6 +65,11 @@ func TestAccBlockedList_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_tem_blocked_list.test", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_tem_blocked_list.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

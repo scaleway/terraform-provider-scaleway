@@ -456,6 +456,12 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, mongod
 		_ = d.Set("snapshot_schedule_frequency_hours", int(instance.SnapshotSchedule.FrequencyHours))
 		_ = d.Set("snapshot_schedule_retention_days", int(instance.SnapshotSchedule.RetentionDays))
 		_ = d.Set("is_snapshot_schedule_enabled", instance.SnapshotSchedule.Enabled)
+	} else {
+		// Clear stale values when the API omits the schedule (e.g. after a version
+		// upgrade or on import of an instance without one).
+		_ = d.Set("snapshot_schedule_frequency_hours", nil)
+		_ = d.Set("snapshot_schedule_retention_days", nil)
+		_ = d.Set("is_snapshot_schedule_enabled", false)
 	}
 
 	if instance.Volume != nil {

@@ -71,6 +71,11 @@ func TestAccMongoDBSnapshot_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", expiresAt),
 				),
 			},
+			{
+				ResourceName:      "scaleway_mongodb_snapshot.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
