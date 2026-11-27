@@ -3,10 +3,14 @@ package secret
 import (
 	"context"
 	_ "embed"
+	"encoding/base64"
+	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -35,9 +39,40 @@ func ResourceVersion() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultSecretTimeout),
 		},
-		SchemaVersion: 0,
+		SchemaVersion: 1,
 		SchemaFunc:    versionSchema,
+		CustomizeDiff: customdiff.All(resourceVersionTypeCustomizeDiff),
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    secretVersionUpgradeV1SchemaType(),
+				Upgrade: VersionV1SchemaUpgradeFunc,
+			},
+		},
 	}
+}
+
+func resourceVersionTypeCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	_, newType := d.GetChange("type")
+
+	if newType.(string) != "base64" {
+		return nil
+	}
+
+	for _, attribute := range []string{"data", "data_wo"} {
+		_, raw := d.GetChange(attribute)
+
+		value, _ := raw.(string)
+		if value == "" {
+			continue
+		}
+
+		if _, err := base64.StdEncoding.DecodeString(value); err != nil {
+			return fmt.Errorf("%s must be a valid base64-encoded string when `type` is set to \"base64\": %w", attribute, err)
+		}
+	}
+
+	return nil
 }
 
 func versionSchema() map[string]*schema.Schema {
@@ -50,26 +85,28 @@ func versionSchema() map[string]*schema.Schema {
 			DiffSuppressFunc: dsf.Locality,
 		},
 		"data": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The raw data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified.",
-			Sensitive:   true,
-			ForceNew:    true,
-			StateFunc: func(i any) string {
-				return Base64Encoded([]byte(i.(string)))
-			},
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "The data payload of the secret version, encoded as defined by the `type` attribute. Must not exceed 64KiB in size. Only one of `data` or `data_wo` should be specified.",
+			Sensitive:    true,
+			ForceNew:     true,
 			ExactlyOneOf: []string{"data", "data_wo"},
 		},
 		"data_wo": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The raw data payload of your secret version in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified. `data_wo` will not be set in the Terraform state. To update the `data_wo`, you must also update the `data_wo_version`.",
-			Sensitive:   true,
-			WriteOnly:   true,
-			StateFunc: func(i any) string {
-				return Base64Encoded([]byte(i.(string)))
-			},
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "The data payload of your secret version in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode, encoded as defined by the `type` attribute. Must not exceed 64KiB in size. Only one of `data` or `data_wo` should be specified. `data_wo` will not be set in the Terraform state. To update the `data_wo`, you must also update the `data_wo_version`.",
+			Sensitive:    true,
+			WriteOnly:    true,
 			ExactlyOneOf: []string{"data", "data_wo"},
+		},
+		"type": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Default:      "string",
+			Description:  "The encoding of the `data` or `data_wo` attribute. Can be either `string` (default) or `base64`.",
+			ForceNew:     true,
+			ValidateFunc: validation.StringInSlice([]string{"base64", "string"}, false),
 		},
 		"data_wo_version": {
 			Type:        schema.TypeInt,
@@ -137,13 +174,30 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 
 	var payloadSecretRaw []byte
 
-	isDataWO := false
+	data, hasData := d.GetOk("data")
 
-	if data, exists := d.GetOk("data"); exists {
-		payloadSecretRaw = []byte(data.(string))
+	var (
+		payload          string
+		payloadAttribute string
+	)
+
+	if hasData {
+		payload = data.(string)
+		payloadAttribute = "data"
 	} else {
-		isDataWO = true
-		payloadSecretRaw = []byte(d.Get("data_wo").(string))
+		payload = d.GetRawConfig().GetAttr("data_wo").AsString()
+		payloadAttribute = "data_wo"
+	}
+
+	if d.Get("type").(string) == "base64" {
+		decoded, err := base64.StdEncoding.DecodeString(payload)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("%s must be a valid base64-encoded string when `type` is set to \"base64\": %w", payloadAttribute, err))
+		}
+
+		payloadSecretRaw = decoded
+	} else {
+		payloadSecretRaw = []byte(payload)
 	}
 
 	secretCreateVersionRequest := &secret.CreateSecretVersionRequest{
@@ -164,14 +218,6 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	})
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	// Note: We intentionally don't set data_wo in the state because it's write-only and should
-	// not be stored.
-	// The actual secret value is only used for API calls and never persisted in the state.
-	// It can be retrieved with the datasource.
-	if !isDataWO {
-		_ = d.Set("data", Base64Encoded(payloadSecretRaw))
 	}
 
 	err = identity.SetMultiPartIdentity(d, map[string]string{
@@ -211,6 +257,10 @@ func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	setVersionState(d, secretResponse)
+
+	if d.Get("type").(string) == "" {
+		_ = d.Set("type", "string")
+	}
 
 	err = identity.SetMultiPartIdentity(d, map[string]string{
 		"region":    region.String(),

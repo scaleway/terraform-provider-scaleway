@@ -2,12 +2,12 @@ package secret
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -128,20 +128,6 @@ func CreateSecretVersion(ctx context.Context, m any, secretID string, value stri
 	}
 
 	return version, nil
-}
-
-func isBase64Encoded(data []byte) bool {
-	_, err := base64.StdEncoding.DecodeString(string(data))
-
-	return err == nil
-}
-
-func Base64Encoded(data []byte) string {
-	if isBase64Encoded(data) {
-		return string(data)
-	}
-
-	return base64.StdEncoding.EncodeToString(data)
 }
 
 // updateSecretProtection sets the protected value of a secret to requested one.
@@ -269,4 +255,41 @@ func setVersionState(d *schema.ResourceData, version *secret.SecretVersion) {
 	_ = d.Set("status", version.Status.String())
 	_ = d.Set("region", string(version.Region))
 	_ = d.Set("srn", version.Srn)
+}
+
+func secretVersionUpgradeV1SchemaType() cty.Type {
+	return cty.Object(map[string]cty.Type{
+		"id":              cty.String,
+		"secret_id":       cty.String,
+		"data":            cty.String,
+		"data_wo_version": cty.Number,
+		"description":     cty.String,
+		"status":          cty.String,
+		"revision":        cty.String,
+		"created_at":      cty.String,
+		"updated_at":      cty.String,
+		"srn":             cty.String,
+		"region":          cty.String,
+	})
+}
+
+// VersionV1SchemaUpgradeFunc migrates a V0 state to V1.
+//
+// Before the `type` attribute existed, V0 sent the configured value verbatim
+// to the API but stored it in state as Base64Encoded(value), which is the
+// value itself when it is already a valid base64 string and its base64
+// encoding otherwise. That transformation is not invertible, so the
+// configured value cannot always be recovered from the stored one.
+//
+// The upgrader therefore keeps the stored value verbatim and only adds
+// `type = "string"`. When the stored value still matches the configuration,
+// which is the case where the original `data` was already a valid base64
+// string, the upgrade is transparent. Otherwise, which is always the case
+// when the original `data` was not a valid base64 string, the first plan
+// after the upgrade shows a one-time replacement. The recreated version is
+// created with the configured value, so the payload in the API is unchanged.
+func VersionV1SchemaUpgradeFunc(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
+	rawState["type"] = "string"
+
+	return rawState, nil
 }
