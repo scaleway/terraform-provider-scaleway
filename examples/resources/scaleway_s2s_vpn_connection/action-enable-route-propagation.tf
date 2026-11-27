@@ -17,6 +17,9 @@ resource "scaleway_s2s_vpn_connection" "main" {
   secret_version           = scaleway_secret_version.psk.revision
 
   lifecycle {
+    # route propagation is managed by the action, not by the resource
+    ignore_changes = [enable_route_propagation]
+
     action_trigger {
       events  = [after_create]
       actions = [action.scaleway_s2s_vpn_connection_enable_route_propagation.main]
