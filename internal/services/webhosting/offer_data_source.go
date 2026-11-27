@@ -108,7 +108,8 @@ func (d *OfferDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 			},
 			"product": fwschema.ListNestedAttribute{
 				Computed:            true,
-				MarkdownDescription: "Product list. Deprecated: use the `offer` field instead.",
+				MarkdownDescription: "Product list",
+				DeprecationMessage:  "Please use the `offer` field instead",
 				NestedObject: fwschema.NestedAttributeObject{
 					Attributes: map[string]fwschema.Attribute{
 						"name": fwschema.StringAttribute{

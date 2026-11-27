@@ -333,7 +333,8 @@ func (r *WebhostingResource) Schema(
 			},
 			"organization_id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "The organization ID the hosting belongs to. Deprecated: this field is deprecated and will be removed in the next major version.",
+				MarkdownDescription: "The organization ID the hosting belongs to",
+				DeprecationMessage:  "This field is deprecated and will be removed in the next major version",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
