@@ -381,6 +381,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		rdb.NewInstanceSnapshotAction,
 		rdb.NewReadReplicaPromoteAction,
 		rdb.NewReadReplicaResetAction,
+		redis.NewClusterRenewCertificateAction,
 		s2svpn.NewConnectionEnableRoutePropagationAction,
 		s2svpn.NewConnectionDisableRoutePropagationAction,
 		tem.NewOfferSubscriptionUpdateAction,
