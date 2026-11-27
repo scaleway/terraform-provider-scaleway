@@ -57,6 +57,12 @@ tfplugindocs "${args[@]}" > "${output[@]}"
   { task = "fmt:markdown" },
 ]
 
+[tasks.'check:lockfile']
+description = "check that the mise.lock is up to date"
+run = '''
+mise lock --check
+'''
+
 [tasks.'check:doc']
 description = "check that the documentation is up to date"
 depends = ["gen:doc"]
